@@ -1,0 +1,27 @@
+/* ==========================================================
+   empty-state.css: what a page shows when there is no data yet
+   <div class="empty">
+     <div class="empty__icon"><svg class="icon">...</svg></div>
+     <h3 class="empty__title">No employees yet</h3>
+     <p class="empty__text">Add your first employee to get started.</p>
+     <button class="btn btn--primary">Add employee</button>
+   </div>
+   ========================================================== */
+
+.empty {
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-10) var(--space-6);
+  text-align: center;
+}
+.empty__icon {
+  width: 44px; height: 44px; margin-bottom: var(--space-1);
+  display: grid; place-items: center;
+  border-radius: var(--radius-xl);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+.empty__icon .icon { width: 22px; height: 22px; }
+.empty__title { font-size: var(--text-md); }
+.empty__text { max-width: 38ch; font-size: var(--text-sm); color: var(--color-text-muted); }
+.empty .btn { margin-top: var(--space-2); }

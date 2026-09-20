@@ -1,0 +1,42 @@
+/* ==========================================================
+   print.css: applies only when printing or saving as PDF
+   (style.css imports it with the "print" condition)
+   Used for payslips: hides the menus and prints the document on white.
+   ========================================================== */
+
+@page { size: A4; margin: 14mm; }
+
+/* Always print in light colors, even if dark mode is on */
+:root, [data-theme="dark"] {
+  color-scheme: light;
+  --color-primary: var(--primary-base);
+  --color-on-primary: #ffffff;
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f3f4f6;
+  --color-border: #d0d5dd;
+  --color-text: #101828;
+  --color-text-muted: #475467;
+  --color-success: #067647;  --color-success-soft: #e7f6ec;
+  --color-warning: #b54708;  --color-warning-soft: #fef3e0;
+  --color-danger:  #b42318;  --color-danger-soft:  #fdecea;
+  --color-info:    #175cd3;  --color-info-soft:    #e8f0fe;
+}
+
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+body { background: #ffffff; font-size: 12px; }
+
+/* Hide everything that is not the document */
+.sidebar, .topbar, .page-header, .breadcrumb, .alert, .toast-container, .modal, .no-print { display: none !important; }
+
+.app { display: block; }
+.content { max-width: none; margin: 0; padding: 0; }
+
+/* Cards and tables print flat */
+.card, .payslip { box-shadow: none; border: 1px solid #98a2b3; border-radius: 6px; }
+.payslip { max-width: none; margin: 0; break-inside: avoid; }
+.table th { background: #f3f4f6; }
+
+a { color: inherit; text-decoration: none; }
+tr, .card, .payslip__col { break-inside: avoid; }

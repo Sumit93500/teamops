@@ -1,0 +1,65 @@
+/* ==========================================================
+   progress.css: progress bars and balance cards (leave balances)
+   Bar:
+   <div class="progress"><span class="progress__bar" style="--w:50%"></span></div>
+   Colors: progress--success, progress--warning, progress--danger, progress--info
+   Sizes:  progress--sm, progress--lg
+
+   Balance card:
+   <div class="balance-grid">
+     <div class="balance">
+       <div class="balance__head"><span class="balance__type">Casual leave</span><span class="badge badge--square">12 a year</span></div>
+       <div class="balance__value">6<small>days left</small></div>
+       <div class="progress"><span class="progress__bar" style="--w:50%"></span></div>
+       <p class="balance__meta">6 used, 1 pending</p>
+     </div>
+   </div>
+   ========================================================== */
+
+.progress {
+  height: 8px; overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-hover);
+}
+.progress__bar {
+  display: block; height: 100%;
+  width: var(--w, 0%);
+  border-radius: inherit;
+  background: var(--pc, var(--color-primary));
+  transition: width 300ms ease;
+}
+.progress--success { --pc: var(--color-success); }
+.progress--warning { --pc: var(--color-warning); }
+.progress--danger  { --pc: var(--color-danger); }
+.progress--info    { --pc: var(--color-info); }
+.progress--sm { height: 6px; }
+.progress--lg { height: 12px; }
+
+/* ---------- Balance cards ---------- */
+.balance-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.balance {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: 16px 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.balance__head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
+.balance__type { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-text-muted); }
+.balance__value {
+  font-size: var(--text-xl); font-weight: var(--weight-semibold);
+  line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.balance__value small {
+  margin-left: 4px;
+  font-size: var(--text-sm); font-weight: var(--weight-regular); letter-spacing: 0;
+  color: var(--color-text-muted);
+}
+.balance__meta { font-size: var(--text-xs); color: var(--color-text-muted); }
+
+@media (max-width: 1100px) { .balance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px)  { .balance-grid { grid-template-columns: minmax(0, 1fr); } }

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en" data-role="admin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item" href="../dashboard/admin.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">3</span>
+      </a>
+
+      <div class="nav__group-title">People</div>
+      <a class="nav__item" href="../users/users-list.html" data-permission="users:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        Users
+      </a>
+      <a class="nav__item" href="../access/roles-list.html" data-permission="roles:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Roles &amp; permissions
+      </a>
+      <a class="nav__item" href="../access/designations.html" data-permission="designations:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/></svg>
+        Designations
+      </a>
+      <a class="nav__item" href="../attendance/team-attendance.html" data-permission="attendance:view-all">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        Attendance
+      </a>
+      <a class="nav__item" href="../leave/leave-approvals.html" data-permission="leave:approve">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        Leave
+      </a>
+
+      <div class="nav__group-title">Finance &amp; operations</div>
+      <a class="nav__item" href="../payroll/payroll-run.html" data-permission="payroll:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        Payroll
+      </a>
+      <a class="nav__item" href="../inventory/items.html" data-permission="inventory:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
+        Inventory
+      </a>
+
+      <div class="nav__group-title">System</div>
+      <a class="nav__item is-active" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+      <a class="nav__item" href="../system/audit-log.html" data-permission="audit:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        Audit log
+      </a>
+      <a class="nav__item" href="../system/settings.html" data-permission="settings:edit">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.3 3h-4l-.3 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.3 2.7h4l.3-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2"/></svg>
+        Settings
+      </a>
+      <a class="nav__item" href="../system/backup.html" data-permission="backup:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+        Backup
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Reports</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Aarav Mehta">AM</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Reports</h1>
+      <p class="page-header__subtitle">Run, schedule and export reports. You only see what your role allows.</p>
+    </div>
+    <div class="page-header__actions">
+      <select class="select select--sm" aria-label="Choose period">
+        <option>This month</option><option>Last month</option><option>This quarter</option><option>This year</option>
+      </select>
+      <button class="btn btn--primary" type="button" data-permission="reports:create">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Create report
+      </button>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <section class="stat-strip" aria-label="Key numbers">
+      <div class="stat">
+        <div class="stat__icon stat__icon--1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Reports run</span>
+          <strong class="stat__value">63</strong>
+          <span class="stat__delta stat__delta--up">+9 vs August</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--2">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Scheduled</span>
+          <strong class="stat__value">7</strong>
+          <span class="stat__delta">Next run Monday, 21 Sep</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--3">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Exports</span>
+          <strong class="stat__value">28</strong>
+          <span class="stat__delta">18 CSV, 10 PDF</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--4">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Last generated</span>
+          <strong class="stat__value">20 min</strong>
+          <span class="stat__delta">Payroll summary</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Headcount, last 12 months</h3>
+          <span class="card__meta">Oct 2025 – Sep 2026</span>
+        </div>
+        <div class="card__body">
+          <div class="chart chart--12" role="img" aria-label="Headcount growing from 212 to 248 over 12 months">
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:37" title="Oct 2025: 212"></span></div><span class="chart__label">O</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:43" title="Nov 2025: 216"></span></div><span class="chart__label">N</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:48" title="Dec 2025: 219"></span></div><span class="chart__label">D</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:55" title="Jan 2026: 223"></span></div><span class="chart__label">J</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:60" title="Feb 2026: 226"></span></div><span class="chart__label">F</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:65" title="Mar 2026: 229"></span></div><span class="chart__label">M</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:70" title="Apr 2026: 232"></span></div><span class="chart__label">A</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:73" title="May 2026: 234"></span></div><span class="chart__label">M</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:77" title="Jun 2026: 236"></span></div><span class="chart__label">J</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:83" title="Jul 2026: 240"></span></div><span class="chart__label">J</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:90" title="Aug 2026: 244"></span></div><span class="chart__label">A</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:97" title="Sep 2026: 248"></span></div><span class="chart__label">S</span></div>
+          </div>
+          <p class="text-xs text-muted mt-2">The scale starts at 190 people so the changes are visible.</p>
+        </div>
+      </section>
+
+      <aside class="stack">
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Scheduled reports</h3>
+            <span class="card__meta">7 active</span>
+          </div>
+          <div class="list">
+            <div class="list__item">
+              <div class="list__content"><span class="list__title">Attendance summary</span><span class="list__sub">Every Monday, to HR</span></div>
+              <span class="badge badge--success badge--dot">Active</span>
+            </div>
+            <div class="list__item">
+              <div class="list__content"><span class="list__title">Payroll register</span><span class="list__sub">28th of each month, to Finance</span></div>
+              <span class="badge badge--success badge--dot">Active</span>
+            </div>
+            <div class="list__item">
+              <div class="list__content"><span class="list__title">Low stock alert</span><span class="list__sub">Every day at 9 AM, to the Store</span></div>
+              <span class="badge badge--success badge--dot">Active</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="alert alert--info">Salary columns are hidden in a report unless the person running it has salary:view. The same report shows different columns to different roles.</div>
+      </aside>
+
+    </div>
+
+    <section aria-label="Report library">
+      <div class="page-header" style="margin-bottom: var(--space-3)">
+        <div><h2>Report library</h2></div>
+      </div>
+      <div class="grid grid-3">
+
+        <article class="card report">
+          <div class="report__top">
+            <span class="report__icon report__icon--1"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg></span>
+            <div><span class="report__title">Headcount and turnover</span><span class="report__desc">Joiners, leavers and team size by department</span></div>
+          </div>
+          <div class="report__foot"><span class="perm-chip">users:view</span><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="reports:export">Download</button><button class="btn btn--primary btn--sm" type="button">Run</button></div></div>
+        </article>
+
+        <article class="card report">
+          <div class="report__top">
+            <span class="report__icon report__icon--2"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg></span>
+            <div><span class="report__title">Attendance summary</span><span class="report__desc">Present, late and absent days for any period</span></div>
+          </div>
+          <div class="report__foot"><span class="perm-chip">attendance:view-all</span><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="reports:export">Download</button><button class="btn btn--primary btn--sm" type="button">Run</button></div></div>
+        </article>
+
+        <article class="card report">
+          <div class="report__top">
+            <span class="report__icon report__icon--3"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg></span>
+            <div><span class="report__title">Leave balances</span><span class="report__desc">Days taken and left for every employee</span></div>
+          </div>
+          <div class="report__foot"><span class="perm-chip">leave:approve</span><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="reports:export">Download</button><button class="btn btn--primary btn--sm" type="button">Run</button></div></div>
+        </article>
+
+        <article class="card report">
+          <div class="report__top">
+            <span class="report__icon report__icon--4"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg></span>
+            <div><span class="report__title">Payroll register</span><span class="report__desc">Gross, deductions and net pay for each run</span></div>
+          </div>
+          <div class="report__foot"><span class="perm-chip">salary:view</span><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="reports:export">Download</button><button class="btn btn--primary btn--sm" type="button">Run</button></div></div>
+        </article>
+
+        <article class="card report">
+          <div class="report__top">
+            <span class="report__icon report__icon--1"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18"/></svg></span>
+            <div><span class="report__title">Expense summary</span><span class="report__desc">Claims by category, person and status</span></div>
+          </div>
+          <div class="report__foot"><span class="perm-chip">expenses:view</span><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="reports:export">Download</button><button class="btn btn--primary btn--sm" type="button">Run</button></div></div>
+        </article>
+
+        <article class="card report">
+          <div class="report__top">
+            <span class="report__icon report__icon--2"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span>
+            <div><span class="report__title">Inventory and assets</span><span class="report__desc">Stock levels, movements and who holds what</span></div>
+          </div>
+          <div class="report__foot"><span class="perm-chip">inventory:view</span><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="reports:export">Download</button><button class="btn btn--primary btn--sm" type="button">Run</button></div></div>
+        </article>
+
+      </div>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Recent exports</h3>
+          <span class="card__meta">Last 7 days</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Report</th>
+                <th>Format</th>
+                <th>Run by</th>
+                <th>When</th>
+                <th class="table__num">Size</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="table__user-name">Payroll register, Sep</span></td><td><span class="badge badge--square">PDF</span></td><td>Kabir Shah</td><td>20 min ago</td><td class="table__num">412 KB</td></tr>
+              <tr><td><span class="table__user-name">Attendance summary, week 37</span></td><td><span class="badge badge--square">CSV</span></td><td>Priya Nair</td><td>Yesterday</td><td class="table__num">86 KB</td></tr>
+              <tr><td><span class="table__user-name">Inventory and assets</span></td><td><span class="badge badge--square">CSV</span></td><td>Vikram Singh</td><td>16 Sep</td><td class="table__num">54 KB</td></tr>
+              <tr><td><span class="table__user-name">Headcount and turnover</span></td><td><span class="badge badge--square">PDF</span></td><td>Aarav Mehta</td><td>14 Sep</td><td class="table__num">238 KB</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Attendance summary, Q3</h3>
+          <span class="badge badge--info badge--dot">Generating</span>
+        </div>
+        <div class="card__body">
+          <div class="skeleton skeleton--title"></div>
+          <div class="skeleton skeleton--text"></div>
+          <div class="skeleton skeleton--text"></div>
+          <div class="skeleton skeleton--block"></div>
+          <p class="form-hint mt-2">Large reports take a minute. You'll get a notification when it is ready.</p>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

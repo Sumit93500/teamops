@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" data-role="emp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sessions | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Me</div>
+      <a class="nav__item" href="../dashboard/employee.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        My dashboard
+      </a>
+      <a class="nav__item" href="../attendance/my-attendance.html" data-permission="attendance:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        My attendance
+      </a>
+      <a class="nav__item" href="../attendance/mark-attendance.html" data-permission="attendance:mark">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        Mark attendance
+      </a>
+      <a class="nav__item" href="../leave/my-leave.html" data-permission="leave:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        My leave
+      </a>
+      <a class="nav__item" href="../payroll/payslips.html" data-permission="payslip:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        My payslips
+      </a>
+
+      <div class="nav__group-title">Requests &amp; assets</div>
+      <a class="nav__item" href="../requests/my-requests.html" data-permission="requests:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Requests
+        <span class="nav__count">2</span>
+      </a>
+      <a class="nav__item" href="../inventory/my-assets.html" data-permission="assets:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
+        My assets
+      </a>
+
+      <div class="nav__group-title">Company</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Sessions</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Arjun Kapoor">AK</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>My account</h1>
+      <p class="page-header__subtitle">Your profile, password and sign-in security</p>
+    </div>
+  </div>
+
+  <nav class="tabs acct-tabs" aria-label="Account sections">
+    <a class="tabs__tab" href="my-profile.html">Profile</a>
+    <a class="tabs__tab" href="change-password.html">Password</a>
+    <a class="tabs__tab is-active" href="sessions.html">Sessions</a>
+    <a class="tabs__tab" href="notifications.html">Notifications</a>
+  </nav>
+
+  <div class="stack">
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Where you're signed in</h3>
+          <span class="card__meta">4 devices</span>
+        </div>
+
+        <div class="list">
+          <div class="list__item device device--current">
+            <span class="device__icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span>
+            <div class="list__content">
+              <span class="list__title">Chrome on Windows <span class="badge badge--success badge--dot">This device</span></span>
+              <span class="list__sub">Gurugram, India. Active now</span>
+            </div>
+          </div>
+          <div class="list__item device">
+            <span class="device__icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM11 18h2"/></svg></span>
+            <div class="list__content">
+              <span class="list__title">Safari on iPhone</span>
+              <span class="list__sub">New Delhi, India. Last active 2 hours ago</span>
+            </div>
+            <button class="btn btn--sm" type="button" data-permission="sessions:end-own">Sign out</button>
+          </div>
+          <div class="list__item device">
+            <span class="device__icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span>
+            <div class="list__content">
+              <span class="list__title">Firefox on Mac</span>
+              <span class="list__sub">Noida, India. Last active 3 days ago</span>
+            </div>
+            <button class="btn btn--sm" type="button" data-permission="sessions:end-own">Sign out</button>
+          </div>
+          <div class="list__item device">
+            <span class="device__icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM11 18h2"/></svg></span>
+            <div class="list__content">
+              <span class="list__title">Chrome on Android</span>
+              <span class="list__sub">Gurugram, India. Last active 12 days ago</span>
+            </div>
+            <button class="btn btn--sm" type="button" data-permission="sessions:end-own">Sign out</button>
+          </div>
+        </div>
+
+        <div class="card__footer">
+          <span class="card__meta">Signing out ends that session straight away.</span>
+          <button class="btn btn--sm btn--danger" type="button" data-permission="sessions:end-own">Sign out of all other devices</button>
+        </div>
+      </section>
+
+      <aside class="stack">
+
+        <section class="card">
+          <div class="card__header"><h3 class="card__title">Sign-in security</h3></div>
+          <div class="card__body">
+            <dl class="kv">
+              <div class="kv__row"><dt>Password changed</dt><dd>14 Jun 2026</dd></div>
+              <div class="kv__row"><dt>Two-factor sign-in</dt><dd><span class="badge badge--warning">Off</span></dd></div>
+              <div class="kv__row"><dt>Trusted devices</dt><dd>1</dd></div>
+              <div class="kv__row"><dt>Signed out after</dt><dd>30 minutes idle</dd></div>
+            </dl>
+            <a class="btn btn--sm mt-4" href="change-password.html">Turn on two-factor</a>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header"><h3 class="card__title">Sign-in alerts</h3></div>
+          <div class="card__body">
+            <div class="toggle-list">
+              <label class="switch"><input type="checkbox" checked> Email me when a new device signs in</label>
+              <label class="switch"><input type="checkbox" checked> Email me about failed sign-ins</label>
+            </div>
+          </div>
+        </section>
+
+        <div class="alert alert--warning">A sign-in attempt from Frankfurt on 15 Sep was blocked. If it wasn't you, <a class="link" href="change-password.html">change your password</a> now.</div>
+
+      </aside>
+    </div>
+
+    <section class="card">
+      <div class="card__header">
+        <h3 class="card__title">Sign-in history</h3>
+        <span class="card__meta">Last 30 days</span>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date and time</th>
+              <th>Device</th>
+              <th>Place</th>
+              <th>IP address</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Today, 09:10</td><td>Chrome on Windows</td><td>Gurugram, India</td><td>103.xx.xx.24</td>
+              <td><span class="badge badge--success badge--dot">Success</span></td>
+            </tr>
+            <tr>
+              <td>18 Sep, 08:55</td><td>Safari on iPhone</td><td>New Delhi, India</td><td>49.xx.xx.107</td>
+              <td><span class="badge badge--success badge--dot">Success</span></td>
+            </tr>
+            <tr>
+              <td>15 Sep, 21:40</td><td>Unknown browser on Linux</td><td>Frankfurt, Germany</td><td>185.xx.xx.12</td>
+              <td><span class="badge badge--danger badge--dot">Blocked</span></td>
+            </tr>
+            <tr>
+              <td>14 Sep, 09:05</td><td>Chrome on Windows</td><td>Gurugram, India</td><td>103.xx.xx.24</td>
+              <td><span class="badge badge--success badge--dot">Success</span></td>
+            </tr>
+            <tr>
+              <td>12 Sep, 18:20</td><td>Firefox on Mac</td><td>Noida, India</td><td>117.xx.xx.63</td>
+              <td><span class="badge badge--success badge--dot">Success</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

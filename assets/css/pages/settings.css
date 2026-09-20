@@ -1,0 +1,76 @@
+/* ==========================================================
+   settings.css: system pages (settings, backup, audit log)
+   ========================================================== */
+
+/* ---------- Settings layout: menu on the left, cards on the right ---------- */
+.settings { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.settings__nav { position: sticky; top: calc(var(--topbar-height) + var(--space-4)); display: flex; flex-direction: column; gap: 2px; }
+.settings__link {
+  display: block; padding: 8px 12px;
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-md);
+  transition: background var(--transition), color var(--transition);
+}
+.settings__link:hover { background: var(--color-surface-hover); color: var(--color-text); }
+.settings__link.is-active { background: var(--color-primary-soft); color: var(--color-primary); }
+
+/* ---------- One setting: text on the left, control on the right ----------
+   <div class="setting-row"><div class="setting-row__text"><strong>Title</strong><span>Help text</span></div>
+     <div class="setting-row__control"> switch or select </div></div> */
+.setting-row {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: var(--space-4);
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.setting-row:last-child { border-bottom: 0; }
+.setting-row__text { min-width: 0; }
+.setting-row__text strong { display: flex; align-items: center; gap: 6px; font-weight: var(--weight-medium); }
+.setting-row__text span { display: block; font-size: var(--text-sm); color: var(--color-text-muted); }
+.setting-row__control { flex: none; }
+.setting-row__control .select, .setting-row__control .input { width: 160px; }
+
+/* ---------- Role color dots ---------- */
+.swatch {
+  display: inline-block; width: 14px; height: 14px; margin-right: 8px;
+  vertical-align: -2px;
+  background: var(--sw);
+  border-radius: 50%;
+}
+.swatch--admin { --sw: #4f46e5; }
+.swatch--hr    { --sw: #0f766e; }
+.swatch--fin   { --sw: #b45309; }
+.swatch--emp   { --sw: #2563eb; }
+
+/* ---------- Audit log: old value -> new value ---------- */
+.diff { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); }
+.diff__old { color: var(--color-text-muted); text-decoration: line-through; }
+.diff__new { font-weight: var(--weight-medium); }
+.diff .icon { width: 14px; height: 14px; color: var(--color-text-muted); }
+
+/* ---------- Backup: status banner ---------- */
+.backup-hero {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: var(--space-4); flex-wrap: wrap;
+  padding: 20px;
+}
+.backup-hero__state { display: flex; align-items: center; gap: 14px; }
+.backup-hero__icon {
+  width: 44px; height: 44px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  background: var(--color-success-soft); color: var(--color-success);
+}
+.backup-hero__icon .icon { width: 22px; height: 22px; }
+.backup-hero__title { font-size: var(--text-md); }
+
+@media (max-width: 900px) {
+  .settings { grid-template-columns: minmax(0, 1fr); }
+  .settings__nav { position: static; flex-direction: row; overflow-x: auto; }
+  .settings__link { white-space: nowrap; }
+}
+@media (max-width: 560px) {
+  .setting-row { flex-direction: column; align-items: flex-start; }
+  .setting-row__control .select, .setting-row__control .input { width: 100%; }
+}

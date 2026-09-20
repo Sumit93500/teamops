@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-role="emp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My assets | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Me</div>
+      <a class="nav__item" href="../dashboard/employee.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        My dashboard
+      </a>
+      <a class="nav__item" href="../attendance/my-attendance.html" data-permission="attendance:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        My attendance
+      </a>
+      <a class="nav__item" href="../attendance/mark-attendance.html" data-permission="attendance:mark">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        Mark attendance
+      </a>
+      <a class="nav__item" href="../leave/my-leave.html" data-permission="leave:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        My leave
+      </a>
+      <a class="nav__item" href="../payroll/payslips.html" data-permission="payslip:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        My payslips
+      </a>
+
+      <div class="nav__group-title">Requests &amp; assets</div>
+      <a class="nav__item" href="../requests/my-requests.html" data-permission="requests:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Requests
+        <span class="nav__count">2</span>
+      </a>
+      <a class="nav__item is-active" href="../inventory/my-assets.html" data-permission="assets:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
+        My assets
+      </a>
+
+      <div class="nav__group-title">Company</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>My assets</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Arjun Kapoor">AK</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>My assets</h1>
+      <p class="page-header__subtitle">Company equipment assigned to you</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn" type="button" data-permission="assets:report">Report a problem</button>
+      <button class="btn btn--primary" type="button" data-permission="assets:request">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Request an asset
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-main-aside">
+
+    <section class="card">
+      <div class="card__header">
+        <h3 class="card__title">Assigned to me</h3>
+        <span class="card__meta">3 assets</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tag</th>
+              <th>Asset</th>
+              <th>Since</th>
+              <th>Condition</th>
+              <th>Status</th>
+              <th class="table__actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="asset-tag">AST-0188</span></td>
+              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span><div><span class="item__name">Dell Latitude 5420</span><span class="item__sku">Laptop</span></div></div></td>
+              <td>12 Jan 2023</td>
+              <td><span class="badge badge--warning badge--square">Fair</span></td>
+              <td><span class="badge badge--info badge--dot">Assigned</span></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:report">Report issue</button></td>
+            </tr>
+            <tr>
+              <td><span class="asset-tag">AST-0302</span></td>
+              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span><div><span class="item__name">Dell 24" monitor</span><span class="item__sku">Monitor</span></div></div></td>
+              <td>12 Jan 2023</td>
+              <td><span class="badge badge--success badge--square">Good</span></td>
+              <td><span class="badge badge--info badge--dot">Assigned</span></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:report">Report issue</button></td>
+            </tr>
+            <tr>
+              <td><span class="asset-tag">AST-0455</span></td>
+              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18"/></svg></span><div><span class="item__name">Office access card</span><span class="item__sku">Access card</span></div></div></td>
+              <td>12 Jan 2023</td>
+              <td><span class="badge badge--success badge--square">Good</span></td>
+              <td><span class="badge badge--info badge--dot">Assigned</span></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:report">Report issue</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="stack">
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Laptop upgrade request</h3>
+          <span class="badge badge--warning badge--dot">In review</span>
+        </div>
+        <div class="card__body">
+          <p class="fw-medium mb-4">Replaces AST-0188, 3 years old</p>
+          <ol class="stepper stepper--vertical">
+            <li class="stepper__step is-done">
+              <span class="stepper__dot"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
+              <div class="stepper__text"><strong>Sent</strong><small class="text-muted">17 Sep by you</small></div>
+            </li>
+            <li class="stepper__step is-current">
+              <span class="stepper__dot">2</span>
+              <div class="stepper__text"><strong>IT Support review</strong><small class="text-muted">Checking stock and device age</small></div>
+            </li>
+            <li class="stepper__step">
+              <span class="stepper__dot">3</span>
+              <div class="stepper__text"><strong>Admin approval</strong><small class="text-muted">Aarav Mehta</small></div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <div class="alert alert--info">You are responsible for the equipment assigned to you. Report loss or damage within 24 hours, and hand assets back to the store when you leave the company.</div>
+    </aside>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

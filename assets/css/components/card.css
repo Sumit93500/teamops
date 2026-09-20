@@ -1,0 +1,54 @@
+/* ==========================================================
+   card.css: the white boxes every screen is built from
+   <div class="card">
+     <div class="card__header"><h3 class="card__title">Title</h3><span class="card__meta">Sep 2026</span></div>
+     <div class="card__body"> ... </div>
+     <div class="card__footer"> ... </div>
+   </div>
+   Put a table inside with <div class="card__body card__body--flush">.
+   ========================================================== */
+
+.card {
+  min-width: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.card__header {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.card__title { font-size: var(--text-base); font-weight: var(--weight-semibold); }
+.card__meta { font-size: var(--text-sm); color: var(--color-text-muted); }
+
+.card__body { padding: 14px 18px; }
+.card__body--flush { padding: 0; }
+
+.card__footer {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);
+  padding: 12px 18px;
+  border-top: 1px solid var(--color-border);
+}
+
+.card--interactive { transition: border-color var(--transition); }
+.card--interactive:hover { border-color: var(--color-primary); }
+
+/* ---------- Row list inside a card (approvals, activity, requests) ----------
+   <div class="list">
+     <div class="list__item">
+       <div class="avatar">..</div>
+       <div class="list__content"><span class="list__title">Title</span><span class="list__sub">Sub text</span></div>
+       <div class="btn-group"> buttons </div>
+     </div>
+   </div> */
+.list__item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.list__item:last-child { border-bottom: 0; }
+.list__content { flex: 1; min-width: 0; }
+.list__title { display: block; font-weight: var(--weight-medium); }
+.list__sub { display: block; font-size: var(--text-sm); color: var(--color-text-muted); }

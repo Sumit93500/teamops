@@ -1,0 +1,52 @@
+/* ==========================================================
+   tooltip.css: a small hint that appears on hover or keyboard focus
+   <span class="tooltip">
+     <button class="info-dot" type="button" aria-label="More info">i</button>
+     <span class="tooltip__text" role="tooltip">The hint text</span>
+   </span>
+   Add class "tooltip--bottom" to open below instead of above.
+   ========================================================== */
+
+.tooltip { position: relative; display: inline-flex; align-items: center; }
+
+.tooltip__text {
+  position: absolute; bottom: calc(100% + 8px); left: 50%;
+  z-index: var(--z-dropdown);
+  width: max-content; max-width: 240px;
+  padding: 6px 10px;
+  font-size: var(--text-xs); font-weight: var(--weight-medium); line-height: 1.4;
+  font-family: var(--font-sans);
+  text-align: left;
+  color: #ffffff;
+  background: #101828;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-float);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translateX(-50%) translateY(4px);
+  transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
+}
+.tooltip__text::after {                         /* little arrow */
+  content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+  border: 5px solid transparent; border-top-color: #101828;
+}
+.tooltip:hover .tooltip__text,
+.tooltip:focus-within .tooltip__text { opacity: 1; visibility: visible; transform: translateX(-50%); }
+
+.tooltip--bottom .tooltip__text { bottom: auto; top: calc(100% + 8px); transform: translateX(-50%) translateY(-4px); }
+.tooltip--bottom .tooltip__text::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: #101828; }
+.tooltip--bottom:hover .tooltip__text,
+.tooltip--bottom:focus-within .tooltip__text { transform: translateX(-50%); }
+
+/* ---------- Small round "i" that opens a tooltip ---------- */
+.info-dot {
+  width: 16px; height: 16px;
+  display: inline-grid; place-items: center;
+  font-size: 11px; font-weight: var(--weight-semibold); line-height: 1;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  cursor: help;
+}
+.info-dot:hover { color: var(--color-text); }

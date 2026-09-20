@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" data-role="fin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax &amp; deductions | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item" href="../dashboard/finance.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">3</span>
+      </a>
+
+      <div class="nav__group-title">Payroll</div>
+      <a class="nav__item" href="../payroll/payroll-run.html" data-permission="payroll:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        Payroll run
+      </a>
+      <a class="nav__item" href="../payroll/payslips.html" data-permission="payslips:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        Payslips
+      </a>
+      <a class="nav__item" href="../payroll/salary-structure.html" data-permission="salary:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+        Salary structure
+      </a>
+
+      <div class="nav__group-title">Money</div>
+      <a class="nav__item" href="../finance/expenses.html" data-permission="expenses:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18"/></svg>
+        Expenses
+      </a>
+      <a class="nav__item is-active" href="../finance/tax-deductions.html" data-permission="tax:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5 5 19M6.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M17.5 20a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/></svg>
+        Tax &amp; deductions
+      </a>
+
+      <div class="nav__group-title">Reports</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Tax &amp; deductions</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Kabir Shah">KS</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Tax &amp; deductions</h1>
+      <p class="page-header__subtitle">Statutory deductions, filing dates and tax slabs for September 2026</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn" type="button" data-permission="reports:export">Export</button>
+      <button class="btn btn--primary" type="button" data-permission="tax:manage">Generate challans</button>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <section class="stat-strip" aria-label="Key numbers">
+      <div class="stat">
+        <div class="stat__icon stat__icon--1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5 5 19M6.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M17.5 20a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Income tax (TDS)</span>
+          <strong class="stat__value">₹6.8L</strong>
+          <span class="stat__delta">Deposit by 7 Oct</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--2">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Provident fund</span>
+          <strong class="stat__value">₹3.6L</strong>
+          <span class="stat__delta">Employee plus employer</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--3">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Professional tax</span>
+          <strong class="stat__value">₹49,600</strong>
+          <span class="stat__delta">248 people at ₹200</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--4">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">On the new regime</span>
+          <strong class="stat__value">196</strong>
+          <span class="stat__delta">52 on the old regime</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <div class="stack">
+
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Statutory deductions</h3>
+            <span class="card__meta">September 2026</span>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Deduction</th>
+                  <th>Rate</th>
+                  <th>Paid by</th>
+                  <th class="table__num">This month</th>
+                  <th>Due date</th>
+                  <th>Status</th>
+                  <th class="table__actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="table__user-name">Provident fund, employee</span></td>
+                  <td>12% of basic</td><td>Employee</td><td class="table__num">₹1,80,000</td><td>15 Oct</td>
+                  <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage">Challan</button></td>
+                </tr>
+                <tr>
+                  <td><span class="table__user-name">Provident fund, employer</span></td>
+                  <td>12% of basic</td><td>Company</td><td class="table__num">₹1,80,000</td><td>15 Oct</td>
+                  <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage">Challan</button></td>
+                </tr>
+                <tr>
+                  <td><span class="table__user-name">Professional tax</span></td>
+                  <td>₹200 a month</td><td>Employee</td><td class="table__num">₹49,600</td><td>30 Sep</td>
+                  <td><span class="badge badge--info badge--dot">Generated</span></td>
+                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage">Challan</button></td>
+                </tr>
+                <tr>
+                  <td><span class="table__user-name">Income tax (TDS)</span></td>
+                  <td>As per slab</td><td>Employee</td><td class="table__num">₹6,80,000</td><td>7 Oct</td>
+                  <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage">Challan</button></td>
+                </tr>
+                <tr>
+                  <td><span class="table__user-name">Income tax (TDS), August</span></td>
+                  <td>As per slab</td><td>Employee</td><td class="table__num">₹6,64,000</td><td>7 Sep</td>
+                  <td><span class="badge badge--success badge--dot">Paid</span></td>
+                  <td class="table__actions"><button class="btn btn--sm" type="button">Receipt</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Tax slabs, new regime</h3>
+            <span class="card__meta">Highlighted: annual income of ₹9,00,000</span>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Annual income</th>
+                  <th class="table__num">Tax rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="slab-row"><td>Up to ₹4,00,000</td><td class="table__num">Nil</td></tr>
+                <tr class="slab-row"><td>₹4,00,001 to ₹8,00,000</td><td class="table__num">5%</td></tr>
+                <tr class="slab-row is-current"><td>₹8,00,001 to ₹12,00,000</td><td class="table__num">10%</td></tr>
+                <tr class="slab-row"><td>₹12,00,001 to ₹16,00,000</td><td class="table__num">15%</td></tr>
+                <tr class="slab-row"><td>₹16,00,001 to ₹20,00,000</td><td class="table__num">20%</td></tr>
+                <tr class="slab-row"><td>₹20,00,001 to ₹24,00,000</td><td class="table__num">25%</td></tr>
+                <tr class="slab-row"><td>Above ₹24,00,000</td><td class="table__num">30%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div class="alert alert--warning">These slabs and rates are sample values for the design. When the real app is built, use the current government rates. Professional tax also depends on the state, so it is set per work location.</div>
+
+      </div>
+
+      <aside class="stack">
+
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Filing calendar</h3>
+            <span class="card__meta">Next 60 days</span>
+          </div>
+          <div class="list">
+            <div class="list__item">
+              <div class="date-tile"><span class="date-tile__month">Oct</span><span class="date-tile__day">7</span></div>
+              <div class="list__content"><span class="list__title">Deposit TDS</span><span class="list__sub">For September salaries</span></div>
+              <span class="badge badge--warning">Due soon</span>
+            </div>
+            <div class="list__item">
+              <div class="date-tile"><span class="date-tile__month">Oct</span><span class="date-tile__day">15</span></div>
+              <div class="list__content"><span class="list__title">Provident fund</span><span class="list__sub">Employee and employer share</span></div>
+              <span class="badge">Upcoming</span>
+            </div>
+            <div class="list__item">
+              <div class="date-tile"><span class="date-tile__month">Oct</span><span class="date-tile__day">31</span></div>
+              <div class="list__content"><span class="list__title">TDS return</span><span class="list__sub">Quarter July to September</span></div>
+              <span class="badge">Upcoming</span>
+            </div>
+            <div class="list__item">
+              <div class="date-tile"><span class="date-tile__month">Nov</span><span class="date-tile__day">7</span></div>
+              <div class="list__content"><span class="list__title">Deposit TDS</span><span class="list__sub">For October salaries</span></div>
+              <span class="badge">Upcoming</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Tax regime choice</h3>
+            <span class="card__meta">248 employees</span>
+          </div>
+          <div class="card__body">
+            <div class="bar-row"><span>New regime</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:79%"></span></div><span class="bar-row__value">196</span></div>
+            <div class="bar-row"><span>Old regime</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:21%"></span></div><span class="bar-row__value">52</span></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Tax declarations</h3>
+            <span class="card__meta">Deadline 31 Dec</span>
+          </div>
+          <div class="card__body">
+            <p class="fw-medium mb-2">171 of 248 submitted</p>
+            <div class="progress progress--success"><span class="progress__bar" style="--w:69%"></span></div>
+            <p class="form-hint mt-2">77 employees have not declared yet. Their tax is worked out without any exemptions.</p>
+            <button class="btn btn--sm mt-4" type="button" data-permission="tax:manage">Send a reminder</button>
+          </div>
+        </section>
+
+      </aside>
+    </div>
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

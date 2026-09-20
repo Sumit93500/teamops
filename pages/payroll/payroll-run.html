@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" data-role="fin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payroll run | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item" href="../dashboard/finance.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">3</span>
+      </a>
+
+      <div class="nav__group-title">Payroll</div>
+      <a class="nav__item is-active" href="../payroll/payroll-run.html" data-permission="payroll:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        Payroll run
+      </a>
+      <a class="nav__item" href="../payroll/payslips.html" data-permission="payslips:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        Payslips
+      </a>
+      <a class="nav__item" href="../payroll/salary-structure.html" data-permission="salary:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+        Salary structure
+      </a>
+
+      <div class="nav__group-title">Money</div>
+      <a class="nav__item" href="../finance/expenses.html" data-permission="expenses:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18"/></svg>
+        Expenses
+      </a>
+      <a class="nav__item" href="../finance/tax-deductions.html" data-permission="tax:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5 5 19M6.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M17.5 20a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/></svg>
+        Tax &amp; deductions
+      </a>
+
+      <div class="nav__group-title">Reports</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Payroll run</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Kabir Shah">KS</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Payroll run, September 2026</h1>
+      <p class="page-header__subtitle">Pay period 1 – 30 Sep, pay date 28 Sep</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn" type="button" data-permission="payroll:export">Export bank file</button>
+      <button class="btn btn--primary" type="button" data-permission="payroll:approve" disabled title="You prepared this run, so someone else has to approve it">Approve run</button>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <section class="stat-strip" aria-label="Key numbers">
+      <div class="stat">
+        <div class="stat__icon stat__icon--1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Employees</span>
+          <strong class="stat__value">248</strong>
+          <span class="stat__delta">3 on hold</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--3">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Gross pay</span>
+          <strong class="stat__value">₹58.4L</strong>
+          <span class="stat__delta">+2.1% vs Aug</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--4">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5 5 19M6.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M17.5 20a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Deductions</span>
+          <strong class="stat__value">₹9.1L</strong>
+          <span class="stat__delta">PF, PT and TDS</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--2">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Net pay</span>
+          <strong class="stat__value">₹49.3L</strong>
+          <span class="stat__delta stat__delta--up">To be paid on 28 Sep</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__header">
+        <h3 class="card__title">Run progress</h3>
+        <span class="badge badge--warning badge--dot">Draft</span>
+      </div>
+      <div class="card__body">
+        <ol class="stepper">
+          <li class="stepper__step is-done">
+            <span class="stepper__dot"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
+            <div class="stepper__text"><strong>Draft created</strong><small class="text-muted">18 Sep by Kabir Shah</small></div>
+          </li>
+          <li class="stepper__step is-current">
+            <span class="stepper__dot">2</span>
+            <div class="stepper__text"><strong>Review</strong><small class="text-muted">Finance checks the figures</small></div>
+          </li>
+          <li class="stepper__step">
+            <span class="stepper__dot">3</span>
+            <div class="stepper__text"><strong>Approval</strong><small class="text-muted">Aarav Mehta, Admin</small></div>
+          </li>
+          <li class="stepper__step">
+            <span class="stepper__dot">4</span>
+            <div class="stepper__text"><strong>Payment</strong><small class="text-muted">28 Sep</small></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="table__toolbar">
+          <h3 class="card__title">Employees in this run</h3>
+          <div class="table__filters">
+            <div class="input-group">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search employees">
+            </div>
+            <select class="select select--sm" aria-label="Filter by status">
+              <option>All statuses</option><option>Draft</option><option>On hold</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th class="table__num">Gross</th>
+                <th class="table__num">Deductions</th>
+                <th class="table__num">Net pay</th>
+                <th>Status</th>
+                <th class="table__actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--1">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">Engineering</span></div></div></td>
+                <td class="table__num">₹92,000</td><td class="table__num">₹14,720</td><td class="table__num">₹77,280</td>
+                <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                <td class="table__actions"><a class="btn btn--sm" href="payslip-view.html" data-permission="payslips:view">View payslip</a></td>
+              </tr>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--2">AI</div><div><span class="table__user-name">Ananya Iyer</span><span class="table__user-sub">Sales</span></div></div></td>
+                <td class="table__num">₹78,500</td><td class="table__num">₹11,240</td><td class="table__num">₹67,260</td>
+                <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                <td class="table__actions"><a class="btn btn--sm" href="payslip-view.html" data-permission="payslips:view">View payslip</a></td>
+              </tr>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--3">VS</div><div><span class="table__user-name">Vikram Singh</span><span class="table__user-sub">Operations</span></div></div></td>
+                <td class="table__num">₹64,000</td><td class="table__num">₹8,960</td><td class="table__num">₹55,040</td>
+                <td><span class="badge badge--danger badge--dot">On hold</span></td>
+                <td class="table__actions"><a class="btn btn--sm" href="payslip-view.html" data-permission="payslips:view">View payslip</a></td>
+              </tr>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--4">MJ</div><div><span class="table__user-name">Meera Joshi</span><span class="table__user-sub">Finance</span></div></div></td>
+                <td class="table__num">₹1,05,000</td><td class="table__num">₹17,850</td><td class="table__num">₹87,150</td>
+                <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                <td class="table__actions"><a class="btn btn--sm" href="payslip-view.html" data-permission="payslips:view">View payslip</a></td>
+              </tr>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--1">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">Engineering</span></div></div></td>
+                <td class="table__num">₹88,000</td><td class="table__num">₹13,900</td><td class="table__num">₹74,100</td>
+                <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                <td class="table__actions"><a class="btn btn--sm" href="payslip-view.html" data-permission="payslips:view">View payslip</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card__footer">
+          <span class="card__meta">Showing 5 of 248 employees</span>
+          <div class="btn-group">
+            <button class="btn btn--sm" type="button" disabled>Previous</button>
+            <button class="btn btn--sm" type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="stack">
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Checks before approval</h3>
+            <span class="card__meta">4 checks</span>
+          </div>
+          <div class="list">
+            <div class="list__item">
+              <div class="list__content"><span class="list__title">Bank details missing</span><span class="list__sub">3 employees cannot be paid yet</span></div>
+              <span class="badge badge--danger">Fix</span>
+            </div>
+            <div class="list__item">
+              <div class="list__content"><span class="list__title">Salary edits pending</span><span class="list__sub">2 changes are waiting for approval</span></div>
+              <span class="badge badge--warning">Review</span>
+            </div>
+            <div class="list__item">
+              <div class="list__content"><span class="list__title">Loss-of-pay days</span><span class="list__sub">14 employees have unpaid days</span></div>
+              <span class="badge badge--info">Review</span>
+            </div>
+            <div class="list__item">
+              <div class="list__content"><span class="list__title">Leave balances updated</span><span class="list__sub">All approved leave is included</span></div>
+              <span class="badge badge--success">Done</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header"><h3 class="card__title">Run details</h3></div>
+          <div class="card__body">
+            <dl class="kv">
+              <div class="kv__row"><dt>Prepared by</dt><dd>Kabir Shah</dd></div>
+              <div class="kv__row"><dt>Approver</dt><dd>Aarav Mehta, Admin</dd></div>
+              <div class="kv__row"><dt>Attendance locked on</dt><dd>25 Sep</dd></div>
+              <div class="kv__row"><dt>Pay date</dt><dd>28 Sep</dd></div>
+              <div class="kv__row"><dt>Bank file</dt><dd>NEFT bulk upload</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <div class="alert alert--warning">You prepared this run, so you can't approve it. An Admin has to approve it before payslips are released. Figures can still change until attendance is locked on 25 Sep.</div>
+      </aside>
+
+    </div>
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

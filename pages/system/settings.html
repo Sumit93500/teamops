@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en" data-role="admin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item" href="../dashboard/admin.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">3</span>
+      </a>
+
+      <div class="nav__group-title">People</div>
+      <a class="nav__item" href="../users/users-list.html" data-permission="users:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        Users
+      </a>
+      <a class="nav__item" href="../access/roles-list.html" data-permission="roles:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Roles &amp; permissions
+      </a>
+      <a class="nav__item" href="../access/designations.html" data-permission="designations:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/></svg>
+        Designations
+      </a>
+      <a class="nav__item" href="../attendance/team-attendance.html" data-permission="attendance:view-all">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        Attendance
+      </a>
+      <a class="nav__item" href="../leave/leave-approvals.html" data-permission="leave:approve">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        Leave
+      </a>
+
+      <div class="nav__group-title">Finance &amp; operations</div>
+      <a class="nav__item" href="../payroll/payroll-run.html" data-permission="payroll:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        Payroll
+      </a>
+      <a class="nav__item" href="../inventory/items.html" data-permission="inventory:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
+        Inventory
+      </a>
+
+      <div class="nav__group-title">System</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+      <a class="nav__item" href="../system/audit-log.html" data-permission="audit:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        Audit log
+      </a>
+      <a class="nav__item is-active" href="../system/settings.html" data-permission="settings:edit">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.3 3h-4l-.3 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.3 2.7h4l.3-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2"/></svg>
+        Settings
+      </a>
+      <a class="nav__item" href="../system/backup.html" data-permission="backup:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+        Backup
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Settings</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Aarav Mehta">AM</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Settings</h1>
+      <p class="page-header__subtitle">Company details, security rules and which modules are switched on</p>
+    </div>
+    <div class="page-header__actions">
+      <a class="btn" href="backup.html">Backup</a>
+      <a class="btn" href="audit-log.html">Audit log</a>
+    </div>
+  </div>
+
+  <div class="settings">
+
+    <nav class="settings__nav" aria-label="Settings sections">
+      <a class="settings__link is-active" href="#company">Company</a>
+      <a class="settings__link" href="#hours">Working hours</a>
+      <a class="settings__link" href="#security">Security</a>
+      <a class="settings__link" href="#modules">Modules</a>
+      <a class="settings__link" href="#appearance">Appearance</a>
+    </nav>
+
+    <div class="stack">
+
+      <section class="card" id="company">
+        <div class="card__header"><h3 class="card__title">Company</h3></div>
+        <form action="settings.html">
+          <div class="card__body">
+            <div class="form-grid">
+              <div class="form-field form-field--full">
+                <label class="form-label form-label--required" for="c-name">Company name</label>
+                <input class="input" id="c-name" type="text" value="Northwind Technologies Pvt. Ltd.">
+              </div>
+              <div class="form-field form-field--full">
+                <label class="form-label" for="c-addr">Address</label>
+                <textarea class="textarea" id="c-addr">Sector 44, Gurugram, Haryana 122003</textarea>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="c-tz">Time zone</label>
+                <select class="select" id="c-tz"><option>India Standard Time (UTC+5:30)</option></select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="c-cur">Currency</label>
+                <select class="select" id="c-cur"><option>Indian rupee (₹)</option></select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="c-fy">Financial year starts in</label>
+                <select class="select" id="c-fy"><option>April</option><option>January</option></select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="c-emp">Employee ID prefix</label>
+                <input class="input" id="c-emp" type="text" value="EMP-">
+              </div>
+            </div>
+          </div>
+          <div class="card__footer">
+            <span class="card__meta">Shown on payslips and reports.</span>
+            <button class="btn btn--primary btn--sm" type="submit" data-permission="settings:edit">Save company</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card" id="hours">
+        <div class="card__header"><h3 class="card__title">Working hours and leave</h3></div>
+        <div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Shifts and late-mark rules</strong><span>Timings, grace period and half-day rules live on their own page</span></div>
+            <div class="setting-row__control"><a class="btn btn--sm" href="../attendance/shifts.html">Open shifts</a></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Week starts on</strong><span>Used by calendars and weekly reports</span></div>
+            <div class="setting-row__control"><select class="select select--sm" aria-label="Week starts on"><option>Monday</option><option>Sunday</option></select></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Leave year</strong><span>When leave balances reset</span></div>
+            <div class="setting-row__control"><select class="select select--sm" aria-label="Leave year"><option>January to December</option><option>April to March</option></select></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Carry forward unused leave</strong><span>Up to 5 days of casual leave</span></div>
+            <div class="setting-row__control"><label class="switch"><input type="checkbox" aria-label="Carry forward unused leave" checked></label></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="security">
+        <div class="card__header"><h3 class="card__title">Security</h3></div>
+        <div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Two-factor sign-in for sensitive roles</strong><span>Always on for Admin, HR and Finance</span></div>
+            <div class="setting-row__control"><label class="switch"><input type="checkbox" aria-label="Two-factor sign-in for sensitive roles" checked></label></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text">
+              <strong>Sign out after being idle
+                <span class="tooltip"><button class="info-dot" type="button" aria-label="About idle sign-out">i</button><span class="tooltip__text" role="tooltip">People are signed out after this long without any activity.</span></span>
+              </strong>
+              <span>Protects screens left open</span>
+            </div>
+            <div class="setting-row__control"><select class="select select--sm" aria-label="Idle sign-out"><option>15 minutes</option><option selected>30 minutes</option><option>60 minutes</option></select></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Minimum password length</strong><span>Also needs upper case, lower case, a number and a symbol</span></div>
+            <div class="setting-row__control"><input class="input input--sm" type="number" min="8" value="12" aria-label="Minimum password length"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Ask for a new password every</strong><span>Reminders start 7 days before</span></div>
+            <div class="setting-row__control"><select class="select select--sm" aria-label="Password expiry"><option>Never</option><option selected>90 days</option><option>180 days</option></select></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Lock an account after failed sign-ins</strong><span>Unlocked by HR or an Admin</span></div>
+            <div class="setting-row__control"><select class="select select--sm" aria-label="Failed sign-in limit"><option>3 attempts</option><option selected>5 attempts</option><option>10 attempts</option></select></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Payroll only from the office network</strong><span>Blocks payroll pages from other locations</span></div>
+            <div class="setting-row__control"><label class="switch"><input type="checkbox" aria-label="Payroll only from the office network"></label></div>
+          </div>
+        </div>
+        <div class="card__footer">
+          <span class="card__meta">Changes apply the next time each person signs in.</span>
+          <button class="btn btn--primary btn--sm" type="button" data-permission="settings:edit">Save security</button>
+        </div>
+      </section>
+
+      <section class="card" id="modules">
+        <div class="card__header">
+          <h3 class="card__title">Modules</h3>
+          <span class="card__meta">Switched off modules disappear for everyone</span>
+        </div>
+        <div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Payroll</strong><span>Salary structure, payroll runs and payslips</span></div>
+            <div class="setting-row__control"><label class="switch"><input type="checkbox" aria-label="Payroll module" checked disabled></label></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Inventory and assets</strong><span>Items, stock, vendors and asset assignment</span></div>
+            <div class="setting-row__control"><label class="switch"><input type="checkbox" aria-label="Inventory module" checked></label></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Recruitment</strong><span>Job openings and candidates</span></div>
+            <div class="setting-row__control"><label class="switch"><input type="checkbox" aria-label="Recruitment module" checked></label></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Expenses</strong><span>Claims and reimbursements</span></div>
+            <div class="setting-row__control"><label class="switch"><input type="checkbox" aria-label="Expenses module" checked></label></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text"><strong>Announcements</strong><span>Company news and notices</span></div>
+            <div class="setting-row__control"><label class="switch"><input type="checkbox" aria-label="Announcements module" checked></label></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="appearance">
+        <div class="card__header"><h3 class="card__title">Appearance</h3></div>
+        <div class="card__body">
+          <p class="form-label mb-2">Default theme</p>
+          <div class="choice-grid" role="radiogroup" aria-label="Default theme">
+            <label class="choice"><input type="radio" name="theme" value="light" checked><span class="choice__title">Light</span><span class="choice__meta">Bright background</span></label>
+            <label class="choice"><input type="radio" name="theme" value="dark"><span class="choice__title">Dark</span><span class="choice__meta">Easier on the eyes at night</span></label>
+            <label class="choice"><input type="radio" name="theme" value="system"><span class="choice__title">Match the device</span><span class="choice__meta">Follows each person's setting</span></label>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Accent color</th>
+                <th>Colour code</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="table__user-name">Admin</span></td><td><span class="swatch swatch--admin"></span>Indigo</td><td><code>#4F46E5</code></td></tr>
+              <tr><td><span class="table__user-name">HR</span></td><td><span class="swatch swatch--hr"></span>Teal</td><td><code>#0F766E</code></td></tr>
+              <tr><td><span class="table__user-name">Finance</span></td><td><span class="swatch swatch--fin"></span>Amber brown</td><td><code>#B45309</code></td></tr>
+              <tr><td><span class="table__user-name">Employee</span></td><td><span class="swatch swatch--emp"></span>Blue</td><td><code>#2563EB</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card__footer">
+          <span class="card__meta">Each role's accent color is set from its role.</span>
+          <button class="btn btn--primary btn--sm" type="button" data-permission="settings:edit">Save appearance</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

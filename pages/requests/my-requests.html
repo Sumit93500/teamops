@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-role="emp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My requests | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Me</div>
+      <a class="nav__item" href="../dashboard/employee.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        My dashboard
+      </a>
+      <a class="nav__item" href="../attendance/my-attendance.html" data-permission="attendance:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        My attendance
+      </a>
+      <a class="nav__item" href="../attendance/mark-attendance.html" data-permission="attendance:mark">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        Mark attendance
+      </a>
+      <a class="nav__item" href="../leave/my-leave.html" data-permission="leave:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        My leave
+      </a>
+      <a class="nav__item" href="../payroll/payslips.html" data-permission="payslip:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        My payslips
+      </a>
+
+      <div class="nav__group-title">Requests &amp; assets</div>
+      <a class="nav__item is-active" href="../requests/my-requests.html" data-permission="requests:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Requests
+        <span class="nav__count">2</span>
+      </a>
+      <a class="nav__item" href="../inventory/my-assets.html" data-permission="assets:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
+        My assets
+      </a>
+
+      <div class="nav__group-title">Company</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>My requests</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Arjun Kapoor">AK</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>My requests</h1>
+      <p class="page-header__subtitle">Track everything you have asked for, in one place</p>
+    </div>
+    <div class="page-header__actions">
+      <a class="btn" href="../leave/apply-leave.html" data-permission="leave:create">Apply for leave</a>
+      <a class="btn btn--primary" href="../inventory/my-assets.html" data-permission="assets:request">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Request an asset
+      </a>
+    </div>
+  </div>
+
+  <div class="grid grid-main-aside">
+
+    <section class="card">
+      <div class="table__toolbar">
+        <div class="tabs tabs--pill" role="tablist">
+          <button class="tabs__tab is-active" type="button" role="tab">All <span class="badge badge--count">5</span></button>
+          <button class="tabs__tab" type="button" role="tab">Pending <span class="badge badge--count">2</span></button>
+          <button class="tabs__tab" type="button" role="tab">Approved <span class="badge badge--count">2</span></button>
+          <button class="tabs__tab" type="button" role="tab">Rejected <span class="badge badge--count">1</span></button>
+        </div>
+        <select class="select select--sm" aria-label="Filter by type">
+          <option>All types</option><option>Leave</option><option>Asset</option><option>Attendance</option><option>Expense</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Request</th>
+              <th>Type</th>
+              <th>Sent</th>
+              <th>With</th>
+              <th>Status</th>
+              <th class="table__actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="table__user-name">Casual leave, 3 Oct (1 day)</span></td><td><span class="badge badge--square">Leave</span></td>
+              <td>18 Sep</td><td>Sneha Rao</td>
+              <td><span class="badge badge--warning badge--dot">Pending</span></td>
+              <td class="table__actions"><button class="btn btn--sm btn--danger" type="button" data-permission="requests:cancel">Cancel</button></td>
+            </tr>
+            <tr>
+              <td><span class="table__user-name">Laptop upgrade</span></td><td><span class="badge badge--square">Asset</span></td>
+              <td>17 Sep</td><td>IT Support</td>
+              <td><span class="badge badge--warning badge--dot">Pending</span></td>
+              <td class="table__actions"><button class="btn btn--sm btn--danger" type="button" data-permission="requests:cancel">Cancel</button></td>
+            </tr>
+            <tr>
+              <td><span class="table__user-name">Regularization, 17 Sep</span></td><td><span class="badge badge--square">Attendance</span></td>
+              <td>18 Sep</td><td>Priya Nair</td>
+              <td><span class="badge badge--success badge--dot">Approved</span></td>
+              <td class="table__actions"></td>
+            </tr>
+            <tr>
+              <td><span class="table__user-name">Work from home, 12 Aug</span></td><td><span class="badge badge--square">Leave</span></td>
+              <td>10 Aug</td><td>Sneha Rao</td>
+              <td><span class="badge badge--success badge--dot">Approved</span></td>
+              <td class="table__actions"></td>
+            </tr>
+            <tr>
+              <td><span class="table__user-name">Reimbursement, ₹3,200</span></td><td><span class="badge badge--square">Expense</span></td>
+              <td>2 Aug</td><td>Kabir Shah</td>
+              <td><span class="badge badge--danger badge--dot">Rejected</span></td>
+              <td class="table__actions"><span class="text-sm text-muted">Bill missing</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card__footer">
+        <span class="card__meta">Showing 5 of 5 requests</span>
+      </div>
+    </section>
+
+    <aside class="stack">
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Casual leave, 3 Oct</h3>
+          <span class="badge badge--warning badge--dot">In review</span>
+        </div>
+        <div class="card__body">
+          <ol class="stepper stepper--vertical">
+            <li class="stepper__step is-done">
+              <span class="stepper__dot"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
+              <div class="stepper__text"><strong>Sent</strong><small class="text-muted">18 Sep by you</small></div>
+            </li>
+            <li class="stepper__step is-current">
+              <span class="stepper__dot">2</span>
+              <div class="stepper__text"><strong>First approval</strong><small class="text-muted">Waiting for Sneha Rao</small></div>
+            </li>
+            <li class="stepper__step">
+              <span class="stepper__dot">3</span>
+              <div class="stepper__text"><strong>Final approval</strong><small class="text-muted">Priya Nair, HR</small></div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <div class="alert alert--info">You can cancel a request while it is still pending. Once it is approved or rejected, it can't be changed.</div>
+    </aside>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

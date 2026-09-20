@@ -1,0 +1,55 @@
+/* ==========================================================
+   table.css
+   <div class="card">
+     <div class="table__toolbar"> title + search + filters </div>
+     <div class="table-wrap">
+       <table class="table"> <thead>..</thead> <tbody>..</tbody> </table>
+     </div>
+   </div>
+   ========================================================== */
+
+.table-wrap { overflow-x: auto; }      /* wide tables scroll inside the card, never the page */
+
+.table { width: 100%; border-collapse: collapse; }
+
+.table th {
+  padding: 9px 18px;
+  text-align: left; white-space: nowrap;
+  font-size: var(--text-sm); font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+.table td {
+  padding: 11px 18px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-border);
+}
+.table tbody tr:last-child td { border-bottom: 0; }
+.table tbody tr:hover { background: var(--color-surface-hover); }
+
+/* ---------- Variants and helpers ---------- */
+.table--compact th, .table--compact td { padding: 8px 14px; }
+
+.table__num { text-align: right; font-variant-numeric: tabular-nums; }    /* money and counts */
+.table__actions { text-align: right; white-space: nowrap; }               /* edit / delete buttons */
+.table__check { width: 40px; }                                            /* checkbox column */
+
+.table__user { display: flex; align-items: center; gap: 10px; }           /* avatar + name + email */
+.table__user-name { display: block; font-weight: var(--weight-medium); }
+.table__user-sub { display: block; font-size: var(--text-xs); color: var(--color-text-muted); }
+
+.table th.is-sortable { cursor: pointer; user-select: none; }
+.table th.is-sortable:hover { color: var(--color-text); }
+
+/* ---------- Toolbar above the table ---------- */
+.table__toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: var(--space-3); flex-wrap: wrap;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.table__filters { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+/* keep month names on one line and action buttons side by side */
+.table__user-name { white-space: nowrap; }
+.table__actions .btn-group { flex-wrap: nowrap; }

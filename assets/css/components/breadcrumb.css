@@ -1,0 +1,27 @@
+/* ==========================================================
+   breadcrumb.css: shows where the user is
+   <ol class="breadcrumb" aria-label="Breadcrumb">
+     <li class="breadcrumb__item"><a href="../dashboard/admin.html">Dashboard</a></li>
+     <li class="breadcrumb__item"><a href="users-list.html">Users</a></li>
+     <li class="breadcrumb__item" aria-current="page">Add employee</li>
+   </ol>
+   ========================================================== */
+
+.breadcrumb {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.breadcrumb__item a { transition: color var(--transition); }
+.breadcrumb__item a:hover { color: var(--color-text); text-decoration: underline; }
+
+.breadcrumb__item + .breadcrumb__item::before {
+  content: "/";
+  margin-right: 6px;
+  opacity: 0.6;
+}
+
+.breadcrumb__item[aria-current="page"] {
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
+}

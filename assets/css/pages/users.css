@@ -1,0 +1,188 @@
+/* ==========================================================
+   users.css: pieces for the Users pages
+   (.kv and .aside-sticky are also used by the Access pages)
+   ========================================================== */
+
+/* ---------- Form pages: sections inside one card ---------- */
+.form-section { padding: 20px; }
+.form-section + .form-section { border-top: 1px solid var(--color-border); }
+.form-section__head { margin-bottom: var(--space-4); }
+.form-section__title { font-size: var(--text-base); font-weight: var(--weight-semibold); }
+.form-section__desc { margin-top: 2px; font-size: var(--text-sm); color: var(--color-text-muted); }
+.form-subtitle { margin: var(--space-5) 0 var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+
+.photo-row { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4); }
+
+.check-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); }
+.toggle-list { display: grid; gap: var(--space-3); }
+
+/* ---------- Key / value summary ----------
+   <dl class="kv"><div class="kv__row"><dt>Label</dt><dd>Value</dd></div></dl> */
+.kv { display: grid; gap: var(--space-3); }
+.kv__row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); font-size: var(--text-sm); }
+.kv__row dt { color: var(--color-text-muted); }
+.kv__row dd { margin: 0; font-weight: var(--weight-medium); text-align: right; }
+
+/* ---------- Side column that stays in view while the form scrolls ---------- */
+.aside-sticky { position: sticky; top: calc(var(--topbar-height) + var(--space-4)); align-self: start; }
+
+@media (max-width: 1100px) { .aside-sticky { position: static; } }
+@media (max-width: 820px) { .check-list { grid-template-columns: minmax(0, 1fr); } }
+
+/* ==========================================================
+   Profile and password screens (account pages)
+   ========================================================== */
+
+/* ---------- Profile header ---------- */
+.profile {
+  display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap;
+  padding: 20px;
+}
+.profile__info { flex: 1; min-width: 220px; }
+.profile__name { font-size: var(--text-lg); letter-spacing: -0.01em; }
+.profile__meta { margin-top: 2px; color: var(--color-text-muted); }
+.profile__badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--space-2); }
+
+/* ---------- Password strength meter ----------
+   <div class="strength" data-level="3"> four <span class="strength__bar"></span> </div>
+   data-level: 1 weak, 2 fair, 3 good, 4 strong */
+.strength { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.strength__bar { height: 4px; border-radius: var(--radius-full); background: var(--color-surface-hover); }
+.strength[data-level="1"] .strength__bar:nth-child(-n+1) { background: var(--color-danger); }
+.strength[data-level="2"] .strength__bar:nth-child(-n+2) { background: var(--color-warning); }
+.strength[data-level="3"] .strength__bar:nth-child(-n+3) { background: var(--color-info); }
+.strength[data-level="4"] .strength__bar { background: var(--color-success); }
+
+/* ---------- Requirement checklist ----------
+   <ul class="reqs"><li class="is-met">At least 12 characters</li><li>One symbol</li></ul> */
+.reqs { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; font-size: var(--text-sm); }
+.reqs li { display: flex; align-items: center; gap: var(--space-2); color: var(--color-text-muted); }
+.reqs li::before {
+  content: ""; width: 16px; height: 16px; flex: none;
+  border: 1px solid var(--color-border); border-radius: 50%;
+}
+.reqs li.is-met { color: var(--color-text); }
+.reqs li.is-met::before {
+  border-color: var(--color-success);
+  background: var(--color-success) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E") center / 10px no-repeat;
+}
+
+/* ---------- Account tabs: a little space below ---------- */
+.tabs.acct-tabs { margin-bottom: var(--space-5); }
+/* ==========================================================
+   Departments page
+   <div class="dept-grid">
+     <article class="card dept">
+       <div class="dept__top"><div><h3 class="dept__name">Engineering</h3><span class="dept__code">ENG</span></div><span class="badge badge--primary">82 people</span></div>
+       <div class="dept__head">avatar + head name</div>
+       <div class="dept__foot"> links </div>
+     </article>
+   </div>
+   ========================================================== */
+.dept-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.dept { display: flex; flex-direction: column; gap: var(--space-4); padding: 18px; }
+.dept__top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3); }
+.dept__name { font-size: var(--text-md); }
+.dept__code { display: block; margin-top: 2px; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); }
+.dept__head { display: flex; align-items: center; gap: 10px; }
+.dept__head small { display: block; }
+.dept__stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.dept__stat span { display: block; font-size: var(--text-xs); color: var(--color-text-muted); }
+.dept__stat strong { font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
+.dept__foot {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 1100px) { .dept-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px)  { .dept-grid { grid-template-columns: minmax(0, 1fr); } }
+/* ==========================================================
+   Recruitment pipeline (candidates page)
+   <div class="pipeline">
+     <section class="pipeline__col">
+       <div class="pipeline__head"><span>Applied</span><span class="badge badge--count">22</span></div>
+       <article class="cand"> ... </article>
+       <a class="pipeline__more" href="#">+ 20 more</a>
+     </section>
+   </div>
+   ========================================================== */
+.pipeline {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(210px, 1fr));
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+}
+.pipeline__col {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.pipeline__head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 6px;
+  font-size: var(--text-sm); font-weight: var(--weight-medium);
+}
+
+.cand {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition);
+}
+.cand:hover { border-color: var(--color-primary); }
+.cand__top { display: flex; align-items: center; gap: 10px; }
+.cand__name { display: block; font-weight: var(--weight-medium); }
+.cand__role { display: block; font-size: var(--text-xs); color: var(--color-text-muted); }
+.cand__meta { display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); color: var(--color-text-muted); }
+.cand__note { font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--color-primary); }
+
+/* screening score out of 100 */
+.score { font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; }
+.score--high { color: var(--color-success); }
+.score--mid  { color: var(--color-warning); }
+.score--low  { color: var(--color-danger); }
+
+.pipeline__more {
+  padding: 6px; text-align: center;
+  font-size: var(--text-sm); font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-md);
+}
+.pipeline__more:hover { color: var(--color-text); background: var(--color-surface-hover); }
+/* ==========================================================
+   Sessions and notifications (account pages)
+   ========================================================== */
+
+/* ---------- Device row: icon + browser + place ---------- */
+.device__icon {
+  width: 40px; height: 40px; flex: none;
+  display: grid; place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  background: var(--color-surface-hover);
+}
+.device__icon .icon { width: 20px; height: 20px; }
+.device--current .device__icon { color: var(--color-primary); background: var(--color-primary-soft); }
+
+/* ---------- Notification row ----------
+   <div class="notif is-unread"><span class="notif__dot"></span>
+     <div class="notif__body"><span class="notif__title">Title</span><span class="list__sub">Detail</span></div>
+     <span class="notif__time">Today</span></div> */
+.notif {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.notif:last-child { border-bottom: 0; }
+.notif.is-unread { background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); }
+.notif__dot { width: 8px; height: 8px; flex: none; margin-top: 8px; border-radius: 50%; background: transparent; }
+.notif.is-unread .notif__dot { background: var(--color-primary); }
+.notif__body { flex: 1; min-width: 0; }
+.notif__title { display: block; font-weight: var(--weight-medium); }
+.notif__time { flex: none; font-size: var(--text-xs); color: var(--color-text-muted); white-space: nowrap; }

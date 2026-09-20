@@ -1,0 +1,37 @@
+/* ==========================================================
+   auth-layout.css: split-screen frame for the login pages
+   Left = brand panel, right = form panel.
+   Used by: login, forgot-password, reset-password, two-factor
+   ========================================================== */
+
+.auth {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+}
+
+.auth__brand {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: space-between;
+  gap: var(--space-8);
+  padding: var(--space-12);
+  background: var(--color-sidebar);
+  color: #cbd5e1;
+  overflow: hidden;
+}
+
+.auth__panel {
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-bg);
+}
+
+.auth__inner { width: 100%; max-width: 400px; }
+
+/* ---------- Tablet and mobile: brand panel becomes a slim top bar ---------- */
+@media (max-width: 900px) {
+  .auth { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .auth__brand { padding: var(--space-4) var(--space-6); }
+  .auth__pitch, .auth__copy { display: none; }
+  .auth__panel { align-items: flex-start; padding-top: var(--space-10); }
+}

@@ -1,0 +1,132 @@
+/* ==========================================================
+   attendance.css: pieces used by the attendance pages
+   ========================================================== */
+
+/* ---------- Punch card (mark attendance) ---------- */
+.punch__body {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  text-align: center;
+}
+.punch__time {
+  font-size: 56px; font-weight: var(--weight-semibold);
+  line-height: 1.1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+}
+.punch__time small {
+  margin-left: 6px;
+  font-size: var(--text-lg); font-weight: var(--weight-medium); letter-spacing: 0;
+  color: var(--color-text-muted);
+}
+.punch__date { font-size: var(--text-sm); color: var(--color-text-muted); }
+.punch__mode { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-5); margin-top: var(--space-2); }
+.punch__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-3); }
+.punch__actions .btn { min-width: 150px; }
+
+.punch__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--color-border); }
+.punch__stat { padding: var(--space-4); text-align: center; border-right: 1px solid var(--color-border); }
+.punch__stat:last-child { border-right: 0; }
+.punch__stat span { display: block; font-size: var(--text-sm); color: var(--color-text-muted); }
+.punch__stat strong {
+  display: block; margin-top: 2px;
+  font-size: var(--text-md); font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Week strip: five small squares, Monday to Friday ----------
+   <span class="week"><i class="week__day week__day--p"></i> x5</span>
+   p = present, l = late, a = absent, lv = on leave, off = nothing recorded */
+.week { display: inline-flex; gap: 4px; }
+.week__day {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  background: var(--dc, var(--color-surface-hover));
+}
+.week__day--p  { --dc: var(--color-success); }
+.week__day--l  { --dc: var(--color-warning); }
+.week__day--a  { --dc: var(--color-danger); }
+.week__day--lv { --dc: var(--color-info); }
+
+/* ---------- Regularization: recorded time -> requested time ---------- */
+.reg-times { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.reg-times__old { color: var(--color-text-muted); }
+.reg-times .icon { width: 14px; height: 14px; color: var(--color-text-muted); }
+.reg-reason { max-width: 240px; color: var(--color-text-muted); }
+
+@media (max-width: 560px) {
+  .punch__time { font-size: 44px; }
+  .punch__actions .btn { flex: 1; min-width: 0; }
+}
+
+/* ==========================================================
+   Leave and holidays (used by the leave pages)
+   ========================================================== */
+
+/* ---------- Date tile: small calendar square next to a holiday ----------
+   <div class="date-tile"><span class="date-tile__month">Oct</span><span class="date-tile__day">2</span></div>
+   Add date-tile--muted for dates that have passed. */
+.date-tile {
+  width: 46px; flex: none;
+  padding: 5px 0;
+  text-align: center; line-height: 1.1;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.date-tile__month {
+  display: block;
+  font-size: 11px; font-weight: var(--weight-medium);
+  letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--color-primary);
+}
+.date-tile__day {
+  display: block;
+  font-size: var(--text-md); font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.date-tile--muted { opacity: 0.7; }
+.date-tile--muted .date-tile__month { color: var(--color-text-muted); }
+
+/* ---------- Choice cards: pick one option (leave type) ----------
+   <label class="choice"><input type="radio" name="type" checked>
+     <span class="choice__title">Casual leave</span><span class="choice__meta">6 days left</span></label> */
+.choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.choice {
+  position: relative;
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 12px 14px;
+  cursor: pointer;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition), background var(--transition);
+}
+.choice:hover { border-color: color-mix(in srgb, var(--color-text) 25%, var(--color-border)); }
+.choice input { position: absolute; opacity: 0; pointer-events: none; }
+.choice__title { font-weight: var(--weight-medium); }
+.choice__meta { font-size: var(--text-sm); color: var(--color-text-muted); }
+.choice:has(input:checked) { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.choice:has(input:focus-visible) { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.choice:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 560px) { .choice-grid { grid-template-columns: minmax(0, 1fr); } }
+/* ==========================================================
+   Shifts
+   ========================================================== */
+.shift-name { display: flex; align-items: center; gap: 10px; }
+.shift-dot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--sc, var(--color-primary)); }
+.shift-dot--1 { --sc: var(--chip-1); }
+.shift-dot--2 { --sc: var(--chip-2); }
+.shift-dot--3 { --sc: var(--chip-3); }
+.shift-dot--4 { --sc: var(--chip-4); }
+
+/* ---------- Working days: M T W T F S S ----------
+   <span class="day-pills"><span class="day-pill is-on">M</span> ... </span> */
+.day-pills { display: inline-flex; gap: 4px; }
+.day-pill {
+  width: 24px; height: 24px;
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  background: var(--color-surface-hover);
+  border-radius: 6px;
+}
+.day-pill.is-on { color: var(--color-primary); background: var(--color-primary-soft); }

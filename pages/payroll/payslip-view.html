@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-role="emp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payslip, August 2026 | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Me</div>
+      <a class="nav__item" href="../dashboard/employee.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        My dashboard
+      </a>
+      <a class="nav__item" href="../attendance/my-attendance.html" data-permission="attendance:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        My attendance
+      </a>
+      <a class="nav__item" href="../attendance/mark-attendance.html" data-permission="attendance:mark">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        Mark attendance
+      </a>
+      <a class="nav__item" href="../leave/my-leave.html" data-permission="leave:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        My leave
+      </a>
+      <a class="nav__item is-active" href="../payroll/payslips.html" data-permission="payslip:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        My payslips
+      </a>
+
+      <div class="nav__group-title">Requests &amp; assets</div>
+      <a class="nav__item" href="../requests/my-requests.html" data-permission="requests:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Requests
+        <span class="nav__count">2</span>
+      </a>
+      <a class="nav__item" href="../inventory/my-assets.html" data-permission="assets:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
+        My assets
+      </a>
+
+      <div class="nav__group-title">Company</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>My payslips</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Arjun Kapoor">AK</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <ol class="breadcrumb mb-2" aria-label="Breadcrumb">
+        <li class="breadcrumb__item"><a href="payslips.html">My payslips</a></li>
+        <li class="breadcrumb__item" aria-current="page">August 2026</li>
+      </ol>
+      <h1>Payslip, August 2026</h1>
+      <p class="page-header__subtitle">Paid on 31 Aug 2026</p>
+    </div>
+    <div class="page-header__actions">
+      <a class="btn" href="payslips.html">Back to payslips</a>
+      <button class="btn" type="button" data-permission="payslip:download">Download PDF</button>
+      <button class="btn btn--primary" type="button" onclick="window.print()">Print</button>
+    </div>
+  </div>
+
+  <article class="payslip" aria-label="Payslip for August 2026">
+
+    <header class="payslip__head">
+      <div class="payslip__brand">
+        <span class="payslip__logo">N</span>
+        <div class="payslip__company">
+          <strong>Northwind Technologies Pvt. Ltd.</strong>
+          <span>Sector 44, Gurugram, Haryana 122003</span>
+        </div>
+      </div>
+      <div class="payslip__period">
+        <span>Payslip for</span>
+        <strong>August 2026</strong>
+        <small class="text-muted">Pay period 1 – 31 Aug 2026</small>
+      </div>
+    </header>
+
+    <dl class="payslip__info">
+      <div><dt>Employee name</dt><dd>Arjun Kapoor</dd></div>
+      <div><dt>Employee ID</dt><dd>EMP-1105</dd></div>
+      <div><dt>Designation</dt><dd>Software Engineer</dd></div>
+      <div><dt>Department</dt><dd>Engineering</dd></div>
+      <div><dt>Date of joining</dt><dd>12 Jan 2023</dd></div>
+      <div><dt>Pay date</dt><dd>31 Aug 2026</dd></div>
+      <div><dt>Bank account</dt><dd class="masked">•••• •••• 4821</dd></div>
+      <div><dt>PAN</dt><dd class="masked">•••••3421F</dd></div>
+      <div><dt>Tax regime</dt><dd>New regime</dd></div>
+      <div><dt>Working days</dt><dd>21</dd></div>
+      <div><dt>Days paid</dt><dd>21</dd></div>
+      <div><dt>Loss of pay days</dt><dd>0</dd></div>
+    </dl>
+
+    <div class="payslip__cols">
+      <section class="payslip__col">
+        <h3>Earnings</h3>
+        <dl>
+          <div class="pay-line"><dt>Basic salary</dt><dd>₹35,200</dd></div>
+          <div class="pay-line"><dt>House rent allowance</dt><dd>₹17,600</dd></div>
+          <div class="pay-line"><dt>Conveyance allowance</dt><dd>₹1,600</dd></div>
+          <div class="pay-line"><dt>Special allowance</dt><dd>₹33,600</dd></div>
+          <div class="pay-line pay-line--total"><dt>Gross earnings</dt><dd>₹88,000</dd></div>
+        </dl>
+      </section>
+      <section class="payslip__col">
+        <h3>Deductions</h3>
+        <dl>
+          <div class="pay-line"><dt>Provident fund</dt><dd>₹4,224</dd></div>
+          <div class="pay-line"><dt>Professional tax</dt><dd>₹200</dd></div>
+          <div class="pay-line"><dt>Income tax (TDS)</dt><dd>₹9,476</dd></div>
+          <div class="pay-line pay-line--total"><dt>Total deductions</dt><dd>₹13,900</dd></div>
+        </dl>
+      </section>
+    </div>
+
+    <div class="payslip__net">
+      <div>
+        <span>Net pay (gross earnings minus deductions)</span>
+        <strong>₹74,100</strong>
+      </div>
+      <span class="badge badge--success badge--dot">Paid</span>
+    </div>
+
+    <p class="payslip__words">Amount in words: Seventy-four thousand one hundred rupees only.</p>
+
+    <footer class="payslip__foot">
+      <span>This is a computer-generated payslip and does not need a signature.</span>
+      <span>Bank and PAN details are masked. Only HR and Finance can see them in full.</span>
+    </footer>
+
+  </article>
+
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

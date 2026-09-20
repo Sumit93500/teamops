@@ -1,0 +1,47 @@
+/* ==========================================================
+   button.css
+   Usage: <button class="btn">, <button class="btn btn--primary btn--sm">
+   Works on <a> too: <a class="btn btn--primary" href="...">
+   ========================================================== */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  padding: 7px 13px;
+  font-size: var(--text-sm); font-weight: var(--weight-medium); line-height: 1.2;
+  white-space: nowrap;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: background var(--transition), border-color var(--transition), filter var(--transition);
+}
+.btn:hover { background: var(--color-surface-hover); }
+.btn .icon { width: 16px; height: 16px; }
+
+/* ---------- Variants ---------- */
+.btn--primary {
+  background: var(--color-primary); border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.btn--primary:hover { background: var(--color-primary); filter: brightness(0.92); }
+
+.btn--danger {
+  background: var(--color-danger-soft); color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 35%, transparent);
+}
+.btn--danger:hover { background: color-mix(in srgb, var(--color-danger) 16%, var(--color-surface)); }
+
+.btn--ghost { background: transparent; border-color: transparent; color: var(--color-text-muted); }
+.btn--ghost:hover { background: var(--color-surface-hover); color: var(--color-text); }
+
+/* ---------- Sizes ---------- */
+.btn--sm { padding: 4px 10px; font-size: var(--text-xs); }
+.btn--lg { padding: 10px 18px; font-size: var(--text-base); }
+.btn--block { width: 100%; }
+.btn--icon { padding: 7px; }
+
+/* ---------- States ---------- */
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+/* ---------- Group of buttons ---------- */
+.btn-group { display: inline-flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }

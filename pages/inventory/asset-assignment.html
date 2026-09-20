@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" data-role="admin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asset assignment | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item" href="../dashboard/admin.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">3</span>
+      </a>
+
+      <div class="nav__group-title">People</div>
+      <a class="nav__item" href="../users/users-list.html" data-permission="users:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        Users
+      </a>
+      <a class="nav__item" href="../access/roles-list.html" data-permission="roles:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Roles &amp; permissions
+      </a>
+      <a class="nav__item" href="../access/designations.html" data-permission="designations:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/></svg>
+        Designations
+      </a>
+      <a class="nav__item" href="../attendance/team-attendance.html" data-permission="attendance:view-all">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        Attendance
+      </a>
+      <a class="nav__item" href="../leave/leave-approvals.html" data-permission="leave:approve">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        Leave
+      </a>
+
+      <div class="nav__group-title">Finance &amp; operations</div>
+      <a class="nav__item" href="../payroll/payroll-run.html" data-permission="payroll:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        Payroll
+      </a>
+      <a class="nav__item is-active" href="../inventory/items.html" data-permission="inventory:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
+        Inventory
+      </a>
+
+      <div class="nav__group-title">System</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+      <a class="nav__item" href="../system/audit-log.html" data-permission="audit:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        Audit log
+      </a>
+      <a class="nav__item" href="../system/settings.html" data-permission="settings:edit">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.3 3h-4l-.3 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.3 2.7h4l.3-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2"/></svg>
+        Settings
+      </a>
+      <a class="nav__item" href="../system/backup.html" data-permission="backup:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+        Backup
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Asset assignment</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Aarav Mehta">AM</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <ol class="breadcrumb mb-2" aria-label="Breadcrumb">
+        <li class="breadcrumb__item"><a href="items.html">Inventory</a></li>
+        <li class="breadcrumb__item" aria-current="page">Asset assignment</li>
+      </ol>
+      <h1>Asset assignment</h1>
+      <p class="page-header__subtitle">Who holds which laptop, monitor or access card</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn" type="button" data-permission="reports:export">Export</button>
+      <button class="btn btn--primary" type="button" data-permission="assets:assign">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Assign asset
+      </button>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <section class="stat-strip" aria-label="Key numbers">
+      <div class="stat">
+        <div class="stat__icon stat__icon--1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Total assets</span>
+          <strong class="stat__value">128</strong>
+          <span class="stat__delta">Laptops, monitors, cards</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--2">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Assigned</span>
+          <strong class="stat__value">97</strong>
+          <span class="stat__delta">76% of all assets</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--3">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Available</span>
+          <strong class="stat__value">24</strong>
+          <span class="stat__delta stat__delta--up">Ready to assign</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--4">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">In repair</span>
+          <strong class="stat__value">7</strong>
+          <span class="stat__delta stat__delta--down">2 for over 2 weeks</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="table__toolbar">
+        <div class="tabs tabs--pill" role="tablist">
+          <button class="tabs__tab is-active" type="button" role="tab">All</button>
+          <button class="tabs__tab" type="button" role="tab">Assigned</button>
+          <button class="tabs__tab" type="button" role="tab">Available</button>
+          <button class="tabs__tab" type="button" role="tab">In repair</button>
+        </div>
+        <div class="table__filters">
+          <div class="input-group">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="input input--sm input--search" type="search" placeholder="Search tag or person" aria-label="Search assets">
+          </div>
+          <select class="select select--sm" aria-label="Filter by type">
+            <option>All types</option><option>Laptop</option><option>Monitor</option><option>Access card</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tag</th>
+              <th>Asset</th>
+              <th>Assigned to</th>
+              <th>Since</th>
+              <th>Condition</th>
+              <th>Status</th>
+              <th class="table__actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="asset-tag">AST-0188</span></td>
+              <td><span class="table__user-name">Dell Latitude 5420</span></td>
+              <td><div class="table__user"><div class="avatar avatar--1">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">Engineering</span></div></div></td>
+              <td>12 Jan 2023</td>
+              <td><span class="badge badge--warning badge--square">Fair</span></td>
+              <td><span class="badge badge--info badge--dot">Assigned</span></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign">Return</button></td>
+            </tr>
+            <tr>
+              <td><span class="asset-tag">AST-0119</span></td>
+              <td><span class="table__user-name">MacBook Pro 14"</span></td>
+              <td><div class="table__user"><div class="avatar avatar--2">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">Engineering</span></div></div></td>
+              <td>3 Mar 2025</td>
+              <td><span class="badge badge--success badge--square">Good</span></td>
+              <td><span class="badge badge--info badge--dot">Assigned</span></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign">Return</button></td>
+            </tr>
+            <tr>
+              <td><span class="asset-tag">AST-0302</span></td>
+              <td><span class="table__user-name">Dell 24" monitor</span></td>
+              <td><div class="table__user"><div class="avatar avatar--1">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">Engineering</span></div></div></td>
+              <td>12 Jan 2023</td>
+              <td><span class="badge badge--success badge--square">Good</span></td>
+              <td><span class="badge badge--info badge--dot">Assigned</span></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign">Return</button></td>
+            </tr>
+            <tr>
+              <td><span class="asset-tag">AST-0217</span></td>
+              <td><span class="table__user-name">Dell Latitude 5440</span></td>
+              <td class="text-muted">Store room A</td>
+              <td>–</td>
+              <td><span class="badge badge--success badge--square">Good</span></td>
+              <td><span class="badge badge--success badge--dot">Available</span></td>
+              <td class="table__actions"><button class="btn btn--primary btn--sm" type="button" data-permission="assets:assign">Assign</button></td>
+            </tr>
+            <tr>
+              <td><span class="asset-tag">AST-0099</span></td>
+              <td><span class="table__user-name">Dell Latitude 5410</span></td>
+              <td class="text-muted">With vendor</td>
+              <td>–</td>
+              <td><span class="badge badge--danger badge--square">Poor</span></td>
+              <td><span class="badge badge--warning badge--dot">In repair</span></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign">Update</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card__footer">
+        <span class="card__meta">Showing 5 of 128 assets</span>
+        <div class="btn-group">
+          <button class="btn btn--sm" type="button" disabled>Previous</button>
+          <button class="btn btn--sm" type="button">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-2">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Pending asset requests</h3>
+          <span class="card__meta">2 open</span>
+        </div>
+        <div class="list">
+          <div class="list__item">
+            <div class="avatar avatar--1">AK</div>
+            <div class="list__content"><span class="list__title">Arjun Kapoor, laptop upgrade</span><span class="list__sub">Replaces AST-0188, 3 years old</span></div>
+            <div class="btn-group">
+              <button class="btn btn--sm" type="button" data-permission="assets:approve">Reject</button>
+              <button class="btn btn--primary btn--sm" type="button" data-permission="assets:approve">Approve</button>
+            </div>
+          </div>
+          <div class="list__item">
+            <div class="avatar avatar--3">IB</div>
+            <div class="list__content"><span class="list__title">Ishita Bose, second monitor</span><span class="list__sub">Sales, needed for reporting</span></div>
+            <div class="btn-group">
+              <button class="btn btn--sm" type="button" data-permission="assets:approve">Reject</button>
+              <button class="btn btn--primary btn--sm" type="button" data-permission="assets:approve">Approve</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header"><h3 class="card__title">Assign an asset</h3></div>
+        <div class="card__body">
+          <form class="form" action="asset-assignment.html">
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label form-label--required" for="a-asset">Asset</label>
+                <select class="select" id="a-asset" required>
+                  <option value="">Select available asset</option>
+                  <option>AST-0217, Dell Latitude 5440</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label form-label--required" for="a-person">Employee</label>
+                <select class="select" id="a-person" required>
+                  <option value="">Select employee</option>
+                  <option>Sneha Rao</option><option>Ishita Bose</option><option>Neha Kulkarni</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="a-date">Assigned on</label>
+                <input class="input" id="a-date" type="date">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="a-cond">Condition</label>
+                <select class="select" id="a-cond"><option>Good</option><option>Fair</option></select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn--primary" type="submit" data-permission="assets:assign">Assign asset</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

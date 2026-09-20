@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" data-role="admin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in | OfficeOS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<main class="auth">
+
+  <!-- ============ Left: brand panel ============ -->
+  <section class="auth__brand" aria-label="About OfficeOS">
+    <div class="auth__logo">
+      <span class="auth__logo-mark">O</span>
+      OfficeOS
+    </div>
+
+    <div class="auth__pitch">
+      <h1 class="auth__headline">Run your whole office from one place.</h1>
+      <p class="auth__lead">People, attendance, payroll and inventory, with the right access for every role.</p>
+
+      <ul class="auth__features">
+        <li class="auth__feature">
+          <span class="auth__feature-icon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          </span>
+          <div>
+            <strong>Role-based access</strong>
+            <p>Every person sees only what their role allows.</p>
+          </div>
+        </li>
+        <li class="auth__feature">
+          <span class="auth__feature-icon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+          </span>
+          <div>
+            <strong>Attendance and leave</strong>
+            <p>Mark attendance, apply for leave, approve in one click.</p>
+          </div>
+        </li>
+        <li class="auth__feature">
+          <span class="auth__feature-icon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+          </span>
+          <div>
+            <strong>Payroll and payslips</strong>
+            <p>Run monthly payroll and share payslips securely.</p>
+          </div>
+        </li>
+        <li class="auth__feature">
+          <span class="auth__feature-icon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+          </span>
+          <div>
+            <strong>Full audit trail</strong>
+            <p>Every change is recorded: who, what and when.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <p class="auth__copy">© 2026 OfficeOS. All rights reserved.</p>
+  </section>
+
+  <!-- ============ Right: sign-in form ============ -->
+  <section class="auth__panel">
+    <div class="auth__inner">
+      <h2 class="auth__title">Sign in</h2>
+      <p class="auth__sub">Use your work email to continue.</p>
+
+      <!-- action goes straight to the dashboard for now; the real login comes in the JS and backend stages -->
+      <form class="form" action="../dashboard/admin.html">
+
+        <div class="form-field">
+          <label class="form-label" for="email">Work email</label>
+          <div class="input-group">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 6l9 7 9-7"/></svg>
+            <input class="input" id="email" name="email" type="email" placeholder="name@company.com" autocomplete="username" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-group input-group--action">
+            <input class="input" id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+            <button class="input-group__action" type="button" aria-label="Show password">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="auth__row">
+          <label class="check"><input type="checkbox" name="remember"> Remember me</label>
+          <a class="link" href="forgot-password.html">Forgot password?</a>
+        </div>
+
+        <button class="btn btn--primary btn--lg btn--block" type="submit">Sign in</button>
+      </form>
+
+      <!-- Temporary shortcuts to preview each role. Removed when real login is built. -->
+      <div class="auth__demo">
+        <span class="auth__demo-title">Preview as</span>
+        <div class="btn-group">
+          <a class="btn btn--sm" href="../dashboard/admin.html">Admin</a>
+          <a class="btn btn--sm" href="../dashboard/hr.html">HR Manager</a>
+          <a class="btn btn--sm" href="../dashboard/finance.html">Finance</a>
+          <a class="btn btn--sm" href="../dashboard/employee.html">Employee</a>
+        </div>
+      </div>
+
+      <p class="auth__help">Don't have access? Contact your HR administrator.</p>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>

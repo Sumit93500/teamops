@@ -1,0 +1,81 @@
+/* ==========================================================
+   access.css: Roles, permissions and designations screens
+   ========================================================== */
+
+/* ---------- Role name cell (icon + name + key) ---------- */
+.role-name { display: flex; align-items: center; gap: 10px; }
+.role-name__icon {
+  width: 32px; height: 32px; flex: none;
+  display: grid; place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft); color: var(--color-primary);
+}
+.role-name__icon--system { background: var(--color-info-soft); color: var(--color-info); }
+
+/* ---------- Small meter: how many permissions a role has ---------- */
+.meter-cell { display: flex; align-items: center; gap: 10px; min-width: 160px; }
+.meter {
+  flex: 1; min-width: 70px; height: 6px; overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-hover);
+}
+.meter__fill { display: block; height: 100%; width: var(--w); border-radius: var(--radius-full); background: var(--color-primary); }
+
+/* ---------- Permission key chips, e.g. users:view ---------- */
+.perm-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.perm-chip {
+  display: inline-block; padding: 2px 8px;
+  font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.5;
+  color: var(--color-text-muted);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Matrix extras ---------- */
+.matrix__na { color: var(--color-text-muted); opacity: 0.6; }      /* the dash for "not applicable" */
+.matrix-note {
+  padding: 12px 18px;
+  font-size: var(--text-sm); color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+/* ==========================================================
+   Approval workflows
+   <div class="chain">
+     <span class="chain__step chain__step--start">Employee</span>
+     <span class="chain__step">Manager</span>
+     <span class="chain__step chain__step--end">HR</span>
+   </div>
+   ========================================================== */
+.chain { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px; }
+.chain__step {
+  position: relative;
+  display: inline-flex; align-items: center;
+  padding: 2px 9px;
+  font-size: var(--text-xs); font-weight: var(--weight-medium);
+  white-space: nowrap;
+  color: var(--color-text);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+}
+.chain__step + .chain__step::before {           /* small arrow between two steps */
+  content: "";
+  position: absolute; left: -13px; top: 50%;
+  width: 7px; height: 7px;
+  border-top: 1.5px solid var(--color-text-muted);
+  border-right: 1.5px solid var(--color-text-muted);
+  transform: translateY(-50%) rotate(45deg);
+}
+.chain__step--start { color: var(--color-primary); background: var(--color-primary-soft); border-color: transparent; }
+.chain__step--end { color: var(--color-success); background: var(--color-success-soft); border-color: transparent; }
+
+/* ---------- Amount tiers: who approves at which amount ---------- */
+.tier {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.tier:last-child { border-bottom: 0; }
+.tier__range { font-weight: var(--weight-medium); font-variant-numeric: tabular-nums; }
+.tier__who { font-size: var(--text-sm); color: var(--color-text-muted); }

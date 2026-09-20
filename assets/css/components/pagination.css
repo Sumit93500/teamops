@@ -1,0 +1,38 @@
+/* ==========================================================
+   pagination.css: page controls under a table
+   <div class="pagination">
+     <span>Showing 1 to 10 of 248</span>
+     <div class="pagination__pages">
+       <button class="pagination__btn" disabled>Prev</button>
+       <button class="pagination__btn is-active">1</button>
+       <button class="pagination__btn">2</button>
+       <span class="pagination__gap">...</span>
+       <button class="pagination__btn">25</button>
+       <button class="pagination__btn">Next</button>
+     </div>
+   </div>
+   ========================================================== */
+
+.pagination {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: var(--space-3); flex-wrap: wrap;
+  padding: 12px 18px;
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.pagination__pages { display: flex; align-items: center; gap: var(--space-1); }
+
+.pagination__btn {
+  min-width: 30px; height: 30px; padding: 0 8px;
+  display: grid; place-items: center;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  transition: background var(--transition);
+}
+.pagination__btn:hover { background: var(--color-surface-hover); }
+.pagination__btn.is-active { background: var(--color-primary); color: var(--color-on-primary); }
+.pagination__btn:disabled { opacity: 0.4; pointer-events: none; }
+
+.pagination__gap { padding: 0 var(--space-1); color: var(--color-text-muted); }

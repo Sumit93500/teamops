@@ -1,0 +1,141 @@
+/* ==========================================================
+   shell.css: the app frame = sidebar + topbar + main area
+   Page markup this styles:
+   <div class="app">
+     <aside class="sidebar"> ... </aside>
+     <div class="main">
+       <header class="topbar"> ... </header>
+       <main class="content"> <div class="page-header"> ... </div> ... </main>
+     </div>
+   </div>
+   ========================================================== */
+
+/* ---------- Icons: every inline <svg> icon gets class="icon" ---------- */
+.icon {
+  width: 17px; height: 17px; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ---------- Frame ---------- */
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  min-height: 100vh;
+}
+.main { min-width: 0; display: flex; flex-direction: column; }
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column;
+  padding: var(--space-4) var(--space-3);
+  background: var(--color-sidebar);
+  color: var(--color-sidebar-text);
+  overflow-y: auto;
+}
+.sidebar :focus-visible { outline-color: #ffffff; }
+
+.sidebar__brand {
+  display: flex; align-items: center; gap: 9px;
+  padding: var(--space-1) var(--space-2) var(--space-4);
+  color: #ffffff; font-size: var(--text-md); font-weight: var(--weight-semibold);
+}
+.sidebar__logo {
+  width: 26px; height: 26px; border-radius: 7px;
+  display: grid; place-items: center;
+  background: var(--color-primary); color: var(--color-on-primary);
+  font-size: 13px; font-weight: var(--weight-semibold);
+}
+
+.sidebar__nav { display: flex; flex-direction: column; gap: 2px; }
+
+.nav__group-title {
+  padding: 14px var(--space-2) 5px;
+  font-size: var(--text-xs); font-weight: var(--weight-medium);
+  color: var(--color-sidebar-heading);
+}
+.nav__item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-sidebar-text);
+  font-weight: var(--weight-medium);
+  transition: background var(--transition), color var(--transition);
+}
+.nav__item:hover { background: rgba(255, 255, 255, 0.06); color: #ffffff; }
+.nav__item.is-active {
+  background: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  color: #ffffff;
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+.nav__count {                                   /* small number on the right, e.g. pending approvals */
+  margin-left: auto; min-width: 20px; padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.12); color: #ffffff;
+  font-size: 11px; text-align: center;
+}
+
+.sidebar__footer {
+  margin-top: auto;
+  padding: var(--space-3) var(--space-2) 0;
+  border-top: 1px solid var(--color-sidebar-line);
+  font-size: var(--text-sm); color: var(--color-sidebar-heading);
+}
+.sidebar__footer strong { display: block; color: #e2e8f0; font-weight: var(--weight-medium); }
+
+/* ---------- Topbar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: var(--z-sticky);
+  height: var(--topbar-height);
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: 0 var(--space-6);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.topbar__left { display: flex; align-items: center; gap: var(--space-3); min-width: 0; color: var(--color-text-muted); }
+.topbar__left strong { color: var(--color-text); font-weight: var(--weight-medium); }
+
+.topbar__menu-toggle {                          /* hamburger: shown on mobile by responsive.css */
+  display: none; width: 34px; height: 34px;
+  place-items: center; border-radius: var(--radius-md); color: var(--color-text-muted);
+}
+
+.topbar__search {
+  margin-left: auto; width: 240px;
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: 6px 10px;
+  background: var(--color-bg); color: var(--color-text-muted);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+}
+.topbar__search:focus-within { border-color: var(--color-primary); }
+.topbar__search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; }
+.topbar__search kbd { margin-left: auto; font-size: 11px; padding: 0 5px; }
+
+.topbar__actions { display: flex; align-items: center; gap: var(--space-3); }
+.topbar__icon-btn {
+  position: relative; width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: var(--radius-md); color: var(--color-text-muted);
+  transition: background var(--transition);
+}
+.topbar__icon-btn:hover { background: var(--color-surface-hover); color: var(--color-text); }
+.topbar__icon-btn--dot::after {                 /* red dot = unread notifications */
+  content: ""; position: absolute; top: 6px; right: 7px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--color-danger); border: 2px solid var(--color-surface);
+}
+
+/* ---------- Content area ---------- */
+.content {
+  width: 100%; max-width: var(--content-max);
+  margin-inline: auto;
+  padding: var(--space-6);
+}
+.page-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: var(--space-4); flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+.page-header__subtitle { margin-top: 2px; color: var(--color-text-muted); }
+.page-header__actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }

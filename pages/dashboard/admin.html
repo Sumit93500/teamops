@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" data-role="admin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | OfficeOS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item is-active" href="../dashboard/admin.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">3</span>
+      </a>
+
+      <div class="nav__group-title">People</div>
+      <a class="nav__item" href="../users/users-list.html" data-permission="users:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        Users
+      </a>
+      <a class="nav__item" href="../access/roles-list.html" data-permission="roles:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Roles &amp; permissions
+      </a>
+      <a class="nav__item" href="../access/designations.html" data-permission="designations:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/></svg>
+        Designations
+      </a>
+      <a class="nav__item" href="../attendance/team-attendance.html" data-permission="attendance:view-all">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        Attendance
+      </a>
+      <a class="nav__item" href="../leave/leave-approvals.html" data-permission="leave:approve">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        Leave
+      </a>
+
+      <div class="nav__group-title">Finance &amp; operations</div>
+      <a class="nav__item" href="../payroll/payroll-run.html" data-permission="payroll:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        Payroll
+      </a>
+          <a class="nav__item" href="../inventory/items.html" data-permission="inventory:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
+        Inventory
+      </a>
+
+      <div class="nav__group-title">System</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+      <a class="nav__item" href="../system/audit-log.html" data-permission="audit:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        Audit log
+      </a>
+      <a class="nav__item" href="../system/settings.html" data-permission="settings:edit">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.3 3h-4l-.3 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.3 2.7h4l.3-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2"/></svg>
+        Settings
+      </a>
+      <a class="nav__item" href="../system/backup.html" data-permission="backup:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+        Backup
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+  <!-- END 1 -->
+
+  
+  <!-- ==================== MAIN ==================== -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Dashboard</strong>
+      </div>
+
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Aarav Mehta">AM</div>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="content" id="main">
+
+      <div class="page-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="page-header__subtitle">Company overview for September 2026</p>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn" type="button">Export</button>
+          <button class="btn btn--primary" type="button" data-permission="users:create">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Add employee
+          </button>
+        </div>
+      </div>
+
+      <div class="stack">
+
+        <!-- ========== Stat strip ========== -->
+        <section class="stat-strip" aria-label="Key numbers">
+          <div class="stat">
+            <div class="stat__icon stat__icon--1">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+            </div>
+            <div>
+              <span class="stat__label">Total employees</span>
+              <strong class="stat__value">248</strong>
+              <span class="stat__delta stat__delta--up">+12 this quarter</span>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div class="stat__icon stat__icon--2">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+            </div>
+            <div>
+              <span class="stat__label">Present today</span>
+              <strong class="stat__value">231</strong>
+              <span class="stat__delta stat__delta--up">93.1% attendance</span>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div class="stat__icon stat__icon--3">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+            </div>
+            <div>
+              <span class="stat__label">Payroll, Sep</span>
+              <strong class="stat__value">₹58.4L</strong>
+              <span class="stat__delta">+2.1% vs Aug</span>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div class="stat__icon stat__icon--4">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
+            </div>
+            <div>
+              <span class="stat__label">Low-stock items</span>
+              <strong class="stat__value">7</strong>
+              <span class="stat__delta stat__delta--down">3 awaiting approval</span>
+            </div>
+          </div>
+        </section>
+        <!-- END 2 -->
+
+        
+        <!-- ========== Chart + approvals ========== -->
+        <div class="grid grid-main-aside">
+
+          <section class="card">
+            <div class="card__header">
+              <h3 class="card__title">Attendance rate, last 14 days</h3>
+              <span class="card__meta">Sep 5 – 18</span>
+            </div>
+            <div class="card__body">
+              <div class="chart" role="img" aria-label="Attendance rate for the last 14 days, between 48 and 95 percent">
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:52" title="Sat 5 Sep: 52%"></span></div><span class="chart__label">5</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:48" title="Sun 6 Sep: 48%"></span></div><span class="chart__label">6</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:91" title="Mon 7 Sep: 91%"></span></div><span class="chart__label">7</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:93" title="Tue 8 Sep: 93%"></span></div><span class="chart__label">8</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:92" title="Wed 9 Sep: 92%"></span></div><span class="chart__label">9</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:94" title="Thu 10 Sep: 94%"></span></div><span class="chart__label">10</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:90" title="Fri 11 Sep: 90%"></span></div><span class="chart__label">11</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:53" title="Sat 12 Sep: 53%"></span></div><span class="chart__label">12</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:49" title="Sun 13 Sep: 49%"></span></div><span class="chart__label">13</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:93" title="Mon 14 Sep: 93%"></span></div><span class="chart__label">14</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:95" title="Tue 15 Sep: 95%"></span></div><span class="chart__label">15</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:94" title="Wed 16 Sep: 94%"></span></div><span class="chart__label">16</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:92" title="Thu 17 Sep: 92%"></span></div><span class="chart__label">17</span></div>
+                <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:93" title="Fri 18 Sep: 93%"></span></div><span class="chart__label">18</span></div>
+              </div>
+              <p class="text-xs text-muted mt-2">Weekends are shown lighter.</p>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card__header">
+              <h3 class="card__title">Pending approvals</h3>
+              <span class="card__meta">3 open</span>
+            </div>
+            <div class="list">
+              <div class="list__item">
+                <div class="avatar avatar--1">SR</div>
+                <div class="list__content">
+                  <span class="list__title">Role change: Sneha Rao</span>
+                  <span class="list__sub">Requested by Priya Nair (HR)</span>
+                </div>
+                <div class="btn-group">
+                  <button class="btn btn--sm" type="button">Reject</button>
+                  <button class="btn btn--primary btn--sm" type="button">Approve</button>
+                </div>
+              </div>
+              <div class="list__item">
+                <div class="avatar avatar--3">PO</div>
+                <div class="list__content">
+                  <span class="list__title">Purchase order PO-2291</span>
+                  <span class="list__sub">Requested by Store Manager</span>
+                </div>
+                <div class="btn-group">
+                  <button class="btn btn--sm" type="button">Reject</button>
+                  <button class="btn btn--primary btn--sm" type="button">Approve</button>
+                </div>
+              </div>
+              <div class="list__item">
+                <div class="avatar avatar--4">BR</div>
+                <div class="list__content">
+                  <span class="list__title">Backup restore request</span>
+                  <span class="list__sub">Requested by IT Support</span>
+                </div>
+                <div class="btn-group">
+                  <button class="btn btn--sm" type="button">Reject</button>
+                  <button class="btn btn--primary btn--sm" type="button">Approve</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <!-- END 3 -->
+
+        
+        <!-- ========== Departments + activity ========== -->
+        <div class="grid grid-2">
+
+          <section class="card">
+            <div class="card__header">
+              <h3 class="card__title">Headcount by department</h3>
+              <span class="card__meta">248 total</span>
+            </div>
+            <div class="card__body">
+              <div class="bar-row"><span>Engineering</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:100%"></span></div><span class="bar-row__value">82</span></div>
+              <div class="bar-row"><span>Sales</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:66%"></span></div><span class="bar-row__value">54</span></div>
+              <div class="bar-row"><span>Operations</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:57%"></span></div><span class="bar-row__value">47</span></div>
+              <div class="bar-row"><span>Finance</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:32%"></span></div><span class="bar-row__value">26</span></div>
+              <div class="bar-row"><span>HR</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:22%"></span></div><span class="bar-row__value">18</span></div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card__header">
+              <h3 class="card__title">Recent activity</h3>
+              <a class="link text-sm" href="../system/audit-log.html">View audit log</a>
+            </div>
+            <div class="activity">
+              <div class="activity__item">
+                <span class="activity__dot activity__dot--primary"></span>
+                <div class="activity__text">Priya Nair (HR) gave Team Lead access to Sneha Rao<span class="activity__time">5 min ago</span></div>
+              </div>
+              <div class="activity__item">
+                <span class="activity__dot activity__dot--success"></span>
+                <div class="activity__text">Payroll draft for September created<span class="activity__time">1 hour ago</span></div>
+              </div>
+              <div class="activity__item">
+                <span class="activity__dot activity__dot--warning"></span>
+                <div class="activity__text">Backup completed, 1.2 GB<span class="activity__time">Today, 02:00</span></div>
+              </div>
+              <div class="activity__item">
+                <span class="activity__dot activity__dot--danger"></span>
+                <div class="activity__text">3 failed logins from a new device<span class="activity__time">Yesterday</span></div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <!-- END 4 -->
+
+        
+        <!-- ========== Attendance table ========== -->
+        <section class="card">
+          <div class="table__toolbar">
+            <h3 class="card__title">Today's attendance</h3>
+            <div class="table__filters">
+              <div class="input-group">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search employees">
+              </div>
+              <select class="select select--sm" aria-label="Filter by department">
+                <option>All departments</option>
+                <option>Engineering</option>
+                <option>Sales</option>
+                <option>Operations</option>
+                <option>Finance</option>
+                <option>HR</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>ID</th>
+                  <th>Department</th>
+                  <th>Status</th>
+                  <th>Check-in</th>
+                  <th class="table__num">Hours</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="table__user"><div class="avatar avatar--1">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">rohan.gupta@northwind.com</span></div></div></td>
+                  <td>EMP-1042</td><td>Engineering</td>
+                  <td><span class="badge badge--success badge--dot">Present</span></td>
+                  <td>09:12</td><td class="table__num">7h 48m</td>
+                </tr>
+                <tr>
+                  <td><div class="table__user"><div class="avatar avatar--2">AI</div><div><span class="table__user-name">Ananya Iyer</span><span class="table__user-sub">ananya.iyer@northwind.com</span></div></div></td>
+                  <td>EMP-1017</td><td>Sales</td>
+                  <td><span class="badge badge--success badge--dot">Present</span></td>
+                  <td>09:31</td><td class="table__num">7h 20m</td>
+                </tr>
+                <tr>
+                  <td><div class="table__user"><div class="avatar avatar--3">VS</div><div><span class="table__user-name">Vikram Singh</span><span class="table__user-sub">vikram.singh@northwind.com</span></div></div></td>
+                  <td>EMP-1088</td><td>Operations</td>
+                  <td><span class="badge badge--warning badge--dot">Late</span></td>
+                  <td>10:24</td><td class="table__num">6h 30m</td>
+                </tr>
+                <tr>
+                  <td><div class="table__user"><div class="avatar avatar--4">MJ</div><div><span class="table__user-name">Meera Joshi</span><span class="table__user-sub">meera.joshi@northwind.com</span></div></div></td>
+                  <td>EMP-1023</td><td>Finance</td>
+                  <td><span class="badge badge--info badge--dot">On leave</span></td>
+                  <td>–</td><td class="table__num">–</td>
+                </tr>
+                <tr>
+                  <td><div class="table__user"><div class="avatar avatar--1">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">arjun.kapoor@northwind.com</span></div></div></td>
+                  <td>EMP-1105</td><td>Engineering</td>
+                  <td><span class="badge badge--success badge--dot">Present</span></td>
+                  <td>09:05</td><td class="table__num">7h 55m</td>
+                </tr>
+                <tr>
+                  <td><div class="table__user"><div class="avatar avatar--2">DM</div><div><span class="table__user-name">Divya Menon</span><span class="table__user-sub">divya.menon@northwind.com</span></div></div></td>
+                  <td>EMP-1061</td><td>HR</td>
+                  <td><span class="badge badge--danger badge--dot">Absent</span></td>
+                  <td>–</td><td class="table__num">–</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card__footer">
+            <span class="card__meta">Showing 6 of 248 employees</span>
+            <div class="btn-group">
+              <button class="btn btn--sm" type="button" disabled>Previous</button>
+              <button class="btn btn--sm" type="button">Next</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 5 -->

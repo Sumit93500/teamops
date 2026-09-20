@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en" data-role="admin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Approval workflows | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item" href="../dashboard/admin.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">3</span>
+      </a>
+
+      <div class="nav__group-title">People</div>
+      <a class="nav__item" href="../users/users-list.html" data-permission="users:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        Users
+      </a>
+      <a class="nav__item is-active" href="../access/roles-list.html" data-permission="roles:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Roles &amp; permissions
+      </a>
+      <a class="nav__item" href="../access/designations.html" data-permission="designations:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/></svg>
+        Designations
+      </a>
+      <a class="nav__item" href="../attendance/team-attendance.html" data-permission="attendance:view-all">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        Attendance
+      </a>
+      <a class="nav__item" href="../leave/leave-approvals.html" data-permission="leave:approve">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        Leave
+      </a>
+
+      <div class="nav__group-title">Finance &amp; operations</div>
+      <a class="nav__item" href="../payroll/payroll-run.html" data-permission="payroll:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        Payroll
+      </a>
+      <a class="nav__item" href="../inventory/items.html" data-permission="inventory:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
+        Inventory
+      </a>
+
+      <div class="nav__group-title">System</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+      <a class="nav__item" href="../system/audit-log.html" data-permission="audit:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        Audit log
+      </a>
+      <a class="nav__item" href="../system/settings.html" data-permission="settings:edit">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.3 3h-4l-.3 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.3 2.7h4l.3-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2"/></svg>
+        Settings
+      </a>
+      <a class="nav__item" href="../system/backup.html" data-permission="backup:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+        Backup
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Approval workflows</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Aarav Mehta">AM</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <ol class="breadcrumb mb-2" aria-label="Breadcrumb">
+        <li class="breadcrumb__item"><a href="roles-list.html">Roles &amp; permissions</a></li>
+        <li class="breadcrumb__item" aria-current="page">Approval workflows</li>
+      </ol>
+      <h1>Approval workflows</h1>
+      <p class="page-header__subtitle">Who approves what, in which order, and up to what amount</p>
+    </div>
+    <div class="page-header__actions">
+      <a class="btn" href="delegation.html">Delegation</a>
+      <button class="btn btn--primary" type="button" data-permission="workflows:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Add workflow
+      </button>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <section class="stat-strip" aria-label="Key numbers">
+      <div class="stat">
+        <div class="stat__icon stat__icon--1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Workflows</span>
+          <strong class="stat__value">8</strong>
+          <span class="stat__delta">All active</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--2">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Requests this month</span>
+          <strong class="stat__value">184</strong>
+          <span class="stat__delta stat__delta--up">+22 vs August</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--3">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Average decision time</span>
+          <strong class="stat__value">1.4 days</strong>
+          <span class="stat__delta stat__delta--up">Target is 2 days</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--4">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Escalated</span>
+          <strong class="stat__value">2</strong>
+          <span class="stat__delta stat__delta--down">Waited over 2 days</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">All workflows</h3>
+          <span class="card__meta">8 request types</span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Request</th>
+                <th>Approval chain</th>
+                <th>Condition</th>
+                <th>Status</th>
+                <th class="table__actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="table__user-name">Leave</span><span class="table__user-sub">Casual, sick, earned, work from home</span></td>
+                <td><div class="chain"><span class="chain__step chain__step--start">Employee</span><span class="chain__step">Manager</span><span class="chain__step chain__step--end">HR</span></div></td>
+                <td>All leave types</td>
+                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">Attendance regularization</span><span class="table__user-sub">Late or missed punches</span></td>
+                <td><div class="chain"><span class="chain__step chain__step--start">Employee</span><span class="chain__step">Manager</span><span class="chain__step chain__step--end">HR</span></div></td>
+                <td>Sent within 7 days</td>
+                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">Expense claim</span><span class="table__user-sub">Travel and reimbursements</span></td>
+                <td><div class="chain"><span class="chain__step chain__step--start">Employee</span><span class="chain__step">Manager</span><span class="chain__step">Finance</span><span class="chain__step chain__step--end">Admin</span></div></td>
+                <td>Admin only above ₹50,000</td>
+                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">Purchase order</span><span class="table__user-sub">Stock and equipment</span></td>
+                <td><div class="chain"><span class="chain__step chain__step--start">Store Manager</span><span class="chain__step chain__step--end">Admin</span></div></td>
+                <td>Admin only above ₹1,00,000</td>
+                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">Role change</span><span class="table__user-sub">Giving or removing access</span></td>
+                <td><div class="chain"><span class="chain__step chain__step--start">HR</span><span class="chain__step chain__step--end">Admin</span></div></td>
+                <td>Every change</td>
+                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">Salary revision</span><span class="table__user-sub">Changes to pay</span></td>
+                <td><div class="chain"><span class="chain__step chain__step--start">Finance</span><span class="chain__step chain__step--end">Admin</span></div></td>
+                <td>Every change</td>
+                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">Asset request</span><span class="table__user-sub">Laptops, monitors, cards</span></td>
+                <td><div class="chain"><span class="chain__step chain__step--start">Employee</span><span class="chain__step">IT Support</span><span class="chain__step chain__step--end">Admin</span></div></td>
+                <td>Every request</td>
+                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">Backup restore</span><span class="table__user-sub">Rolling back company data</span></td>
+                <td><div class="chain"><span class="chain__step chain__step--start">IT Support</span><span class="chain__step chain__step--end">Admin</span></div></td>
+                <td>Admin only</td>
+                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="stack">
+
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Purchase order limits</h3>
+            <button class="btn btn--sm" type="button" data-permission="workflows:manage">Add tier</button>
+          </div>
+          <div>
+            <div class="tier">
+              <div><span class="tier__range">Up to ₹1,00,000</span><span class="table__user-sub">Store Manager approves</span></div>
+              <span class="badge badge--success badge--square">1 approver</span>
+            </div>
+            <div class="tier">
+              <div><span class="tier__range">Above ₹1,00,000</span><span class="table__user-sub">Store Manager, then Admin</span></div>
+              <span class="badge badge--warning badge--square">2 approvers</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header"><h3 class="card__title">Rules for every workflow</h3></div>
+          <div class="card__body">
+            <div class="toggle-list">
+              <label class="switch"><input type="checkbox" checked disabled> Nobody approves their own request</label>
+              <label class="switch"><input type="checkbox" checked> Remind the approver after 1 day</label>
+              <label class="switch"><input type="checkbox" checked> Escalate after 2 days with no decision</label>
+              <label class="switch"><input type="checkbox" checked> A reason is required when rejecting</label>
+            </div>
+          </div>
+        </section>
+
+        <div class="alert alert--info">The person who creates a payroll run can't approve it. This is separation of duties, and it can't be turned off.</div>
+
+      </aside>
+    </div>
+
+    <section class="card">
+      <div class="card__header">
+        <h3 class="card__title">Example: an expense claim of ₹62,000</h3>
+        <span class="badge badge--warning badge--dot">Needs 3 approvals</span>
+      </div>
+      <div class="card__body">
+        <ol class="stepper">
+          <li class="stepper__step is-done">
+            <span class="stepper__dot"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
+            <div class="stepper__text"><strong>Employee sends</strong><small class="text-muted">Bill attached</small></div>
+          </li>
+          <li class="stepper__step is-current">
+            <span class="stepper__dot">2</span>
+            <div class="stepper__text"><strong>Manager</strong><small class="text-muted">Confirms the trip happened</small></div>
+          </li>
+          <li class="stepper__step">
+            <span class="stepper__dot">3</span>
+            <div class="stepper__text"><strong>Finance</strong><small class="text-muted">Checks the bill and budget</small></div>
+          </li>
+          <li class="stepper__step">
+            <span class="stepper__dot">4</span>
+            <div class="stepper__text"><strong>Admin</strong><small class="text-muted">Needed because it is above ₹50,000</small></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

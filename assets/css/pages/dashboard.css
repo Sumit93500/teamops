@@ -1,0 +1,138 @@
+/* ==========================================================
+   dashboard.css: pieces that only dashboards use
+   - .chart      bar chart built from plain HTML/CSS
+   - .bar-row    horizontal bars (headcount by department)
+   - .activity   recent activity list
+   ========================================================== */
+
+/* ---------- Bar chart ----------
+   Each bar's height is set in the HTML with style="--h:93" (a number from 0 to 100).
+   The JS stage will generate these from data. */
+.chart {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(14, minmax(0, 1fr));
+  gap: 6px;
+  height: 220px;
+}
+.chart::before {                        /* horizontal grid lines behind the bars */
+  content: "";
+  position: absolute; left: 0; right: 0; top: 0; bottom: 22px;
+  border-bottom: 1px solid var(--color-border);
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--color-border) 0, var(--color-border) 1px,
+    transparent 1px, transparent 25%
+  );
+  pointer-events: none;
+}
+.chart__col {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; min-width: 0;
+}
+.chart__track { position: relative; flex: 1; width: 100%; min-height: 0; }
+.chart__bar {
+  position: absolute; bottom: 0; left: 50%;
+  width: 62%; max-width: 28px;
+  height: calc(var(--h) * 1%);
+  transform: translateX(-50%);
+  background: var(--color-primary);
+  border-radius: 4px 4px 0 0;
+  transition: filter var(--transition);
+}
+.chart__bar:hover { filter: brightness(1.15); }
+.chart__bar--muted { opacity: 0.35; }
+.chart__label {
+  height: 16px;
+  font-size: 11px; line-height: 16px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Horizontal bars ----------
+   <div class="bar-row"><span>Sales</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:66%"></span></div><span class="bar-row__value">54</span></div> */
+.bar-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 36px;
+  align-items: center; gap: 10px;
+  margin-bottom: 11px;
+  font-size: var(--text-sm);
+}
+.bar-row:last-child { margin-bottom: 0; }
+.bar-row__track {
+  height: 8px; overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-hover);
+}
+.bar-row__fill {
+  display: block; height: 100%; width: var(--w);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+}
+.bar-row__value { text-align: right; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- Activity list ---------- */
+.activity__item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.activity__item:last-child { border-bottom: 0; }
+.activity__dot {
+  flex: none; width: 9px; height: 9px; margin-top: 7px;
+  border-radius: 50%;
+  background: var(--dot, var(--color-text-muted));
+}
+.activity__dot--primary { --dot: var(--color-primary); }
+.activity__dot--success { --dot: var(--color-success); }
+.activity__dot--warning { --dot: var(--color-warning); }
+.activity__dot--danger  { --dot: var(--color-danger); }
+.activity__text { flex: 1; min-width: 0; }
+.activity__time { display: block; font-size: var(--text-xs); color: var(--color-text-muted); }
+
+/* ---------- Small fix: a select inside a table toolbar should not stretch ---------- */
+.table__filters .select { width: auto; }
+/* ==========================================================
+   Announcements feed
+   <article class="post post--pinned">
+     <div class="post__head"><div class="avatar">PN</div><div class="grow"><span class="fw-medium">Name</span><small>Team, date</small></div></div>
+     <h3 class="post__title">Title</h3><p class="post__body">Text</p>
+     <div class="post__foot"><span>Sent to everyone</span><span>Read by 201 of 248</span></div>
+   </article>
+   ========================================================== */
+.post { padding: 18px; border-bottom: 1px solid var(--color-border); }
+.post:last-child { border-bottom: 0; }
+.post--pinned { background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); }
+.post__head { display: flex; align-items: center; gap: 10px; margin-bottom: var(--space-3); }
+.post__head small { display: block; }
+.post__title { font-size: var(--text-md); }
+.post__body { margin-top: var(--space-2); color: var(--color-text); }
+.post__foot { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: var(--space-3); font-size: var(--text-xs); color: var(--color-text-muted); }
+/* ==========================================================
+   Reports page
+   ========================================================== */
+
+/* bar chart with 12 bars (a year of months) instead of 14 days */
+.chart--12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+
+/* report library card */
+.report { display: flex; flex-direction: column; gap: var(--space-3); padding: 18px; }
+.report__top { display: flex; align-items: flex-start; gap: 12px; }
+.report__icon {
+  width: 38px; height: 38px; flex: none;
+  display: grid; place-items: center;
+  border-radius: var(--radius-lg);
+  color: var(--k);
+  background: color-mix(in srgb, var(--k) 13%, var(--color-surface));
+}
+.report__icon--1 { --k: var(--chip-1); }
+.report__icon--2 { --k: var(--chip-2); }
+.report__icon--3 { --k: var(--chip-3); }
+.report__icon--4 { --k: var(--chip-4); }
+.report__title { display: block; font-weight: var(--weight-medium); }
+.report__desc { display: block; font-size: var(--text-sm); color: var(--color-text-muted); }
+.report__foot {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--space-2);
+  margin-top: auto; padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}

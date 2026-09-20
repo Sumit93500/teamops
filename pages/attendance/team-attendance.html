@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-role="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team attendance | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item" href="../dashboard/hr.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">6</span>
+      </a>
+
+      <div class="nav__group-title">People</div>
+      <a class="nav__item" href="../users/users-list.html" data-permission="users:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        Employees
+      </a>
+      <a class="nav__item" href="../access/designations.html" data-permission="designations:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/></svg>
+        Designations &amp; roles
+      </a>
+      <a class="nav__item is-active" href="../attendance/team-attendance.html" data-permission="attendance:view-all">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        Attendance
+      </a>
+      <a class="nav__item" href="../leave/leave-approvals.html" data-permission="leave:approve">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        Leave
+      </a>
+      <a class="nav__item" href="../recruitment/job-openings.html" data-permission="recruitment:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v11H4zM9 8V5h6v3"/></svg>
+        Recruitment
+      </a>
+
+      <div class="nav__group-title">Communication</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+
+      <div class="nav__group-title">Reports</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Team attendance</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Priya Nair">PN</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Team attendance</h1>
+      <p class="page-header__subtitle">Who is in, late, on leave or absent</p>
+    </div>
+    <div class="page-header__actions">
+      <input class="input input--sm" type="date" value="2026-09-18" aria-label="Choose date" style="width:auto">
+      <a class="btn" href="regularization.html" data-permission="attendance:approve">Regularization requests</a>
+      <button class="btn btn--primary" type="button" data-permission="reports:export">Export</button>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <section class="stat-strip" aria-label="Key numbers">
+      <div class="stat">
+        <div class="stat__icon stat__icon--2">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Present</span>
+          <strong class="stat__value">231</strong>
+          <span class="stat__delta stat__delta--up">93.1% of 248</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--3">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Late arrivals</span>
+          <strong class="stat__value">9</strong>
+          <span class="stat__delta">Included in present</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">On leave</span>
+          <strong class="stat__value">14</strong>
+          <span class="stat__delta">All approved</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--4">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Absent</span>
+          <strong class="stat__value">3</strong>
+          <span class="stat__delta stat__delta--down">No leave request</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="table__toolbar">
+          <div class="tabs tabs--pill" role="tablist">
+            <button class="tabs__tab is-active" type="button" role="tab">All</button>
+            <button class="tabs__tab" type="button" role="tab">Present</button>
+            <button class="tabs__tab" type="button" role="tab">Late</button>
+            <button class="tabs__tab" type="button" role="tab">On leave</button>
+            <button class="tabs__tab" type="button" role="tab">Absent</button>
+          </div>
+          <div class="table__filters">
+            <div class="input-group">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search employees">
+            </div>
+            <select class="select select--sm" aria-label="Filter by department">
+              <option>All departments</option><option>Engineering</option><option>Sales</option>
+              <option>Operations</option><option>Finance</option><option>HR</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Department</th>
+                <th>Check-in</th>
+                <th class="table__num">Hours</th>
+                <th>This week</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--1">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">EMP-1042</span></div></div></td>
+                <td>Engineering</td><td>09:12</td><td class="table__num">7h 48m</td>
+                <td><span class="week" aria-label="Monday to Friday: all present"><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i></span></td>
+                <td><span class="badge badge--success badge--dot">Present</span></td>
+              </tr>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--2">AI</div><div><span class="table__user-name">Ananya Iyer</span><span class="table__user-sub">EMP-1017</span></div></div></td>
+                <td>Sales</td><td>09:31</td><td class="table__num">7h 20m</td>
+                <td><span class="week" aria-label="Monday to Friday: one late day"><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--l"></i><i class="week__day week__day--p"></i></span></td>
+                <td><span class="badge badge--success badge--dot">Present</span></td>
+              </tr>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--3">VS</div><div><span class="table__user-name">Vikram Singh</span><span class="table__user-sub">EMP-1088</span></div></div></td>
+                <td>Operations</td><td>10:24</td><td class="table__num">6h 30m</td>
+                <td><span class="week" aria-label="Monday to Friday: two late days"><i class="week__day week__day--p"></i><i class="week__day week__day--l"></i><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--l"></i></span></td>
+                <td><span class="badge badge--warning badge--dot">Late</span></td>
+              </tr>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--4">MJ</div><div><span class="table__user-name">Meera Joshi</span><span class="table__user-sub">EMP-1023</span></div></div></td>
+                <td>Finance</td><td>–</td><td class="table__num">–</td>
+                <td><span class="week" aria-label="Monday to Friday: three present, two on leave"><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--lv"></i><i class="week__day week__day--lv"></i></span></td>
+                <td><span class="badge badge--info badge--dot">On leave</span></td>
+              </tr>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--1">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">EMP-1105</span></div></div></td>
+                <td>Engineering</td><td>09:05</td><td class="table__num">7h 55m</td>
+                <td><span class="week" aria-label="Monday to Friday: all present"><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i></span></td>
+                <td><span class="badge badge--success badge--dot">Present</span></td>
+              </tr>
+              <tr>
+                <td><div class="table__user"><div class="avatar avatar--2">DM</div><div><span class="table__user-name">Divya Menon</span><span class="table__user-sub">EMP-1061</span></div></div></td>
+                <td>HR</td><td>–</td><td class="table__num">–</td>
+                <td><span class="week" aria-label="Monday to Friday: three present, two absent"><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--p"></i><i class="week__day week__day--a"></i><i class="week__day week__day--a"></i></span></td>
+                <td><span class="badge badge--danger badge--dot">Absent</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <span>Showing 1 to 6 of 248</span>
+          <div class="pagination__pages">
+            <button class="pagination__btn" type="button" disabled>Prev</button>
+            <button class="pagination__btn is-active" type="button">1</button>
+            <button class="pagination__btn" type="button">2</button>
+            <button class="pagination__btn" type="button">3</button>
+            <span class="pagination__gap">...</span>
+            <button class="pagination__btn" type="button">42</button>
+            <button class="pagination__btn" type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="stack">
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Attendance by department</h3>
+            <span class="card__meta">Today</span>
+          </div>
+          <div class="card__body">
+            <div class="bar-row"><span>Engineering</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:95%"></span></div><span class="bar-row__value">95%</span></div>
+            <div class="bar-row"><span>Sales</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:92%"></span></div><span class="bar-row__value">92%</span></div>
+            <div class="bar-row"><span>Operations</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:90%"></span></div><span class="bar-row__value">90%</span></div>
+            <div class="bar-row"><span>Finance</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:96%"></span></div><span class="bar-row__value">96%</span></div>
+            <div class="bar-row"><span>HR</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:94%"></span></div><span class="bar-row__value">94%</span></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Needs attention</h3>
+            <span class="card__meta">3 absent</span>
+          </div>
+          <div class="list">
+            <div class="list__item">
+              <div class="avatar avatar--2">DM</div>
+              <div class="list__content"><span class="list__title">Divya Menon</span><span class="list__sub">HR, no check-in or leave request</span></div>
+              <button class="btn btn--sm" type="button">Message</button>
+            </div>
+            <div class="list__item">
+              <div class="avatar avatar--3">RV</div>
+              <div class="list__content"><span class="list__title">Rahul Verma</span><span class="list__sub">Sales, no check-in or leave request</span></div>
+              <button class="btn btn--sm" type="button">Message</button>
+            </div>
+            <div class="list__item">
+              <div class="avatar avatar--4">NK</div>
+              <div class="list__content"><span class="list__title">Neha Kulkarni</span><span class="list__sub">Operations, no check-in or leave request</span></div>
+              <button class="btn btn--sm" type="button">Message</button>
+            </div>
+          </div>
+        </section>
+
+        <div class="calendar__legend">
+          <span class="is-present">Present</span>
+          <span class="is-late">Late</span>
+          <span class="is-absent">Absent</span>
+          <span class="is-leave">On leave</span>
+        </div>
+      </aside>
+    </div>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

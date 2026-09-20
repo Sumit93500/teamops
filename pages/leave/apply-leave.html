@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" data-role="emp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apply for leave | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Me</div>
+      <a class="nav__item" href="../dashboard/employee.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        My dashboard
+      </a>
+      <a class="nav__item" href="../attendance/my-attendance.html" data-permission="attendance:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        My attendance
+      </a>
+      <a class="nav__item" href="../attendance/mark-attendance.html" data-permission="attendance:mark">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        Mark attendance
+      </a>
+      <a class="nav__item is-active" href="../leave/my-leave.html" data-permission="leave:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        My leave
+      </a>
+      <a class="nav__item" href="../payroll/payslips.html" data-permission="payslip:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        My payslips
+      </a>
+
+      <div class="nav__group-title">Requests &amp; assets</div>
+      <a class="nav__item" href="../requests/my-requests.html" data-permission="requests:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Requests
+        <span class="nav__count">2</span>
+      </a>
+      <a class="nav__item" href="../inventory/my-assets.html" data-permission="assets:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
+        My assets
+      </a>
+
+      <div class="nav__group-title">Company</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Apply for leave</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Arjun Kapoor">AK</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <ol class="breadcrumb mb-2" aria-label="Breadcrumb">
+        <li class="breadcrumb__item"><a href="my-leave.html">My leave</a></li>
+        <li class="breadcrumb__item" aria-current="page">Apply for leave</li>
+      </ol>
+      <h1>Apply for leave</h1>
+      <p class="page-header__subtitle">Your request goes to Sneha Rao first, then to HR.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-main-aside">
+
+    <form class="card" action="my-leave.html">
+
+      <section class="form-section">
+        <div class="form-section__head">
+          <h3 class="form-section__title">Leave type</h3>
+          <p class="form-section__desc">Choose what you are applying for.</p>
+        </div>
+        <div class="choice-grid" role="radiogroup" aria-label="Leave type">
+          <label class="choice"><input type="radio" name="leaveType" value="casual" checked><span class="choice__title">Casual leave</span><span class="choice__meta">6 of 12 days left</span></label>
+          <label class="choice"><input type="radio" name="leaveType" value="sick"><span class="choice__title">Sick leave</span><span class="choice__meta">5 of 8 days left</span></label>
+          <label class="choice"><input type="radio" name="leaveType" value="wfh"><span class="choice__title">Work from home</span><span class="choice__meta">2 days left this month</span></label>
+          <label class="choice"><input type="radio" name="leaveType" value="unpaid"><span class="choice__title">Unpaid leave</span><span class="choice__meta">Salary is deducted for these days</span></label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="form-section__head">
+          <h3 class="form-section__title">Dates</h3>
+          <p class="form-section__desc">Weekends and company holidays are not counted.</p>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="form-label form-label--required" for="from-date">From</label>
+            <input class="input" id="from-date" name="from" type="date" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label form-label--required" for="to-date">To</label>
+            <input class="input" id="to-date" name="to" type="date" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="duration">Duration</label>
+            <select class="select" id="duration" name="duration">
+              <option>Full day</option><option>First half</option><option>Second half</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="total-days">Total days</label>
+            <input class="input" id="total-days" type="text" value="1 day" disabled>
+            <span class="form-hint">Calculated from the dates you pick.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="form-section__head">
+          <h3 class="form-section__title">Details</h3>
+          <p class="form-section__desc">Give your manager what they need to decide.</p>
+        </div>
+        <div class="form-grid">
+          <div class="form-field form-field--full">
+            <label class="form-label form-label--required" for="leave-reason">Reason</label>
+            <textarea class="textarea" id="leave-reason" name="reason" placeholder="A short reason is enough" required></textarea>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="leave-phone">Contact number during leave</label>
+            <input class="input" id="leave-phone" name="phone" type="tel" placeholder="+91 98765 43210">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="leave-file">Attachment</label>
+            <input class="input" id="leave-file" name="attachment" type="file">
+            <span class="form-hint">A medical certificate is needed for sick leave over 2 days.</span>
+          </div>
+        </div>
+
+        <h4 class="form-subtitle">Notifications</h4>
+        <div class="toggle-list">
+          <label class="switch"><input type="checkbox" checked> Tell my team by email once approved</label>
+          <label class="switch"><input type="checkbox"> I can be reached for urgent work</label>
+        </div>
+      </section>
+
+      <div class="card__footer">
+        <span class="card__meta">Fields marked * are required.</span>
+        <div class="btn-group">
+          <a class="btn" href="my-leave.html">Cancel</a>
+          <button class="btn btn--primary" type="submit" data-permission="leave:create">Send request</button>
+        </div>
+      </div>
+    </form>
+
+    <aside class="stack aside-sticky">
+      <section class="card">
+        <div class="card__header"><h3 class="card__title">Balance after this request</h3></div>
+        <div class="card__body">
+          <dl class="kv">
+            <div class="kv__row"><dt>Casual leave now</dt><dd>6 days</dd></div>
+            <div class="kv__row"><dt>This request</dt><dd>1 day</dd></div>
+            <div class="kv__row"><dt>Balance after</dt><dd><span class="badge badge--success">5 days</span></dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header"><h3 class="card__title">Approval chain</h3></div>
+        <div class="card__body">
+          <ol class="stepper stepper--vertical">
+            <li class="stepper__step is-current">
+              <span class="stepper__dot">1</span>
+              <div class="stepper__text"><strong>You send the request</strong><small class="text-muted">Arjun Kapoor</small></div>
+            </li>
+            <li class="stepper__step">
+              <span class="stepper__dot">2</span>
+              <div class="stepper__text"><strong>First approval</strong><small class="text-muted">Sneha Rao, Team Lead</small></div>
+            </li>
+            <li class="stepper__step">
+              <span class="stepper__dot">3</span>
+              <div class="stepper__text"><strong>Final approval</strong><small class="text-muted">Priya Nair, HR</small></div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <div class="alert alert--info">Send requests for 3 or more days at least 7 days ahead, so your team can plan.</div>
+    </aside>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

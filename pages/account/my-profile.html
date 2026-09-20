@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" data-role="emp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My profile | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Me</div>
+      <a class="nav__item" href="../dashboard/employee.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        My dashboard
+      </a>
+      <a class="nav__item" href="../attendance/my-attendance.html" data-permission="attendance:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        My attendance
+      </a>
+      <a class="nav__item" href="../attendance/mark-attendance.html" data-permission="attendance:mark">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        Mark attendance
+      </a>
+      <a class="nav__item" href="../leave/my-leave.html" data-permission="leave:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        My leave
+      </a>
+      <a class="nav__item" href="../payroll/payslips.html" data-permission="payslip:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        My payslips
+      </a>
+
+      <div class="nav__group-title">Requests &amp; assets</div>
+      <a class="nav__item" href="../requests/my-requests.html" data-permission="requests:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Requests
+        <span class="nav__count">2</span>
+      </a>
+      <a class="nav__item" href="../inventory/my-assets.html" data-permission="assets:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
+        My assets
+      </a>
+
+      <div class="nav__group-title">Company</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>My profile</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Arjun Kapoor">AK</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>My account</h1>
+      <p class="page-header__subtitle">Your profile, password and sign-in security</p>
+    </div>
+  </div>
+
+  <nav class="tabs acct-tabs" aria-label="Account sections">
+    <a class="tabs__tab is-active" href="my-profile.html">Profile</a>
+    <a class="tabs__tab" href="change-password.html">Password</a>
+    <a class="tabs__tab" href="sessions.html">Sessions</a>
+    <a class="tabs__tab" href="notifications.html">Notifications</a>
+  </nav>
+
+  <div class="stack">
+
+    <section class="card profile">
+      <div class="avatar avatar--xl">AK</div>
+      <div class="profile__info">
+        <h2 class="profile__name">Arjun Kapoor</h2>
+        <p class="profile__meta">Software Engineer, Engineering</p>
+        <div class="profile__badges">
+          <span class="badge badge--primary">Employee</span>
+          <span class="badge badge--success badge--dot">Active</span>
+          <span class="badge">EMP-1105</span>
+        </div>
+      </div>
+      <button class="btn" type="button">Change photo</button>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <form class="card" action="my-profile.html">
+        <section class="form-section">
+          <div class="form-section__head">
+            <h3 class="form-section__title">Contact details</h3>
+            <p class="form-section__desc">You can update these yourself.</p>
+          </div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="form-label" for="p-name">Preferred name</label>
+              <input class="input" id="p-name" type="text" value="Arjun">
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="p-phone">Phone</label>
+              <input class="input" id="p-phone" type="tel" value="+91 98765 43210">
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="p-email">Personal email</label>
+              <input class="input" id="p-email" type="email" value="arjun.k@example.com">
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="p-city">City</label>
+              <input class="input" id="p-city" type="text" value="Gurugram">
+            </div>
+            <div class="form-field form-field--full">
+              <label class="form-label" for="p-address">Address</label>
+              <textarea class="textarea" id="p-address">Sector 56, Gurugram, Haryana 122011</textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="form-section__head">
+            <h3 class="form-section__title">Emergency contact</h3>
+            <p class="form-section__desc">Who we should call if something happens at work.</p>
+          </div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="form-label" for="e-name">Name</label>
+              <input class="input" id="e-name" type="text" value="Sunita Kapoor">
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="e-rel">Relationship</label>
+              <input class="input" id="e-rel" type="text" value="Mother">
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="e-phone">Phone</label>
+              <input class="input" id="e-phone" type="tel" value="+91 98110 55667">
+            </div>
+          </div>
+        </section>
+
+        <div class="card__footer">
+          <span class="card__meta">Changes are saved to your profile only.</span>
+          <div class="btn-group">
+            <button class="btn" type="reset">Discard</button>
+            <button class="btn btn--primary" type="submit" data-permission="profile:edit-own">Save changes</button>
+          </div>
+        </div>
+      </form>
+
+      <aside class="stack">
+        <section class="card">
+          <div class="card__header"><h3 class="card__title">Work details</h3></div>
+          <div class="card__body">
+            <dl class="kv">
+              <div class="kv__row"><dt>Employee ID</dt><dd>EMP-1105</dd></div>
+              <div class="kv__row"><dt>Designation</dt><dd>Software Engineer</dd></div>
+              <div class="kv__row"><dt>Department</dt><dd>Engineering</dd></div>
+              <div class="kv__row"><dt>Reporting manager</dt><dd>Sneha Rao</dd></div>
+              <div class="kv__row"><dt>Date of joining</dt><dd>12 Jan 2023</dd></div>
+              <div class="kv__row"><dt>Location</dt><dd>Gurugram office</dd></div>
+              <div class="kv__row"><dt>Employment type</dt><dd>Full-time</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header"><h3 class="card__title">Sensitive details</h3></div>
+          <div class="card__body">
+            <dl class="kv">
+              <div class="kv__row"><dt>Bank account</dt><dd class="masked">•••• •••• 4821</dd></div>
+              <div class="kv__row"><dt>PAN</dt><dd class="masked">•••••3421F</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header"><h3 class="card__title">Your access</h3></div>
+          <div class="card__body">
+            <dl class="kv">
+              <div class="kv__row"><dt>Role</dt><dd><span class="badge badge--primary">Employee</span></dd></div>
+              <div class="kv__row"><dt>Data scope</dt><dd>Own records</dd></div>
+              <div class="kv__row"><dt>Leave approved by</dt><dd>Sneha Rao, then HR</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <div class="alert alert--info">Work details, bank account and PAN are managed by HR. To correct them, send HR a request.</div>
+      </aside>
+
+    </div>
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

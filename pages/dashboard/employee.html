@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" data-role="emp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My dashboard | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Me</div>
+      <a class="nav__item is-active" href="../dashboard/employee.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        My dashboard
+      </a>
+      <a class="nav__item" href="../attendance/my-attendance.html" data-permission="attendance:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        My attendance
+      </a>
+      <a class="nav__item" href="../attendance/mark-attendance.html" data-permission="attendance:mark">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        Mark attendance
+      </a>
+      <a class="nav__item" href="../leave/my-leave.html" data-permission="leave:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        My leave
+      </a>
+      <a class="nav__item" href="../payroll/payslips.html" data-permission="payslip:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        My payslips
+      </a>
+
+      <div class="nav__group-title">Requests &amp; assets</div>
+      <a class="nav__item" href="../requests/my-requests.html" data-permission="requests:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Requests
+        <span class="nav__count">2</span>
+      </a>
+      <a class="nav__item" href="../inventory/my-assets.html" data-permission="assets:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
+        My assets
+      </a>
+
+      <div class="nav__group-title">Company</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>My dashboard</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Arjun Kapoor">AK</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>My dashboard</h1>
+      <p class="page-header__subtitle">Your attendance and requests for September 2026</p>
+    </div>
+    <div class="page-header__actions">
+      <a class="btn" href="../leave/apply-leave.html" data-permission="leave:create">Apply for leave</a>
+      <a class="btn btn--primary" href="../attendance/mark-attendance.html" data-permission="attendance:mark">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        Mark attendance
+      </a>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <section class="stat-strip" aria-label="Key numbers">
+      <div class="stat">
+        <div class="stat__icon stat__icon--1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Days present</span>
+          <strong class="stat__value">19 / 22</strong>
+          <span class="stat__delta stat__delta--down">2 late marks</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--2">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Leave balance</span>
+          <strong class="stat__value">11 days</strong>
+          <span class="stat__delta">Casual 6, Sick 5</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--3">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Next payslip</span>
+          <strong class="stat__value">30 Sep</strong>
+          <span class="stat__delta">Credited in 11 days</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--4">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Open requests</span>
+          <strong class="stat__value">2</strong>
+          <span class="stat__delta">1 leave, 1 asset</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">My working hours, last 14 days</h3>
+          <span class="card__meta">Sep 5 – 18</span>
+        </div>
+        <div class="card__body">
+          <div class="chart" role="img" aria-label="Working hours for the last 14 days, about 8 to 9 hours on weekdays">
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:0" title="Sat 5 Sep: day off"></span></div><span class="chart__label">5</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:0" title="Sun 6 Sep: day off"></span></div><span class="chart__label">6</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:82" title="Mon 7 Sep: 8.2 hours"></span></div><span class="chart__label">7</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:85" title="Tue 8 Sep: 8.5 hours"></span></div><span class="chart__label">8</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:79" title="Wed 9 Sep: 7.9 hours"></span></div><span class="chart__label">9</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:88" title="Thu 10 Sep: 8.8 hours"></span></div><span class="chart__label">10</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:91" title="Fri 11 Sep: 9.1 hours"></span></div><span class="chart__label">11</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:0" title="Sat 12 Sep: day off"></span></div><span class="chart__label">12</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:0" title="Sun 13 Sep: day off"></span></div><span class="chart__label">13</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:88" title="Mon 14 Sep: 8.8 hours"></span></div><span class="chart__label">14</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:88" title="Tue 15 Sep: 8.8 hours"></span></div><span class="chart__label">15</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:87" title="Wed 16 Sep: 8.7 hours"></span></div><span class="chart__label">16</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:83" title="Thu 17 Sep: 8.3 hours"></span></div><span class="chart__label">17</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:87" title="Fri 18 Sep: 8.7 hours"></span></div><span class="chart__label">18</span></div>
+          </div>
+          <p class="text-xs text-muted mt-2">Weekends are days off.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">My requests</h3>
+          <a class="link text-sm" href="../requests/my-requests.html">View all</a>
+        </div>
+        <div class="list">
+          <div class="list__item">
+            <div class="avatar avatar--2">L</div>
+            <div class="list__content">
+              <span class="list__title">Leave, 3 Oct</span>
+              <span class="list__sub">Waiting for Sneha Rao</span>
+            </div>
+            <span class="badge badge--warning badge--dot">Pending</span>
+          </div>
+          <div class="list__item">
+            <div class="avatar avatar--4">A</div>
+            <div class="list__content">
+              <span class="list__title">Laptop upgrade</span>
+              <span class="list__sub">Sent to IT Support</span>
+            </div>
+            <span class="badge badge--warning badge--dot">Pending</span>
+          </div>
+        </div>
+      </section>
+    </div>
+<!-- END 2 -->
+ 
+    <div class="grid grid-2">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Leave balance</h3>
+          <a class="link text-sm" href="../leave/my-leave.html">Details</a>
+        </div>
+        <div class="card__body">
+          <div class="bar-row"><span>Casual</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:50%"></span></div><span class="bar-row__value">6</span></div>
+          <div class="bar-row"><span>Sick</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:62%"></span></div><span class="bar-row__value">5</span></div>
+          <p class="text-xs text-muted mt-4">Casual is 6 of 12 days. Sick is 5 of 8 days.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Updates</h3>
+          <a class="link text-sm" href="../announcements/announcements.html">All announcements</a>
+        </div>
+        <div class="activity">
+          <div class="activity__item">
+            <span class="activity__dot activity__dot--success"></span>
+            <div class="activity__text">Your regularization for 17 Sep was approved<span class="activity__time">Today</span></div>
+          </div>
+          <div class="activity__item">
+            <span class="activity__dot activity__dot--warning"></span>
+            <div class="activity__text">Laptop request sent to IT Support<span class="activity__time">Yesterday</span></div>
+          </div>
+          <div class="activity__item">
+            <span class="activity__dot activity__dot--primary"></span>
+            <div class="activity__text">August payslip is ready<span class="activity__time">1 Sep</span></div>
+          </div>
+          <div class="activity__item">
+            <span class="activity__dot activity__dot--primary"></span>
+            <div class="activity__text">Team offsite on 12 Oct<span class="activity__time">Announcement</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card__header">
+        <h3 class="card__title">My attendance</h3>
+        <a class="link text-sm" href="../attendance/my-attendance.html">View full month</a>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Check-in</th>
+              <th>Check-out</th>
+              <th class="table__num">Hours</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Fri, 18 Sep</td><td>09:18</td><td>18:02</td><td class="table__num">8h 44m</td>
+              <td><span class="badge badge--success badge--dot">Present</span></td>
+            </tr>
+            <tr>
+              <td>Thu, 17 Sep</td><td>10:12</td><td>18:30</td><td class="table__num">8h 18m</td>
+              <td><span class="badge badge--warning badge--dot">Late</span></td>
+            </tr>
+            <tr>
+              <td>Wed, 16 Sep</td><td>09:25</td><td>18:05</td><td class="table__num">8h 40m</td>
+              <td><span class="badge badge--success badge--dot">Present</span></td>
+            </tr>
+            <tr>
+              <td>Tue, 15 Sep</td><td>09:10</td><td>17:58</td><td class="table__num">8h 48m</td>
+              <td><span class="badge badge--success badge--dot">Present</span></td>
+            </tr>
+            <tr>
+              <td>Mon, 14 Sep</td><td>09:22</td><td>18:10</td><td class="table__num">8h 48m</td>
+              <td><span class="badge badge--success badge--dot">Present</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 3 -->

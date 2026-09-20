@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" data-role="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job openings | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item" href="../dashboard/hr.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">6</span>
+      </a>
+
+      <div class="nav__group-title">People</div>
+      <a class="nav__item" href="../users/users-list.html" data-permission="users:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        Employees
+      </a>
+      <a class="nav__item" href="../access/designations.html" data-permission="designations:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/></svg>
+        Designations &amp; roles
+      </a>
+      <a class="nav__item" href="../attendance/team-attendance.html" data-permission="attendance:view-all">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        Attendance
+      </a>
+      <a class="nav__item" href="../leave/leave-approvals.html" data-permission="leave:approve">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        Leave
+      </a>
+      <a class="nav__item is-active" href="../recruitment/job-openings.html" data-permission="recruitment:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v11H4zM9 8V5h6v3"/></svg>
+        Recruitment
+      </a>
+
+      <div class="nav__group-title">Communication</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+
+      <div class="nav__group-title">Reports</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Job openings</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Priya Nair">PN</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Job openings</h1>
+      <p class="page-header__subtitle">Positions you are hiring for right now</p>
+    </div>
+    <div class="page-header__actions">
+      <a class="btn" href="candidates.html">Candidates</a>
+      <button class="btn btn--primary" type="button" data-permission="recruitment:create">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Post job opening
+      </button>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <section class="stat-strip" aria-label="Key numbers">
+      <div class="stat">
+        <div class="stat__icon stat__icon--1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v11H4zM9 8V5h6v3"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Open positions</span>
+          <strong class="stat__value">9</strong>
+          <span class="stat__delta stat__delta--down">2 closing this week</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--2">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Applicants in pipeline</span>
+          <strong class="stat__value">221</strong>
+          <span class="stat__delta stat__delta--up">+38 this week</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--3">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Interviews this week</span>
+          <strong class="stat__value">14</strong>
+          <span class="stat__delta">5 are for Frontend Developer</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--4">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Average time to hire</span>
+          <strong class="stat__value">26 days</strong>
+          <span class="stat__delta stat__delta--up">4 days faster than 2025</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="table__toolbar">
+          <div class="tabs tabs--pill" role="tablist">
+            <button class="tabs__tab is-active" type="button" role="tab">Open <span class="badge badge--count">9</span></button>
+            <button class="tabs__tab" type="button" role="tab">Closed <span class="badge badge--count">14</span></button>
+            <button class="tabs__tab" type="button" role="tab">Drafts <span class="badge badge--count">1</span></button>
+          </div>
+          <div class="table__filters">
+            <div class="input-group">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input class="input input--sm input--search" type="search" placeholder="Search job titles" aria-label="Search jobs">
+            </div>
+            <select class="select select--sm" aria-label="Filter by department">
+              <option>All departments</option><option>Engineering</option><option>Sales</option>
+              <option>Operations</option><option>Customer Support</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Job title</th>
+                <th>Department</th>
+                <th>Location</th>
+                <th>Type</th>
+                <th class="table__num">Applicants</th>
+                <th>Closes</th>
+                <th>Status</th>
+                <th class="table__actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="table__user-name">Frontend Developer</span><span class="table__user-sub">Posted 2 Sep</span></td>
+                <td>Engineering</td><td>Gurugram</td><td>Full-time</td><td class="table__num">48</td><td>25 Sep</td>
+                <td><span class="badge badge--warning badge--dot">Closing soon</span></td>
+                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="candidates.html">Candidates</a><button class="btn btn--sm" type="button" data-permission="recruitment:edit">Edit</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">Backend Developer</span><span class="table__user-sub">Posted 2 Sep</span></td>
+                <td>Engineering</td><td>Gurugram</td><td>Full-time</td><td class="table__num">39</td><td>10 Oct</td>
+                <td><span class="badge badge--success badge--dot">Open</span></td>
+                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="candidates.html">Candidates</a><button class="btn btn--sm" type="button" data-permission="recruitment:edit">Edit</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">QA Engineer</span><span class="table__user-sub">Posted 5 Sep</span></td>
+                <td>Engineering</td><td>Gurugram</td><td>Full-time</td><td class="table__num">27</td><td>15 Oct</td>
+                <td><span class="badge badge--success badge--dot">Open</span></td>
+                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="candidates.html">Candidates</a><button class="btn btn--sm" type="button" data-permission="recruitment:edit">Edit</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">DevOps Engineer</span><span class="table__user-sub">Posted 8 Sep</span></td>
+                <td>Engineering</td><td>Remote</td><td>Full-time</td><td class="table__num">21</td><td>20 Oct</td>
+                <td><span class="badge badge--success badge--dot">Open</span></td>
+                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="candidates.html">Candidates</a><button class="btn btn--sm" type="button" data-permission="recruitment:edit">Edit</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">Sales Executive</span><span class="table__user-sub">Posted 1 Sep</span></td>
+                <td>Sales</td><td>Gurugram</td><td>Full-time</td><td class="table__num">35</td><td>24 Sep</td>
+                <td><span class="badge badge--warning badge--dot">Closing soon</span></td>
+                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="candidates.html">Candidates</a><button class="btn btn--sm" type="button" data-permission="recruitment:edit">Edit</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="table__user-name">Account Manager</span><span class="table__user-sub">Posted 9 Sep</span></td>
+                <td>Sales</td><td>Gurugram</td><td>Full-time</td><td class="table__num">22</td><td>25 Oct</td>
+                <td><span class="badge badge--success badge--dot">Open</span></td>
+                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="candidates.html">Candidates</a><button class="btn btn--sm" type="button" data-permission="recruitment:edit">Edit</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card__footer">
+          <span class="card__meta">Showing 6 of 9 open positions</span>
+          <div class="btn-group">
+            <button class="btn btn--sm" type="button" disabled>Previous</button>
+            <button class="btn btn--sm" type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="stack">
+
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Applicants by stage</h3>
+            <span class="card__meta">221 in pipeline</span>
+          </div>
+          <div class="card__body">
+            <div class="bar-row"><span>Applied</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:100%"></span></div><span class="bar-row__value">120</span></div>
+            <div class="bar-row"><span>Screening</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:53%"></span></div><span class="bar-row__value">64</span></div>
+            <div class="bar-row"><span>Interview</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:23%"></span></div><span class="bar-row__value">28</span></div>
+            <div class="bar-row"><span>Offer</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:8%"></span></div><span class="bar-row__value">9</span></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Open roles by department</h3>
+            <span class="card__meta">9 total</span>
+          </div>
+          <div class="card__body">
+            <div class="bar-row"><span>Engineering</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:100%"></span></div><span class="bar-row__value">4</span></div>
+            <div class="bar-row"><span>Sales</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:50%"></span></div><span class="bar-row__value">2</span></div>
+            <div class="bar-row"><span>Support</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:50%"></span></div><span class="bar-row__value">2</span></div>
+            <div class="bar-row"><span>Operations</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:25%"></span></div><span class="bar-row__value">1</span></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header"><h3 class="card__title">Post a job opening</h3></div>
+          <div class="card__body">
+            <form class="form" action="job-openings.html">
+              <div class="form-field">
+                <label class="form-label form-label--required" for="j-title">Job title</label>
+                <input class="input" id="j-title" type="text" placeholder="e.g. Business Analyst" required>
+              </div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label class="form-label form-label--required" for="j-dept">Department</label>
+                  <select class="select" id="j-dept" required>
+                    <option value="">Select</option><option>Engineering</option><option>Sales</option>
+                    <option>Operations</option><option>Customer Support</option><option>Finance</option><option>HR</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="j-open">Positions</label>
+                  <input class="input" id="j-open" type="number" min="1" value="1">
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="j-loc">Location</label>
+                  <select class="select" id="j-loc"><option>Gurugram</option><option>Remote</option></select>
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="j-close">Closes on</label>
+                  <input class="input" id="j-close" type="date">
+                </div>
+              </div>
+              <button class="btn btn--primary btn--block" type="submit" data-permission="recruitment:create">Post job opening</button>
+            </form>
+          </div>
+        </section>
+
+      </aside>
+    </div>
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

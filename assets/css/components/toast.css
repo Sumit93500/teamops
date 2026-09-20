@@ -1,0 +1,56 @@
+/* ==========================================================
+   toast.css: pop-up messages, plus inline alerts
+   Toast (the JS stage creates these):
+   <div class="toast-container">
+     <div class="toast toast--success">
+       <div class="toast__body"><div class="toast__title">Saved</div><div class="toast__text">Role updated.</div></div>
+       <button class="toast__close" type="button" aria-label="Dismiss">x</button>
+     </div>
+   </div>
+
+   Alert (a message inside the page, e.g. a login error):
+   <div class="alert alert--danger">Wrong email or password.</div>
+   ========================================================== */
+
+.toast-container {
+  position: fixed; right: var(--space-6); bottom: var(--space-6);
+  z-index: var(--z-toast);
+  display: flex; flex-direction: column; gap: var(--space-2);
+  width: min(360px, calc(100vw - 32px));
+}
+.toast {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--toast-color, var(--color-primary));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+  animation: toast-in 200ms ease;
+}
+.toast--success { --toast-color: var(--color-success); }
+.toast--warning { --toast-color: var(--color-warning); }
+.toast--danger  { --toast-color: var(--color-danger); }
+.toast--info    { --toast-color: var(--color-info); }
+
+.toast__body { flex: 1; min-width: 0; }
+.toast__title { font-weight: var(--weight-medium); }
+.toast__text { font-size: var(--text-sm); color: var(--color-text-muted); }
+.toast__close { color: var(--color-text-muted); }
+.toast__close:hover { color: var(--color-text); }
+
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* ---------- Inline alert ---------- */
+.alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px;
+  font-size: var(--text-sm);
+  color: var(--alert-color, var(--color-text));
+  background: var(--alert-bg, var(--color-surface-hover));
+  border-radius: var(--radius-md);
+}
+.alert--success { --alert-color: var(--color-success); --alert-bg: var(--color-success-soft); }
+.alert--warning { --alert-color: var(--color-warning); --alert-bg: var(--color-warning-soft); }
+.alert--danger  { --alert-color: var(--color-danger);  --alert-bg: var(--color-danger-soft); }
+.alert--info    { --alert-color: var(--color-info);    --alert-bg: var(--color-info-soft); }

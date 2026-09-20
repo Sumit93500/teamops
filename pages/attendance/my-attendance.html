@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" data-role="emp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My attendance | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Me</div>
+      <a class="nav__item" href="../dashboard/employee.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        My dashboard
+      </a>
+      <a class="nav__item is-active" href="../attendance/my-attendance.html" data-permission="attendance:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        My attendance
+      </a>
+      <a class="nav__item" href="../attendance/mark-attendance.html" data-permission="attendance:mark">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        Mark attendance
+      </a>
+      <a class="nav__item" href="../leave/my-leave.html" data-permission="leave:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        My leave
+      </a>
+      <a class="nav__item" href="../payroll/payslips.html" data-permission="payslip:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        My payslips
+      </a>
+
+      <div class="nav__group-title">Requests &amp; assets</div>
+      <a class="nav__item" href="../requests/my-requests.html" data-permission="requests:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Requests
+        <span class="nav__count">2</span>
+      </a>
+      <a class="nav__item" href="../inventory/my-assets.html" data-permission="assets:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
+        My assets
+      </a>
+
+      <div class="nav__group-title">Company</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>My attendance</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Arjun Kapoor">AK</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>My attendance</h1>
+      <p class="page-header__subtitle">Your punches, late marks and working hours</p>
+    </div>
+    <div class="page-header__actions">
+      <select class="select select--sm" aria-label="Choose month">
+        <option>September 2026</option><option>August 2026</option><option>July 2026</option>
+      </select>
+      <button class="btn" type="button" data-modal="regularize-modal" data-permission="attendance:regularize">Request regularization</button>
+      <a class="btn btn--primary" href="mark-attendance.html" data-permission="attendance:mark">Mark attendance</a>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <section class="stat-strip" aria-label="Key numbers">
+      <div class="stat">
+        <div class="stat__icon stat__icon--1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Days present</span>
+          <strong class="stat__value">14 / 22</strong>
+          <span class="stat__delta">8 working days left</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--3">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Late marks</span>
+          <strong class="stat__value">2</strong>
+          <span class="stat__delta stat__delta--down">1 more before a deduction</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--2">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Average hours</span>
+          <strong class="stat__value">8h 36m</strong>
+          <span class="stat__delta stat__delta--up">Target is 8h</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--4">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Correction requests</span>
+          <strong class="stat__value">1</strong>
+          <span class="stat__delta">Approved on 18 Sep</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">September 2026</h3>
+          <span class="card__meta">Monday to Sunday</span>
+        </div>
+        <div class="card__body">
+          <div class="calendar__grid">
+            <div class="calendar__dow">Mon</div><div class="calendar__dow">Tue</div><div class="calendar__dow">Wed</div>
+            <div class="calendar__dow">Thu</div><div class="calendar__dow">Fri</div><div class="calendar__dow">Sat</div><div class="calendar__dow">Sun</div>
+
+            <div class="calendar__day calendar__day--empty"></div>
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">1</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">2</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">3</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">4</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--weekend"><span class="calendar__date">5</span></div>
+            <div class="calendar__day calendar__day--weekend"><span class="calendar__date">6</span></div>
+
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">7</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">8</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">9</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--late"><span class="calendar__date">10</span><span class="calendar__tag">Late</span></div>
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">11</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--weekend"><span class="calendar__date">12</span></div>
+            <div class="calendar__day calendar__day--weekend"><span class="calendar__date">13</span></div>
+
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">14</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">15</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">16</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--late"><span class="calendar__date">17</span><span class="calendar__tag">Late</span></div>
+            <div class="calendar__day calendar__day--present"><span class="calendar__date">18</span><span class="calendar__tag">On time</span></div>
+            <div class="calendar__day calendar__day--weekend"><span class="calendar__date">19</span></div>
+            <div class="calendar__day calendar__day--weekend calendar__day--today"><span class="calendar__date">20</span></div>
+
+            <div class="calendar__day calendar__day--future"><span class="calendar__date">21</span></div>
+            <div class="calendar__day calendar__day--future"><span class="calendar__date">22</span></div>
+            <div class="calendar__day calendar__day--future"><span class="calendar__date">23</span></div>
+            <div class="calendar__day calendar__day--future"><span class="calendar__date">24</span></div>
+            <div class="calendar__day calendar__day--future"><span class="calendar__date">25</span></div>
+            <div class="calendar__day calendar__day--weekend"><span class="calendar__date">26</span></div>
+            <div class="calendar__day calendar__day--weekend"><span class="calendar__date">27</span></div>
+
+            <div class="calendar__day calendar__day--future"><span class="calendar__date">28</span></div>
+            <div class="calendar__day calendar__day--future"><span class="calendar__date">29</span></div>
+            <div class="calendar__day calendar__day--future"><span class="calendar__date">30</span></div>
+            <div class="calendar__day calendar__day--empty"></div>
+            <div class="calendar__day calendar__day--empty"></div>
+            <div class="calendar__day calendar__day--empty"></div>
+            <div class="calendar__day calendar__day--empty"></div>
+          </div>
+
+          <div class="calendar__legend">
+            <span class="is-present">On time</span>
+            <span class="is-late">Late</span>
+            <span class="is-absent">Absent</span>
+            <span class="is-leave">On leave</span>
+            <span class="is-holiday">Holiday</span>
+            <span class="is-off">Weekend</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="stack">
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Month summary</h3>
+            <span class="card__meta">14 working days so far</span>
+          </div>
+          <div class="card__body">
+            <div class="bar-row"><span>On time</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:86%"></span></div><span class="bar-row__value">12</span></div>
+            <div class="bar-row"><span>Late</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:14%"></span></div><span class="bar-row__value">2</span></div>
+            <div class="bar-row"><span>On leave</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:0%"></span></div><span class="bar-row__value">0</span></div>
+            <div class="bar-row"><span>Absent</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:0%"></span></div><span class="bar-row__value">0</span></div>
+          </div>
+        </section>
+
+        <div class="alert alert--warning">You have used 2 of 3 late marks this month. A third late mark is treated as half a day of leave.</div>
+      </aside>
+    </div>
+<!-- END 2 -->
+ 
+    <section class="card">
+      <div class="card__header">
+        <h3 class="card__title">Daily log</h3>
+        <span class="card__meta">Last 7 working days</span>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Check-in</th>
+              <th>Check-out</th>
+              <th class="table__num">Hours</th>
+              <th>Status</th>
+              <th class="table__actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Fri, 18 Sep</td><td>09:18</td><td>18:02</td><td class="table__num">8h 44m</td><td><span class="badge badge--success badge--dot">Present</span></td><td class="table__actions"></td></tr>
+            <tr><td>Thu, 17 Sep</td><td>10:12</td><td>18:30</td><td class="table__num">8h 18m</td><td><span class="badge badge--warning badge--dot">Late</span></td><td class="table__actions"><span class="badge badge--success badge--square">Regularized</span></td></tr>
+            <tr><td>Wed, 16 Sep</td><td>09:25</td><td>18:05</td><td class="table__num">8h 40m</td><td><span class="badge badge--success badge--dot">Present</span></td><td class="table__actions"></td></tr>
+            <tr><td>Tue, 15 Sep</td><td>09:10</td><td>17:58</td><td class="table__num">8h 48m</td><td><span class="badge badge--success badge--dot">Present</span></td><td class="table__actions"></td></tr>
+            <tr><td>Mon, 14 Sep</td><td>09:22</td><td>18:10</td><td class="table__num">8h 48m</td><td><span class="badge badge--success badge--dot">Present</span></td><td class="table__actions"></td></tr>
+            <tr><td>Fri, 11 Sep</td><td>09:15</td><td>18:00</td><td class="table__num">8h 45m</td><td><span class="badge badge--success badge--dot">Present</span></td><td class="table__actions"></td></tr>
+            <tr><td>Thu, 10 Sep</td><td>10:05</td><td>18:20</td><td class="table__num">8h 15m</td><td><span class="badge badge--warning badge--dot">Late</span></td><td class="table__actions"><button class="btn btn--sm" type="button" data-modal="regularize-modal" data-permission="attendance:regularize">Request fix</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- Regularization request. Hidden until the JS stage opens it (add class "is-open" to preview). -->
+<div class="modal" id="regularize-modal" role="dialog" aria-modal="true" aria-labelledby="reg-title">
+  <div class="modal__dialog">
+    <div class="modal__header">
+      <div>
+        <h3 class="modal__title" id="reg-title">Request regularization</h3>
+        <p class="modal__desc">Ask your manager to correct a missed or late punch.</p>
+      </div>
+      <button class="modal__close" type="button" aria-label="Close">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <form action="my-attendance.html">
+      <div class="modal__body">
+        <div class="form">
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="form-label form-label--required" for="reg-date">Date</label>
+              <input class="input" id="reg-date" type="date" required>
+            </div>
+            <div class="form-field">
+              <label class="form-label form-label--required" for="reg-issue">What went wrong?</label>
+              <select class="select" id="reg-issue" required>
+                <option value="">Select</option>
+                <option>Late arrival</option><option>Missed check-in</option><option>Missed check-out</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label form-label--required" for="reg-time">Correct time</label>
+              <input class="input" id="reg-time" type="time" required>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="reg-manager">Sent to</label>
+              <input class="input" id="reg-manager" type="text" value="Sneha Rao (Team Lead)" disabled>
+            </div>
+            <div class="form-field form-field--full">
+              <label class="form-label form-label--required" for="reg-reason">Reason</label>
+              <textarea class="textarea" id="reg-reason" placeholder="Explain briefly so your manager can decide quickly" required></textarea>
+              <span class="form-hint">Requests must be sent within 7 days of the date.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn" type="button">Cancel</button>
+        <button class="btn btn--primary" type="submit">Send request</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 3 -->

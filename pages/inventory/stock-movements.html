@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" data-role="admin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock movements | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item" href="../dashboard/admin.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">3</span>
+      </a>
+
+      <div class="nav__group-title">People</div>
+      <a class="nav__item" href="../users/users-list.html" data-permission="users:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        Users
+      </a>
+      <a class="nav__item" href="../access/roles-list.html" data-permission="roles:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Roles &amp; permissions
+      </a>
+      <a class="nav__item" href="../access/designations.html" data-permission="designations:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/></svg>
+        Designations
+      </a>
+      <a class="nav__item" href="../attendance/team-attendance.html" data-permission="attendance:view-all">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        Attendance
+      </a>
+      <a class="nav__item" href="../leave/leave-approvals.html" data-permission="leave:approve">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        Leave
+      </a>
+
+      <div class="nav__group-title">Finance &amp; operations</div>
+      <a class="nav__item" href="../payroll/payroll-run.html" data-permission="payroll:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
+        Payroll
+      </a>
+      <a class="nav__item is-active" href="../inventory/items.html" data-permission="inventory:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
+        Inventory
+      </a>
+
+      <div class="nav__group-title">System</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+      <a class="nav__item" href="../system/audit-log.html" data-permission="audit:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        Audit log
+      </a>
+      <a class="nav__item" href="../system/settings.html" data-permission="settings:edit">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.3 3h-4l-.3 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.3 2.7h4l.3-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2"/></svg>
+        Settings
+      </a>
+      <a class="nav__item" href="../system/backup.html" data-permission="backup:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+        Backup
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Stock movements</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Aarav Mehta">AM</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <ol class="breadcrumb mb-2" aria-label="Breadcrumb">
+        <li class="breadcrumb__item"><a href="items.html">Inventory</a></li>
+        <li class="breadcrumb__item" aria-current="page">Stock movements</li>
+      </ol>
+      <h1>Stock movements</h1>
+      <p class="page-header__subtitle">Every item that came in, went out or was corrected</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn" type="button" data-permission="reports:export">Export</button>
+    </div>
+  </div>
+
+  <div class="grid grid-main-aside">
+
+    <section class="card">
+      <div class="table__toolbar">
+        <div class="tabs tabs--pill" role="tablist">
+          <button class="tabs__tab is-active" type="button" role="tab">All</button>
+          <button class="tabs__tab" type="button" role="tab">Stock in</button>
+          <button class="tabs__tab" type="button" role="tab">Stock out</button>
+          <button class="tabs__tab" type="button" role="tab">Adjustments</button>
+        </div>
+        <div class="input-group">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input class="input input--sm input--search" type="search" placeholder="Search item or reference" aria-label="Search movements">
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Item</th>
+              <th>Type</th>
+              <th class="table__num">Quantity</th>
+              <th>Reference</th>
+              <th>Recorded by</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>18 Sep, 16:40</td>
+              <td><span class="table__user-name">Dell Latitude 5440</span></td>
+              <td><span class="badge badge--info badge--square">Stock out</span></td>
+              <td class="table__num"><span class="qty qty--out">-1</span></td>
+              <td>Assigned to Sneha Rao</td><td>Vikram Singh</td>
+            </tr>
+            <tr>
+              <td>18 Sep, 11:05</td>
+              <td><span class="table__user-name">A4 paper ream</span></td>
+              <td><span class="badge badge--info badge--square">Stock out</span></td>
+              <td class="table__num"><span class="qty qty--out">-10</span></td>
+              <td>Finance department request</td><td>Vikram Singh</td>
+            </tr>
+            <tr>
+              <td>17 Sep, 15:20</td>
+              <td><span class="table__user-name">Ergonomic office chair</span></td>
+              <td><span class="badge badge--success badge--square">Stock in</span></td>
+              <td class="table__num"><span class="qty qty--in">+6</span></td>
+              <td><span class="asset-tag">PO-2270</span></td><td>Vikram Singh</td>
+            </tr>
+            <tr>
+              <td>17 Sep, 10:12</td>
+              <td><span class="table__user-name">Logitech MX Keys keyboard</span></td>
+              <td><span class="badge badge--info badge--square">Stock out</span></td>
+              <td class="table__num"><span class="qty qty--out">-2</span></td>
+              <td>Engineering team</td><td>Vikram Singh</td>
+            </tr>
+            <tr>
+              <td>16 Sep, 14:00</td>
+              <td><span class="table__user-name">HDMI cable, 2 m</span></td>
+              <td><span class="badge badge--warning badge--square">Adjustment</span></td>
+              <td class="table__num"><span class="qty qty--out">-3</span></td>
+              <td>Stock count correction</td><td>Vikram Singh</td>
+            </tr>
+            <tr>
+              <td>15 Sep, 09:30</td>
+              <td><span class="table__user-name">Coffee beans, 1 kg</span></td>
+              <td><span class="badge badge--success badge--square">Stock in</span></td>
+              <td class="table__num"><span class="qty qty--in">+12</span></td>
+              <td><span class="asset-tag">PO-2264</span></td><td>Vikram Singh</td>
+            </tr>
+            <tr>
+              <td>14 Sep, 17:45</td>
+              <td><span class="table__user-name">Dell Latitude 5440</span></td>
+              <td><span class="badge badge--primary badge--square">Return</span></td>
+              <td class="table__num"><span class="qty qty--in">+1</span></td>
+              <td>Returned by Divya Menon</td><td>Vikram Singh</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <span>Showing 1 to 7 of 186</span>
+        <div class="pagination__pages">
+          <button class="pagination__btn" type="button" disabled>Prev</button>
+          <button class="pagination__btn is-active" type="button">1</button>
+          <button class="pagination__btn" type="button">2</button>
+          <button class="pagination__btn" type="button">3</button>
+          <span class="pagination__gap">...</span>
+          <button class="pagination__btn" type="button">27</button>
+          <button class="pagination__btn" type="button">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="stack aside-sticky">
+      <section class="card">
+        <div class="card__header"><h3 class="card__title">Record a movement</h3></div>
+        <div class="card__body">
+          <form class="form" action="stock-movements.html">
+            <div class="form-field">
+              <label class="form-label form-label--required" for="m-item">Item</label>
+              <select class="select" id="m-item" required>
+                <option value="">Select item</option>
+                <option>Dell Latitude 5440</option><option>Logitech MX Keys keyboard</option>
+                <option>HDMI cable, 2 m</option><option>Ergonomic office chair</option>
+                <option>A4 paper ream</option><option>Coffee beans, 1 kg</option>
+              </select>
+            </div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label form-label--required" for="m-type">Type</label>
+                <select class="select" id="m-type" required>
+                  <option>Stock in</option><option>Stock out</option><option>Adjustment</option><option>Return</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label form-label--required" for="m-qty">Quantity</label>
+                <input class="input" id="m-qty" type="number" min="1" placeholder="0" required>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="m-ref">Reference</label>
+              <input class="input" id="m-ref" type="text" placeholder="PO number or who it went to">
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="m-note">Note</label>
+              <textarea class="textarea" id="m-note" placeholder="Optional"></textarea>
+            </div>
+            <button class="btn btn--primary btn--block" type="submit" data-permission="inventory:create">Record movement</button>
+          </form>
+        </div>
+      </section>
+
+      <div class="alert alert--info">Movements can't be edited or deleted. A mistake is fixed with an adjustment, so the history always stays complete for the audit log.</div>
+    </aside>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

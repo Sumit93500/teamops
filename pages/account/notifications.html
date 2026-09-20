@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" data-role="emp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Me</div>
+      <a class="nav__item" href="../dashboard/employee.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        My dashboard
+      </a>
+      <a class="nav__item" href="../attendance/my-attendance.html" data-permission="attendance:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        My attendance
+      </a>
+      <a class="nav__item" href="../attendance/mark-attendance.html" data-permission="attendance:mark">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
+        Mark attendance
+      </a>
+      <a class="nav__item" href="../leave/my-leave.html" data-permission="leave:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        My leave
+      </a>
+      <a class="nav__item" href="../payroll/payslips.html" data-permission="payslip:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        My payslips
+      </a>
+
+      <div class="nav__group-title">Requests &amp; assets</div>
+      <a class="nav__item" href="../requests/my-requests.html" data-permission="requests:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Requests
+        <span class="nav__count">2</span>
+      </a>
+      <a class="nav__item" href="../inventory/my-assets.html" data-permission="assets:view-own">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
+        My assets
+      </a>
+
+      <div class="nav__group-title">Company</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Notifications</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Arjun Kapoor">AK</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>My account</h1>
+      <p class="page-header__subtitle">Your profile, password and sign-in security</p>
+    </div>
+  </div>
+
+  <nav class="tabs acct-tabs" aria-label="Account sections">
+    <a class="tabs__tab" href="my-profile.html">Profile</a>
+    <a class="tabs__tab" href="change-password.html">Password</a>
+    <a class="tabs__tab" href="sessions.html">Sessions</a>
+    <a class="tabs__tab is-active" href="notifications.html">Notifications</a>
+  </nav>
+
+  <div class="stack">
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Recent notifications</h3>
+          <button class="btn btn--sm" type="button">Mark all as read</button>
+        </div>
+
+        <div>
+          <div class="notif is-unread">
+            <span class="notif__dot"></span>
+            <div class="notif__body"><span class="notif__title">Your regularization for 17 Sep was approved</span><span class="list__sub">Attendance. Approved by Priya Nair</span></div>
+            <span class="notif__time">Today</span>
+          </div>
+          <div class="notif is-unread">
+            <span class="notif__dot"></span>
+            <div class="notif__body"><span class="notif__title">Your laptop request is with IT Support</span><span class="list__sub">Requests. Checking stock and device age</span></div>
+            <span class="notif__time">Yesterday</span>
+          </div>
+          <div class="notif is-unread">
+            <span class="notif__dot"></span>
+            <div class="notif__body"><span class="notif__title">New announcement: Team offsite on 12 Oct</span><span class="list__sub">Company. Posted by Priya Nair</span></div>
+            <span class="notif__time">Yesterday</span>
+          </div>
+          <div class="notif">
+            <span class="notif__dot"></span>
+            <div class="notif__body"><span class="notif__title">Your leave request for 3 Oct was sent to Sneha Rao</span><span class="list__sub">Leave. Waiting for the first approval</span></div>
+            <span class="notif__time">18 Sep</span>
+          </div>
+          <div class="notif">
+            <span class="notif__dot"></span>
+            <div class="notif__body"><span class="notif__title">Your August payslip is ready</span><span class="list__sub">Payslips. Paid on 31 Aug</span></div>
+            <span class="notif__time">1 Sep</span>
+          </div>
+          <div class="notif">
+            <span class="notif__dot"></span>
+            <div class="notif__body"><span class="notif__title">Your work from home request for 12 Aug was approved</span><span class="list__sub">Leave. Approved by Sneha Rao</span></div>
+            <span class="notif__time">12 Aug</span>
+          </div>
+        </div>
+
+        <div class="card__footer">
+          <span class="card__meta">3 unread</span>
+          <div class="btn-group">
+            <button class="btn btn--sm" type="button" disabled>Previous</button>
+            <button class="btn btn--sm" type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="stack">
+
+        <section class="card">
+          <div class="card__header"><h3 class="card__title">How you're notified</h3></div>
+          <div class="card__body">
+            <div class="toggle-list">
+              <label class="switch"><input type="checkbox" checked> Show notifications in the app</label>
+              <label class="switch"><input type="checkbox" checked> Send important ones by email</label>
+              <label class="switch"><input type="checkbox"> Pause notifications from 8 PM to 8 AM</label>
+            </div>
+          </div>
+        </section>
+
+        <div class="alert alert--info">Security alerts, such as a new device signing in, are always sent. You can't turn those off.</div>
+
+      </aside>
+    </div>
+
+    <section class="card">
+      <div class="card__header">
+        <h3 class="card__title">Choose what you hear about</h3>
+        <span class="card__meta">Applies to you only</span>
+      </div>
+      <div class="table-wrap">
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>In the app</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="matrix__module-name">Leave</span><span class="matrix__module-desc">Requests and decisions</span></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Leave, in the app" checked></label></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Leave, by email" checked></label></td>
+            </tr>
+            <tr>
+              <td><span class="matrix__module-name">Attendance</span><span class="matrix__module-desc">Late marks and corrections</span></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Attendance, in the app" checked></label></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Attendance, by email"></label></td>
+            </tr>
+            <tr>
+              <td><span class="matrix__module-name">Payslips</span><span class="matrix__module-desc">When a payslip is ready</span></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Payslips, in the app" checked></label></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Payslips, by email" checked></label></td>
+            </tr>
+            <tr>
+              <td><span class="matrix__module-name">Requests</span><span class="matrix__module-desc">Assets and other requests</span></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Requests, in the app" checked></label></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Requests, by email"></label></td>
+            </tr>
+            <tr>
+              <td><span class="matrix__module-name">Announcements</span><span class="matrix__module-desc">Company news and notices</span></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Announcements, in the app" checked></label></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Announcements, by email"></label></td>
+            </tr>
+            <tr>
+              <td><span class="matrix__module-name">Security alerts</span><span class="matrix__module-desc">Always on</span></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Security alerts, in the app" checked disabled></label></td>
+              <td><label class="switch"><input type="checkbox" aria-label="Security alerts, by email" checked disabled></label></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card__footer">
+        <span class="card__meta">Changes are saved when you press Save.</span>
+        <button class="btn btn--primary btn--sm" type="button" data-permission="notifications:edit-own">Save preferences</button>
+      </div>
+    </section>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->

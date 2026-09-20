@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" data-role="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item is-active" href="../dashboard/hr.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">6</span>
+      </a>
+
+      <div class="nav__group-title">People</div>
+      <a class="nav__item" href="../users/users-list.html" data-permission="users:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        Employees
+      </a>
+      <a class="nav__item" href="../access/designations.html" data-permission="designations:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/></svg>
+        Designations &amp; roles
+      </a>
+      <a class="nav__item" href="../attendance/team-attendance.html" data-permission="attendance:view-all">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        Attendance
+      </a>
+      <a class="nav__item" href="../leave/leave-approvals.html" data-permission="leave:approve">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        Leave
+      </a>
+      <a class="nav__item" href="../recruitment/job-openings.html" data-permission="recruitment:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v11H4zM9 8V5h6v3"/></svg>
+        Recruitment
+      </a>
+
+      <div class="nav__group-title">Communication</div>
+      <a class="nav__item" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+
+      <div class="nav__group-title">Reports</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Dashboard</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Priya Nair">PN</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="page-header__subtitle">People operations for September 2026</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn" type="button">Export</button>
+      <a class="btn btn--primary" href="../recruitment/job-openings.html" data-permission="recruitment:create">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Post job opening
+      </a>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <section class="stat-strip" aria-label="Key numbers">
+      <div class="stat">
+        <div class="stat__icon stat__icon--1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v11H4zM9 8V5h6v3"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Open positions</span>
+          <strong class="stat__value">9</strong>
+          <span class="stat__delta stat__delta--up">2 closing this week</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--2">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">On leave today</span>
+          <strong class="stat__value">14</strong>
+          <span class="stat__delta">5.6% of workforce</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--3">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">Pending leave requests</span>
+          <strong class="stat__value">6</strong>
+          <span class="stat__delta stat__delta--down">Oldest is 2 days old</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat__icon stat__icon--4">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        </div>
+        <div>
+          <span class="stat__label">New joiners, Sep</span>
+          <strong class="stat__value">5</strong>
+          <span class="stat__delta">Onboarding in progress</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-main-aside">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Leave requests, last 14 days</h3>
+          <span class="card__meta">Sep 5 – 18</span>
+        </div>
+        <div class="card__body">
+          <div class="chart" role="img" aria-label="Leave requests per day for the last 14 days, between 1 and 13">
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:15" title="Sat 5 Sep: 2 requests"></span></div><span class="chart__label">5</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:8" title="Sun 6 Sep: 1 request"></span></div><span class="chart__label">6</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:54" title="Mon 7 Sep: 7 requests"></span></div><span class="chart__label">7</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:69" title="Tue 8 Sep: 9 requests"></span></div><span class="chart__label">8</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:62" title="Wed 9 Sep: 8 requests"></span></div><span class="chart__label">9</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:92" title="Thu 10 Sep: 12 requests"></span></div><span class="chart__label">10</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:77" title="Fri 11 Sep: 10 requests"></span></div><span class="chart__label">11</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:15" title="Sat 12 Sep: 2 requests"></span></div><span class="chart__label">12</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:8" title="Sun 13 Sep: 1 request"></span></div><span class="chart__label">13</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:85" title="Mon 14 Sep: 11 requests"></span></div><span class="chart__label">14</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:69" title="Tue 15 Sep: 9 requests"></span></div><span class="chart__label">15</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:100" title="Wed 16 Sep: 13 requests"></span></div><span class="chart__label">16</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:62" title="Thu 17 Sep: 8 requests"></span></div><span class="chart__label">17</span></div>
+            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:77" title="Fri 18 Sep: 10 requests"></span></div><span class="chart__label">18</span></div>
+          </div>
+          <p class="text-xs text-muted mt-2">Weekends are shown lighter.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Pending approvals</h3>
+          <span class="card__meta">3 shown</span>
+        </div>
+        <div class="list">
+          <div class="list__item">
+            <div class="avatar avatar--1">RG</div>
+            <div class="list__content">
+              <span class="list__title">Rohan Gupta, casual leave</span>
+              <span class="list__sub">22 – 24 Sep, 3 days</span>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn--sm" type="button">Reject</button>
+              <button class="btn btn--primary btn--sm" type="button">Approve</button>
+            </div>
+          </div>
+          <div class="list__item">
+            <div class="avatar avatar--2">KM</div>
+            <div class="list__content">
+              <span class="list__title">Karan Malhotra, earned leave</span>
+              <span class="list__sub">1 – 10 Oct, 8 days</span>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn--sm" type="button">Reject</button>
+              <button class="btn btn--primary btn--sm" type="button">Approve</button>
+            </div>
+          </div>
+          <div class="list__item">
+            <div class="avatar avatar--3">VS</div>
+            <div class="list__content">
+              <span class="list__title">Regularization: Vikram Singh</span>
+              <span class="list__sub">Late mark on 17 Sep</span>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn--sm" type="button">Reject</button>
+              <button class="btn btn--primary btn--sm" type="button">Approve</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+<!-- END 2 -->
+ 
+    <div class="grid grid-2">
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Applicants by stage</h3>
+          <span class="card__meta">221 in pipeline</span>
+        </div>
+        <div class="card__body">
+          <div class="bar-row"><span>Applied</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:100%"></span></div><span class="bar-row__value">120</span></div>
+          <div class="bar-row"><span>Screening</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:53%"></span></div><span class="bar-row__value">64</span></div>
+          <div class="bar-row"><span>Interview</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:23%"></span></div><span class="bar-row__value">28</span></div>
+          <div class="bar-row"><span>Offer</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:8%"></span></div><span class="bar-row__value">9</span></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header">
+          <h3 class="card__title">Recent activity</h3>
+          <a class="link text-sm" href="../attendance/team-attendance.html">View attendance</a>
+        </div>
+        <div class="activity">
+          <div class="activity__item">
+            <span class="activity__dot activity__dot--warning"></span>
+            <div class="activity__text">Rohan Gupta applied for 3 days of casual leave<span class="activity__time">10 min ago</span></div>
+          </div>
+          <div class="activity__item">
+            <span class="activity__dot activity__dot--primary"></span>
+            <div class="activity__text">Interview scheduled: Frontend Developer<span class="activity__time">1 hour ago</span></div>
+          </div>
+          <div class="activity__item">
+            <span class="activity__dot activity__dot--success"></span>
+            <div class="activity__text">Regularization request from Sneha Rao<span class="activity__time">Today</span></div>
+          </div>
+          <div class="activity__item">
+            <span class="activity__dot activity__dot--primary"></span>
+            <div class="activity__text">Diwali holiday added to the calendar<span class="activity__time">Yesterday</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="table__toolbar">
+        <h3 class="card__title">Leave requests</h3>
+        <div class="table__filters">
+          <div class="input-group">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search employees">
+          </div>
+          <select class="select select--sm" aria-label="Filter by status">
+            <option>All statuses</option><option>Pending</option><option>Approved</option><option>Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Type</th>
+              <th>Dates</th>
+              <th class="table__num">Days</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="table__user"><div class="avatar avatar--1">RG</div><span class="table__user-name">Rohan Gupta</span></div></td>
+              <td>Casual</td><td>22 – 24 Sep</td><td class="table__num">3</td>
+              <td><span class="badge badge--warning badge--dot">Pending</span></td>
+            </tr>
+            <tr>
+              <td><div class="table__user"><div class="avatar avatar--2">DM</div><span class="table__user-name">Divya Menon</span></div></td>
+              <td>Sick</td><td>18 Sep</td><td class="table__num">1</td>
+              <td><span class="badge badge--success badge--dot">Approved</span></td>
+            </tr>
+            <tr>
+              <td><div class="table__user"><div class="avatar avatar--3">KM</div><span class="table__user-name">Karan Malhotra</span></div></td>
+              <td>Earned</td><td>1 – 10 Oct</td><td class="table__num">8</td>
+              <td><span class="badge badge--warning badge--dot">Pending</span></td>
+            </tr>
+            <tr>
+              <td><div class="table__user"><div class="avatar avatar--4">IB</div><span class="table__user-name">Ishita Bose</span></div></td>
+              <td>Casual</td><td>25 Sep</td><td class="table__num">1</td>
+              <td><span class="badge badge--success badge--dot">Approved</span></td>
+            </tr>
+            <tr>
+              <td><div class="table__user"><div class="avatar avatar--1">AR</div><span class="table__user-name">Aditya Rao</span></div></td>
+              <td>Work from home</td><td>21 Sep</td><td class="table__num">1</td>
+              <td><span class="badge badge--danger badge--dot">Rejected</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card__footer">
+        <span class="card__meta">Showing 5 of 6 pending and recent requests</span>
+        <a class="btn btn--sm" href="../leave/leave-approvals.html">View all</a>
+      </div>
+    </section>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 3 -->

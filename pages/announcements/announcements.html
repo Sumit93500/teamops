@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" data-role="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Announcements | OfficeOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">O</span>
+      OfficeOS
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Main navigation">
+      <div class="nav__group-title">Overview</div>
+      <a class="nav__item" href="../dashboard/hr.html" data-permission="dashboard:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
+        Dashboard
+      </a>
+      <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
+        Approvals
+        <span class="nav__count">6</span>
+      </a>
+
+      <div class="nav__group-title">People</div>
+      <a class="nav__item" href="../users/users-list.html" data-permission="users:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
+        Employees
+      </a>
+      <a class="nav__item" href="../access/designations.html" data-permission="designations:manage">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/></svg>
+        Designations &amp; roles
+      </a>
+      <a class="nav__item" href="../attendance/team-attendance.html" data-permission="attendance:view-all">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
+        Attendance
+      </a>
+      <a class="nav__item" href="../leave/leave-approvals.html" data-permission="leave:approve">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
+        Leave
+      </a>
+      <a class="nav__item" href="../recruitment/job-openings.html" data-permission="recruitment:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v11H4zM9 8V5h6v3"/></svg>
+        Recruitment
+      </a>
+
+      <div class="nav__group-title">Communication</div>
+      <a class="nav__item is-active" href="../announcements/announcements.html" data-permission="announcements:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></svg>
+        Announcements
+      </a>
+
+      <div class="nav__group-title">Reports</div>
+      <a class="nav__item" href="../system/reports.html" data-permission="reports:view">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Reports
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <strong>Northwind Technologies</strong>
+      248 active employees
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="topbar__menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="topbar__left">
+        <span>Workspace</span><span>/</span><strong>Announcements</strong>
+      </div>
+      <label class="topbar__search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <kbd>Ctrl K</kbd>
+      </label>
+      <div class="topbar__actions">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="avatar" title="Priya Nair">PN</div>
+      </div>
+    </header>
+<!-- END 1 -->
+ 
+<main class="content" id="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Announcements</h1>
+      <p class="page-header__subtitle">Company news and notices, sent to the people who need them</p>
+    </div>
+    <div class="page-header__actions">
+      <select class="select select--sm" aria-label="Filter by audience">
+        <option>All audiences</option><option>Everyone</option><option>Departments</option><option>Roles</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid grid-main-aside">
+
+    <section class="card">
+      <div class="card__header">
+        <h3 class="card__title">Recent announcements</h3>
+        <span class="card__meta">4 posts</span>
+      </div>
+
+      <article class="post post--pinned">
+        <div class="post__head">
+          <div class="avatar avatar--2">PN</div>
+          <div class="grow"><span class="fw-medium">Priya Nair</span><small>HR, 17 Sep</small></div>
+          <span class="badge badge--primary badge--square">Pinned</span>
+        </div>
+        <h3 class="post__title">Team offsite on 12 October</h3>
+        <p class="post__body">We are heading to Manesar for a day of workshops and games. Buses leave from the office at 8:00 AM. Please confirm your seat by 30 Sep.</p>
+        <div class="post__foot"><span>Sent to everyone</span><span>Read by 201 of 248</span></div>
+      </article>
+
+      <article class="post">
+        <div class="post__head">
+          <div class="avatar avatar--2">PN</div>
+          <div class="grow"><span class="fw-medium">Priya Nair</span><small>HR, 15 Sep</small></div>
+        </div>
+        <h3 class="post__title">Diwali holiday added to the calendar</h3>
+        <p class="post__body">The office will be closed on 8 Nov. The holiday is now in the calendar and your leave balance is not affected.</p>
+        <div class="post__foot"><span>Sent to everyone</span><span>Read by 236 of 248</span></div>
+      </article>
+
+      <article class="post">
+        <div class="post__head">
+          <div class="avatar avatar--3">IT</div>
+          <div class="grow"><span class="fw-medium">IT Support</span><small>Operations, 16 Sep</small></div>
+        </div>
+        <h3 class="post__title">Office network maintenance on Saturday</h3>
+        <p class="post__body">Wi-Fi and VPN will be down from 10 PM to 2 AM. Save your work first, and avoid scheduling late deployments.</p>
+        <div class="post__foot"><span>Sent to Engineering and Operations</span><span>Read by 118 of 129</span></div>
+      </article>
+
+      <article class="post">
+        <div class="post__head">
+          <div class="avatar avatar--2">PN</div>
+          <div class="grow"><span class="fw-medium">Priya Nair</span><small>HR, 1 Sep</small></div>
+        </div>
+        <h3 class="post__title">Welcome our new joiners</h3>
+        <p class="post__body">Five new colleagues joined us in September. Say hello when you see them, and help them find their way around the office.</p>
+        <div class="post__foot"><span>Sent to everyone</span><span>Read by 244 of 248</span></div>
+      </article>
+    </section>
+
+    <aside class="stack aside-sticky">
+
+      <section class="card">
+        <div class="card__header"><h3 class="card__title">Post an announcement</h3></div>
+        <div class="card__body">
+          <form class="form" action="announcements.html">
+            <div class="form-field">
+              <label class="form-label form-label--required" for="an-title">Title</label>
+              <input class="input" id="an-title" type="text" placeholder="e.g. Office closed on Friday" required>
+            </div>
+            <div class="form-field">
+              <label class="form-label form-label--required" for="an-aud">Send to</label>
+              <select class="select" id="an-aud" required>
+                <option>Everyone</option><option>One department</option><option>One role</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label form-label--required" for="an-msg">Message</label>
+              <textarea class="textarea" id="an-msg" placeholder="Write the details here" required></textarea>
+            </div>
+            <div class="toggle-list">
+              <label class="switch"><input type="checkbox"> Pin to the top</label>
+              <label class="switch"><input type="checkbox" checked> Also send by email</label>
+            </div>
+            <button class="btn btn--primary btn--block" type="submit" data-permission="announcements:create">Post announcement</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header"><h3 class="card__title">Who sees it</h3></div>
+        <div class="card__body">
+          <dl class="kv">
+            <div class="kv__row"><dt>Everyone</dt><dd>All 248 employees</dd></div>
+            <div class="kv__row"><dt>One department</dt><dd>Only that team</dd></div>
+            <div class="kv__row"><dt>One role</dt><dd>Only people with that role</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <div class="alert alert--info">Announcements appear on each person's dashboard and in their notifications. Only roles with the announcements:create permission can post.</div>
+
+    </aside>
+
+  </div>
+</main>
+  </div>
+</div>
+
+<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+</body>
+</html>
+<!-- END 2 -->
