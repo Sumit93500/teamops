@@ -1,0 +1,57 @@
+// data/users.js
+// One list of employees, departments and designations. Every page that shows
+// headcount, names or department sizes should eventually read from here,
+// instead of each page inventing its own numbers.
+
+export const DEPARTMENTS = [
+  { code: "ENG", name: "Engineering",       head: "Rahul Deshmukh" },
+  { code: "SAL", name: "Sales",             head: "Meenal Arora" },
+  { code: "OPS", name: "Operations",        head: "Nikhil Rao" },
+  { code: "SUP", name: "Customer Support",  head: "Tanvi Sethi" },
+  { code: "FIN", name: "Finance",           head: "Kabir Shah" },
+  { code: "HR",  name: "Human Resources",   head: "Priya Nair" },
+];
+
+export const DESIGNATIONS = [
+  { title: "Software Engineer",          department: "ENG", defaultRole: "emp" },
+  { title: "Senior Software Engineer",   department: "ENG", defaultRole: "emp" },
+  { title: "Team Lead",                  department: "ENG", defaultRole: "emp" },   // gets extra approve permissions via override, not a new role
+  { title: "Sales Executive",            department: "SAL", defaultRole: "emp" },
+  { title: "HR Executive",               department: "HR",  defaultRole: "emp" },
+  { title: "HR Manager",                 department: "HR",  defaultRole: "hr" },
+  { title: "Accountant",                 department: "FIN", defaultRole: "emp" },
+  { title: "Finance Manager",            department: "FIN", defaultRole: "fin" },
+  { title: "Store Keeper",               department: "OPS", defaultRole: "emp" },
+];
+
+// id doubles as the employee ID shown on-screen (EMP-1042, etc.)
+export const USERS = [
+  { id: "EMP-1003", name: "Priya Nair",     email: "priya.nair@northwind.com",     department: "HR",  designation: "HR Manager",               role: "hr",  status: "active" },
+  { id: "EMP-1008", name: "Kabir Shah",     email: "kabir.shah@northwind.com",     department: "FIN", designation: "Finance Manager",          role: "fin", status: "active" },
+  { id: "EMP-1017", name: "Ananya Iyer",    email: "ananya.iyer@northwind.com",    department: "SAL", designation: "Sales Executive",          role: "emp", status: "active" },
+  { id: "EMP-1023", name: "Meera Joshi",    email: "meera.joshi@northwind.com",    department: "FIN", designation: "Accountant",               role: "emp", status: "on-leave" },
+  { id: "EMP-1029", name: "Sneha Rao",      email: "sneha.rao@northwind.com",      department: "ENG", designation: "Team Lead",                role: "emp", status: "active" },
+  { id: "EMP-1042", name: "Rohan Gupta",    email: "rohan.gupta@northwind.com",    department: "ENG", designation: "Senior Software Engineer", role: "emp", status: "active" },
+  { id: "EMP-1061", name: "Divya Menon",    email: "divya.menon@northwind.com",    department: "HR",  designation: "HR Executive",             role: "emp", status: "inactive" },
+  { id: "EMP-1088", name: "Vikram Singh",   email: "vikram.singh@northwind.com",   department: "OPS", designation: "Store Keeper",             role: "emp", status: "active" },
+  { id: "EMP-1105", name: "Arjun Kapoor",   email: "arjun.kapoor@northwind.com",   department: "ENG", designation: "Software Engineer",        role: "emp", status: "active" },
+];
+
+// Reporting manager for approval chains (leave, regularization, expenses).
+export const MANAGER_OF = {
+  "EMP-1042": "EMP-1029",  // Rohan -> Sneha (Team Lead)
+  "EMP-1105": "EMP-1029",  // Arjun -> Sneha
+  "EMP-1023": "EMP-1008",  // Meera -> Kabir
+  "EMP-1088": null,        // Store Keeper reports to a department head, not tracked here yet
+};
+
+export function getUserById(id) {
+  return USERS.find((u) => u.id === id) ?? null;
+}
+
+export function headcountByDepartment() {
+  return DEPARTMENTS.map((d) => ({
+    ...d,
+    count: USERS.filter((u) => u.department === d.code).length,
+  }));
+}

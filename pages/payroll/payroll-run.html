@@ -19,7 +19,7 @@
       OfficeOS
     </div>
 
-    <nav class="sidebar__nav" aria-label="Main navigation">
+    <nav class="sidebar__nav" id="sidebar__nav" aria-label="Main navigation">
       <div class="nav__group-title">Overview</div>
       <a class="nav__item" href="../dashboard/finance.html" data-permission="dashboard:view">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>
@@ -86,7 +86,22 @@
         <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
         </button>
-        <div class="avatar" title="Kabir Shah">KS</div>
+        <div class="dropdown">
+          <button type="button" aria-label="Account menu">
+            <span class="avatar" title="Kabir Shah">KS</span>
+          </button>
+          <div class="dropdown__menu">
+            <a class="dropdown__item" href="../account/my-profile.html">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
+              My account
+            </a>
+            <div class="dropdown__divider"></div>
+            <button class="dropdown__item dropdown__item--danger" type="button" data-signout>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+              Sign out
+            </button>
+          </div>
+        </div>
       </div>
     </header>
 <!-- END 1 -->
@@ -296,7 +311,7 @@
   </div>
 </div>
 
-<!-- JS stage: <script src="../../assets/js/app.js"></script> -->
+<script type="module" src="../../assets/js/app.js"></script>
 </body>
 </html>
 <!-- END 2 -->

@@ -75,7 +75,7 @@
       <p class="auth__sub">Use your work email to continue.</p>
 
       <!-- action goes straight to the dashboard for now; the real login comes in the JS and backend stages -->
-      <form class="form" action="../dashboard/admin.html">
+      <form class="form">
 
         <div class="form-field">
           <label class="form-label" for="email">Work email</label>
@@ -107,10 +107,10 @@
       <div class="auth__demo">
         <span class="auth__demo-title">Preview as</span>
         <div class="btn-group">
-          <a class="btn btn--sm" href="../dashboard/admin.html">Admin</a>
-          <a class="btn btn--sm" href="../dashboard/hr.html">HR Manager</a>
-          <a class="btn btn--sm" href="../dashboard/finance.html">Finance</a>
-          <a class="btn btn--sm" href="../dashboard/employee.html">Employee</a>
+          <a class="btn btn--sm" href="#" data-demo-role="admin">Admin</a>
+          <a class="btn btn--sm" href="#" data-demo-role="hr">HR Manager</a>
+          <a class="btn btn--sm" href="#" data-demo-role="fin">Finance</a>
+          <a class="btn btn--sm" href="#" data-demo-role="emp">Employee</a>
         </div>
       </div>
 
@@ -120,5 +120,7 @@
 
 </main>
 
+  <script type="module" src="../../assets/js/app.js"></script>
+  <script type="module" src="../../assets/js/pages/login.js"></script>
 </body>
 </html>
