@@ -11,7 +11,7 @@ export const NAV = [
     group: "Overview",
     items: [
       { label: "Dashboard", icon: "home",  href: "@landing", permission: "dashboard:view" },
-      { label: "Approvals", icon: "check", href: "requests/approvals-inbox.html", permission: "approvals:view" },
+      { label: "Approvals", icon: "check", href: "requests/approvals-inbox.html", permission: "approvals:view", badge: 3 },
     ],
   },
   {

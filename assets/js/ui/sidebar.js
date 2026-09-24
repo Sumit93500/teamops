@@ -6,6 +6,7 @@ import { NAV } from "../config/nav.js";
 import { can } from "../core/rbac.js";
 import { getCurrentRole } from "../core/auth.js";
 import { resolvePageLink } from "../core/paths.js";
+import { ICONS } from "./icons.js";
 
 function currentPagePath() {
   const path = window.location.pathname;
@@ -26,7 +27,9 @@ function buildItem(item, currentPath) {
   const a = document.createElement("a");
   a.className = "nav__item" + (isActive ? " is-active" : "");
   a.href = link;
-  a.innerHTML = `<span class="nav__icon" data-icon="${item.icon}"></span>${item.label}`;
+  const path = ICONS[item.icon] ?? ICONS.default;
+  const count = item.badge ? `<span class="nav__count">${item.badge}</span>` : "";
+  a.innerHTML = `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"></path></svg>${item.label}${count}`;
   return a;
 }
 
