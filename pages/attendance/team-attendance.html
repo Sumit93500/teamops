@@ -120,7 +120,7 @@
     <div class="page-header__actions">
       <input class="input input--sm" type="date" value="2026-09-18" aria-label="Choose date" style="width:auto">
       <a class="btn" href="regularization.html" data-permission="attendance:approve">Regularization requests</a>
-      <button class="btn btn--primary" type="button" data-permission="reports:export" data-not-implemented="Export">Export</button>
+      <button class="btn btn--primary" type="button" data-permission="reports:export" data-export>Export</button>
     </div>
   </div>
 
@@ -193,7 +193,7 @@
         </div>
 
         <div class="table-wrap">
-          <table class="table">
+          <table class="table" data-export-name="team-attendance">
             <thead>
               <tr>
                 <th>Employee</th>
