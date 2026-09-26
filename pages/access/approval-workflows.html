@@ -103,7 +103,7 @@
         <kbd>Ctrl K</kbd>
       </label>
       <div class="topbar__actions">
-        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications" data-not-implemented="Notifications">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
         </button>
         <div class="dropdown">
@@ -139,7 +139,7 @@
     </div>
     <div class="page-header__actions">
       <a class="btn" href="delegation.html">Delegation</a>
-      <button class="btn btn--primary" type="button" data-permission="workflows:manage">
+      <button class="btn btn--primary" type="button" data-permission="workflows:manage" data-not-implemented="Add workflow">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Add workflow
       </button>
@@ -216,56 +216,56 @@
                 <td><div class="chain"><span class="chain__step chain__step--start">Employee</span><span class="chain__step">Manager</span><span class="chain__step chain__step--end">HR</span></div></td>
                 <td>All leave types</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Attendance regularization</span><span class="table__user-sub">Late or missed punches</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">Employee</span><span class="chain__step">Manager</span><span class="chain__step chain__step--end">HR</span></div></td>
                 <td>Sent within 7 days</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Expense claim</span><span class="table__user-sub">Travel and reimbursements</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">Employee</span><span class="chain__step">Manager</span><span class="chain__step">Finance</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>Admin only above ₹50,000</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Purchase order</span><span class="table__user-sub">Stock and equipment</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">Store Manager</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>Admin only above ₹1,00,000</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Role change</span><span class="table__user-sub">Giving or removing access</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">HR</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>Every change</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Salary revision</span><span class="table__user-sub">Changes to pay</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">Finance</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>Every change</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Asset request</span><span class="table__user-sub">Laptops, monitors, cards</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">Employee</span><span class="chain__step">IT Support</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>Every request</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Backup restore</span><span class="table__user-sub">Rolling back company data</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">IT Support</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>Admin only</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
             </tbody>
           </table>
@@ -277,7 +277,7 @@
         <section class="card">
           <div class="card__header">
             <h3 class="card__title">Purchase order limits</h3>
-            <button class="btn btn--sm" type="button" data-permission="workflows:manage">Add tier</button>
+            <button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Add tier">Add tier</button>
           </div>
           <div>
             <div class="tier">

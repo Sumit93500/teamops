@@ -17,8 +17,10 @@ export function initModals(root = document) {
   });
 
   root.querySelectorAll(".modal").forEach((modal) => {
-    const closeBtn = modal.querySelector(".modal__close");
-    if (closeBtn) closeBtn.addEventListener("click", () => closeModal(modal.id));
+    // The header ✕ (.modal__close) plus any other control marked data-modal-close, e.g. a footer Cancel.
+    modal.querySelectorAll(".modal__close, [data-modal-close]").forEach((btn) => {
+      btn.addEventListener("click", () => closeModal(modal.id));
+    });
 
     modal.addEventListener("click", (e) => {
       if (e.target === modal) closeModal(modal.id);

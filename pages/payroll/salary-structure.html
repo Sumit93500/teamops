@@ -83,7 +83,7 @@
         <kbd>Ctrl K</kbd>
       </label>
       <div class="topbar__actions">
-        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications" data-not-implemented="Notifications">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
         </button>
         <div class="dropdown">
@@ -114,8 +114,8 @@
       <p class="page-header__subtitle">How gross pay is built, and what gets deducted</p>
     </div>
     <div class="page-header__actions">
-      <button class="btn" type="button" data-permission="reports:export">Export</button>
-      <button class="btn btn--primary" type="button" data-permission="salary:edit">
+      <button class="btn" type="button" data-permission="reports:export" data-not-implemented="Export">Export</button>
+      <button class="btn btn--primary" type="button" data-permission="salary:edit" data-not-implemented="Add component">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Add component
       </button>
@@ -150,49 +150,49 @@
                 <td><span class="badge badge--success badge--square">Earning</span></td>
                 <td>40% of gross pay</td><td>Yes</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">House rent allowance</span></td>
                 <td><span class="badge badge--success badge--square">Earning</span></td>
                 <td>50% of basic salary</td><td>Partly</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Conveyance allowance</span></td>
                 <td><span class="badge badge--success badge--square">Earning</span></td>
                 <td>Fixed ₹1,600 a month</td><td>No</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Special allowance</span></td>
                 <td><span class="badge badge--success badge--square">Earning</span></td>
                 <td>Gross pay minus the other earnings</td><td>Yes</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Provident fund (employee)</span></td>
                 <td><span class="badge badge--danger badge--square">Deduction</span></td>
                 <td>12% of basic salary</td><td>–</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Professional tax</span></td>
                 <td><span class="badge badge--danger badge--square">Deduction</span></td>
                 <td>Fixed ₹200 a month</td><td>–</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Income tax (TDS)</span></td>
                 <td><span class="badge badge--danger badge--square">Deduction</span></td>
                 <td>Worked out from the tax slab</td><td>–</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
-                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+                <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
               </tr>
             </tbody>
           </table>
@@ -272,31 +272,31 @@
               <td><div class="table__user"><div class="avatar avatar--1">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">EMP-1042</span></div></div></td>
               <td>Senior Software Engineer</td><td class="table__num">₹92,000</td><td class="table__num">₹11,56,992</td><td>1 Apr 2026</td>
               <td><span class="badge badge--success badge--dot">Active</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
             <tr>
               <td><div class="table__user"><div class="avatar avatar--2">AI</div><div><span class="table__user-name">Ananya Iyer</span><span class="table__user-sub">EMP-1017</span></div></div></td>
               <td>Sales Executive</td><td class="table__num">₹78,500</td><td class="table__num">₹9,87,216</td><td>1 Apr 2026</td>
               <td><span class="badge badge--success badge--dot">Active</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
             <tr>
               <td><div class="table__user"><div class="avatar avatar--3">VS</div><div><span class="table__user-name">Vikram Singh</span><span class="table__user-sub">EMP-1088</span></div></div></td>
               <td>Store Keeper</td><td class="table__num">₹64,000</td><td class="table__num">₹8,04,864</td><td>1 Jan 2026</td>
               <td><span class="badge badge--success badge--dot">Active</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
             <tr>
               <td><div class="table__user"><div class="avatar avatar--4">MJ</div><div><span class="table__user-name">Meera Joshi</span><span class="table__user-sub">EMP-1023</span></div></div></td>
               <td>Accountant</td><td class="table__num">₹1,05,000</td><td class="table__num">₹13,20,480</td><td>1 Apr 2026</td>
               <td><span class="badge badge--success badge--dot">Active</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
             <tr>
               <td><div class="table__user"><div class="avatar avatar--1">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">EMP-1105</span></div></div></td>
               <td>Software Engineer</td><td class="table__num">₹88,000</td><td class="table__num">₹11,06,688</td><td>1 Apr 2026</td>
               <td><span class="badge badge--warning badge--dot">Revision pending</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="salary:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
           </tbody>
         </table>
@@ -306,7 +306,7 @@
         <span class="card__meta">Showing 5 of 248 employees</span>
         <div class="btn-group">
           <button class="btn btn--sm" type="button" disabled>Previous</button>
-          <button class="btn btn--sm" type="button">Next</button>
+          <button class="btn btn--sm" type="button" data-not-implemented="Next page">Next</button>
         </div>
       </div>
     </section>

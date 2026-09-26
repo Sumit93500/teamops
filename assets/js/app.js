@@ -14,6 +14,7 @@ import { initTabs } from "./ui/tabs.js";
 import { initTableFilters } from "./ui/table-filter.js";
 import { initPasswordToggles } from "./ui/password-toggle.js";
 import { initOtpInputs } from "./ui/otp.js";
+import { initPlaceholders } from "./ui/placeholder.js";
 
 loadTheme();
 
@@ -38,3 +39,4 @@ initTabs();
 initTableFilters();
 initPasswordToggles();
 initOtpInputs();
+initPlaceholders();

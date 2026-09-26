@@ -103,7 +103,7 @@
         <kbd>Ctrl K</kbd>
       </label>
       <div class="topbar__actions">
-        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications" data-not-implemented="Notifications">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
         </button>
         <div class="dropdown">
@@ -135,7 +135,7 @@
     </div>
     <div class="page-header__actions">
       <a class="btn" href="settings.html">Settings</a>
-      <button class="btn btn--primary" type="button" data-permission="backup:create">Back up now</button>
+      <button class="btn btn--primary" type="button" data-permission="backup:create" data-not-implemented="Back up now">Back up now</button>
     </div>
   </div>
 
@@ -154,7 +154,7 @@
           <span class="badge badge--success badge--dot">Encrypted</span>
           <span class="tooltip__text" role="tooltip">Backups are encrypted with AES-256 before they leave the server.</span>
         </span>
-        <button class="btn btn--sm" type="button" data-permission="backup:download">Download latest</button>
+        <button class="btn btn--sm" type="button" data-permission="backup:download" data-not-implemented="Download latest">Download latest</button>
       </div>
     </section>
 
@@ -183,28 +183,28 @@
                 <td><span class="badge badge--square">Automatic</span></td>
                 <td class="table__num">1.2 GB</td>
                 <td><span class="badge badge--success badge--dot">Completed</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="backup:download">Download</button><button class="btn btn--sm" type="button" data-permission="backup:restore">Restore</button></div></td>
+                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="backup:download" data-not-implemented="Download">Download</button><button class="btn btn--sm" type="button" data-permission="backup:restore" data-not-implemented="Restore">Restore</button></div></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">17 Sep, 02:00</span></td>
                 <td><span class="badge badge--square">Automatic</span></td>
                 <td class="table__num">1.2 GB</td>
                 <td><span class="badge badge--success badge--dot">Completed</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="backup:download">Download</button><button class="btn btn--sm" type="button" data-permission="backup:restore">Restore</button></div></td>
+                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="backup:download" data-not-implemented="Download">Download</button><button class="btn btn--sm" type="button" data-permission="backup:restore" data-not-implemented="Restore">Restore</button></div></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">16 Sep, 14:12</span></td>
                 <td><span class="badge badge--primary badge--square">Manual</span></td>
                 <td class="table__num">1.2 GB</td>
                 <td><span class="badge badge--success badge--dot">Completed</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="backup:download">Download</button><button class="btn btn--sm" type="button" data-permission="backup:restore">Restore</button></div></td>
+                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="backup:download" data-not-implemented="Download">Download</button><button class="btn btn--sm" type="button" data-permission="backup:restore" data-not-implemented="Restore">Restore</button></div></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">16 Sep, 02:00</span></td>
                 <td><span class="badge badge--square">Automatic</span></td>
                 <td class="table__num">1.2 GB</td>
                 <td><span class="badge badge--success badge--dot">Completed</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="backup:download">Download</button><button class="btn btn--sm" type="button" data-permission="backup:restore">Restore</button></div></td>
+                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="backup:download" data-not-implemented="Download">Download</button><button class="btn btn--sm" type="button" data-permission="backup:restore" data-not-implemented="Restore">Restore</button></div></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">14 Sep, 02:00</span></td>
@@ -228,7 +228,7 @@
           <span class="card__meta">Showing 6 of 30 backups</span>
           <div class="btn-group">
             <button class="btn btn--sm" type="button" disabled>Previous</button>
-            <button class="btn btn--sm" type="button">Next</button>
+            <button class="btn btn--sm" type="button" data-not-implemented="Next page">Next</button>
           </div>
         </div>
       </section>
@@ -272,7 +272,7 @@
               <div class="toggle-list">
                 <label class="switch"><input type="checkbox" checked> Email Admins if a backup fails</label>
               </div>
-              <button class="btn btn--primary btn--block" type="submit" data-permission="backup:manage">Save schedule</button>
+              <button class="btn btn--primary btn--block" type="submit" data-permission="backup:manage" data-not-implemented="Save schedule">Save schedule</button>
             </form>
           </div>
         </section>

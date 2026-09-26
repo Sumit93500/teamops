@@ -103,7 +103,7 @@
         <kbd>Ctrl K</kbd>
       </label>
       <div class="topbar__actions">
-        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications" data-not-implemented="Notifications">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
         </button>
         <div class="dropdown">
@@ -138,8 +138,8 @@
       <p class="page-header__subtitle">Who holds which laptop, monitor or access card</p>
     </div>
     <div class="page-header__actions">
-      <button class="btn" type="button" data-permission="reports:export">Export</button>
-      <button class="btn btn--primary" type="button" data-permission="assets:assign">
+      <button class="btn" type="button" data-permission="reports:export" data-not-implemented="Export">Export</button>
+      <button class="btn btn--primary" type="button" data-permission="assets:assign" data-not-implemented="Assign asset">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Assign asset
       </button>
@@ -231,7 +231,7 @@
               <td>12 Jan 2023</td>
               <td><span class="badge badge--warning badge--square">Fair</span></td>
               <td><span class="badge badge--info badge--dot">Assigned</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign">Return</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign" data-not-implemented="Return">Return</button></td>
             </tr>
             <tr>
               <td><span class="asset-tag">AST-0119</span></td>
@@ -240,7 +240,7 @@
               <td>3 Mar 2025</td>
               <td><span class="badge badge--success badge--square">Good</span></td>
               <td><span class="badge badge--info badge--dot">Assigned</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign">Return</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign" data-not-implemented="Return">Return</button></td>
             </tr>
             <tr>
               <td><span class="asset-tag">AST-0302</span></td>
@@ -249,7 +249,7 @@
               <td>12 Jan 2023</td>
               <td><span class="badge badge--success badge--square">Good</span></td>
               <td><span class="badge badge--info badge--dot">Assigned</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign">Return</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign" data-not-implemented="Return">Return</button></td>
             </tr>
             <tr>
               <td><span class="asset-tag">AST-0217</span></td>
@@ -258,7 +258,7 @@
               <td>–</td>
               <td><span class="badge badge--success badge--square">Good</span></td>
               <td><span class="badge badge--success badge--dot">Available</span></td>
-              <td class="table__actions"><button class="btn btn--primary btn--sm" type="button" data-permission="assets:assign">Assign</button></td>
+              <td class="table__actions"><button class="btn btn--primary btn--sm" type="button" data-permission="assets:assign" data-not-implemented="Assign">Assign</button></td>
             </tr>
             <tr>
               <td><span class="asset-tag">AST-0099</span></td>
@@ -267,7 +267,7 @@
               <td>–</td>
               <td><span class="badge badge--danger badge--square">Poor</span></td>
               <td><span class="badge badge--warning badge--dot">In repair</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign">Update</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign" data-not-implemented="Update">Update</button></td>
             </tr>
           </tbody>
         </table>
@@ -277,7 +277,7 @@
         <span class="card__meta">Showing 5 of 128 assets</span>
         <div class="btn-group">
           <button class="btn btn--sm" type="button" disabled>Previous</button>
-          <button class="btn btn--sm" type="button">Next</button>
+          <button class="btn btn--sm" type="button" data-not-implemented="Next page">Next</button>
         </div>
       </div>
     </section>
@@ -338,7 +338,7 @@
               </div>
             </div>
             <div class="form-actions">
-              <button class="btn btn--primary" type="submit" data-permission="assets:assign">Assign asset</button>
+              <button class="btn btn--primary" type="submit" data-permission="assets:assign" data-not-implemented="Assign asset">Assign asset</button>
             </div>
           </form>
         </div>
@@ -351,6 +351,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/approvals.js"></script>
 </body>
 </html>
 <!-- END 2 -->

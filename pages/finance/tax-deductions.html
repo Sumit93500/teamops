@@ -83,7 +83,7 @@
         <kbd>Ctrl K</kbd>
       </label>
       <div class="topbar__actions">
-        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications" data-not-implemented="Notifications">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
         </button>
         <div class="dropdown">
@@ -114,8 +114,8 @@
       <p class="page-header__subtitle">Statutory deductions, filing dates and tax slabs for September 2026</p>
     </div>
     <div class="page-header__actions">
-      <button class="btn" type="button" data-permission="reports:export">Export</button>
-      <button class="btn btn--primary" type="button" data-permission="tax:manage">Generate challans</button>
+      <button class="btn" type="button" data-permission="reports:export" data-not-implemented="Export">Export</button>
+      <button class="btn btn--primary" type="button" data-permission="tax:manage" data-not-implemented="Generate challans">Generate challans</button>
     </div>
   </div>
 
@@ -191,31 +191,31 @@
                   <td><span class="table__user-name">Provident fund, employee</span></td>
                   <td>12% of basic</td><td>Employee</td><td class="table__num">₹1,80,000</td><td>15 Oct</td>
                   <td><span class="badge badge--warning badge--dot">Draft</span></td>
-                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage">Challan</button></td>
+                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage" data-not-implemented="Challan">Challan</button></td>
                 </tr>
                 <tr>
                   <td><span class="table__user-name">Provident fund, employer</span></td>
                   <td>12% of basic</td><td>Company</td><td class="table__num">₹1,80,000</td><td>15 Oct</td>
                   <td><span class="badge badge--warning badge--dot">Draft</span></td>
-                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage">Challan</button></td>
+                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage" data-not-implemented="Challan">Challan</button></td>
                 </tr>
                 <tr>
                   <td><span class="table__user-name">Professional tax</span></td>
                   <td>₹200 a month</td><td>Employee</td><td class="table__num">₹49,600</td><td>30 Sep</td>
                   <td><span class="badge badge--info badge--dot">Generated</span></td>
-                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage">Challan</button></td>
+                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage" data-not-implemented="Challan">Challan</button></td>
                 </tr>
                 <tr>
                   <td><span class="table__user-name">Income tax (TDS)</span></td>
                   <td>As per slab</td><td>Employee</td><td class="table__num">₹6,80,000</td><td>7 Oct</td>
                   <td><span class="badge badge--warning badge--dot">Draft</span></td>
-                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage">Challan</button></td>
+                  <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage" data-not-implemented="Challan">Challan</button></td>
                 </tr>
                 <tr>
                   <td><span class="table__user-name">Income tax (TDS), August</span></td>
                   <td>As per slab</td><td>Employee</td><td class="table__num">₹6,64,000</td><td>7 Sep</td>
                   <td><span class="badge badge--success badge--dot">Paid</span></td>
-                  <td class="table__actions"><button class="btn btn--sm" type="button">Receipt</button></td>
+                  <td class="table__actions"><button class="btn btn--sm" type="button" data-not-implemented="Receipt">Receipt</button></td>
                 </tr>
               </tbody>
             </table>
@@ -303,7 +303,7 @@
             <p class="fw-medium mb-2">171 of 248 submitted</p>
             <div class="progress progress--success"><span class="progress__bar" style="--w:69%"></span></div>
             <p class="form-hint mt-2">77 employees have not declared yet. Their tax is worked out without any exemptions.</p>
-            <button class="btn btn--sm mt-4" type="button" data-permission="tax:manage">Send a reminder</button>
+            <button class="btn btn--sm mt-4" type="button" data-permission="tax:manage" data-not-implemented="Send a reminder">Send a reminder</button>
           </div>
         </section>
 

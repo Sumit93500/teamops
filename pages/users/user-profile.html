@@ -103,7 +103,7 @@
         <kbd>Ctrl K</kbd>
       </label>
       <div class="topbar__actions">
-        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications" data-not-implemented="Notifications">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
         </button>
         <div class="dropdown">
@@ -137,9 +137,9 @@
       <h1>Employee profile</h1>
     </div>
     <div class="page-header__actions">
-      <button class="btn" type="button" data-permission="users:reset-password">Reset password</button>
+      <button class="btn" type="button" data-permission="users:reset-password" data-not-implemented="Reset password">Reset password</button>
       <a class="btn" href="user-form.html" data-permission="users:edit">Edit</a>
-      <button class="btn btn--danger" type="button" data-permission="users:deactivate">Deactivate</button>
+      <button class="btn btn--danger" type="button" data-permission="users:deactivate" data-not-implemented="Deactivate">Deactivate</button>
     </div>
   </div>
 
@@ -202,8 +202,8 @@
           </div>
           <div class="card__body">
             <dl class="kv">
-              <div class="kv__row"><dt>Bank account</dt><dd><span class="masked">•••• •••• 7305</span> <button class="btn btn--ghost btn--sm" type="button" data-permission="pii:view">Reveal</button></dd></div>
-              <div class="kv__row"><dt>PAN</dt><dd><span class="masked">•••••4172K</span> <button class="btn btn--ghost btn--sm" type="button" data-permission="pii:view">Reveal</button></dd></div>
+              <div class="kv__row"><dt>Bank account</dt><dd><span class="masked">•••• •••• 7305</span> <button class="btn btn--ghost btn--sm" type="button" data-permission="pii:view" data-not-implemented="Reveal">Reveal</button></dd></div>
+              <div class="kv__row"><dt>PAN</dt><dd><span class="masked">•••••4172K</span> <button class="btn btn--ghost btn--sm" type="button" data-permission="pii:view" data-not-implemented="Reveal">Reveal</button></dd></div>
               <div class="kv__row"><dt>Salary</dt><dd class="text-muted">Hidden, needs salary:view</dd></div>
             </dl>
             <p class="form-hint mt-4">Each reveal is written to the audit log with your name and the time.</p>

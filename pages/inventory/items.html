@@ -103,7 +103,7 @@
         <kbd>Ctrl K</kbd>
       </label>
       <div class="topbar__actions">
-        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications" data-not-implemented="Notifications">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
         </button>
         <div class="dropdown">
@@ -136,7 +136,7 @@
     <div class="page-header__actions">
       <a class="btn" href="stock-movements.html">Stock movements</a>
       <a class="btn" href="asset-assignment.html">Assets</a>
-      <button class="btn btn--primary" type="button" data-permission="inventory:create">
+      <button class="btn btn--primary" type="button" data-permission="inventory:create" data-not-implemented="Add item">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Add item
       </button>
@@ -229,7 +229,7 @@
               <td><div class="stock"><span class="stock__qty">6</span><div class="progress progress--sm"><span class="progress__bar" style="--w:60%"></span></div></div></td>
               <td class="table__num">5</td><td class="table__num">₹78,500</td><td>Store room A</td>
               <td><span class="badge badge--success badge--dot">In stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
             <tr>
               <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span><div><span class="item__name">Logitech MX Keys keyboard</span><span class="item__sku">IT-1044</span></div></div></td>
@@ -237,7 +237,7 @@
               <td><div class="stock stock--low"><span class="stock__qty">3</span><div class="progress progress--sm progress--warning"><span class="progress__bar" style="--w:15%"></span></div></div></td>
               <td class="table__num">10</td><td class="table__num">₹9,500</td><td>Store room A</td>
               <td><span class="badge badge--warning badge--dot">Low stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
             <tr>
               <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span><div><span class="item__name">HDMI cable, 2 m</span><span class="item__sku">IT-1102</span></div></div></td>
@@ -245,7 +245,7 @@
               <td><div class="stock stock--out"><span class="stock__qty">0</span><div class="progress progress--sm progress--danger"><span class="progress__bar" style="--w:0%"></span></div></div></td>
               <td class="table__num">20</td><td class="table__num">₹450</td><td>Store room A</td>
               <td><span class="badge badge--danger badge--dot">Out of stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
             <tr>
               <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><span class="item__name">Ergonomic office chair</span><span class="item__sku">FUR-2010</span></div></div></td>
@@ -253,7 +253,7 @@
               <td><div class="stock"><span class="stock__qty">14</span><div class="progress progress--sm"><span class="progress__bar" style="--w:100%"></span></div></div></td>
               <td class="table__num">5</td><td class="table__num">₹12,800</td><td>Warehouse</td>
               <td><span class="badge badge--success badge--dot">In stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
             <tr>
               <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><span class="item__name">A4 paper ream</span><span class="item__sku">STA-3001</span></div></div></td>
@@ -261,7 +261,7 @@
               <td><div class="stock stock--low"><span class="stock__qty">42</span><div class="progress progress--sm progress--warning"><span class="progress__bar" style="--w:42%"></span></div></div></td>
               <td class="table__num">50</td><td class="table__num">₹320</td><td>Store room B</td>
               <td><span class="badge badge--warning badge--dot">Low stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
             <tr>
               <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><span class="item__name">Whiteboard markers, pack of 4</span><span class="item__sku">STA-3015</span></div></div></td>
@@ -269,7 +269,7 @@
               <td><div class="stock"><span class="stock__qty">60</span><div class="progress progress--sm"><span class="progress__bar" style="--w:100%"></span></div></div></td>
               <td class="table__num">30</td><td class="table__num">₹160</td><td>Store room B</td>
               <td><span class="badge badge--success badge--dot">In stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
             <tr>
               <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><span class="item__name">Coffee beans, 1 kg</span><span class="item__sku">PAN-4002</span></div></div></td>
@@ -277,7 +277,7 @@
               <td><div class="stock stock--low"><span class="stock__qty">8</span><div class="progress progress--sm progress--warning"><span class="progress__bar" style="--w:40%"></span></div></div></td>
               <td class="table__num">10</td><td class="table__num">₹850</td><td>Pantry store</td>
               <td><span class="badge badge--warning badge--dot">Low stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit">Edit</button></td>
+              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
             </tr>
           </tbody>
         </table>
@@ -288,11 +288,11 @@
         <div class="pagination__pages">
           <button class="pagination__btn" type="button" disabled>Prev</button>
           <button class="pagination__btn is-active" type="button">1</button>
-          <button class="pagination__btn" type="button">2</button>
-          <button class="pagination__btn" type="button">3</button>
+          <button class="pagination__btn" type="button" data-not-implemented="Page 2">2</button>
+          <button class="pagination__btn" type="button" data-not-implemented="Page 3">3</button>
           <span class="pagination__gap">...</span>
-          <button class="pagination__btn" type="button">49</button>
-          <button class="pagination__btn" type="button">Next</button>
+          <button class="pagination__btn" type="button" data-not-implemented="Page 49">49</button>
+          <button class="pagination__btn" type="button" data-not-implemented="Next page">Next</button>
         </div>
       </div>
     </section>

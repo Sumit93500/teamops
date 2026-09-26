@@ -87,7 +87,7 @@
         <kbd>Ctrl K</kbd>
       </label>
       <div class="topbar__actions">
-        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications">
+        <button class="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications" data-not-implemented="Notifications">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4 0"/></svg>
         </button>
         <div class="dropdown">
@@ -120,7 +120,7 @@
     <div class="page-header__actions">
       <input class="input input--sm" type="date" value="2026-09-18" aria-label="Choose date" style="width:auto">
       <a class="btn" href="regularization.html" data-permission="attendance:approve">Regularization requests</a>
-      <button class="btn btn--primary" type="button" data-permission="reports:export">Export</button>
+      <button class="btn btn--primary" type="button" data-permission="reports:export" data-not-implemented="Export">Export</button>
     </div>
   </div>
 
@@ -250,11 +250,11 @@
           <div class="pagination__pages">
             <button class="pagination__btn" type="button" disabled>Prev</button>
             <button class="pagination__btn is-active" type="button">1</button>
-            <button class="pagination__btn" type="button">2</button>
-            <button class="pagination__btn" type="button">3</button>
+            <button class="pagination__btn" type="button" data-not-implemented="Page 2">2</button>
+            <button class="pagination__btn" type="button" data-not-implemented="Page 3">3</button>
             <span class="pagination__gap">...</span>
-            <button class="pagination__btn" type="button">42</button>
-            <button class="pagination__btn" type="button">Next</button>
+            <button class="pagination__btn" type="button" data-not-implemented="Page 42">42</button>
+            <button class="pagination__btn" type="button" data-not-implemented="Next page">Next</button>
           </div>
         </div>
       </section>
@@ -283,17 +283,17 @@
             <div class="list__item">
               <div class="avatar avatar--2">DM</div>
               <div class="list__content"><span class="list__title">Divya Menon</span><span class="list__sub">HR, no check-in or leave request</span></div>
-              <button class="btn btn--sm" type="button">Message</button>
+              <button class="btn btn--sm" type="button" data-not-implemented="Message">Message</button>
             </div>
             <div class="list__item">
               <div class="avatar avatar--3">RV</div>
               <div class="list__content"><span class="list__title">Rahul Verma</span><span class="list__sub">Sales, no check-in or leave request</span></div>
-              <button class="btn btn--sm" type="button">Message</button>
+              <button class="btn btn--sm" type="button" data-not-implemented="Message">Message</button>
             </div>
             <div class="list__item">
               <div class="avatar avatar--4">NK</div>
               <div class="list__content"><span class="list__title">Neha Kulkarni</span><span class="list__sub">Operations, no check-in or leave request</span></div>
-              <button class="btn btn--sm" type="button">Message</button>
+              <button class="btn btn--sm" type="button" data-not-implemented="Message">Message</button>
             </div>
           </div>
         </section>
