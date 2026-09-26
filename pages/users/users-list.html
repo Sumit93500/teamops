@@ -134,7 +134,7 @@
       <p class="page-header__subtitle">248 employees across 6 departments</p>
     </div>
     <div class="page-header__actions">
-      <button class="btn" type="button" data-not-implemented="Export">Export</button>
+      <button class="btn" type="button">Export</button>
       <a class="btn btn--primary" href="user-form.html" data-permission="users:create">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Add employee
@@ -153,7 +153,7 @@
       <div class="table__filters">
         <div class="input-group">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input class="input input--sm input--search" type="search" placeholder="Search by name or ID" aria-label="Search users">
+          <input class="input input--sm input--search" data-table-filter="off" type="search" placeholder="Search by name or ID" aria-label="Search users">
         </div>
         <select class="select select--sm" aria-label="Filter by department">
           <option>All departments</option><option>Engineering</option><option>Sales</option>
@@ -246,11 +246,11 @@
       <div class="pagination__pages">
         <button class="pagination__btn" type="button" disabled>Prev</button>
         <button class="pagination__btn is-active" type="button">1</button>
-        <button class="pagination__btn" type="button" data-not-implemented="Page 2">2</button>
-        <button class="pagination__btn" type="button" data-not-implemented="Page 3">3</button>
+        <button class="pagination__btn" type="button">2</button>
+        <button class="pagination__btn" type="button">3</button>
         <span class="pagination__gap">...</span>
-        <button class="pagination__btn" type="button" data-not-implemented="Page 36">36</button>
-        <button class="pagination__btn" type="button" data-not-implemented="Next page">Next</button>
+        <button class="pagination__btn" type="button">36</button>
+        <button class="pagination__btn" type="button">Next</button>
       </div>
     </div>
   </section>
@@ -260,6 +260,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/users-list.js"></script>
 </body>
 </html>
 <!-- END 2 -->
