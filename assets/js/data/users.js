@@ -22,6 +22,7 @@ export const DESIGNATIONS = [
   { title: "Accountant",                 department: "FIN", defaultRole: "emp" },
   { title: "Finance Manager",            department: "FIN", defaultRole: "fin" },
   { title: "Store Keeper",               department: "OPS", defaultRole: "emp" },
+  { title: "Administrator",              department: "ENG", defaultRole: "admin" },
 ];
 
 // id doubles as the employee ID shown on-screen (EMP-1042, etc.)

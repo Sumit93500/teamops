@@ -15,7 +15,7 @@
 //     it was given changes nothing until it calls a write function.
 
 import { save, load, remove } from "../core/storage.js";
-import { USERS, DEPARTMENTS, PROFILE_DETAILS } from "./users.js";
+import { USERS, DEPARTMENTS, PROFILE_DETAILS, MANAGER_OF } from "./users.js";
 
 // The four demo sign-in identities (Admin, HR, Finance, Employee). Deactivating
 // or deleting one would break signing in as that role, so it is refused.
@@ -23,7 +23,7 @@ const PROTECTED_IDS = ["EMP-1001", "EMP-1003", "EMP-1008", "EMP-1105"];
 
 const USERS_KEY = "users";
 const DEPARTMENTS_KEY = "departments";
-const VERSION = 1;   // bump when the saved shape changes; old copies are then re-seeded
+const VERSION = 2;   // bump when the saved shape changes; old copies are then re-seeded (2: managers from MANAGER_OF)
 
 // Demo-only sensitive values for the Reveal feature. Rohan's and Arjun's match
 // what user-profile.html and my-profile.html already show masked.
@@ -43,13 +43,16 @@ const DEMO_PII = {
 const copy = (value) => JSON.parse(JSON.stringify(value));
 const idNum = (id) => Number(String(id).replace(/^EMP-/, ""));
 const formatId = (num) => `EMP-${num}`;
-const fail = (error) => ({ ok: false, error });
+// `field` (optional) names the form field the error is about, so a page can show it there.
+const fail = (error, field) => (field ? { ok: false, error, field } : { ok: false, error });
 
 // ---------- seeding and loading ----------
 
 function seedUsers() {
+  const managerName = (id) => USERS.find((u) => u.id === MANAGER_OF[id])?.name;
   const records = copy(USERS).map((user) => ({
     ...user,
+    ...(managerName(user.id) ? { reportingManager: managerName(user.id) } : {}),   // PROFILE_DETAILS below wins if it has one
     ...copy(PROFILE_DETAILS[user.id] ?? {}),
     ...(DEMO_PII[user.id] ?? { bankAccountLast4: null, pan: null }),
   }));
@@ -124,7 +127,7 @@ export function addUser(fields = {}) {
   const { id: _ignored, ...rest } = fields;   // ids are always generated here
   if (!String(rest.name ?? "").trim()) return fail("Name is required.");
   if (!String(rest.email ?? "").trim()) return fail("Work email is required.");
-  if (emailTaken(box.records, rest.email, null)) return fail(`${rest.email} is already used by another employee.`);
+  if (emailTaken(box.records, rest.email, null)) return fail(`${rest.email} is already used by another employee.`, "email");
   if (rest.department && !loadDepartments().records.some((d) => d.code === rest.department)) {
     return fail(`Unknown department "${rest.department}".`);
   }
@@ -147,8 +150,12 @@ export function updateUser(id, changes = {}) {
   const record = box.records.find((u) => u.id === id);
   if (!record) return fail(`No employee with id ${id}.`);
   if ("id" in changes && changes.id !== id) return fail("An employee's id can't be changed.");
+  // Same rule as deactivateUser(), so an edit form can't get round it.
+  if (PROTECTED_IDS.includes(id) && changes.status === "inactive" && record.status !== "inactive") {
+    return fail(`${id} is a demo sign-in identity and can't be deactivated.`);
+  }
   if ("email" in changes && emailTaken(box.records, changes.email, id)) {
-    return fail(`${changes.email} is already used by another employee.`);
+    return fail(`${changes.email} is already used by another employee.`, "email");
   }
   if (changes.department && !loadDepartments().records.some((d) => d.code === changes.department)) {
     return fail(`Unknown department "${changes.department}".`);
