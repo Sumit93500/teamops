@@ -138,6 +138,8 @@ if (editId && !editing) {
   field("phone").value = editing.phone ?? "";
   field("dob").value = editing.dob ?? "";
   field("emp-id").value = editing.id;
+  if (field("bank-account")) field("bank-account").value = editing.bankAccount ?? "";
+  if (field("pan")) field("pan").value = editing.pan ?? "";
 
   ensureOption(field("department"), editing.department);
   field("department").value = editing.department ?? "";
@@ -160,6 +162,22 @@ if (editId && !editing) {
 updateDefaultRole();
 
 // ---------- save ----------
+
+// Bank account and PAN, only when the form has those fields. Empty saves as
+// null so the profile shows "Not on file". No format checks: this is a demo.
+function sensitiveFields() {
+  const bankInput = field("bank-account");
+  const panInput = field("pan");
+  const out = {};
+  if (bankInput) {
+    const account = bankInput.value.trim().replace(/\s+/g, " ");
+    const digits = account.replace(/\D/g, "");
+    out.bankAccount = account || null;
+    out.bankAccountLast4 = digits ? digits.slice(-4) : null;
+  }
+  if (panInput) out.pan = panInput.value.trim().toUpperCase() || null;
+  return out;
+}
 
 function buildRecord() {
   const designation = designationSelect.value;
@@ -187,6 +205,7 @@ function buildRecord() {
     extraRoles: checkedValues("extraRole"),
     grantPermissions: checkedValues("grant"),
     denyPermissions: checkedValues("deny"),
+    ...sensitiveFields(),
   };
 }
 

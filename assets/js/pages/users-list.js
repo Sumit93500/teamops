@@ -3,12 +3,13 @@
 // wires the status pills, search box, department/role filters, pagination and
 // CSV export. All filters combine: a row must match every one that's set.
 
-import { getAllUsers, getAllDepartments } from "../data/store.js";
+import { getAllUsers, getAllDepartments, resetDemoData } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { ROLES } from "../config/roles.js";
 import { renderPagination } from "../ui/pagination.js";
 import { resolvePageLink } from "../core/paths.js";
 import { applyPermissions } from "../core/rbac.js";
+import { getCurrentRole } from "../core/auth.js";
 
 const pageSize = 10;
 let currentPage = 1;
@@ -266,5 +267,20 @@ function exportCsv() {
 }
 
 exportBtn?.addEventListener("click", exportCsv);
+
+// ---------- reset demo data ----------
+
+// A demo-only safety net, not a real permission, so it's a plain role check:
+// only Admin and HR get the button at all.
+if (["admin", "hr"].includes(getCurrentRole()?.key) && exportBtn) {
+  const resetBtn = el("button", "btn btn--ghost", "Reset demo data");
+  resetBtn.type = "button";
+  resetBtn.addEventListener("click", () => {
+    if (!window.confirm("This discards every change made to users and departments in this browser. Continue?")) return;
+    resetDemoData();
+    window.location.reload();
+  });
+  exportBtn.before(resetBtn);
+}
 
 renderTable();

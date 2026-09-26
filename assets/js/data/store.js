@@ -23,21 +23,22 @@ const PROTECTED_IDS = ["EMP-1001", "EMP-1003", "EMP-1008", "EMP-1105"];
 
 const USERS_KEY = "users";
 const DEPARTMENTS_KEY = "departments";
-const VERSION = 2;   // bump when the saved shape changes; old copies are then re-seeded (2: managers from MANAGER_OF)
+const VERSION = 3;   // bump when the saved shape changes; old copies are then re-seeded (2: managers from MANAGER_OF, 3: full bank account)
 
 // Demo-only sensitive values for the Reveal feature. Rohan's and Arjun's match
-// what user-profile.html and my-profile.html already show masked.
+// what user-profile.html and my-profile.html already show masked. The full
+// account number is what Reveal shows; it always ends in bankAccountLast4.
 const DEMO_PII = {
-  "EMP-1001": { bankAccountLast4: "2290", pan: "AMKPM5528Q" },
-  "EMP-1003": { bankAccountLast4: "6614", pan: "BHNPN8091L" },
-  "EMP-1008": { bankAccountLast4: "3057", pan: "CKSPS2746D" },
-  "EMP-1017": { bankAccountLast4: "8142", pan: "DQRPI6630H" },
-  "EMP-1023": { bankAccountLast4: "5906", pan: "EWTPJ1187M" },
-  "EMP-1029": { bankAccountLast4: "1473", pan: "FLVPR9354B" },
-  "EMP-1042": { bankAccountLast4: "7305", pan: "GJZPG4172K" },
-  "EMP-1061": { bankAccountLast4: "9218", pan: "HTXPM3809C" },
-  "EMP-1088": { bankAccountLast4: "4561", pan: "JNYPS7025R" },
-  "EMP-1105": { bankAccountLast4: "4821", pan: "KPBPK3421F" },
+  "EMP-1001": { bankAccount: "501734812290", bankAccountLast4: "2290", pan: "AMKPM5528Q" },
+  "EMP-1003": { bankAccount: "609218456614", bankAccountLast4: "6614", pan: "BHNPN8091L" },
+  "EMP-1008": { bankAccount: "318845203057", bankAccountLast4: "3057", pan: "CKSPS2746D" },
+  "EMP-1017": { bankAccount: "724501398142", bankAccountLast4: "8142", pan: "DQRPI6630H" },
+  "EMP-1023": { bankAccount: "452913675906", bankAccountLast4: "5906", pan: "EWTPJ1187M" },
+  "EMP-1029": { bankAccount: "810366241473", bankAccountLast4: "1473", pan: "FLVPR9354B" },
+  "EMP-1042": { bankAccount: "902457137305", bankAccountLast4: "7305", pan: "GJZPG4172K" },
+  "EMP-1061": { bankAccount: "367082549218", bankAccountLast4: "9218", pan: "HTXPM3809C" },
+  "EMP-1088": { bankAccount: "548129604561", bankAccountLast4: "4561", pan: "JNYPS7025R" },
+  "EMP-1105": { bankAccount: "671540284821", bankAccountLast4: "4821", pan: "KPBPK3421F" },
 };
 
 const copy = (value) => JSON.parse(JSON.stringify(value));
@@ -54,7 +55,7 @@ function seedUsers() {
     ...user,
     ...(managerName(user.id) ? { reportingManager: managerName(user.id) } : {}),   // PROFILE_DETAILS below wins if it has one
     ...copy(PROFILE_DETAILS[user.id] ?? {}),
-    ...(DEMO_PII[user.id] ?? { bankAccountLast4: null, pan: null }),
+    ...(DEMO_PII[user.id] ?? { bankAccount: null, bankAccountLast4: null, pan: null }),
   }));
   const nextIdNum = Math.max(...records.map((u) => idNum(u.id))) + 1;
   const box = { version: VERSION, nextIdNum, records };
@@ -135,6 +136,7 @@ export function addUser(fields = {}) {
   const record = {
     role: "emp",
     status: "active",
+    bankAccount: null,
     bankAccountLast4: null,
     pan: null,
     ...copy(rest),
