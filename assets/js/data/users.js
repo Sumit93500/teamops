@@ -26,6 +26,7 @@ export const DESIGNATIONS = [
 
 // id doubles as the employee ID shown on-screen (EMP-1042, etc.)
 export const USERS = [
+  { id: "EMP-1001", name: "Aarav Mehta",    email: "aarav.mehta@northwind.com",    department: "ENG", designation: "Administrator",            role: "admin", status: "active" },
   { id: "EMP-1003", name: "Priya Nair",     email: "priya.nair@northwind.com",     department: "HR",  designation: "HR Manager",               role: "hr",  status: "active" },
   { id: "EMP-1008", name: "Kabir Shah",     email: "kabir.shah@northwind.com",     department: "FIN", designation: "Finance Manager",          role: "fin", status: "active" },
   { id: "EMP-1017", name: "Ananya Iyer",    email: "ananya.iyer@northwind.com",    department: "SAL", designation: "Sales Executive",          role: "emp", status: "active" },
@@ -43,6 +44,67 @@ export const MANAGER_OF = {
   "EMP-1105": "EMP-1029",  // Arjun -> Sneha
   "EMP-1023": "EMP-1008",  // Meera -> Kabir
   "EMP-1088": null,        // Store Keeper reports to a department head, not tracked here yet
+};
+
+// Extra profile fields for the four demo sign-in identities (Admin, HR, Finance, Employee).
+// Arjun's values match what my-profile.html already shows.
+export const PROFILE_DETAILS = {
+  "EMP-1001": {
+    phone: "+91 98100 11223",
+    personalEmail: "aarav.mehta88@gmail.com",
+    city: "Gurugram",
+    address: "DLF Phase 4, Gurugram, Haryana 122009",
+    emergencyContactName: "Nisha Mehta",
+    emergencyContactRelation: "Spouse",
+    emergencyContactPhone: "+91 98111 40672",
+    dateOfJoining: "4 Apr 2019",
+    reportingManager: "Rahul Deshmukh",
+    location: "Gurugram office",
+    employmentType: "Full-time",
+    leaveApprovedBy: "Auto-approved (Admin)",
+  },
+  "EMP-1003": {
+    phone: "+91 99580 34127",
+    personalEmail: "priya.nair.home@gmail.com",
+    city: "Gurugram",
+    address: "Sushant Lok 1, Gurugram, Haryana 122002",
+    emergencyContactName: "Ramesh Nair",
+    emergencyContactRelation: "Father",
+    emergencyContactPhone: "+91 94472 18390",
+    dateOfJoining: "15 Jul 2020",
+    reportingManager: "Aarav Mehta",
+    location: "Gurugram office",
+    employmentType: "Full-time",
+    leaveApprovedBy: "Aarav Mehta",
+  },
+  "EMP-1008": {
+    phone: "+91 98734 90215",
+    personalEmail: "kabirshah.personal@outlook.com",
+    city: "New Delhi",
+    address: "Saket, New Delhi, Delhi 110017",
+    emergencyContactName: "Farah Shah",
+    emergencyContactRelation: "Spouse",
+    emergencyContactPhone: "+91 98200 57314",
+    dateOfJoining: "2 Nov 2020",
+    reportingManager: "Aarav Mehta",
+    location: "Gurugram office",
+    employmentType: "Full-time",
+    leaveApprovedBy: "Aarav Mehta",
+  },
+  "EMP-1105": {
+    phone: "+91 98765 43210",
+    personalEmail: "arjun.k@example.com",
+    city: "Gurugram",
+    address: "Sector 56, Gurugram, Haryana 122011",
+    emergencyContactName: "Sunita Kapoor",
+    emergencyContactRelation: "Mother",
+    emergencyContactPhone: "+91 98110 55667",
+    dateOfJoining: "12 Jan 2023",
+    reportingManager: "Sneha Rao",
+    location: "Gurugram office",
+    employmentType: "Full-time",
+    leaveApprovedBy: "Sneha Rao, then HR",
+  },
 };
 
 export function getUserById(id) {

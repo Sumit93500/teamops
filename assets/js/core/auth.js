@@ -9,13 +9,13 @@ import { ROLES } from "../config/roles.js";
 const SESSION_KEY = "session";
 
 // Called from the login page once someone picks a role.
-export function signIn(roleKey, userLabel) {
+export function signIn(roleKey, userLabel, employeeId) {
   const role = ROLES[roleKey];
   if (!role) {
     console.error(`auth: unknown role "${roleKey}"`);
     return false;
   }
-  save(SESSION_KEY, { roleKey, userLabel, signedInAt: Date.now() });
+  save(SESSION_KEY, { roleKey, userLabel, employeeId, signedInAt: Date.now() });
   return true;
 }
 
@@ -43,4 +43,11 @@ export function getCurrentRole() {
 export function getCurrentUserLabel() {
   const session = getSession();
   return session ? session.userLabel : null;
+}
+
+// The employee id (e.g. "EMP-1105") of whoever is signed in, or null.
+// Sessions saved before ids were stored have none, so this is null for them too.
+export function getCurrentUserId() {
+  const session = getSession();
+  return session?.employeeId ?? null;
 }

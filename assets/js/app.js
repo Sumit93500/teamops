@@ -3,6 +3,7 @@
 // the sidebar, topbar, theme and shared UI behaviours.
 
 import { guardPage } from "./core/guard.js";
+import { getCurrentRole } from "./core/auth.js";
 import { applyPermissions } from "./core/rbac.js";
 import { loadTheme } from "./ui/theme.js";
 import { renderSidebar } from "./ui/sidebar.js";
@@ -19,9 +20,12 @@ loadTheme();
 const ok = guardPage();
 
 if (ok) {
+  // Public pages (login, 403, ...) pass the guard with nobody signed in, so keep their hardcoded data-role.
+  const role = getCurrentRole();
+  if (role) document.documentElement.dataset.role = role.key;
+
   renderSidebar(document.querySelector(".sidebar__nav"));
   renderTopbar({
-    breadcrumbSelector: ".topbar__left strong",
     avatarSelector: ".avatar",
     signOutSelector: "[data-signout]",
   });
