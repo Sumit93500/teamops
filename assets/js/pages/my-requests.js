@@ -1,14 +1,16 @@
 // pages/my-requests.js
 // Runs on my-requests.html. The signed-in person's leave requests come from
-// the leave store, with a working Cancel. The asset, attendance and expense
-// rows are still static samples (marked data-static in the HTML) and are kept
-// as they are. The tabs, type filter and side stepper cover both. A session
-// without an employee id (an old sign-in) leaves the static page as it is.
+// the leave store and their attendance corrections from the attendance store,
+// both with a working Cancel. The asset and expense rows are still static
+// samples (marked data-static in the HTML) and are kept as they are. The tabs,
+// type filter and side stepper cover all of them. A session without an
+// employee id (an old sign-in) leaves the static page as it is.
 
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { requestsFor, cancelLeave, currentApproverName } from "../data/leave-store.js";
+import { regularizationsFor, cancelRegularization } from "../data/attendance-store.js";
 import { showToast } from "../ui/toast.js";
 import {
   el, escapeHtml, formatDay, requestDates, requestTitle, typeLabel, statusBadge,
@@ -77,12 +79,49 @@ function leaveRow(request) {
   return tr;
 }
 
+// ---------- attendance correction rows ----------
+
+const correctionTitle = (request) => `Regularization, ${formatDay(request.date)}`;
+
+function cancelCorrection(request) {
+  if (!window.confirm(`Cancel your correction request for ${formatDay(request.date)}?`)) return;
+  const result = cancelRegularization(request.id, user.id);
+  if (!result.ok) showToast("Couldn't cancel the request. It may already have been decided.", "danger");
+  else showToast("Correction request cancelled.", "success");
+  render();
+}
+
+function correctionRow(request) {
+  const tr = el("tr");
+  const titleCell = el("td");
+  titleCell.append(el("span", "table__user-name", correctionTitle(request)));
+  const typeCell = el("td");
+  typeCell.append(el("span", "badge badge--square", "Attendance"));
+  const statusCell = el("td");
+  statusCell.append(statusBadge(request.status));
+
+  const actions = el("td", "table__actions");
+  if (request.status === "pending") {
+    const cancel = el("button", "btn btn--sm btn--danger", "Cancel");
+    cancel.type = "button";
+    cancel.dataset.permission = "requests:cancel";
+    cancel.addEventListener("click", () => cancelCorrection(request));
+    actions.append(cancel);
+  } else if (request.status === "rejected" && rejectionNote(request)) {
+    actions.append(el("span", "text-sm text-muted", rejectionNote(request)));
+  }
+
+  tr.append(titleCell, typeCell, el("td", "", formatDay(request.appliedOn)), el("td", "", withText(request)), statusCell, actions);
+  return tr;
+}
+
 // ---------- rendering ----------
 
 function allRows() {
   const leave = requestsFor(user.id).map((r) => ({ node: leaveRow(r), type: "leave", status: r.status, sent: r.appliedOn, id: r.id }));
-  // Newest sent first; the leave id breaks ties between two sent the same day.
-  return [...leave, ...staticRows].sort((a, b) => b.sent.localeCompare(a.sent) || b.id.localeCompare(a.id));
+  const corrections = regularizationsFor(user.id).map((r) => ({ node: correctionRow(r), type: "attendance", status: r.status, sent: r.appliedOn, id: r.id }));
+  // Newest sent first; the id breaks ties between two sent the same day.
+  return [...leave, ...corrections, ...staticRows].sort((a, b) => b.sent.localeCompare(a.sent) || b.id.localeCompare(a.id));
 }
 
 function pillStatus(pill) {
@@ -90,11 +129,14 @@ function pillStatus(pill) {
   return PILL_STATUS[label] ?? "all";
 }
 
+// The newest pending request of either kind: leave or an attendance correction.
 function renderProgress() {
-  const request = newestPending(requestsFor(user.id));
+  const request = newestPending([...requestsFor(user.id), ...regularizationsFor(user.id)]);
   progressCard.hidden = !request;
   if (!request) return;
-  progressCard.querySelector(".card__title").textContent = `${typeLabel(request.type)}, ${requestDates(request)}`;
+  progressCard.querySelector(".card__title").textContent = request.issue
+    ? correctionTitle(request)
+    : `${typeLabel(request.type)}, ${requestDates(request)}`;
   const stepper = el("ol", "stepper stepper--vertical");
   stepper.append(...pendingSteps(request));
   progressCard.querySelector(".card__body").replaceChildren(stepper);
@@ -127,7 +169,7 @@ function render() {
 // ---------- start ----------
 
 if (user && tbody && progressCard) {
-  tbody.querySelectorAll("tr[data-sample]").forEach((tr) => tr.remove());   // replaced by the real leave rows
+  tbody.querySelectorAll("tr[data-sample]").forEach((tr) => tr.remove());   // replaced by the real leave and correction rows
 
   // ui/tabs.js already moves the is-active highlight between pills on click.
   pills.forEach((pill) => pill.addEventListener("click", () => {
