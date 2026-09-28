@@ -119,7 +119,7 @@
 
   <div class="grid grid-main-aside">
 
-    <form class="card" action="my-leave.html">
+    <form class="card" id="leave-form">
 
       <section class="form-section">
         <div class="form-section__head">
@@ -151,7 +151,7 @@
           <div class="form-field">
             <label class="form-label" for="duration">Duration</label>
             <select class="select" id="duration" name="duration">
-              <option>Full day</option><option>First half</option><option>Second half</option>
+              <option value="full">Full day</option><option value="first-half">First half</option><option value="second-half">Second half</option>
             </select>
           </div>
           <div class="form-field">
@@ -180,6 +180,7 @@
             <label class="form-label" for="leave-file">Attachment</label>
             <input class="input" id="leave-file" name="attachment" type="file">
             <span class="form-hint">A medical certificate is needed for sick leave over 2 days.</span>
+            <span class="form-hint">In this demo the file isn't saved, not even its name.</span>
           </div>
         </div>
 
@@ -203,7 +204,7 @@
       <section class="card">
         <div class="card__header"><h3 class="card__title">Balance after this request</h3></div>
         <div class="card__body">
-          <dl class="kv">
+          <dl class="kv" id="balance-after">
             <div class="kv__row"><dt>Casual leave now</dt><dd>6 days</dd></div>
             <div class="kv__row"><dt>This request</dt><dd>1 day</dd></div>
             <div class="kv__row"><dt>Balance after</dt><dd><span class="badge badge--success">5 days</span></dd></div>
@@ -214,7 +215,7 @@
       <section class="card">
         <div class="card__header"><h3 class="card__title">Approval chain</h3></div>
         <div class="card__body">
-          <ol class="stepper stepper--vertical">
+          <ol class="stepper stepper--vertical" id="approval-chain">
             <li class="stepper__step is-current">
               <span class="stepper__dot">1</span>
               <div class="stepper__text"><strong>You send the request</strong><small class="text-muted">Arjun Kapoor</small></div>
@@ -240,6 +241,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/apply-leave.js"></script>
 </body>
 </html>
 <!-- END 2 -->

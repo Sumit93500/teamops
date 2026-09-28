@@ -175,7 +175,7 @@
               <tr>
                 <td><span class="table__user-name">Casual leave</span></td><td>3 Oct</td><td class="table__num">1</td><td>18 Sep</td>
                 <td><span class="badge badge--warning badge--dot">Pending</span></td>
-                <td class="table__actions"><button class="btn btn--sm btn--danger" type="button" data-permission="leave:cancel" data-not-implemented="Cancel">Cancel</button></td>
+                <td class="table__actions"><button class="btn btn--sm btn--danger" type="button" data-permission="leave:cancel">Cancel</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Work from home</span></td><td>12 Aug</td><td class="table__num">1</td><td>10 Aug</td>
@@ -206,17 +206,11 @@
           </table>
         </div>
 
-        <div class="card__footer">
-          <span class="card__meta">Showing 6 of 9 requests</span>
-          <div class="btn-group">
-            <button class="btn btn--sm" type="button" disabled>Previous</button>
-            <button class="btn btn--sm" type="button" data-not-implemented="Next page">Next</button>
-          </div>
-        </div>
+        <div class="pagination is-empty"></div>
       </section>
 
       <aside class="stack">
-        <section class="card">
+        <section class="card" id="pending-request">
           <div class="card__header">
             <h3 class="card__title">Pending request</h3>
             <span class="badge badge--warning badge--dot">In review</span>
@@ -245,7 +239,7 @@
             <h3 class="card__title">Upcoming holidays</h3>
             <a class="link text-sm" href="holidays.html">See all</a>
           </div>
-          <div class="list">
+          <div class="list" id="upcoming-holidays">
             <div class="list__item">
               <div class="date-tile"><span class="date-tile__month">Oct</span><span class="date-tile__day">2</span></div>
               <div class="list__content"><span class="list__title">Gandhi Jayanti</span><span class="list__sub">Friday, national holiday</span></div>
@@ -265,6 +259,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/my-leave.js"></script>
 </body>
 </html>
 <!-- END 2 -->

@@ -285,6 +285,14 @@ export function overlaps(requestId) {
     && sameTeam.has(r.userId) && COUNTED.includes(r.status) && clash(r, request));
 }
 
+// The id of the manager a new request from this person would go to first, or
+// null (no manager, or the name doesn't match exactly one active user). Pages
+// use it to show the approval chain before anything is sent.
+export function managerFor(userId) {
+  const user = getUser(userId);
+  return user ? resolveManager(user) : null;
+}
+
 // Who a pending request is waiting on, for display: the manager's current
 // name, or "HR" (also when the manager has since left the list). "" once decided.
 export function currentApproverName(request) {
