@@ -109,7 +109,7 @@
   <div class="page-header">
     <div>
       <h1>Mark attendance</h1>
-      <p class="page-header__subtitle">Friday, 18 September 2026</p>
+      <p class="page-header__subtitle" id="today-date">Friday, 18 September 2026</p>
     </div>
     <div class="page-header__actions">
       <a class="btn" href="my-attendance.html">View my attendance</a>
@@ -122,25 +122,27 @@
 
       <section class="card">
         <div class="punch__body">
-          <span class="badge badge--warning badge--dot">Not checked in yet</span>
-          <div class="punch__time"><time datetime="09:42">09:42</time><small>AM</small></div>
-          <p class="punch__date">Shift starts at 9:30 AM. Punching in after 9:45 AM is marked late.</p>
+          <span class="badge badge--warning badge--dot" id="punch-status">Not checked in yet</span>
+          <div class="punch__time" id="punch-clock"><time datetime="09:42">09:42</time><small>AM</small></div>
+          <p class="punch__date" id="punch-rule">Shift starts at 9:30 AM. Punching in after 9:45 AM is marked late.</p>
 
           <div class="punch__mode" role="radiogroup" aria-label="Work mode">
-            <label class="check"><input type="radio" name="mode" checked> Office</label>
-            <label class="check"><input type="radio" name="mode"> Work from home</label>
+            <label class="check"><input type="radio" name="mode" value="office" checked> Office</label>
+            <label class="check"><input type="radio" name="mode" value="wfh"> Work from home</label>
           </div>
 
           <div class="punch__actions">
-            <button class="btn btn--primary btn--lg" type="button" data-permission="attendance:mark">Check in</button>
-            <button class="btn btn--lg" type="button" disabled>Check out</button>
+            <button class="btn btn--primary btn--lg" type="button" id="check-in-btn" data-permission="attendance:mark">Check in</button>
+            <button class="btn btn--lg" type="button" id="check-out-btn" disabled>Check out</button>
           </div>
+          <p class="text-sm text-muted" id="punch-note" hidden></p>
+          <p class="form-error" id="punch-error" role="alert" hidden></p>
         </div>
 
         <div class="punch__stats">
-          <div class="punch__stat"><span>Check-in</span><strong>–</strong></div>
-          <div class="punch__stat"><span>Check-out</span><strong>–</strong></div>
-          <div class="punch__stat"><span>Hours today</span><strong>0h 00m</strong></div>
+          <div class="punch__stat"><span>Check-in</span><strong id="stat-check-in">–</strong></div>
+          <div class="punch__stat"><span>Check-out</span><strong id="stat-check-out">–</strong></div>
+          <div class="punch__stat"><span>Hours today</span><strong id="stat-hours">0h 00m</strong></div>
         </div>
       </section>
 
@@ -148,12 +150,7 @@
         <section class="card">
           <div class="card__header"><h3 class="card__title">Location check</h3></div>
           <div class="card__body">
-            <dl class="kv">
-              <div class="kv__row"><dt>Location</dt><dd>Gurugram office</dd></div>
-              <div class="kv__row"><dt>Distance</dt><dd>12 m from office</dd></div>
-              <div class="kv__row"><dt>Network</dt><dd><span class="badge badge--success badge--dot">Office Wi-Fi</span></dd></div>
-              <div class="kv__row"><dt>Device</dt><dd>Chrome on Windows</dd></div>
-            </dl>
+            <p class="text-sm text-muted">Location and network checks aren't part of this demo, so where you check in from isn't verified.</p>
           </div>
         </section>
 
@@ -162,10 +159,11 @@
           <div class="card__body">
             <dl class="kv">
               <div class="kv__row"><dt>Shift</dt><dd>General</dd></div>
-              <div class="kv__row"><dt>Timing</dt><dd>9:30 AM – 6:30 PM</dd></div>
-              <div class="kv__row"><dt>Grace period</dt><dd>15 minutes</dd></div>
-              <div class="kv__row"><dt>Late marks this month</dt><dd>2 of 3</dd></div>
+              <div class="kv__row"><dt>Timing</dt><dd id="shift-timing">9:30 AM – 6:30 PM</dd></div>
+              <div class="kv__row"><dt>Grace period</dt><dd id="shift-grace">15 minutes</dd></div>
+              <div class="kv__row"><dt>Late marks this month</dt><dd id="late-marks">2 of 3</dd></div>
             </dl>
+            <p class="text-sm text-muted mt-2" id="late-note" hidden></p>
           </div>
         </section>
       </aside>
@@ -177,7 +175,7 @@
         <a class="link text-sm" href="my-attendance.html">View full month</a>
       </div>
       <div class="table-wrap">
-        <table class="table">
+        <table class="table" id="recent-punches">
           <thead>
             <tr>
               <th>Date</th>
@@ -205,7 +203,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
-<script type="module" src="../../assets/js/pages/attendance.js"></script>
+<script type="module" src="../../assets/js/pages/mark-attendance.js"></script>
 </body>
 </html>
 <!-- END 2 -->
