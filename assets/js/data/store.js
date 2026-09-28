@@ -121,6 +121,18 @@ export function peekNextId() {
   return formatId(loadUsers().nextIdNum);
 }
 
+// People per department code, e.g. { ENG: 4, HR: 1 }, from the live users.
+// Inactive employees aren't counted. A department nobody is in has no key.
+// (data/users.js has a function of the same name that counts the fixed
+// built-in list; this one follows edits.)
+export function headcountByDepartment() {
+  const counts = {};
+  getAllUsers()
+    .filter((u) => u.status !== "inactive" && u.department)
+    .forEach((u) => { counts[u.department] = (counts[u.department] ?? 0) + 1; });
+  return counts;
+}
+
 // ---------- user writes ----------
 
 export function addUser(fields = {}) {
@@ -195,9 +207,9 @@ export function deleteUser(id) {
 export function addDepartment(fields = {}) {
   const box = loadDepartments();
   const code = String(fields.code ?? "").trim();
-  if (!/^[A-Z]{2,4}$/.test(code)) return fail("Department code must be 2 to 4 capital letters, e.g. MKT.");
-  if (box.records.some((d) => d.code === code)) return fail(`Department code ${code} is already in use.`);
-  if (!String(fields.name ?? "").trim()) return fail("Department name is required.");
+  if (!/^[A-Z]{2,4}$/.test(code)) return fail("Department code must be 2 to 4 capital letters, e.g. MKT.", "code");
+  if (box.records.some((d) => d.code === code)) return fail(`Department code ${code} is already in use.`, "code");
+  if (!String(fields.name ?? "").trim()) return fail("Department name is required.", "name");
 
   const record = { head: "", active: true, ...copy(fields), code };
   box.records.push(record);

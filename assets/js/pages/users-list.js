@@ -219,6 +219,14 @@ function fillSelect(select, allLabel, options) {
 fillSelect(departmentSelect, "All departments", getAllDepartments().map((d) => [d.code, d.name]));
 fillSelect(roleSelect, "All roles", Object.values(ROLES).map((r) => [r.key, r.label]));
 
+// "View people" on the Departments page links here as ?dept=<code>. A code
+// that isn't in the dropdown is ignored, so the list isn't silently empty.
+const deptParam = new URLSearchParams(window.location.search).get("dept");
+if (departmentSelect && deptParam && Array.from(departmentSelect.options).some((o) => o.value === deptParam)) {
+  departmentSelect.value = deptParam;
+  departmentFilter = deptParam;
+}
+
 departmentSelect?.addEventListener("change", () => {
   departmentFilter = departmentSelect.value;
   currentPage = 1;

@@ -139,7 +139,7 @@
     </div>
     <div class="page-header__actions">
       <a class="btn" href="../access/designations.html">Designations</a>
-      <button class="btn btn--primary" type="button" data-permission="departments:create" data-not-implemented="Add department">
+      <button class="btn btn--primary" type="button" data-permission="departments:create">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Add department
       </button>
@@ -155,7 +155,7 @@
         </div>
         <div>
           <span class="stat__label">Departments</span>
-          <strong class="stat__value">6</strong>
+          <strong class="stat__value">—</strong>
           <span class="stat__delta">All have a head</span>
         </div>
       </div>
@@ -165,8 +165,7 @@
         </div>
         <div>
           <span class="stat__label">Employees</span>
-          <strong class="stat__value">248</strong>
-          <span class="stat__delta stat__delta--up">+12 this quarter</span>
+          <strong class="stat__value">—</strong>
         </div>
       </div>
       <div class="stat">
@@ -175,8 +174,7 @@
         </div>
         <div>
           <span class="stat__label">Open positions</span>
-          <strong class="stat__value">9</strong>
-          <span class="stat__delta">Across 4 departments</span>
+          <strong class="stat__value">—</strong>
         </div>
       </div>
       <div class="stat">
@@ -185,138 +183,70 @@
         </div>
         <div>
           <span class="stat__label">Average team size</span>
-          <strong class="stat__value">41</strong>
+          <strong class="stat__value">—</strong>
           <span class="stat__delta">Largest is Engineering</span>
         </div>
       </div>
     </section>
 
-    <section class="dept-grid" aria-label="All departments">
+    <!-- Filled by departments.js from the live store. -->
+    <section class="dept-grid" aria-label="All departments"></section>
 
-      <article class="card dept">
-        <div class="dept__top">
-          <div><h3 class="dept__name">Engineering</h3><span class="dept__code">ENG</span></div>
-          <span class="badge badge--success badge--dot">Active</span>
-        </div>
-        <div class="dept__head">
-          <div class="avatar avatar--1">RD</div>
-          <div><span class="fw-medium">Rahul Deshmukh</span><small>Department head</small></div>
-        </div>
-        <div class="dept__stats">
-          <div class="dept__stat"><span>Employees</span><strong>82</strong></div>
-          <div class="dept__stat"><span>Open roles</span><strong>4</strong></div>
-        </div>
-        <div class="dept__foot">
-          <a class="link text-sm" href="users-list.html">View people</a>
-          <button class="btn btn--sm" type="button" data-permission="departments:edit" data-not-implemented="Edit">Edit</button>
-        </div>
-      </article>
-
-      <article class="card dept">
-        <div class="dept__top">
-          <div><h3 class="dept__name">Sales</h3><span class="dept__code">SAL</span></div>
-          <span class="badge badge--success badge--dot">Active</span>
-        </div>
-        <div class="dept__head">
-          <div class="avatar avatar--2">MA</div>
-          <div><span class="fw-medium">Meenal Arora</span><small>Department head</small></div>
-        </div>
-        <div class="dept__stats">
-          <div class="dept__stat"><span>Employees</span><strong>54</strong></div>
-          <div class="dept__stat"><span>Open roles</span><strong>2</strong></div>
-        </div>
-        <div class="dept__foot">
-          <a class="link text-sm" href="users-list.html">View people</a>
-          <button class="btn btn--sm" type="button" data-permission="departments:edit" data-not-implemented="Edit">Edit</button>
-        </div>
-      </article>
-
-      <article class="card dept">
-        <div class="dept__top">
-          <div><h3 class="dept__name">Operations</h3><span class="dept__code">OPS</span></div>
-          <span class="badge badge--success badge--dot">Active</span>
-        </div>
-        <div class="dept__head">
-          <div class="avatar avatar--3">NR</div>
-          <div><span class="fw-medium">Nikhil Rao</span><small>Department head</small></div>
-        </div>
-        <div class="dept__stats">
-          <div class="dept__stat"><span>Employees</span><strong>47</strong></div>
-          <div class="dept__stat"><span>Open roles</span><strong>1</strong></div>
-        </div>
-        <div class="dept__foot">
-          <a class="link text-sm" href="users-list.html">View people</a>
-          <button class="btn btn--sm" type="button" data-permission="departments:edit" data-not-implemented="Edit">Edit</button>
-        </div>
-      </article>
-
-      <article class="card dept">
-        <div class="dept__top">
-          <div><h3 class="dept__name">Customer Support</h3><span class="dept__code">SUP</span></div>
-          <span class="badge badge--success badge--dot">Active</span>
-        </div>
-        <div class="dept__head">
-          <div class="avatar avatar--4">TS</div>
-          <div><span class="fw-medium">Tanvi Sethi</span><small>Department head</small></div>
-        </div>
-        <div class="dept__stats">
-          <div class="dept__stat"><span>Employees</span><strong>21</strong></div>
-          <div class="dept__stat"><span>Open roles</span><strong>2</strong></div>
-        </div>
-        <div class="dept__foot">
-          <a class="link text-sm" href="users-list.html">View people</a>
-          <button class="btn btn--sm" type="button" data-permission="departments:edit" data-not-implemented="Edit">Edit</button>
-        </div>
-      </article>
-
-      <article class="card dept">
-        <div class="dept__top">
-          <div><h3 class="dept__name">Finance</h3><span class="dept__code">FIN</span></div>
-          <span class="badge badge--success badge--dot">Active</span>
-        </div>
-        <div class="dept__head">
-          <div class="avatar avatar--1">KS</div>
-          <div><span class="fw-medium">Kabir Shah</span><small>Department head</small></div>
-        </div>
-        <div class="dept__stats">
-          <div class="dept__stat"><span>Employees</span><strong>26</strong></div>
-          <div class="dept__stat"><span>Open roles</span><strong>0</strong></div>
-        </div>
-        <div class="dept__foot">
-          <a class="link text-sm" href="users-list.html">View people</a>
-          <button class="btn btn--sm" type="button" data-permission="departments:edit" data-not-implemented="Edit">Edit</button>
-        </div>
-      </article>
-
-      <article class="card dept">
-        <div class="dept__top">
-          <div><h3 class="dept__name">Human Resources</h3><span class="dept__code">HR</span></div>
-          <span class="badge badge--success badge--dot">Active</span>
-        </div>
-        <div class="dept__head">
-          <div class="avatar avatar--2">PN</div>
-          <div><span class="fw-medium">Priya Nair</span><small>Department head</small></div>
-        </div>
-        <div class="dept__stats">
-          <div class="dept__stat"><span>Employees</span><strong>18</strong></div>
-          <div class="dept__stat"><span>Open roles</span><strong>0</strong></div>
-        </div>
-        <div class="dept__foot">
-          <a class="link text-sm" href="users-list.html">View people</a>
-          <button class="btn btn--sm" type="button" data-permission="departments:edit" data-not-implemented="Edit">Edit</button>
-        </div>
-      </article>
-
-    </section>
-
-    <div class="alert alert--info">A department head becomes the first approver for leave and attendance in that department. Changing a head updates the approval chain for everyone on the team.</div>
+    <div class="alert alert--info">Editing a department's head does not currently change any approval chains.</div>
 
   </div>
 </main>
   </div>
 </div>
 
+<!-- Add or edit a department. departments.js opens it in add or edit mode and fills it in. -->
+<div class="modal" id="dept-modal" role="dialog" aria-modal="true" aria-labelledby="dept-modal-title">
+  <div class="modal__dialog">
+    <div class="modal__header">
+      <div>
+        <h3 class="modal__title" id="dept-modal-title">Add department</h3>
+        <p class="modal__desc">Create a new department. The code is used on employee records.</p>
+      </div>
+      <button class="modal__close" type="button" aria-label="Close">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <form action="departments.html">
+      <div class="modal__body">
+        <div class="form">
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="form-label form-label--required" for="dept-name">Name</label>
+              <input class="input" id="dept-name" type="text" placeholder="e.g. Marketing" required>
+            </div>
+            <div class="form-field">
+              <label class="form-label form-label--required" for="dept-code">Code</label>
+              <input class="input" id="dept-code" type="text" placeholder="e.g. MKT" autocomplete="off" required>
+              <span class="form-hint">2 to 4 capital letters. Can't be changed later.</span>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="dept-head">Head</label>
+              <select class="select" id="dept-head">
+                <option value="">No head</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <span class="form-label">Status</span>
+              <label class="switch"><input type="checkbox" id="dept-active" checked> Active</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn" type="button" data-modal-close>Cancel</button>
+        <button class="btn btn--primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/departments.js"></script>
 </body>
 </html>
 <!-- END 2 -->
