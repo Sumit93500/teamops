@@ -119,7 +119,7 @@
       <select class="select select--sm" aria-label="Choose year">
         <option>2026</option><option>2025</option>
       </select>
-      <button class="btn btn--primary" type="button" data-permission="holidays:manage" data-not-implemented="Add holiday">
+      <button class="btn btn--primary" type="button" data-permission="holidays:manage">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Add holiday
       </button>
@@ -128,10 +128,18 @@
 
   <div class="grid grid-main-aside">
 
-    <section class="card">
+    <section class="card" id="holiday-calendar">
       <div class="card__header">
         <h3 class="card__title">October 2026</h3>
-        <span class="card__meta">2 holidays</span>
+        <div class="btn-group">
+          <span class="card__meta">2 holidays</span>
+          <button class="btn btn--sm btn--icon" type="button" data-month="prev" aria-label="Previous month">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <button class="btn btn--sm btn--icon" type="button" data-month="next" aria-label="Next month">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
       </div>
       <div class="card__body">
         <div class="calendar__grid">
@@ -187,7 +195,7 @@
     </section>
 
     <aside class="stack">
-      <section class="card">
+      <section class="card" id="holiday-list">
         <div class="card__header">
           <h3 class="card__title">2026 holidays</h3>
           <span class="card__meta">7 listed</span>
@@ -231,7 +239,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card" id="holiday-summary">
         <div class="card__header"><h3 class="card__title">Summary</h3></div>
         <div class="card__body">
           <dl class="kv">
@@ -243,7 +251,7 @@
         </div>
       </section>
 
-      <div class="alert alert--info">These are sample dates for the design. HR adds the real holiday list from this page.</div>
+      <div class="alert alert--info">HR adds and removes holidays from this page. Weekends and company or national holidays aren't counted as leave days.</div>
     </aside>
 
   </div>
@@ -251,7 +259,52 @@
   </div>
 </div>
 
+<!-- Add a holiday. holidays.js opens it; errors from addHoliday() show under the field. -->
+<div class="modal" id="holiday-modal" role="dialog" aria-modal="true" aria-labelledby="holiday-modal-title">
+  <div class="modal__dialog modal__dialog--sm">
+    <div class="modal__header">
+      <div>
+        <h3 class="modal__title" id="holiday-modal-title">Add holiday</h3>
+        <p class="modal__desc">National and company holidays aren't counted as leave days. Optional ones are.</p>
+      </div>
+      <button class="modal__close" type="button" aria-label="Close">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <form action="holidays.html" novalidate>
+      <div class="modal__body">
+        <div class="form">
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="form-label form-label--required" for="holiday-date">Date</label>
+              <input class="input" id="holiday-date" type="date" required>
+            </div>
+            <div class="form-field">
+              <label class="form-label form-label--required" for="holiday-kind">Kind</label>
+              <select class="select" id="holiday-kind" required>
+                <option value="">Select</option>
+                <option value="national">National</option>
+                <option value="company">Company</option>
+                <option value="optional">Optional</option>
+              </select>
+            </div>
+            <div class="form-field form-field--full">
+              <label class="form-label form-label--required" for="holiday-name">Name</label>
+              <input class="input" id="holiday-name" type="text" placeholder="e.g. Diwali" required>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn" type="button" data-modal-close>Cancel</button>
+        <button class="btn btn--primary" type="submit">Add holiday</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/holidays.js"></script>
 </body>
 </html>
 <!-- END 2 -->

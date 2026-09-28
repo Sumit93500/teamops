@@ -132,8 +132,7 @@
         </div>
         <div>
           <span class="stat__label">Pending</span>
-          <strong class="stat__value">6</strong>
-          <span class="stat__delta stat__delta--down">Oldest is 2 days old</span>
+          <strong class="stat__value">—</strong>
         </div>
       </div>
       <div class="stat">
@@ -142,8 +141,7 @@
         </div>
         <div>
           <span class="stat__label">Approved this month</span>
-          <strong class="stat__value">41</strong>
-          <span class="stat__delta stat__delta--up">+6 vs August</span>
+          <strong class="stat__value">—</strong>
         </div>
       </div>
       <div class="stat">
@@ -152,8 +150,7 @@
         </div>
         <div>
           <span class="stat__label">Rejected this month</span>
-          <strong class="stat__value">3</strong>
-          <span class="stat__delta">Mostly clashing dates</span>
+          <strong class="stat__value">—</strong>
         </div>
       </div>
       <div class="stat">
@@ -162,8 +159,7 @@
         </div>
         <div>
           <span class="stat__label">Average decision time</span>
-          <strong class="stat__value">1.4 days</strong>
-          <span class="stat__delta stat__delta--up">Target is 2 days</span>
+          <strong class="stat__value">—</strong>
         </div>
       </div>
     </section>
@@ -180,7 +176,7 @@
           <div class="table__filters">
             <div class="input-group">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-              <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search requests">
+              <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search requests" data-table-filter="off">
             </div>
             <select class="select select--sm" aria-label="Filter by leave type">
               <option>All types</option><option>Casual</option><option>Sick</option><option>Earned</option><option>Work from home</option>
@@ -206,51 +202,49 @@
                 <td><div class="table__user"><div class="avatar avatar--1">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">Engineering</span></div></div></td>
                 <td>Casual</td><td>22 – 24 Sep</td><td class="table__num">3</td><td>17 Sep</td>
                 <td><span class="badge badge--info badge--dot">With HR</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve">Approve</button></div></td>
+                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Approve">Approve</button></div></td>
               </tr>
               <tr>
                 <td><div class="table__user"><div class="avatar avatar--2">KM</div><div><span class="table__user-name">Karan Malhotra</span><span class="table__user-sub">Sales</span></div></div></td>
                 <td>Earned</td><td>1 – 10 Oct</td><td class="table__num">8</td><td>15 Sep</td>
                 <td><span class="badge badge--info badge--dot">With HR</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve">Approve</button></div></td>
+                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Approve">Approve</button></div></td>
               </tr>
               <tr>
                 <td><div class="table__user"><div class="avatar avatar--4">SR</div><div><span class="table__user-name">Sneha Rao</span><span class="table__user-sub">Engineering</span></div></div></td>
                 <td>Casual</td><td>28 Sep</td><td class="table__num">1</td><td>18 Sep</td>
                 <td><span class="badge badge--info badge--dot">With HR</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve">Approve</button></div></td>
+                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Approve">Approve</button></div></td>
               </tr>
               <tr>
                 <td><div class="table__user"><div class="avatar avatar--3">AI</div><div><span class="table__user-name">Ananya Iyer</span><span class="table__user-sub">Sales</span></div></div></td>
                 <td>Sick</td><td>23 Sep</td><td class="table__num">1</td><td>18 Sep</td>
                 <td><span class="badge badge--warning badge--dot">With manager</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve">Approve</button></div></td>
+                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Approve">Approve</button></div></td>
               </tr>
               <tr>
                 <td><div class="table__user"><div class="avatar avatar--1">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">Engineering</span></div></div></td>
                 <td>Casual</td><td>3 Oct</td><td class="table__num">1</td><td>18 Sep</td>
                 <td><span class="badge badge--warning badge--dot">With manager</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve">Approve</button></div></td>
+                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Approve">Approve</button></div></td>
               </tr>
               <tr>
                 <td><div class="table__user"><div class="avatar avatar--2">NK</div><div><span class="table__user-name">Neha Kulkarni</span><span class="table__user-sub">Operations</span></div></div></td>
                 <td>Casual</td><td>30 Sep</td><td class="table__num">1</td><td>17 Sep</td>
                 <td><span class="badge badge--warning badge--dot">With manager</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve">Approve</button></div></td>
+                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="leave:approve" data-not-implemented="Approve">Approve</button></div></td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div class="card__footer">
-          <span class="card__meta">Showing 6 of 6 pending requests</span>
-        </div>
+        <div class="pagination is-empty"></div>
       </section>
 
       <aside class="stack">
-        <section class="card">
+        <section class="card" id="out-next-week">
           <div class="card__header">
-            <h3 class="card__title">Out next week</h3>
+            <h3 class="card__title">Out in the next 7 days</h3>
             <span class="card__meta">21 – 25 Sep</span>
           </div>
           <div class="list">
@@ -282,7 +276,7 @@
               </li>
               <li class="stepper__step">
                 <span class="stepper__dot">2</span>
-                <div class="stepper__text"><strong>Reporting manager</strong><small class="text-muted">First approval</small></div>
+                <div class="stepper__text"><strong>Reporting manager</strong><small class="text-muted">Shown as the first step; HR or Admin can decide at any step</small></div>
               </li>
               <li class="stepper__step">
                 <span class="stepper__dot">3</span>
@@ -292,7 +286,7 @@
           </div>
         </section>
 
-        <div class="alert alert--warning">Rohan Gupta's dates overlap with 2 other people from Engineering. Check team cover before approving.</div>
+        <div class="alert alert--warning" id="overlap-alert">Rohan Gupta's dates overlap with 2 other people from Engineering. Check team cover before approving.</div>
       </aside>
 
     </div>
@@ -302,7 +296,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
-<script type="module" src="../../assets/js/pages/approvals.js"></script>
+<script type="module" src="../../assets/js/pages/leave-approvals.js"></script>
 </body>
 </html>
 <!-- END 2 -->
