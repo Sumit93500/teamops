@@ -5,6 +5,7 @@
 
 import { getAllUsers, getAllDepartments, resetDemoData } from "../data/store.js";
 import { resetLeaveData } from "../data/leave-store.js";
+import { resetAttendanceData } from "../data/attendance-store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { ROLES } from "../config/roles.js";
 import { renderPagination } from "../ui/pagination.js";
@@ -285,9 +286,10 @@ if (["admin", "hr"].includes(getCurrentRole()?.key) && exportBtn) {
   const resetBtn = el("button", "btn btn--ghost", "Reset demo data");
   resetBtn.type = "button";
   resetBtn.addEventListener("click", () => {
-    if (!window.confirm("This discards every change made to users, departments, leave and holidays in this browser. Continue?")) return;
+    if (!window.confirm("This discards every change made to users, departments, leave, holidays and attendance in this browser. Continue?")) return;
     resetDemoData();
     resetLeaveData();
+    resetAttendanceData();
     window.location.reload();
   });
   exportBtn.before(resetBtn);
