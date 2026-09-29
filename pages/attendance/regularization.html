@@ -137,7 +137,7 @@
         </div>
         <div class="input-group">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search requests">
+          <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search requests" data-table-filter="off">
         </div>
       </div>
 
@@ -199,13 +199,7 @@
         </table>
       </div>
 
-      <div class="card__footer">
-        <span class="card__meta">Showing 5 of 24 requests</span>
-        <div class="btn-group">
-          <button class="btn btn--sm" type="button" disabled>Previous</button>
-          <button class="btn btn--sm" type="button" data-not-implemented="Next page">Next</button>
-        </div>
-      </div>
+      <div class="pagination is-empty"></div>
     </section>
 
     <aside class="stack">
@@ -213,16 +207,15 @@
         <div class="card__header"><h3 class="card__title">Policy</h3></div>
         <div class="card__body">
           <dl class="kv">
-            <div class="kv__row"><dt>Late marks allowed</dt><dd>3 per month</dd></div>
-            <div class="kv__row"><dt>Request window</dt><dd>7 days</dd></div>
-            <div class="kv__row"><dt>First approver</dt><dd>Reporting manager</dd></div>
-            <div class="kv__row"><dt>Final approver</dt><dd>HR</dd></div>
-            <div class="kv__row"><dt>Third late mark</dt><dd>Half-day leave</dd></div>
+            <div class="kv__row"><dt>Request window</dt><dd>7 days after the date</dd></div>
+            <div class="kv__row"><dt>Every 3rd late mark</dt><dd>Counts as a half day, for information only; leave isn't deducted</dd></div>
+            <div class="kv__row"><dt>First step</dt><dd>Reporting manager, shown as a step only</dd></div>
+            <div class="kv__row"><dt>Decided by</dt><dd>HR or Admin, at any step</dd></div>
           </dl>
         </div>
       </section>
 
-      <div class="alert alert--info">Approving a request updates the attendance record and the payroll inputs for that month. Every decision is written to the audit log.</div>
+      <div class="alert alert--info">Approving a request corrects that day's attendance record.</div>
     </aside>
 
   </div>
@@ -231,6 +224,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/regularization.js"></script>
 </body>
 </html>
 <!-- END 2 -->
