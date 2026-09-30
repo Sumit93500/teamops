@@ -12,12 +12,12 @@ import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { allRequests, pendingFor } from "../data/leave-store.js";
-import { allRegularizations, pendingRegularizations, decideRegularization } from "../data/attendance-store.js";
+import { allRegularizations, pendingRegularizations } from "../data/attendance-store.js";
 import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
-import { approveLeave, openRejectModal, createDecisionFlow } from "../ui/leave-decision.js";
+import { approveLeave, openRejectModal, approveCorrection, openRejectCorrectionModal, decisionButtons } from "../ui/leave-decision.js";
 import {
   el, todayIso, formatDay, formatDays, requestDates, typeLabel, statusBadge,
-  initials, avatarClass, decisionOf, localDateOf,
+  initials, avatarClass, decisionOf, localDateOf, nameOf,
 } from "../ui/leave-view.js";
 
 const PILL_TAB = { "Pending": "pending", "Approved": "approved", "Rejected": "rejected" };
@@ -48,7 +48,6 @@ const staticDecided = readStatic(decidedBody);
 
 // ---------- helpers ----------
 
-const nameOf = (id) => getUser(id)?.name ?? id;
 const leaveTitle = (r) => `Leave: ${nameOf(r.userId)}, ${requestDates(r)}`;
 const correctionTitle = (r) => `Regularization: ${nameOf(r.userId)}, ${formatDay(r.date)}`;
 const issueLabel = (r) => ISSUE_LABEL[r.issue] ?? r.issue;
@@ -76,20 +75,6 @@ const correctionsPending = () => (showCorrections ? pendingRegularizations(userI
 const correctionsDecided = (status) => (showCorrections ? allRegularizations().filter((r) => r.status === status) : [])
   .sort((a, b) => decisionOf(b).at.localeCompare(decisionOf(a).at));
 
-const corrections = createDecisionFlow({
-  decide: decideRegularization,
-  describe: (r) => `${nameOf(r.userId)}: ${issueLabel(r)}, ${formatDay(r.date)}, corrected to ${r.time}`,
-  modalId: "reject-correction-modal",
-  noteId: "reject-correction-note",
-  labels: {
-    title: "Reject correction request",
-    approved: "Correction approved. The attendance record is updated.",
-    rejected: "Correction request rejected.",
-    approveFailed: "Couldn't approve the request. It may already have been decided, or the attendance record has changed.",
-    rejectFailed: "Couldn't reject the request. It may already have been decided.",
-  },
-});
-
 // ---------- inbox rows ----------
 
 function leaveRow(request) {
@@ -104,17 +89,7 @@ function leaveRow(request) {
 
   const actions = el("td", "table__actions");
   if (request.status === "pending") {
-    const group = el("div", "btn-group");
-    const reject = el("button", "btn btn--sm", "Reject");
-    reject.type = "button";
-    reject.dataset.permission = "leave:approve";
-    reject.addEventListener("click", () => openRejectModal(request, render));
-    const approve = el("button", "btn btn--primary btn--sm", "Approve");
-    approve.type = "button";
-    approve.dataset.permission = "leave:approve";
-    approve.addEventListener("click", () => approveLeave(request, render));
-    group.append(reject, approve);
-    actions.append(group);
+    actions.append(decisionButtons("leave:approve", () => openRejectModal(request, render), () => approveLeave(request, render)));
   }
 
   tr.append(
@@ -140,17 +115,7 @@ function correctionRow(request) {
 
   const actions = el("td", "table__actions");
   if (request.status === "pending") {
-    const group = el("div", "btn-group");
-    const reject = el("button", "btn btn--sm", "Reject");
-    reject.type = "button";
-    reject.dataset.permission = "attendance:approve";
-    reject.addEventListener("click", () => corrections.openReject(request, render));
-    const approve = el("button", "btn btn--primary btn--sm", "Approve");
-    approve.type = "button";
-    approve.dataset.permission = "attendance:approve";
-    approve.addEventListener("click", () => corrections.approve(request, render));
-    group.append(reject, approve);
-    actions.append(group);
+    actions.append(decisionButtons("attendance:approve", () => openRejectCorrectionModal(request, render), () => approveCorrection(request, render)));
   }
 
   tr.append(

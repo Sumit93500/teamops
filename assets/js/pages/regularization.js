@@ -3,17 +3,17 @@
 // Rejected tabs of attendance correction requests from the attendance store,
 // with search and pagination. Pending holds what the signed-in person may
 // decide (never their own request); cancelled requests appear in no tab.
-// Approve and Reject go through the shared flow in ui/leave-decision.js with
-// decideRegularization(), so they work like leave approvals. A session without
+// Approve and Reject go through the shared correction flow in
+// ui/leave-decision.js, so they work like leave approvals. A session without
 // an employee id (an old sign-in) leaves the static page as it is.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
-import { allRegularizations, pendingRegularizations, decideRegularization, dayFor } from "../data/attendance-store.js";
+import { allRegularizations, pendingRegularizations, dayFor } from "../data/attendance-store.js";
 import { renderPagination } from "../ui/pagination.js";
-import { createDecisionFlow } from "../ui/leave-decision.js";
-import { el, formatDay, statusBadge, initials, avatarClass, departmentName, decisionOf } from "../ui/leave-view.js";
+import { approveCorrection, openRejectCorrectionModal, decisionButtons } from "../ui/leave-decision.js";
+import { el, formatDay, statusBadge, initials, avatarClass, departmentName, decisionOf, nameOf } from "../ui/leave-view.js";
 
 const PAGE_SIZE = 10;
 const PILL_TAB = { "Pending": "pending", "Approved": "approved", "Rejected": "rejected" };
@@ -36,23 +36,8 @@ let currentPage = 1;
 
 // ---------- data ----------
 
-const nameOf = (id) => getUser(id)?.name ?? id;
 const decidedAt = (r) => decisionOf(r)?.at ?? "";
 const byId = (a, b) => a.id.localeCompare(b.id, "en", { numeric: true });
-
-const corrections = createDecisionFlow({
-  decide: decideRegularization,
-  describe: (r) => `${nameOf(r.userId)}: ${ISSUE_LABEL[r.issue] ?? r.issue}, ${formatDay(r.date)}, corrected to ${r.time}`,
-  modalId: "reject-correction-modal",
-  noteId: "reject-correction-note",
-  labels: {
-    title: "Reject correction request",
-    approved: "Correction approved. The attendance record is updated.",
-    rejected: "Correction request rejected.",
-    approveFailed: "Couldn't approve the request. It may already have been decided, or the attendance record has changed.",
-    rejectFailed: "Couldn't reject the request. It may already have been decided.",
-  },
-});
 
 // Pending: oldest sent first, like a queue. Decided: most recent decision first.
 function tabRequests(which) {
@@ -119,17 +104,7 @@ function row(request) {
   const actions = el("td", "table__actions");
   actions.hidden = tab !== "pending";
   if (tab === "pending") {
-    const group = el("div", "btn-group");
-    const reject = el("button", "btn btn--sm", "Reject");
-    reject.type = "button";
-    reject.dataset.permission = "attendance:approve";
-    reject.addEventListener("click", () => corrections.openReject(request, render));
-    const approve = el("button", "btn btn--primary btn--sm", "Approve");
-    approve.type = "button";
-    approve.dataset.permission = "attendance:approve";
-    approve.addEventListener("click", () => corrections.approve(request, render));
-    group.append(reject, approve);
-    actions.append(group);
+    actions.append(decisionButtons("attendance:approve", () => openRejectCorrectionModal(request, render), () => approveCorrection(request, render)));
   }
 
   tr.append(

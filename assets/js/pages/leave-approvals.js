@@ -11,10 +11,10 @@ import { getUser } from "../data/store.js";
 import { LEAVE_POLICY, allRequests, pendingFor, overlaps } from "../data/leave-store.js";
 import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
 import { renderPagination } from "../ui/pagination.js";
-import { approveLeave, openRejectModal } from "../ui/leave-decision.js";
+import { approveLeave, openRejectModal, decisionButtons } from "../ui/leave-decision.js";
 import {
   el, todayIso, formatDay, formatRange, requestDates, typeLabel, statusBadge,
-  initials, avatarClass, departmentName, decisionOf, localDateOf,
+  initials, avatarClass, departmentName, decisionOf, localDateOf, nameOf, oldestPendingNote,
 } from "../ui/leave-view.js";
 
 const PAGE_SIZE = 10;
@@ -43,7 +43,6 @@ let currentPage = 1;
 
 // ---------- data ----------
 
-const nameOf = (id) => getUser(id)?.name ?? id;
 const decidedAt = (r) => decisionOf(r)?.at ?? "";
 
 // Pending: oldest sent first, like a queue. Decided: most recent decision first.
@@ -90,17 +89,7 @@ function row(request) {
   const actions = el("td", "table__actions");
   actions.hidden = tab !== "pending";
   if (tab === "pending") {
-    const group = el("div", "btn-group");
-    const reject = el("button", "btn btn--sm", "Reject");
-    reject.type = "button";
-    reject.dataset.permission = "leave:approve";
-    reject.addEventListener("click", () => openRejectModal(request, render));
-    const approve = el("button", "btn btn--primary btn--sm", "Approve");
-    approve.type = "button";
-    approve.dataset.permission = "leave:approve";
-    approve.addEventListener("click", () => approveLeave(request, render));
-    group.append(reject, approve);
-    actions.append(group);
+    actions.append(decisionButtons("leave:approve", () => openRejectModal(request, render), () => approveLeave(request, render)));
   }
 
   tr.append(
@@ -175,10 +164,7 @@ function setStat(label, value, note) {
 function renderStats() {
   const today = todayIso();
   const pending = tabRequests("pending");
-  const oldest = pending.length ? Math.max(...pending.map((r) => dayNumber(today) - dayNumber(r.appliedOn))) : null;
-  let oldestNote = "";
-  if (oldest !== null) oldestNote = oldest <= 0 ? "Oldest was sent today" : `Oldest is ${oldest} ${oldest === 1 ? "day" : "days"} old`;
-  setStat("Pending", String(pending.length), oldestNote);
+  setStat("Pending", String(pending.length), oldestPendingNote(pending, today));
 
   const decided = allRequests().filter((r) => r.status === "approved" || r.status === "rejected");
   const thisMonth = (r) => decisionOf(r) && localDateOf(decisionOf(r).at).slice(0, 7) === today.slice(0, 7);

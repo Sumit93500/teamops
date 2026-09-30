@@ -5,20 +5,22 @@
 // note. Both go through the kind's decide function as the signed-in person,
 // then call back so the page can re-render.
 //
-// createDecisionFlow() builds that pair for one kind of request. The leave
-// pair (approveLeave, openRejectModal) is used by leave-approvals.html and
-// approvals-inbox.html; attendance corrections build their own on
-// regularization.html and approvals-inbox.html.
+// createDecisionFlow() builds that pair for one kind of request. Both kinds
+// are built once, here: the leave pair (approveLeave, openRejectModal) for
+// leave-approvals.html, approvals-inbox.html and the HR dashboard, and the
+// correction pair (approveCorrection, openRejectCorrectionModal) for
+// regularization.html, approvals-inbox.html and the HR dashboard.
+// decisionButtons() draws the Reject + Approve buttons those pages show.
 //
 // Toasts use fixed text only: toast.js uses innerHTML, so names and notes are
 // never put in them.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
-import { getUser } from "../data/store.js";
 import { decideLeave } from "../data/leave-store.js";
+import { decideRegularization } from "../data/attendance-store.js";
 import { openModal, closeModal } from "./modal.js";
 import { showToast } from "./toast.js";
-import { el, escapeHtml, requestTitle } from "./leave-view.js";
+import { el, escapeHtml, requestTitle, formatDay, nameOf } from "./leave-view.js";
 
 const decider = () => ({ id: getCurrentUserId(), role: getCurrentRole()?.key });
 
@@ -173,11 +175,29 @@ export function createDecisionFlow({ decide, describe, modalId, noteId, labels }
   return { approve, openReject };
 }
 
+// ---------- buttons ----------
+
+// Reject + Approve for one pending request; permission goes on both as
+// data-permission, so the page's applyPermissions() can hide them.
+export function decisionButtons(permission, onReject, onApprove) {
+  const group = el("div", "btn-group");
+  const reject = el("button", "btn btn--sm", "Reject");
+  reject.type = "button";
+  reject.dataset.permission = permission;
+  reject.addEventListener("click", onReject);
+  const approve = el("button", "btn btn--primary btn--sm", "Approve");
+  approve.type = "button";
+  approve.dataset.permission = permission;
+  approve.addEventListener("click", onApprove);
+  group.append(reject, approve);
+  return group;
+}
+
 // ---------- leave ----------
 
 const leaveFlow = createDecisionFlow({
   decide: decideLeave,
-  describe: (request) => `${getUser(request.userId)?.name ?? request.userId}: ${requestTitle(request)}`,
+  describe: (request) => `${nameOf(request.userId)}: ${requestTitle(request)}`,
   modalId: "reject-leave-modal",
   noteId: "reject-note",
   labels: { title: "Reject leave request", approved: "Leave request approved.", rejected: "Leave request rejected." },
@@ -185,3 +205,26 @@ const leaveFlow = createDecisionFlow({
 
 export const approveLeave = leaveFlow.approve;
 export const openRejectModal = leaveFlow.openReject;
+
+// ---------- attendance corrections ----------
+
+// The same words as the Issue column on regularization.html. The pages still
+// keep their own copy for their tables (a later round moves it to one place).
+const ISSUE_LABEL = { "late-arrival": "Late arrival", "missed-check-in": "Missed check-in", "missed-check-out": "Missed check-out" };
+
+export const correctionFlow = createDecisionFlow({
+  decide: decideRegularization,
+  describe: (r) => `${nameOf(r.userId)}: ${ISSUE_LABEL[r.issue] ?? r.issue}, ${formatDay(r.date)}, corrected to ${r.time}`,
+  modalId: "reject-correction-modal",
+  noteId: "reject-correction-note",
+  labels: {
+    title: "Reject correction request",
+    approved: "Correction approved. The attendance record is updated.",
+    rejected: "Correction request rejected.",
+    approveFailed: "Couldn't approve the request. It may already have been decided, or the attendance record has changed.",
+    rejectFailed: "Couldn't reject the request. It may already have been decided.",
+  },
+});
+
+export const approveCorrection = correctionFlow.approve;
+export const openRejectCorrectionModal = correctionFlow.openReject;

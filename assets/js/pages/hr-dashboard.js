@@ -16,11 +16,11 @@ import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker } from "../data/holidays.js";
 import { allRequests, pendingFor } from "../data/leave-store.js";
-import { summaryFor, allRegularizations, pendingRegularizations, decideRegularization } from "../data/attendance-store.js";
-import { approveLeave, openRejectModal, createDecisionFlow } from "../ui/leave-decision.js";
+import { summaryFor, allRegularizations, pendingRegularizations } from "../data/attendance-store.js";
+import { approveLeave, openRejectModal, approveCorrection, openRejectCorrectionModal, decisionButtons } from "../ui/leave-decision.js";
 import {
   el, todayIso, formatDay, formatDays, formatRange, weekdayName, monthName, dayOfMonth, requestDates,
-  typeLabel, statusBadge, initials, avatarClass, decisionOf, localDateOf,
+  typeLabel, statusBadge, initials, avatarClass, decisionOf, localDateOf, nameOf, oldestPendingNote,
 } from "../ui/leave-view.js";
 
 const CHART_DAYS = 14;
@@ -57,7 +57,6 @@ let statusFilter = "";
 
 // ---------- helpers ----------
 
-const nameOf = (id) => getUser(id)?.name ?? id;
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const percent = (part, whole) => `${Math.round((part / whole) * 1000) / 10}%`;
 const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
@@ -88,21 +87,6 @@ function setStat(key, value, note, tone = "") {
 const pendingLeave = () => pendingFor(userId, role);
 const pendingCorrections = () => (showCorrections ? pendingRegularizations(userId, role) : []);
 
-// The same flow as regularization.html and approvals-inbox.html, with its own modal ids.
-const corrections = createDecisionFlow({
-  decide: decideRegularization,
-  describe: (r) => `${nameOf(r.userId)}: ${issueLabel(r)}, ${formatDay(r.date)}, corrected to ${r.time}`,
-  modalId: "reject-correction-modal",
-  noteId: "reject-correction-note",
-  labels: {
-    title: "Reject correction request",
-    approved: "Correction approved. The attendance record is updated.",
-    rejected: "Correction request rejected.",
-    approveFailed: "Couldn't approve the request. It may already have been decided, or the attendance record has changed.",
-    rejectFailed: "Couldn't reject the request. It may already have been decided.",
-  },
-});
-
 // ---------- stat strip ----------
 
 function renderStats() {
@@ -113,10 +97,7 @@ function renderStats() {
 
   // The same wording as leave-approvals.html's Pending stat.
   const pending = pendingLeave();
-  const oldest = pending.length ? Math.max(...pending.map((r) => dayNumber(today) - dayNumber(r.appliedOn))) : null;
-  let note = "Nothing waiting";
-  if (oldest !== null) note = oldest <= 0 ? "Oldest was sent today" : `Oldest is ${oldest} ${oldest === 1 ? "day" : "days"} old`;
-  setStat("pending", String(pending.length), note, pending.length ? "down" : "");
+  setStat("pending", String(pending.length), oldestPendingNote(pending, today) || "Nothing waiting", pending.length ? "down" : "");
 }
 
 // ---------- leave requests chart ----------
@@ -148,20 +129,6 @@ function renderChart() {
 
 // ---------- pending approvals ----------
 
-function decisionButtons(permission, onReject, onApprove) {
-  const group = el("div", "btn-group");
-  const reject = el("button", "btn btn--sm", "Reject");
-  reject.type = "button";
-  reject.dataset.permission = permission;
-  reject.addEventListener("click", onReject);
-  const approve = el("button", "btn btn--primary btn--sm", "Approve");
-  approve.type = "button";
-  approve.dataset.permission = permission;
-  approve.addEventListener("click", onApprove);
-  group.append(reject, approve);
-  return group;
-}
-
 function approvalItem(request) {
   const leave = !request.issue;
   const item = el("div", "list__item");
@@ -172,7 +139,7 @@ function approvalItem(request) {
   );
   const buttons = leave
     ? decisionButtons("leave:approve", () => openRejectModal(request, render), () => approveLeave(request, render))
-    : decisionButtons("attendance:approve", () => corrections.openReject(request, render), () => corrections.approve(request, render));
+    : decisionButtons("attendance:approve", () => openRejectCorrectionModal(request, render), () => approveCorrection(request, render));
   item.append(el("div", avatarClass(request.userId), initials(nameOf(request.userId))), content, buttons);
   return item;
 }

@@ -6,7 +6,7 @@
 
 import { LEAVE_POLICY, currentApproverName } from "../data/leave-store.js";
 import { dayNumber } from "../data/holidays.js";
-import { getAllUsers, getAllDepartments } from "../data/store.js";
+import { getUser, getAllUsers, getAllDepartments } from "../data/store.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -111,6 +111,9 @@ export const byNewest = (a, b) => b.from.localeCompare(a.from) || b.id.localeCom
 
 // ---------- people and decisions (the approval pages) ----------
 
+// A person's name, or the id itself for an id that isn't in the store.
+export const nameOf = (id) => getUser(id)?.name ?? id;
+
 // Same as initialsFrom() in ui/topbar.js.
 export function initials(name) {
   if (!name) return "?";
@@ -131,6 +134,16 @@ export function departmentName(code) {
 // auto-approved), or null while it's pending or if it was cancelled.
 export function decisionOf(request) {
   return [...request.history].reverse().find((h) => ["approved", "rejected", "auto-approved"].includes(h.decision)) ?? null;
+}
+
+// The Pending stat's note on leave-approvals.html and the HR dashboard: how
+// long the oldest of these requests has waited, counted in calendar days from
+// the day it was sent (appliedOn) to today. "" for an empty list; each page
+// words that case itself.
+export function oldestPendingNote(requests, today) {
+  if (!requests.length) return "";
+  const oldest = Math.max(...requests.map((r) => dayNumber(today) - dayNumber(r.appliedOn)));
+  return oldest <= 0 ? "Oldest was sent today" : `Oldest is ${oldest} ${oldest === 1 ? "day" : "days"} old`;
 }
 
 // The local calendar date of a stored timestamp ("2026-09-28T04:30:00.000Z" -> "2026-09-28" in India).
