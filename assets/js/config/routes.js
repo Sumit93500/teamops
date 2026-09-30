@@ -5,7 +5,7 @@
 // Auth pages (login, forgot-password, etc.) are not listed — they need no sign-in at all.
 
 export const ROUTES = {
-  "dashboard/admin.html":    "dashboard:view",
+  "dashboard/admin.html":    "attendance:view-all",
   "dashboard/hr.html":       "leave:approve",
   "dashboard/finance.html":  "dashboard:view",
   "dashboard/employee.html": "dashboard:view",

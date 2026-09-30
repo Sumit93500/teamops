@@ -140,7 +140,7 @@
       <div class="page-header">
         <div>
           <h1>Dashboard</h1>
-          <p class="page-header__subtitle">Company overview for September 2026</p>
+          <p class="page-header__subtitle" id="dash-subtitle">Company overview for September 2026</p>
         </div>
         <div class="page-header__actions">
           <button class="btn" type="button" data-permission="reports:export" data-export data-export-stats="admin-dashboard-stats">Export</button>
@@ -154,8 +154,8 @@
       <div class="stack">
 
         <!-- ========== Stat strip ========== -->
-        <section class="stat-strip" aria-label="Key numbers">
-          <div class="stat">
+        <section class="stat-strip" id="dash-stats" aria-label="Key numbers">
+          <div class="stat" data-stat="total">
             <div class="stat__icon stat__icon--1">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
             </div>
@@ -166,7 +166,7 @@
             </div>
           </div>
 
-          <div class="stat">
+          <div class="stat" data-stat="present">
             <div class="stat__icon stat__icon--2">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
             </div>
@@ -177,7 +177,7 @@
             </div>
           </div>
 
-          <div class="stat">
+          <div class="stat" data-stat="payroll">
             <div class="stat__icon stat__icon--3">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
             </div>
@@ -188,7 +188,7 @@
             </div>
           </div>
 
-          <div class="stat">
+          <div class="stat" data-stat="stock">
             <div class="stat__icon stat__icon--4">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
             </div>
@@ -208,10 +208,10 @@
           <section class="card">
             <div class="card__header">
               <h3 class="card__title">Attendance rate, last 14 days</h3>
-              <span class="card__meta">Sep 5 – 18</span>
+              <span class="card__meta" id="rate-range">Sep 5 – 18</span>
             </div>
             <div class="card__body">
-              <div class="chart" role="img" aria-label="Attendance rate for the last 14 days, between 48 and 95 percent">
+              <div class="chart" id="rate-chart" role="img" aria-label="Attendance rate for the last 14 days, between 48 and 95 percent">
                 <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:52" title="Sat 5 Sep: 52%"></span></div><span class="chart__label">5</span></div>
                 <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:48" title="Sun 6 Sep: 48%"></span></div><span class="chart__label">6</span></div>
                 <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:91" title="Mon 7 Sep: 91%"></span></div><span class="chart__label">7</span></div>
@@ -227,7 +227,7 @@
                 <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:92" title="Thu 17 Sep: 92%"></span></div><span class="chart__label">17</span></div>
                 <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:93" title="Fri 18 Sep: 93%"></span></div><span class="chart__label">18</span></div>
               </div>
-              <p class="text-xs text-muted mt-2">Weekends are shown lighter.</p>
+              <p class="text-xs text-muted mt-2" id="rate-note">Weekends are shown lighter.</p>
             </div>
           </section>
 
@@ -282,9 +282,9 @@
           <section class="card">
             <div class="card__header">
               <h3 class="card__title">Headcount by department</h3>
-              <span class="card__meta">248 total</span>
+              <span class="card__meta" id="headcount-meta">248 total</span>
             </div>
-            <div class="card__body">
+            <div class="card__body" id="headcount-bars">
               <div class="bar-row"><span>Engineering</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:100%"></span></div><span class="bar-row__value">82</span></div>
               <div class="bar-row"><span>Sales</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:66%"></span></div><span class="bar-row__value">54</span></div>
               <div class="bar-row"><span>Operations</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:57%"></span></div><span class="bar-row__value">47</span></div>
@@ -328,10 +328,10 @@
             <div class="table__filters">
               <div class="input-group">
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search employees">
+                <input class="input input--sm input--search" id="admin-search" type="search" placeholder="Search employees" aria-label="Search employees" data-table-filter="off">
               </div>
-              <select class="select select--sm" aria-label="Filter by department">
-                <option>All departments</option>
+              <select class="select select--sm" id="admin-dept" aria-label="Filter by department">
+                <option value="">All departments</option>
                 <option>Engineering</option>
                 <option>Sales</option>
                 <option>Operations</option>
@@ -353,7 +353,7 @@
                   <th class="table__num">Hours</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="admin-rows">
                 <tr>
                   <td><div class="table__user"><div class="avatar avatar--1">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">rohan.gupta@northwind.com</span></div></div></td>
                   <td>EMP-1042</td><td>Engineering</td>
@@ -395,10 +395,10 @@
           </div>
 
           <div class="card__footer">
-            <span class="card__meta">Showing 6 of 248 employees</span>
+            <span class="card__meta" id="admin-rows-meta">Showing 6 of 248 employees</span>
             <div class="btn-group">
-              <button class="btn btn--sm" type="button" disabled>Previous</button>
-              <button class="btn btn--sm" type="button" data-not-implemented="Next page">Next</button>
+              <button class="btn btn--sm" id="admin-prev" type="button" disabled>Previous</button>
+              <button class="btn btn--sm" id="admin-next" type="button" data-not-implemented="Next page">Next</button>
             </div>
           </div>
         </section>
@@ -409,6 +409,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/admin-dashboard.js"></script>
 </body>
 </html>
 <!-- END 5 -->

@@ -428,7 +428,27 @@ export function teamWeekFor(date) {
 // is who should have worked (everyone but weekends, holidays and full leave).
 // overdue is the part of notYet already past the time to check in.
 export function summaryFor(date) {
-  const days = teamFor(date);
+  return summarize(date, teamFor(date));
+}
+
+// summaryFor() for every date from one to another (both included, oldest
+// first), reading storage once; at most a year. null for a date that isn't
+// real; [] when to is before from.
+export function summaryRange(from, to) {
+  if (!isValidDate(from) || !isValidDate(to)) return null;
+  const ctx = context();
+  const people = getAllUsers().filter(isTracked).sort(byName);
+  const out = [];
+  const last = Math.min(dayNumber(to), dayNumber(from) + 365);
+  for (let n = dayNumber(from); n <= last; n++) {
+    const date = isoFromDayNumber(n);
+    out.push(summarize(date, people.map((user) => deriveDay(ctx, user, date))));
+  }
+  return out;
+}
+
+// The totals for one date's derived days (shared by summaryFor and summaryRange).
+function summarize(date, days) {
   const count = (...statuses) => days.filter((d) => statuses.includes(d.status)).length;
   return {
     date,
