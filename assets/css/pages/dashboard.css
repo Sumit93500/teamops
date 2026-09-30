@@ -43,6 +43,11 @@
 }
 .chart__bar:hover { filter: brightness(1.15); }
 .chart__bar--muted { opacity: 0.35; }
+/* One person's day (employee dashboard): short coloured markers where there are no hours to draw */
+.chart__bar--leave      { background: var(--color-info); }
+.chart__bar--absent     { background: var(--color-danger); }
+.chart__bar--incomplete { background: var(--color-warning); }
+.chart__bar--progress   { opacity: 0.6; }
 .chart__label {
   height: 16px;
   font-size: 11px; line-height: 16px;

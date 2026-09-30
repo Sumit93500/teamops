@@ -398,6 +398,19 @@ export function weekFor(userId, date) {
   return weekDates(date).map((d) => deriveDay(ctx, user, d));
 }
 
+// One person's days from one date to another (both included, oldest first),
+// reading storage once; at most a year. null for an unknown or inactive person
+// or a date that isn't real; [] when to is before from.
+export function rangeFor(userId, from, to) {
+  const user = getUser(userId);
+  if (!isTracked(user) || !isValidDate(from) || !isValidDate(to)) return null;
+  const ctx = context();
+  const days = [];
+  const last = Math.min(dayNumber(to), dayNumber(from) + 365);
+  for (let n = dayNumber(from); n <= last; n++) days.push(deriveDay(ctx, user, isoFromDayNumber(n)));
+  return days;
+}
+
 // teamFor() with each person's Monday to Friday, reading storage once:
 // [{ day, week: [Mon..Fri days] }], by name.
 export function teamWeekFor(date) {

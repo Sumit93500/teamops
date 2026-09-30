@@ -109,7 +109,7 @@
   <div class="page-header">
     <div>
       <h1>My dashboard</h1>
-      <p class="page-header__subtitle">Your attendance and requests for September 2026</p>
+      <p class="page-header__subtitle" id="dash-subtitle">Your attendance and requests for September 2026</p>
     </div>
     <div class="page-header__actions">
       <a class="btn" href="../leave/apply-leave.html" data-permission="leave:create">Apply for leave</a>
@@ -122,8 +122,8 @@
 
   <div class="stack">
 
-    <section class="stat-strip" aria-label="Key numbers">
-      <div class="stat">
+    <section class="stat-strip" id="dash-stats" aria-label="Key numbers">
+      <div class="stat" data-stat="present">
         <div class="stat__icon stat__icon--1">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
         </div>
@@ -133,7 +133,7 @@
           <span class="stat__delta stat__delta--down">2 late marks</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="balance">
         <div class="stat__icon stat__icon--2">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
         </div>
@@ -143,7 +143,7 @@
           <span class="stat__delta">Casual 6, Sick 5</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="payslip">
         <div class="stat__icon stat__icon--3">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
         </div>
@@ -153,14 +153,14 @@
           <span class="stat__delta">Credited in 11 days</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="requests">
         <div class="stat__icon stat__icon--4">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         </div>
         <div>
           <span class="stat__label">Open requests</span>
           <strong class="stat__value">2</strong>
-          <span class="stat__delta">1 leave, 1 asset</span>
+          <span class="stat__delta" data-static-count="1" data-static-text="1 asset">1 leave, 1 asset</span>
         </div>
       </div>
     </section>
@@ -170,10 +170,10 @@
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">My working hours, last 14 days</h3>
-          <span class="card__meta">Sep 5 – 18</span>
+          <span class="card__meta" id="hours-range">Sep 5 – 18</span>
         </div>
         <div class="card__body">
-          <div class="chart" role="img" aria-label="Working hours for the last 14 days, about 8 to 9 hours on weekdays">
+          <div class="chart" id="hours-chart" role="img" aria-label="Working hours for the last 14 days, about 8 to 9 hours on weekdays">
             <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:0" title="Sat 5 Sep: day off"></span></div><span class="chart__label">5</span></div>
             <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:0" title="Sun 6 Sep: day off"></span></div><span class="chart__label">6</span></div>
             <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:82" title="Mon 7 Sep: 8.2 hours"></span></div><span class="chart__label">7</span></div>
@@ -189,7 +189,7 @@
             <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:83" title="Thu 17 Sep: 8.3 hours"></span></div><span class="chart__label">17</span></div>
             <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:87" title="Fri 18 Sep: 8.7 hours"></span></div><span class="chart__label">18</span></div>
           </div>
-          <p class="text-xs text-muted mt-2">Weekends are days off.</p>
+          <p class="text-xs text-muted mt-2" id="hours-note">Weekends are days off.</p>
         </div>
       </section>
 
@@ -198,7 +198,7 @@
           <h3 class="card__title">My requests</h3>
           <a class="link text-sm" href="../requests/my-requests.html">View all</a>
         </div>
-        <div class="list">
+        <div class="list" id="my-requests-list">
           <div class="list__item">
             <div class="avatar avatar--2">L</div>
             <div class="list__content">
@@ -207,7 +207,7 @@
             </div>
             <span class="badge badge--warning badge--dot">Pending</span>
           </div>
-          <div class="list__item">
+          <div class="list__item" data-static>
             <div class="avatar avatar--4">A</div>
             <div class="list__content">
               <span class="list__title">Laptop upgrade</span>
@@ -227,7 +227,7 @@
           <h3 class="card__title">Leave balance</h3>
           <a class="link text-sm" href="../leave/my-leave.html">Details</a>
         </div>
-        <div class="card__body">
+        <div class="card__body" id="balance-card">
           <div class="bar-row"><span>Casual</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:50%"></span></div><span class="bar-row__value">6</span></div>
           <div class="bar-row"><span>Sick</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:62%"></span></div><span class="bar-row__value">5</span></div>
           <p class="text-xs text-muted mt-4">Casual is 6 of 12 days. Sick is 5 of 8 days.</p>
@@ -239,20 +239,20 @@
           <h3 class="card__title">Updates</h3>
           <a class="link text-sm" href="../announcements/announcements.html">All announcements</a>
         </div>
-        <div class="activity">
+        <div class="activity" id="updates">
           <div class="activity__item">
             <span class="activity__dot activity__dot--success"></span>
             <div class="activity__text">Your regularization for 17 Sep was approved<span class="activity__time">Today</span></div>
           </div>
-          <div class="activity__item">
+          <div class="activity__item" data-static data-date="2026-09-18">
             <span class="activity__dot activity__dot--warning"></span>
             <div class="activity__text">Laptop request sent to IT Support<span class="activity__time">Yesterday</span></div>
           </div>
-          <div class="activity__item">
+          <div class="activity__item" data-static data-date="2026-09-01">
             <span class="activity__dot activity__dot--primary"></span>
             <div class="activity__text">August payslip is ready<span class="activity__time">1 Sep</span></div>
           </div>
-          <div class="activity__item">
+          <div class="activity__item" data-static>
             <span class="activity__dot activity__dot--primary"></span>
             <div class="activity__text">Team offsite on 12 Oct<span class="activity__time">Announcement</span></div>
           </div>
@@ -277,7 +277,7 @@
               <th>Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="my-days">
             <tr>
               <td>Fri, 18 Sep</td><td>09:18</td><td>18:02</td><td class="table__num">8h 44m</td>
               <td><span class="badge badge--success badge--dot">Present</span></td>
@@ -309,6 +309,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/employee-dashboard.js"></script>
 </body>
 </html>
 <!-- END 3 -->
