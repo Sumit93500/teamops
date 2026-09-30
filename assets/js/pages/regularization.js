@@ -13,7 +13,7 @@ import { getUser } from "../data/store.js";
 import { allRegularizations, pendingRegularizations, dayFor } from "../data/attendance-store.js";
 import { renderPagination } from "../ui/pagination.js";
 import { approveCorrection, openRejectCorrectionModal, decisionButtons } from "../ui/leave-decision.js";
-import { el, formatDay, statusBadge, initials, avatarClass, departmentName, decisionOf, nameOf } from "../ui/leave-view.js";
+import { el, formatDay, statusBadge, departmentName, decisionOf, nameOf, personCell } from "../ui/leave-view.js";
 
 const PAGE_SIZE = 10;
 const PILL_TAB = { "Pending": "pending", "Approved": "approved", "Rejected": "rejected" };
@@ -75,17 +75,6 @@ function arrowIcon() {
   return svg;
 }
 
-function personCell(request) {
-  const person = getUser(request.userId);
-  const td = el("td");
-  const wrap = el("div", "table__user");
-  const text = el("div");
-  text.append(el("span", "table__user-name", person?.name ?? request.userId), el("span", "table__user-sub", departmentName(person?.department)));
-  wrap.append(el("div", avatarClass(request.userId), initials(person?.name)), text);
-  td.append(wrap);
-  return td;
-}
-
 function timesCell(request) {
   const td = el("td");
   const times = el("span", "reg-times");
@@ -107,8 +96,9 @@ function row(request) {
     actions.append(decisionButtons("attendance:approve", () => openRejectCorrectionModal(request, render), () => approveCorrection(request, render)));
   }
 
+  const person = getUser(request.userId);
   tr.append(
-    personCell(request),
+    personCell(request.userId, person, departmentName(person?.department)),
     el("td", "", formatDay(request.date)),
     el("td", "", ISSUE_LABEL[request.issue] ?? request.issue),
     timesCell(request),

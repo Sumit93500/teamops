@@ -8,7 +8,7 @@
 
 import { getCurrentUserId } from "../core/auth.js";
 import { getUser } from "../data/store.js";
-import { ATTENDANCE_RULES, checkIn, checkOut, dayFor, monthFor } from "../data/attendance-store.js";
+import { ATTENDANCE_RULES, checkIn, checkOut, dayFor, monthFor, toMinutes } from "../data/attendance-store.js";
 import { typeLabel, el, todayIso, weekdayName, monthName, dayOfMonth, shortDate } from "../ui/leave-view.js";
 import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
 import { showToast } from "../ui/toast.js";
@@ -42,7 +42,6 @@ let modeTouched = false;   // once the person picks a mode, redraws keep it
 // ---------- formatting ----------
 
 const pad = (n) => String(n).padStart(2, "0");
-const toMinutes = (hhmm) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 
 // 570 -> "9:30 AM"
 function twelveHour(minutes) {

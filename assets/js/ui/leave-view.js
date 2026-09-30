@@ -150,6 +150,30 @@ export function departmentName(code) {
   return getAllDepartments().find((d) => d.code === code)?.name ?? code ?? "";
 }
 
+// A department filter: "All departments" (value "") and then every
+// department by name, with its code as the value.
+export function fillDepartmentSelect(select) {
+  select.replaceChildren(el("option", "", "All departments"), ...getAllDepartments().map((d) => {
+    const option = el("option", "", d.name);
+    option.value = d.code;
+    return option;
+  }));
+  select.options[0].value = "";
+}
+
+// A table's person cell: avatar, name, and a sub-line the page chooses (their
+// ID, email or department). userId gives the avatar colour and stands in for
+// the name; user is the store's record for them, or undefined if there is none.
+export function personCell(userId, user, subLine) {
+  const td = el("td");
+  const wrap = el("div", "table__user");
+  const text = el("div");
+  text.append(el("span", "table__user-name", user?.name ?? userId), el("span", "table__user-sub", subLine));
+  wrap.append(el("div", avatarClass(userId), initials(user?.name)), text);
+  td.append(wrap);
+  return td;
+}
+
 // The history entry that decided the request (approved, rejected or
 // auto-approved), or null while it's pending or if it was cancelled.
 export function decisionOf(request) {

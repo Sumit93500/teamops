@@ -21,8 +21,8 @@ import { teamWeekFor, summaryFor, pendingRegularizations } from "../data/attenda
 import { renderPagination } from "../ui/pagination.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
-import { el, weekdayName, todayIso, initials, avatarClass, departmentName, shortDate, plural, percent } from "../ui/leave-view.js";
-import { hoursText, dayBadge } from "../ui/attendance-view.js";
+import { el, weekdayName, todayIso, initials, avatarClass, departmentName, shortDate, plural, fillDepartmentSelect, personCell } from "../ui/leave-view.js";
+import { dayBadge, presentNote, checkInCell, hoursCell } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
 
@@ -91,16 +91,6 @@ function loadRows() {
   return teamWeekFor(date).map(({ day, week }) => ({ day, week, user: people.get(day.userId) }));
 }
 
-// Why nobody is expected: a holiday, a weekend, a date before records began.
-function offNote(rows) {
-  const holiday = rows.find((r) => r.day.status === "holiday")?.day.holiday;
-  if (holiday) return `Holiday: ${holiday.name}`;
-  if (rows.some((r) => r.day.status === "weekend")) return "Weekend";
-  if (rows.some((r) => r.day.status === "no-data")) return "No attendance records for this date";
-  if (rows.length && rows.every((r) => r.day.status === "on-leave")) return "Everyone is on leave";
-  return "No active employees";
-}
-
 // ---------- stat strip ----------
 
 function setStat(key, value, note, tone = "") {
@@ -111,8 +101,7 @@ function setStat(key, value, note, tone = "") {
 }
 
 function renderStats(summary, rows) {
-  const { expected } = summary;
-  setStat("present", summary.present, expected ? `${percent(summary.present, expected)} of ${expected} expected` : offNote(rows));
+  setStat("present", summary.present, presentNote(summary, rows.map((r) => r.day)));
   setStat("late", summary.late, "Included in present");
   setStat("on-leave", summary.onLeave, "Not counted in expected");
 
@@ -125,39 +114,6 @@ function renderStats(summary, rows) {
 }
 
 // ---------- table ----------
-
-function personCell(row) {
-  const td = el("td");
-  const wrap = el("div", "table__user");
-  const text = el("div");
-  text.append(el("span", "table__user-name", row.user?.name ?? row.day.userId), el("span", "table__user-sub", row.day.userId));
-  wrap.append(el("div", avatarClass(row.day.userId), initials(row.user?.name)), text);
-  td.append(wrap);
-  return td;
-}
-
-function checkInCell(day) {
-  const td = el("td");
-  if (!day.checkIn) {
-    td.textContent = "–";
-    return td;
-  }
-  td.append(el("span", "", day.checkIn));
-  if (day.mode === "wfh") td.append(" ", el("span", "badge", "WFH"));
-  if (day.originalCheckIn) td.append(el("span", "table__user-sub", `was ${day.originalCheckIn}`));
-  return td;
-}
-
-function hoursCell(day) {
-  const td = el("td", "table__num");
-  if (day.minutesWorked === null) {
-    td.textContent = day.incomplete ? "No check-out" : "–";
-    return td;
-  }
-  td.append(el("span", "", hoursText(day.minutesWorked)));
-  if (day.inProgress) td.append(el("span", "table__user-sub", "so far"));
-  return td;
-}
 
 function weekCell(week) {
   const td = el("td");
@@ -181,7 +137,7 @@ function row(r) {
   const status = el("td");
   status.append(dayBadge(r.day));
   tr.append(
-    personCell(r),
+    personCell(r.day.userId, r.user, r.day.userId),
     el("td", "", departmentName(r.user?.department)),
     checkInCell(r.day),
     hoursCell(r.day),
@@ -327,12 +283,7 @@ if (user && can("attendance:view-all") && dateInput && stats && tbody && paginat
   });
 
   if (deptSelect) {
-    deptSelect.replaceChildren(el("option", "", "All departments"), ...getAllDepartments().map((d) => {
-      const option = el("option", "", d.name);
-      option.value = d.code;
-      return option;
-    }));
-    deptSelect.options[0].value = "";
+    fillDepartmentSelect(deptSelect);
     deptSelect.addEventListener("change", () => {
       dept = deptSelect.value;
       currentPage = 1;

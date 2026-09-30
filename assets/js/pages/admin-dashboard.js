@@ -12,11 +12,11 @@ import { getCurrentUserId } from "../core/auth.js";
 import { can } from "../core/rbac.js";
 import { getUser, getAllUsers, getAllDepartments, headcountByDepartment } from "../data/store.js";
 import { addDays } from "../data/holidays.js";
-import { ATTENDANCE_RULES, teamFor, summaryRange } from "../data/attendance-store.js";
+import { ATTENDANCE_RULES, teamFor, summaryRange, toMinutes, nowMinutes } from "../data/attendance-store.js";
 import {
-  el, todayIso, formatRange, monthName, initials, avatarClass, departmentName, percent,
+  el, todayIso, formatRange, monthName, departmentName, fillDepartmentSelect, personCell,
 } from "../ui/leave-view.js";
-import { hoursText, dayBadge } from "../ui/attendance-view.js";
+import { dayBadge, presentNote, checkInCell, hoursCell } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns, barRow } from "../ui/chart.js";
 
@@ -44,19 +44,6 @@ let page = 1;
 
 // ---------- helpers ----------
 
-const toMinutes = (hhmm) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
-const nowMinutes = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
-
-// Why nobody is expected on a day (same wording as team-attendance.html).
-function offNote(days) {
-  const holiday = days.find((d) => d.status === "holiday")?.holiday;
-  if (holiday) return `Holiday: ${holiday.name}`;
-  if (days.some((d) => d.status === "weekend")) return "Weekend";
-  if (days.some((d) => d.status === "no-data")) return "No attendance records for this date";
-  if (days.length && days.every((d) => d.status === "on-leave")) return "Everyone is on leave";
-  return "No active employees";
-}
-
 function setStat(key, value, note) {
   const stat = stats.querySelector(`[data-stat="${key}"]`);
   if (!stat) return;
@@ -68,7 +55,7 @@ function setStat(key, value, note) {
 
 // Present (on time, late or a half day) out of who is expected, as on team-attendance.html.
 function renderPresent(summary, days) {
-  setStat("present", String(summary.present), summary.expected ? `${percent(summary.present, summary.expected)} of ${summary.expected} expected` : offNote(days));
+  setStat("present", String(summary.present), presentNote(summary, days));
 }
 
 // ---------- attendance rate chart ----------
@@ -114,45 +101,11 @@ function renderHeadcount() {
 
 // ---------- today's attendance ----------
 
-function personCell(person, day) {
-  const td = el("td");
-  const wrap = el("div", "table__user");
-  const text = el("div");
-  text.append(el("span", "table__user-name", person?.name ?? day.userId), el("span", "table__user-sub", person?.email ?? ""));
-  wrap.append(el("div", avatarClass(day.userId), initials(person?.name)), text);
-  td.append(wrap);
-  return td;
-}
-
-// Check-in and hours, as on team-attendance.html.
-function checkInCell(day) {
-  const td = el("td");
-  if (!day.checkIn) {
-    td.textContent = "–";
-    return td;
-  }
-  td.append(el("span", "", day.checkIn));
-  if (day.mode === "wfh") td.append(" ", el("span", "badge", "WFH"));
-  if (day.originalCheckIn) td.append(el("span", "table__user-sub", `was ${day.originalCheckIn}`));
-  return td;
-}
-
-function hoursCell(day) {
-  const td = el("td", "table__num");
-  if (day.minutesWorked === null) {
-    td.textContent = day.incomplete ? "No check-out" : "–";
-    return td;
-  }
-  td.append(el("span", "", hoursText(day.minutesWorked)));
-  if (day.inProgress) td.append(el("span", "table__user-sub", "so far"));
-  return td;
-}
-
 function row({ person, day }) {
   const tr = el("tr");
   const status = el("td");
   status.append(dayBadge(day));
-  tr.append(personCell(person, day), el("td", "", day.userId), el("td", "", departmentName(person?.department)), status, checkInCell(day), hoursCell(day));
+  tr.append(personCell(day.userId, person, person?.email ?? ""), el("td", "", day.userId), el("td", "", departmentName(person?.department)), status, checkInCell(day), hoursCell(day));
   return tr;
 }
 
@@ -204,12 +157,7 @@ function renderTable() {
 if (user && can("attendance:view-all") && stats && chart && headcountBars && tbody) {
   subtitle.textContent = `Company overview for ${monthName(Number(today.slice(5, 7)))} ${today.slice(0, 4)}`;
   if (deptSelect) {
-    deptSelect.replaceChildren(el("option", "", "All departments"), ...getAllDepartments().map((d) => {
-      const option = el("option", "", d.name);
-      option.value = d.code;
-      return option;
-    }));
-    deptSelect.options[0].value = "";
+    fillDepartmentSelect(deptSelect);
     deptSelect.addEventListener("change", () => { dept = deptSelect.value; page = 1; renderTable(); });
   }
   searchInput?.addEventListener("input", () => { search = searchInput.value; page = 1; renderTable(); });

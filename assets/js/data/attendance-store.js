@@ -39,7 +39,7 @@ export const STATUSES = ["present", "late", "half-day", "absent", "on-leave", "h
 const pad = (n) => String(n).padStart(2, "0");
 
 // "09:45" -> 585. Anything that isn't a real 24-hour "HH:MM" -> null.
-function toMinutes(hhmm) {
+export function toMinutes(hhmm) {
   const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(hhmm ?? ""));
   return m ? Number(m[1]) * 60 + Number(m[2]) : null;
 }
@@ -50,7 +50,8 @@ function todayIso() {
   const d = new Date();
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
-function nowMinutes() {
+// Minutes since local midnight, now.
+export function nowMinutes() {
   const d = new Date();
   return d.getHours() * 60 + d.getMinutes();
 }

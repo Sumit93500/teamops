@@ -14,7 +14,7 @@ import { renderPagination } from "../ui/pagination.js";
 import { approveLeave, openRejectModal, decisionButtons } from "../ui/leave-decision.js";
 import {
   el, todayIso, formatDay, formatRange, requestDates, typeLabel, statusBadge,
-  initials, avatarClass, departmentName, decisionOf, localDateOf, nameOf, oldestPendingNote,
+  initials, avatarClass, departmentName, decisionOf, localDateOf, nameOf, oldestPendingNote, personCell,
 } from "../ui/leave-view.js";
 import { setStatValue, setOptionalStatNote } from "../ui/stats.js";
 
@@ -69,17 +69,6 @@ function stageBadge(request) {
     : el("span", "badge badge--info badge--dot", "With HR");
 }
 
-function personCell(request) {
-  const person = getUser(request.userId);
-  const td = el("td");
-  const wrap = el("div", "table__user");
-  const text = el("div");
-  text.append(el("span", "table__user-name", person?.name ?? request.userId), el("span", "table__user-sub", departmentName(person?.department)));
-  wrap.append(el("div", avatarClass(request.userId), initials(person?.name)), text);
-  td.append(wrap);
-  return td;
-}
-
 function row(request) {
   const tr = el("tr");
   const stage = el("td");
@@ -93,8 +82,9 @@ function row(request) {
     actions.append(decisionButtons("leave:approve", () => openRejectModal(request, render), () => approveLeave(request, render)));
   }
 
+  const person = getUser(request.userId);
   tr.append(
-    personCell(request),
+    personCell(request.userId, person, departmentName(person?.department)),
     el("td", "", typeLabel(request.type)),
     el("td", "", requestDates(request)),
     el("td", "table__num", String(request.days)),

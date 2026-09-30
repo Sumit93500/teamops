@@ -1,11 +1,13 @@
 // ui/attendance-view.js
 // Display helpers shared by the attendance pages (mark-attendance,
-// my-attendance, team-attendance): worked time as "8h 44m" and the status
-// badge for a day worked out by data/attendance-store.js. Everything is built
-// with DOM calls, never innerHTML.
+// my-attendance, team-attendance) and the dashboards: worked time as "8h 44m",
+// the status badge for a day worked out by data/attendance-store.js, and the
+// pieces team-attendance and the admin dashboard both show for a date (the
+// Present card's line, the check-in and hours cells). Everything is built with
+// DOM calls, never innerHTML.
 
 import { ATTENDANCE_RULES } from "../data/attendance-store.js";
-import { el } from "./leave-view.js";
+import { el, percent } from "./leave-view.js";
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -42,4 +44,48 @@ export function dayBadge(day) {
   }
   const [className, label] = BADGE[day.status] ?? ["badge badge--dot", day.status];
   return el("span", className, label);
+}
+
+// ---------- a date across the company (team-attendance, admin dashboard) ----------
+
+// The line under the Present card: "50% of 8 expected", or why nobody is
+// expected. summary is summaryFor()'s shape; days are that date's day objects
+// for everyone counted (only read when nobody is expected).
+export function presentNote(summary, days) {
+  return summary.expected ? `${percent(summary.present, summary.expected)} of ${summary.expected} expected` : offNote(days);
+}
+
+// Why nobody is expected: a holiday, a weekend, a date before records began.
+function offNote(days) {
+  const holiday = days.find((d) => d.status === "holiday")?.holiday;
+  if (holiday) return `Holiday: ${holiday.name}`;
+  if (days.some((d) => d.status === "weekend")) return "Weekend";
+  if (days.some((d) => d.status === "no-data")) return "No attendance records for this date";
+  if (days.length && days.every((d) => d.status === "on-leave")) return "Everyone is on leave";
+  return "No active employees";
+}
+
+// Check-in time, with (WFH) and the time before a correction: "09:12 WFH was 10:24".
+export function checkInCell(day) {
+  const td = el("td");
+  if (!day.checkIn) {
+    td.textContent = "–";
+    return td;
+  }
+  td.append(el("span", "", day.checkIn));
+  if (day.mode === "wfh") td.append(" ", el("span", "badge", "WFH"));
+  if (day.originalCheckIn) td.append(el("span", "table__user-sub", `was ${day.originalCheckIn}`));
+  return td;
+}
+
+// Hours worked, "so far" while the day is open, or "No check-out".
+export function hoursCell(day) {
+  const td = el("td", "table__num");
+  if (day.minutesWorked === null) {
+    td.textContent = day.incomplete ? "No check-out" : "–";
+    return td;
+  }
+  td.append(el("span", "", hoursText(day.minutesWorked)));
+  if (day.inProgress) td.append(el("span", "table__user-sub", "so far"));
+  return td;
 }
