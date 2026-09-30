@@ -16,6 +16,7 @@ import {
   el, todayIso, formatDay, formatRange, requestDates, typeLabel, statusBadge,
   initials, avatarClass, departmentName, decisionOf, localDateOf, nameOf, oldestPendingNote,
 } from "../ui/leave-view.js";
+import { setStatValue, setOptionalStatNote } from "../ui/stats.js";
 
 const PAGE_SIZE = 10;
 const PILL_TAB = { "Pending": "pending", "Approved": "approved", "Rejected": "rejected" };
@@ -148,17 +149,8 @@ function setStat(label, value, note) {
   const stat = Array.from(statStrip?.querySelectorAll(".stat") ?? [])
     .find((s) => s.querySelector(".stat__label")?.textContent.trim() === label);
   if (!stat) return;
-  stat.querySelector(".stat__value").textContent = value;
-  let delta = stat.querySelector(".stat__delta");
-  if (!note) {
-    delta?.remove();
-    return;
-  }
-  if (!delta) {
-    delta = el("span", "stat__delta");
-    stat.querySelector(".stat__value").after(delta);
-  }
-  delta.textContent = note;
+  setStatValue(stat, value);
+  setOptionalStatNote(stat, note);
 }
 
 function renderStats() {

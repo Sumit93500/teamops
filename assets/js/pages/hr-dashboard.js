@@ -14,14 +14,17 @@
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
-import { dayNumber, isoFromDayNumber, dayOffChecker } from "../data/holidays.js";
+import { addDays, dayOffChecker } from "../data/holidays.js";
 import { allRequests, pendingFor } from "../data/leave-store.js";
 import { summaryFor, allRegularizations, pendingRegularizations } from "../data/attendance-store.js";
 import { approveLeave, openRejectModal, approveCorrection, openRejectCorrectionModal, decisionButtons } from "../ui/leave-decision.js";
 import {
-  el, todayIso, formatDay, formatDays, formatRange, weekdayName, monthName, dayOfMonth, requestDates,
+  el, todayIso, formatDay, formatDays, formatRange, monthName, requestDates,
   typeLabel, statusBadge, initials, avatarClass, decisionOf, localDateOf, nameOf, oldestPendingNote,
+  whenText, plural, percent,
 } from "../ui/leave-view.js";
+import { setStatValue, setStatNote } from "../ui/stats.js";
+import { chartColumns } from "../ui/chart.js";
 
 const CHART_DAYS = 14;
 const CHART_FLOOR = 5;       // the chart's top is at least 5 requests, so one request isn't a full-height bar
@@ -57,30 +60,17 @@ let statusFilter = "";
 
 // ---------- helpers ----------
 
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-const percent = (part, whole) => `${Math.round((part / whole) * 1000) / 10}%`;
-const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
-const addDays = (iso, n) => isoFromDayNumber(dayNumber(iso) + n);
 const issueLabel = (r) => ISSUE_LABEL[r.issue] ?? r.issue;
 // "Late arrival, 10:24 to 09:30", or "Missed check-out, 18:00" when nothing was recorded (as in the inbox).
 const correctionDetails = (r) => `${issueLabel(r)}, ${r.recordedTime ? `${r.recordedTime} to ${r.time}` : r.time}`;
 // Newest sent first; the id breaks ties between two sent the same day.
 const newestSent = (a, b) => b.appliedOn.localeCompare(a.appliedOn) || b.id.localeCompare(a.id, "en", { numeric: true });
 
-// "Today", "Yesterday", "28 Sep", or "20 Jan 2025" for another year.
-function whenText(iso) {
-  if (iso === today) return "Today";
-  if (iso === addDays(today, -1)) return "Yesterday";
-  return formatDay(iso, iso.slice(0, 4) !== today.slice(0, 4));
-}
-
 function setStat(key, value, note, tone = "") {
   const stat = stats.querySelector(`[data-stat="${key}"]`);
   if (!stat) return;
-  stat.querySelector(".stat__value").textContent = value;
-  const delta = stat.querySelector(".stat__delta");
-  delta.className = `stat__delta${tone ? ` stat__delta--${tone}` : ""}`;
-  delta.textContent = note;
+  setStatValue(stat, value);
+  setStatNote(stat, note, tone);
 }
 
 // What this person may decide, as on leave-approvals.html and regularization.html.
@@ -112,16 +102,11 @@ function renderChart() {
   const top = Math.max(CHART_FLOOR, ...days.map((d) => d.count));
 
   leaveRange.textContent = formatRange(from, today);
-  chart.replaceChildren(...days.map((day) => {
-    const bar = el("span", `chart__bar${day.off ? " chart__bar--muted" : ""}`);
-    bar.style.setProperty("--h", String(Math.round((day.count / top) * 100)));
-    bar.title = `${shortDate(day.date)}: ${plural(day.count, "request", "requests")}`;
-    const track = el("div", "chart__track");
-    track.append(bar);
-    const col = el("div", "chart__col");
-    col.append(track, el("span", "chart__label", String(dayOfMonth(day.date))));
-    return col;
-  }));
+  chart.replaceChildren(...chartColumns(days, (day) => ({
+    modifier: day.off ? "chart__bar--muted" : "",
+    height: Math.round((day.count / top) * 100),
+    what: plural(day.count, "request", "requests"),
+  })));
   const total = days.reduce((sum, d) => sum + d.count, 0);
   chart.setAttribute("aria-label", `Leave requests sent per day, ${formatRange(from, today)}: ${plural(total, "request", "requests")} in all, at most ${Math.max(...days.map((d) => d.count))} on one day`);
   leaveNote.textContent = "Requests counted on the day they were sent. Weekends and holidays are shown lighter.";
@@ -181,7 +166,7 @@ function renderActivity() {
     .map(({ request, decision }) => {
       const item = el("div", "activity__item");
       const text = el("div", "activity__text", activityText(request, decision));
-      text.append(el("span", "activity__time", whenText(localDateOf(decision.at))));
+      text.append(el("span", "activity__time", whenText(localDateOf(decision.at), today)));
       item.append(el("span", `activity__dot activity__dot--${decision.decision === "rejected" ? "danger" : "success"}`), text);
       return item;
     });

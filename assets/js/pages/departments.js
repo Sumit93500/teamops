@@ -8,6 +8,8 @@ import { openModal, closeModal } from "../ui/modal.js";
 import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
 import { applyPermissions } from "../core/rbac.js";
+import { plural } from "../ui/leave-view.js";
+import { setStatValue, setOptionalStatNote } from "../ui/stats.js";
 
 const MODAL_ID = "dept-modal";
 
@@ -42,8 +44,6 @@ function initialsFrom(name) {
   if (!name) return "?";
   return name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 }
-
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 // ---------- rendering ----------
 
@@ -93,18 +93,8 @@ function setStat(label, value, note) {
   const stat = Array.from(statStrip?.querySelectorAll(".stat") ?? [])
     .find((s) => s.querySelector(".stat__label")?.textContent.trim() === label);
   if (!stat) return;
-  stat.querySelector(".stat__value").textContent = value;
-  let delta = stat.querySelector(".stat__delta");
-  if (!note) {
-    delta?.remove();
-    return;
-  }
-  if (!delta) {
-    delta = el("span", "stat__delta");
-    stat.querySelector(".stat__value").after(delta);
-  }
-  delta.className = "stat__delta";
-  delta.textContent = note;
+  setStatValue(stat, value);
+  setOptionalStatNote(stat, note);
 }
 
 function renderStats(departments, counts) {

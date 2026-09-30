@@ -21,8 +21,10 @@ import { teamWeekFor, summaryFor, pendingRegularizations } from "../data/attenda
 import { renderPagination } from "../ui/pagination.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
-import { el, formatDay, weekdayName, todayIso, initials, avatarClass, departmentName } from "../ui/leave-view.js";
+import { el, weekdayName, todayIso, initials, avatarClass, departmentName, shortDate, plural, percent } from "../ui/leave-view.js";
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
+import { setStatValue, setStatNote } from "../ui/stats.js";
+import { barRow } from "../ui/chart.js";
 
 const PAGE_SIZE = 10;
 
@@ -53,10 +55,6 @@ let ascending = true;
 let currentPage = 1;
 
 // ---------- formatting ----------
-
-const percent = (part, whole) => `${Math.round((part / whole) * 1000) / 10}%`;
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
 
 // Week dots: [class suffix, export code, words]. The code is what CSV export writes ("P,P,L,P,P").
 const WEEK = {
@@ -108,10 +106,8 @@ function offNote(rows) {
 function setStat(key, value, note, tone = "") {
   const stat = stats.querySelector(`[data-stat="${key}"]`);
   if (!stat) return;
-  stat.querySelector(".stat__value").textContent = String(value);
-  const delta = stat.querySelector(".stat__delta");
-  delta.className = `stat__delta${tone ? ` stat__delta--${tone}` : ""}`;
-  delta.textContent = note;
+  setStatValue(stat, String(value));
+  setStatNote(stat, note, tone);
 }
 
 function renderStats(summary, rows) {
@@ -246,12 +242,7 @@ function renderDepartments(rows) {
     const days = rows.filter((r) => r.user?.department === d.code).map((r) => r.day);
     const expected = days.filter((day) => day.expected).length;
     const value = expected ? Math.round((days.filter(isPresent).length / expected) * 100) : null;
-    const bar = el("div", "bar-row");
-    const track = el("div", "bar-row__track");
-    const fill = el("span", "bar-row__fill");
-    fill.style.setProperty("--w", `${value ?? 0}%`);
-    track.append(fill);
-    bar.append(el("span", "", d.name), track, el("span", "bar-row__value", value === null ? "–" : `${value}%`));
+    const bar = barRow(d.name, value === null ? "–" : `${value}%`, value ?? 0);
     bar.title = expected ? `${days.filter(isPresent).length} of ${expected} expected are in` : "Nobody expected";
     return bar;
   }));

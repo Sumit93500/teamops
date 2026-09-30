@@ -18,8 +18,10 @@ import {
 import { renderPagination } from "../ui/pagination.js";
 import { openModal, closeModal } from "../ui/modal.js";
 import { showToast } from "../ui/toast.js";
-import { el, todayIso, formatDay, weekdayName, monthName, localDateOf } from "../ui/leave-view.js";
+import { el, todayIso, formatDay, monthName, localDateOf, shortDate, plural } from "../ui/leave-view.js";
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
+import { setStatValue, setStatNote } from "../ui/stats.js";
+import { barRow } from "../ui/chart.js";
 
 const PAGE_SIZE = 10;
 const MONTHS_BACK = 3;
@@ -50,8 +52,6 @@ let currentPage = 1;
 // ---------- formatting ----------
 
 const pad = (n) => String(n).padStart(2, "0");
-const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const ordinal = (n) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
 
 // Working days of the month up to today that have data: not weekends or
@@ -64,11 +64,8 @@ const soFar = (days, today) => days.filter((d) => d.date <= today && !isOffOrEmp
 function setStat(index, value, note) {
   const stat = stats.querySelectorAll(".stat")[index];
   if (!stat) return;
-  stat.querySelector(".stat__value").textContent = value;
-  const delta = stat.querySelector(".stat__delta");
-  delta.className = "stat__delta";
-  delta.textContent = note;
-  delta.hidden = !note;
+  setStatValue(stat, value);
+  setStatNote(stat, note).hidden = !note;
 }
 
 // "Approved on 25 Sep", "Pending since 24 Sep", "Rejected on 16 Sep", "Cancelled on 24 Sep"
@@ -148,15 +145,9 @@ function renderSummary(summary, today) {
   const rows = [["On time", count("present")], ["Late", count("late")]];
   if (count("half-day")) rows.push(["Half day", count("half-day")]);
   rows.push(["On leave", count("on-leave")], ["Absent", count("absent")]);
-  summaryCard.querySelector(".card__body").replaceChildren(...rows.map(([label, count]) => {
-    const row = el("div", "bar-row");
-    const track = el("div", "bar-row__track");
-    const fill = el("span", "bar-row__fill");
-    fill.style.setProperty("--w", `${done.length ? Math.round((count / done.length) * 100) : 0}%`);
-    track.append(fill);
-    row.append(el("span", "", label), track, el("span", "bar-row__value", String(count)));
-    return row;
-  }));
+  summaryCard.querySelector(".card__body").replaceChildren(...rows.map(([label, count]) => (
+    barRow(label, String(count), done.length ? Math.round((count / done.length) * 100) : 0)
+  )));
 }
 
 function renderLateAlert(summary) {

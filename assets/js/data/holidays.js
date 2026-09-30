@@ -41,6 +41,9 @@ export function isoFromDayNumber(n) {
   return new Date(n * DAY_MS).toISOString().slice(0, 10);
 }
 
+// The date n days later (n < 0: earlier), e.g. addDays("2026-09-30", 1) -> "2026-10-01".
+export const addDays = (iso, n) => isoFromDayNumber(dayNumber(iso) + n);
+
 export function isWeekend(iso) {
   const n = dayNumber(iso);
   if (n === null) return false;

@@ -11,14 +11,16 @@
 
 import { getCurrentUserId } from "../core/auth.js";
 import { getUser } from "../data/store.js";
-import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
+import { addDays } from "../data/holidays.js";
 import { LEAVE_TYPES, balanceFor, requestsFor, currentApproverName } from "../data/leave-store.js";
 import { monthFor, rangeFor, regularizationsFor } from "../data/attendance-store.js";
 import {
-  el, todayIso, formatDay, formatRange, weekdayName, monthName, dayOfMonth, typeLabel, requestDates,
-  statusBadge, newestPending, decisionOf, localDateOf,
+  el, todayIso, formatDay, formatRange, monthName, typeLabel, requestDates,
+  statusBadge, newestPending, decisionOf, localDateOf, shortDate, whenText, plural,
 } from "../ui/leave-view.js";
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
+import { setStatValue, setStatNote } from "../ui/stats.js";
+import { chartColumns, barRow } from "../ui/chart.js";
 
 const CHART_DAYS = 14;
 const RECENT_DAYS = 5;
@@ -48,18 +50,8 @@ const staticUpdates = Array.from(updates?.querySelectorAll("[data-static]") ?? [
 
 // ---------- formatting ----------
 
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
-const addDays = (iso, n) => isoFromDayNumber(dayNumber(iso) + n);
 const isPending = (r) => r.status === "pending";
 const isOff = (day) => day.status === "weekend" || day.status === "holiday";
-
-// "Today", "Yesterday", "28 Sep", or "20 Jan 2025" for another year.
-function whenText(iso) {
-  if (iso === today) return "Today";
-  if (iso === addDays(today, -1)) return "Yesterday";
-  return formatDay(iso, iso.slice(0, 4) !== today.slice(0, 4));
-}
 
 // "Casual leave, 5 Oct" or "Regularization, 25 Sep", as on my-requests.
 const requestName = (r) => (r.issue ? `Regularization, ${formatDay(r.date)}` : `${typeLabel(r.type)}, ${requestDates(r)}`);
@@ -67,10 +59,8 @@ const requestName = (r) => (r.issue ? `Regularization, ${formatDay(r.date)}` : `
 function setStat(key, value, note, tone = "") {
   const stat = stats.querySelector(`[data-stat="${key}"]`);
   if (!stat) return;
-  stat.querySelector(".stat__value").textContent = value;
-  const delta = stat.querySelector(".stat__delta");
-  delta.className = `stat__delta${tone ? ` stat__delta--${tone}` : ""}`;
-  delta.textContent = note;
+  setStatValue(stat, value);
+  setStatNote(stat, note, tone);
 }
 
 // ---------- stat strip ----------
@@ -114,37 +104,28 @@ function renderOpenRequests(leave, corrections) {
 
 // ---------- hours chart ----------
 
-// [modifier, height 0-100, what happened] for one day's bar.
+// One day's bar for chartColumns(): { modifier, height 0-100, what happened }.
 function barLook(day) {
-  if (isOff(day)) return ["chart__bar--muted", 0, day.holiday && day.status === "holiday" ? `${day.holiday.name}, day off` : "day off"];
-  if (day.status === "no-data") return ["chart__bar--muted", 0, "no data"];
-  if (day.status === "on-leave") return ["chart__bar--leave", MARKER, "on leave"];
+  const look = (modifier, height, what) => ({ modifier, height, what });
+  if (isOff(day)) return look("chart__bar--muted", 0, day.holiday && day.status === "holiday" ? `${day.holiday.name}, day off` : "day off");
+  if (day.status === "no-data") return look("chart__bar--muted", 0, "no data");
+  if (day.status === "on-leave") return look("chart__bar--leave", MARKER, "on leave");
   if (day.minutesWorked !== null) {
     const hours = (day.minutesWorked / 60).toFixed(1);
     const height = Math.min(100, Math.round(day.minutesWorked / 6));   // 10 hours = the top of the chart
-    if (day.inProgress) return ["chart__bar--progress", height, `${hours} hours so far`];
+    if (day.inProgress) return look("chart__bar--progress", height, `${hours} hours so far`);
     const note = { late: ", late", "half-day": ", half day", absent: ", under 4 hours (absent)" }[day.status] ?? "";
-    return ["", height, `${hours} hours${note}`];
+    return look("", height, `${hours} hours${note}`);
   }
-  if (day.incomplete) return ["chart__bar--incomplete", MARKER, `checked in at ${day.checkIn}, no check-out`];
-  if (day.status === "absent") return ["chart__bar--absent", MARKER, "absent"];
-  return ["", 0, day.overdue ? "not checked in yet (overdue)" : "not in yet"];   // not-yet: today
+  if (day.incomplete) return look("chart__bar--incomplete", MARKER, `checked in at ${day.checkIn}, no check-out`);
+  if (day.status === "absent") return look("chart__bar--absent", MARKER, "absent");
+  return look("", 0, day.overdue ? "not checked in yet (overdue)" : "not in yet");   // not-yet: today
 }
 
 function renderChart(days) {
   const from = days[0].date;
   hoursRange.textContent = formatRange(from, today);
-  chart.replaceChildren(...days.map((day) => {
-    const [modifier, height, what] = barLook(day);
-    const bar = el("span", `chart__bar${modifier ? ` ${modifier}` : ""}`);
-    bar.style.setProperty("--h", String(height));
-    bar.title = `${shortDate(day.date)}: ${what}`;
-    const track = el("div", "chart__track");
-    track.append(bar);
-    const col = el("div", "chart__col");
-    col.append(track, el("span", "chart__label", String(dayOfMonth(day.date))));
-    return col;
-  }));
+  chart.replaceChildren(...chartColumns(days, barLook));
   const worked = days.filter((d) => d.minutesWorked !== null && !d.inProgress).map((d) => d.minutesWorked / 60);
   chart.setAttribute("aria-label", worked.length
     ? `Working hours, ${formatRange(from, today)}: ${plural(worked.length, "day", "days")} worked, between ${Math.min(...worked).toFixed(1)} and ${Math.max(...worked).toFixed(1)} hours`
@@ -207,13 +188,7 @@ function renderRequestList(leave, corrections) {
 function renderBalanceCard(rows) {
   const bars = rows.map((r) => {
     const share = r.allowance ? Math.min(100, Math.max(0, Math.round((r.left / r.allowance) * 100))) : 0;
-    const bar = el("div", "bar-row");
-    const track = el("div", "bar-row__track");
-    const fill = el("span", "bar-row__fill");
-    fill.style.setProperty("--w", `${share}%`);
-    track.append(fill);
-    bar.append(el("span", "", SHORT[r.type]), track, el("span", "bar-row__value", String(r.left)));
-    return bar;
+    return barRow(SHORT[r.type], String(r.left), share);
   });
   const lines = rows.map((r) => `${typeLabel(r.type)} is ${r.left} of ${plural(r.allowance, "day", "days")}${r.type === "wfh" ? " this month" : ""}${r.pending ? ` (${r.pending} pending)` : ""}.`);
   bars.push(el("p", "text-xs text-muted mt-4", lines.join(" ")));
@@ -235,7 +210,7 @@ function renderUpdates(leave, corrections) {
       const date = localDateOf(decision.at);
       const item = el("div", "activity__item");
       const text = el("div", "activity__text", `Your ${what} was ${verb}`);
-      text.append(el("span", "activity__time", whenText(date)));
+      text.append(el("span", "activity__time", whenText(date, today)));
       item.append(el("span", `activity__dot activity__dot--${approved ? "success" : "danger"}`), text);
       return { item, date };
     });

@@ -9,7 +9,7 @@
 import { getCurrentUserId } from "../core/auth.js";
 import { getUser } from "../data/store.js";
 import { ATTENDANCE_RULES, checkIn, checkOut, dayFor, monthFor } from "../data/attendance-store.js";
-import { typeLabel, el, todayIso, formatDay, weekdayName, monthName, dayOfMonth } from "../ui/leave-view.js";
+import { typeLabel, el, todayIso, weekdayName, monthName, dayOfMonth, shortDate } from "../ui/leave-view.js";
 import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
 import { showToast } from "../ui/toast.js";
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
@@ -54,9 +54,6 @@ function twelveHour(minutes) {
 function longDate(iso) {
   return `${weekdayName(iso)}, ${dayOfMonth(iso)} ${monthName(Number(iso.slice(5, 7)))} ${iso.slice(0, 4)}`;
 }
-
-// "Mon, 28 Sep"
-const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
 
 // ---------- the punch card ----------
 

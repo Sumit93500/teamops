@@ -10,6 +10,7 @@ import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
+import { plural } from "../ui/leave-view.js";
 
 const DEFAULT_ID = "EMP-1042";
 const id = new URLSearchParams(window.location.search).get("id") || DEFAULT_ID;
@@ -66,8 +67,7 @@ function tenureText(joined, today = new Date()) {
   if (months === 0) return "Less than a month";
   const years = Math.floor(months / 12);
   const rest = months % 12;
-  const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
-  return [years && plural(years, "year"), rest && plural(rest, "month")].filter(Boolean).join(", ");
+  return [years && plural(years, "year", "years"), rest && plural(rest, "month", "months")].filter(Boolean).join(", ");
 }
 
 function setText(selector, text) {

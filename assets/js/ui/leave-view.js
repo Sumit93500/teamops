@@ -1,11 +1,12 @@
 // ui/leave-view.js
 // Display helpers shared by the leave pages (apply-leave, my-leave,
-// my-requests): date and day formatting, status badges and the approval
-// stepper. Everything is built with DOM calls, never innerHTML, so text that
-// came from a form can't inject markup.
+// my-requests), the approval pages, the attendance pages and the dashboards:
+// date, day and number formatting, status badges and the approval stepper.
+// Everything is built with DOM calls, never innerHTML, so text that came from
+// a form can't inject markup.
 
 import { LEAVE_POLICY, currentApproverName } from "../data/leave-store.js";
-import { dayNumber } from "../data/holidays.js";
+import { dayNumber, addDays } from "../data/holidays.js";
 import { getUser, getAllUsers, getAllDepartments } from "../data/store.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -55,6 +56,17 @@ export const monthName = (month) => MONTH_NAMES[month - 1] ?? "";
 export const monthShort = (iso) => MONTHS[parts(iso)?.month] ?? "";
 export const dayOfMonth = (iso) => parts(iso)?.day ?? "";
 
+// "Mon, 28 Sep"
+export const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
+
+// "Today", "Yesterday", "28 Sep", or "20 Jan 2025" for another year. today is
+// passed in (the page's todayIso() at load), so a whole page uses one today.
+export function whenText(iso, today) {
+  if (iso === today) return "Today";
+  if (iso === addDays(today, -1)) return "Yesterday";
+  return formatDay(iso, iso.slice(0, 4) !== today.slice(0, 4));
+}
+
 // "3 Oct", "14 – 15 May", "30 Sep – 2 Oct", "28 Dec 2026 – 8 Jan 2027".
 export function formatRange(from, to) {
   if (from === to) return formatDay(from);
@@ -65,6 +77,14 @@ export function formatRange(from, to) {
   if (a.month === b.month) return `${a.day} – ${b.day} ${MONTHS[a.month]}`;
   return `${formatDay(from)} – ${formatDay(to)}`;
 }
+
+// ---------- numbers ----------
+
+// "1 day", "3 days"
+export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+// A share to one decimal place at most: "50%", "12.5%", "33.3%".
+export const percent = (part, whole) => `${Math.round((part / whole) * 1000) / 10}%`;
 
 // ---------- requests ----------
 

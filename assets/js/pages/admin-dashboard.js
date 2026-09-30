@@ -11,12 +11,14 @@
 import { getCurrentUserId } from "../core/auth.js";
 import { can } from "../core/rbac.js";
 import { getUser, getAllUsers, getAllDepartments, headcountByDepartment } from "../data/store.js";
-import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
+import { addDays } from "../data/holidays.js";
 import { ATTENDANCE_RULES, teamFor, summaryRange } from "../data/attendance-store.js";
 import {
-  el, todayIso, formatDay, formatRange, weekdayName, monthName, dayOfMonth, initials, avatarClass, departmentName,
+  el, todayIso, formatRange, monthName, initials, avatarClass, departmentName, percent,
 } from "../ui/leave-view.js";
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
+import { setStatValue, setStatNote } from "../ui/stats.js";
+import { chartColumns, barRow } from "../ui/chart.js";
 
 const CHART_DAYS = 14;
 const PAGE_SIZE = 10;
@@ -42,9 +44,6 @@ let page = 1;
 
 // ---------- helpers ----------
 
-const percent = (part, whole) => `${Math.round((part / whole) * 1000) / 10}%`;
-const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
-const addDays = (iso, n) => isoFromDayNumber(dayNumber(iso) + n);
 const toMinutes = (hhmm) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 const nowMinutes = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
 
@@ -61,10 +60,8 @@ function offNote(days) {
 function setStat(key, value, note) {
   const stat = stats.querySelector(`[data-stat="${key}"]`);
   if (!stat) return;
-  stat.querySelector(".stat__value").textContent = value;
-  const delta = stat.querySelector(".stat__delta");
-  delta.className = "stat__delta";
-  delta.textContent = note;
+  setStatValue(stat, value);
+  setStatNote(stat, note);
 }
 
 // ---------- present today ----------
@@ -82,27 +79,15 @@ function renderChart(range) {
   const from = range[0].date;
   const todayOpen = nowMinutes() < toMinutes(ATTENDANCE_RULES.shiftEnd);
   rateRange.textContent = formatRange(from, today);
-  chart.replaceChildren(...range.map((s) => {
+  chart.replaceChildren(...chartColumns(range, (s) => {
+    if (!s.expected) return { modifier: "chart__bar--muted", height: 0, what: s.off ? "day off" : "nobody expected" };
     const partial = s.date === today && todayOpen;
-    let modifier = "";
-    let height = 0;
-    let what;
-    if (!s.expected) {
-      modifier = " chart__bar--muted";
-      what = s.off ? "day off" : "nobody expected";
-    } else {
-      height = Math.round((s.present / s.expected) * 100);
-      if (partial) modifier = " chart__bar--progress";
-      what = `${height}%${partial ? " so far" : ""} (${s.present} of ${s.expected} expected)`;
-    }
-    const bar = el("span", `chart__bar${modifier}`);
-    bar.style.setProperty("--h", String(height));
-    bar.title = `${shortDate(s.date)}: ${what}`;
-    const track = el("div", "chart__track");
-    track.append(bar);
-    const col = el("div", "chart__col");
-    col.append(track, el("span", "chart__label", String(dayOfMonth(s.date))));
-    return col;
+    const height = Math.round((s.present / s.expected) * 100);
+    return {
+      modifier: partial ? "chart__bar--progress" : "",
+      height,
+      what: `${height}%${partial ? " so far" : ""} (${s.present} of ${s.expected} expected)`,
+    };
   }));
   const rates = range.filter((s) => s.expected && !(s.date === today && todayOpen)).map((s) => Math.round((s.present / s.expected) * 100));
   chart.setAttribute("aria-label", rates.length
@@ -123,13 +108,7 @@ function renderHeadcount() {
   headcountMeta.textContent = `${total} total`;
   headcountBars.replaceChildren(...departments.map((d) => {
     const count = counts[d.code] ?? 0;
-    const bar = el("div", "bar-row");
-    const track = el("div", "bar-row__track");
-    const fill = el("span", "bar-row__fill");
-    fill.style.setProperty("--w", `${Math.round((count / top) * 100)}%`);
-    track.append(fill);
-    bar.append(el("span", "", d.name), track, el("span", "bar-row__value", String(count)));
-    return bar;
+    return barRow(d.name, String(count), Math.round((count / top) * 100));
   }));
 }
 
