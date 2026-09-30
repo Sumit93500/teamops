@@ -33,7 +33,8 @@
 
 /* ---------- Week strip: five small squares, Monday to Friday ----------
    <span class="week"><i class="week__day week__day--p"></i> x5</span>
-   p = present, l = late, a = absent, lv = on leave, off = nothing recorded */
+   p = present, l = late, a = absent, lv = on leave, hd = half day,
+   hol = holiday, ny = not in yet (today or later), nd = no data (before records began) */
 .week { display: inline-flex; gap: 4px; }
 .week__day {
   width: 16px; height: 16px;
@@ -44,6 +45,23 @@
 .week__day--l  { --dc: var(--color-warning); }
 .week__day--a  { --dc: var(--color-danger); }
 .week__day--lv { --dc: var(--color-info); }
+.week__day--hd  { background: linear-gradient(135deg, var(--color-success) 50%, var(--color-surface-hover) 50%); }
+.week__day--hol { --dc: var(--chip-4); }
+.week__day--ny  { --dc: transparent; box-shadow: inset 0 0 0 1.5px var(--color-border); }
+.week__day--nd  { --dc: transparent; box-shadow: inset 0 0 0 1px var(--color-border); opacity: 0.6; }
+
+/* ---------- Team attendance ---------- */
+/* Not in yet: outlined, so it doesn't read as Absent; turns red once overdue (past the grace time) */
+.badge--not-yet { background: transparent; box-shadow: inset 0 0 0 1px var(--color-border); }
+.badge--overdue { background: transparent; color: var(--color-danger); box-shadow: inset 0 0 0 1px currentColor; }
+/* The Employee header sorts by name */
+.sort-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 0; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit;
+  background: none; border: 0; cursor: pointer;
+}
+.calendar__legend .is-half::before { background: linear-gradient(135deg, var(--color-success) 50%, var(--color-surface-hover) 50%); }
+.calendar__legend .is-not-yet::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--color-border); }
 
 /* ---------- Regularization: recorded time -> requested time ---------- */
 .reg-times { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }

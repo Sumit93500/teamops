@@ -279,6 +279,7 @@ function deriveDay(ctx, user, date) {
     hours: null,
     minutesLate: 0,               // minutes after the (half-)shift start, only when past the grace period
     inProgress: false,            // today, checked in, not out yet
+    overdue: false,               // today, not in yet, and past the time to check in (start + grace)
     incomplete: false,            // an earlier day with a check-in but no check-out
     conflict: false,              // checked in, but a full day of approved leave covers it
     regularized: Boolean(record?.history.some((h) => h.action === "regularized")),
@@ -321,6 +322,8 @@ function deriveDay(ctx, user, date) {
     day.expected = true;
     const stillOpen = date > ctx.today || (date === ctx.today && ctx.now < end);
     day.status = stillOpen ? "not-yet" : "absent";
+    // Checking in now would already be late: after 09:45, or 14:15 with first-half leave.
+    day.overdue = stillOpen && date === ctx.today && ctx.now > start + R.graceMinutes;
   }
 
   if (day.minutesWorked !== null) day.hours = Math.round(day.minutesWorked / 6) / 10;   // one decimal
@@ -379,9 +382,38 @@ export function teamFor(date) {
   return getAllUsers().filter(isTracked).sort(byName).map((user) => deriveDay(ctx, user, date));
 }
 
+// Monday to Friday of the week (Monday to Sunday) that holds the date.
+function weekDates(date) {
+  const n = dayNumber(date);
+  const monday = n - (((n + 3) % 7) + 7) % 7;   // day 0, 1 Jan 1970, was a Thursday
+  return [0, 1, 2, 3, 4].map((i) => isoFromDayNumber(monday + i));
+}
+
+// One person's Monday to Friday around the date, or null (unknown or inactive
+// person, or not a real date).
+export function weekFor(userId, date) {
+  const user = getUser(userId);
+  if (!isTracked(user) || !isValidDate(date)) return null;
+  const ctx = context();
+  return weekDates(date).map((d) => deriveDay(ctx, user, d));
+}
+
+// teamFor() with each person's Monday to Friday, reading storage once:
+// [{ day, week: [Mon..Fri days] }], by name.
+export function teamWeekFor(date) {
+  if (!isValidDate(date)) return [];
+  const ctx = context();
+  const dates = weekDates(date);
+  return getAllUsers().filter(isTracked).sort(byName).map((user) => ({
+    day: deriveDay(ctx, user, date),
+    week: dates.map((d) => deriveDay(ctx, user, d)),
+  }));
+}
+
 // Totals for one date across active people. present counts everyone who came
 // in (on time, late or a half day); late and halfDay are part of it. expected
 // is who should have worked (everyone but weekends, holidays and full leave).
+// overdue is the part of notYet already past the time to check in.
 export function summaryFor(date) {
   const days = teamFor(date);
   const count = (...statuses) => days.filter((d) => statuses.includes(d.status)).length;
@@ -396,6 +428,7 @@ export function summaryFor(date) {
     onLeave: count("on-leave"),
     absent: count("absent"),
     notYet: count("not-yet"),
+    overdue: days.filter((d) => d.overdue).length,
     off: count("holiday", "weekend"),
     conflicts: days.filter((d) => d.conflict).length,
   };
