@@ -115,7 +115,7 @@
   <div class="page-header">
     <div>
       <h1>Dashboard</h1>
-      <p class="page-header__subtitle">People operations for September 2026</p>
+      <p class="page-header__subtitle" id="dash-subtitle">People operations for September 2026</p>
     </div>
     <div class="page-header__actions">
       <button class="btn" type="button" data-permission="reports:export" data-export data-export-stats="hr-dashboard-stats">Export</button>
@@ -128,8 +128,8 @@
 
   <div class="stack">
 
-    <section class="stat-strip" aria-label="Key numbers">
-      <div class="stat">
+    <section class="stat-strip" id="dash-stats" aria-label="Key numbers">
+      <div class="stat" data-stat="positions">
         <div class="stat__icon stat__icon--1">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v11H4zM9 8V5h6v3"/></svg>
         </div>
@@ -139,7 +139,7 @@
           <span class="stat__delta stat__delta--up">2 closing this week</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="on-leave">
         <div class="stat__icon stat__icon--2">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>
         </div>
@@ -149,7 +149,7 @@
           <span class="stat__delta">5.6% of workforce</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="pending">
         <div class="stat__icon stat__icon--3">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
         </div>
@@ -159,7 +159,7 @@
           <span class="stat__delta stat__delta--down">Oldest is 2 days old</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="joiners">
         <div class="stat__icon stat__icon--4">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6"/></svg>
         </div>
@@ -176,10 +176,10 @@
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Leave requests, last 14 days</h3>
-          <span class="card__meta">Sep 5 – 18</span>
+          <span class="card__meta" id="leave-range">Sep 5 – 18</span>
         </div>
         <div class="card__body">
-          <div class="chart" role="img" aria-label="Leave requests per day for the last 14 days, between 1 and 13">
+          <div class="chart" id="leave-chart" role="img" aria-label="Leave requests per day for the last 14 days, between 1 and 13">
             <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:15" title="Sat 5 Sep: 2 requests"></span></div><span class="chart__label">5</span></div>
             <div class="chart__col"><div class="chart__track"><span class="chart__bar chart__bar--muted" style="--h:8" title="Sun 6 Sep: 1 request"></span></div><span class="chart__label">6</span></div>
             <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:54" title="Mon 7 Sep: 7 requests"></span></div><span class="chart__label">7</span></div>
@@ -195,16 +195,16 @@
             <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:62" title="Thu 17 Sep: 8 requests"></span></div><span class="chart__label">17</span></div>
             <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:77" title="Fri 18 Sep: 10 requests"></span></div><span class="chart__label">18</span></div>
           </div>
-          <p class="text-xs text-muted mt-2">Weekends are shown lighter.</p>
+          <p class="text-xs text-muted mt-2" id="leave-note">Weekends are shown lighter.</p>
         </div>
       </section>
 
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Pending approvals</h3>
-          <span class="card__meta">3 shown</span>
+          <span class="card__meta" id="approvals-meta">3 shown</span>
         </div>
-        <div class="list">
+        <div class="list" id="approvals-list">
           <div class="list__item">
             <div class="avatar avatar--1">RG</div>
             <div class="list__content">
@@ -239,6 +239,10 @@
             </div>
           </div>
         </div>
+        <div class="card__footer">
+          <a class="link text-sm" href="../leave/leave-approvals.html" data-permission="leave:approve">All leave requests</a>
+          <a class="link text-sm" href="../attendance/regularization.html" data-permission="attendance:approve">All corrections</a>
+        </div>
       </section>
     </div>
 <!-- END 2 -->
@@ -263,12 +267,12 @@
           <h3 class="card__title">Recent activity</h3>
           <a class="link text-sm" href="../attendance/team-attendance.html">View attendance</a>
         </div>
-        <div class="activity">
+        <div class="activity" id="activity">
           <div class="activity__item">
             <span class="activity__dot activity__dot--warning"></span>
             <div class="activity__text">Rohan Gupta applied for 3 days of casual leave<span class="activity__time">10 min ago</span></div>
           </div>
-          <div class="activity__item">
+          <div class="activity__item" data-static>
             <span class="activity__dot activity__dot--primary"></span>
             <div class="activity__text">Interview scheduled: Frontend Developer<span class="activity__time">1 hour ago</span></div>
           </div>
@@ -290,10 +294,10 @@
         <div class="table__filters">
           <div class="input-group">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search employees">
+            <input class="input input--sm input--search" id="leave-search" type="search" placeholder="Search employees" aria-label="Search employees" data-table-filter="off">
           </div>
-          <select class="select select--sm" aria-label="Filter by status">
-            <option>All statuses</option><option>Pending</option><option>Approved</option><option>Rejected</option>
+          <select class="select select--sm" id="leave-status" aria-label="Filter by status">
+            <option value="">All statuses</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
           </select>
         </div>
       </div>
@@ -309,7 +313,7 @@
               <th>Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="leave-rows">
             <tr>
               <td><div class="table__user"><div class="avatar avatar--1">RG</div><span class="table__user-name">Rohan Gupta</span></div></td>
               <td>Casual</td><td>22 – 24 Sep</td><td class="table__num">3</td>
@@ -340,7 +344,7 @@
       </div>
 
       <div class="card__footer">
-        <span class="card__meta">Showing 5 of 6 pending and recent requests</span>
+        <span class="card__meta" id="leave-rows-meta">Showing 5 of 6 pending and recent requests</span>
         <a class="btn btn--sm" href="../leave/leave-approvals.html">View all</a>
       </div>
     </section>
@@ -351,6 +355,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/hr-dashboard.js"></script>
 </body>
 </html>
 <!-- END 3 -->

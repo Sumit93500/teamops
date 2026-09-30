@@ -6,7 +6,7 @@
 
 export const ROUTES = {
   "dashboard/admin.html":    "dashboard:view",
-  "dashboard/hr.html":       "dashboard:view",
+  "dashboard/hr.html":       "leave:approve",
   "dashboard/finance.html":  "dashboard:view",
   "dashboard/employee.html": "dashboard:view",
 
