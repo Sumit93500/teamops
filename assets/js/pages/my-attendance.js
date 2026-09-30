@@ -19,6 +19,7 @@ import { renderPagination } from "../ui/pagination.js";
 import { openModal, closeModal } from "../ui/modal.js";
 import { showToast } from "../ui/toast.js";
 import { el, todayIso, formatDay, weekdayName, monthName, localDateOf } from "../ui/leave-view.js";
+import { hoursText, dayBadge } from "../ui/attendance-view.js";
 
 const PAGE_SIZE = 10;
 const MONTHS_BACK = 3;
@@ -49,23 +50,9 @@ let currentPage = 1;
 // ---------- formatting ----------
 
 const pad = (n) => String(n).padStart(2, "0");
-const hoursText = (minutes) => `${Math.floor(minutes / 60)}h ${pad(minutes % 60)}m`;
 const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const ordinal = (n) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
-
-const BADGE = {
-  present: ["badge badge--success badge--dot", "Present"],
-  late: ["badge badge--warning badge--dot", "Late"],
-  "half-day": ["badge badge--info badge--dot", "Half day"],
-  absent: ["badge badge--danger badge--dot", "Absent"],
-  "on-leave": ["badge badge--info badge--dot", "On leave"],
-  "not-yet": ["badge badge--dot", "Not yet"],
-};
-function dayBadge(status) {
-  const [className, label] = BADGE[status] ?? ["badge badge--dot", status];
-  return el("span", className, label);
-}
 
 // Working days of the month up to today that have data: not weekends or
 // holidays, not before attendance was recorded, not today while nothing's in yet.
@@ -206,7 +193,7 @@ function logRow(day, today) {
   const inText = day.checkIn ? `${day.checkIn}${day.mode === "wfh" ? " (WFH)" : ""}` : "–";
   const outText = day.incomplete ? "Not recorded" : (day.checkOut ?? "–");
   const status = el("td");
-  status.append(dayBadge(day.status));
+  status.append(dayBadge(day));
 
   const actions = el("td", "table__actions");
   const pending = day.regularization?.status === "pending" ? day.regularization : null;

@@ -12,6 +12,7 @@ import { ATTENDANCE_RULES, checkIn, checkOut, dayFor, monthFor } from "../data/a
 import { typeLabel, el, todayIso, formatDay, weekdayName, monthName, dayOfMonth } from "../ui/leave-view.js";
 import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
 import { showToast } from "../ui/toast.js";
+import { hoursText, dayBadge } from "../ui/attendance-view.js";
 
 const RECENT_DAYS = 5;
 const R = ATTENDANCE_RULES;
@@ -49,9 +50,6 @@ function twelveHour(minutes) {
   return `${h % 12 || 12}:${pad(minutes % 60)} ${h < 12 ? "AM" : "PM"}`;
 }
 
-// 524 -> "8h 44m"
-const hoursText = (minutes) => `${Math.floor(minutes / 60)}h ${pad(minutes % 60)}m`;
-
 // "Monday, 28 September 2026"
 function longDate(iso) {
   return `${weekdayName(iso)}, ${dayOfMonth(iso)} ${monthName(Number(iso.slice(5, 7)))} ${iso.slice(0, 4)}`;
@@ -59,19 +57,6 @@ function longDate(iso) {
 
 // "Mon, 28 Sep"
 const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
-
-const BADGE = {
-  present: ["badge badge--success badge--dot", "Present"],
-  late: ["badge badge--warning badge--dot", "Late"],
-  "half-day": ["badge badge--info badge--dot", "Half day"],
-  absent: ["badge badge--danger badge--dot", "Absent"],
-  "on-leave": ["badge badge--info badge--dot", "On leave"],
-  "not-yet": ["badge badge--dot", "Not yet"],
-};
-function dayBadge(status) {
-  const [className, label] = BADGE[status] ?? ["badge badge--dot", status];
-  return el("span", className, label);
-}
 
 // ---------- the punch card ----------
 
@@ -211,7 +196,7 @@ function recentRow(day) {
   if (day.incomplete) outText = "Not recorded";
   const hours = el("td", "table__num", day.minutesWorked === null ? "–" : hoursText(day.minutesWorked));
   const status = el("td");
-  status.append(dayBadge(day.status));
+  status.append(dayBadge(day));
   if (day.regularized) status.append(" ", el("span", "badge badge--success badge--square", "Regularized"));
   tr.append(el("td", "", shortDate(day.date)), inCell, el("td", "", outText), hours, status);
   return tr;

@@ -17,11 +17,12 @@ import { can } from "../core/rbac.js";
 import { getUser, getAllUsers, getAllDepartments } from "../data/store.js";
 import { isValidDate } from "../data/holidays.js";
 import { allRequests } from "../data/leave-store.js";
-import { ATTENDANCE_RULES, teamWeekFor, summaryFor, pendingRegularizations } from "../data/attendance-store.js";
+import { teamWeekFor, summaryFor, pendingRegularizations } from "../data/attendance-store.js";
 import { renderPagination } from "../ui/pagination.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
 import { el, formatDay, weekdayName, todayIso, initials, avatarClass, departmentName } from "../ui/leave-view.js";
+import { hoursText, dayBadge } from "../ui/attendance-view.js";
 
 const PAGE_SIZE = 10;
 
@@ -53,40 +54,9 @@ let currentPage = 1;
 
 // ---------- formatting ----------
 
-const pad = (n) => String(n).padStart(2, "0");
-const hoursText = (minutes) => `${Math.floor(minutes / 60)}h ${pad(minutes % 60)}m`;
 const percent = (part, whole) => `${Math.round((part / whole) * 1000) / 10}%`;
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const shortDate = (iso) => `${weekdayName(iso).slice(0, 3)}, ${formatDay(iso)}`;
-
-// The latest on-time check-in: 09:45, or 14:15 with first-half leave.
-function checkInBy(day) {
-  const [h, m] = (day.halfDayLeave === "first-half" ? ATTENDANCE_RULES.halfSplit : ATTENDANCE_RULES.shiftStart).split(":").map(Number);
-  const minutes = h * 60 + m + ATTENDANCE_RULES.graceMinutes;
-  return `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`;
-}
-
-const BADGE = {
-  present: ["badge badge--success badge--dot", "Present"],
-  late: ["badge badge--warning badge--dot", "Late"],
-  "half-day": ["badge badge--info badge--dot", "Half day"],
-  absent: ["badge badge--danger badge--dot", "Absent"],
-  "on-leave": ["badge badge--info badge--dot", "On leave"],
-  holiday: ["badge badge--dot", "Holiday"],
-  weekend: ["badge badge--dot", "Weekend"],
-  "no-data": ["badge badge--dot", "No data"],
-  "not-yet": ["badge badge--dot badge--not-yet", "Not in yet"],
-};
-
-function dayBadge(day) {
-  if (day.overdue) {
-    const badge = el("span", "badge badge--dot badge--overdue", "Overdue");
-    badge.title = `Not checked in by ${checkInBy(day)}`;
-    return badge;
-  }
-  const [className, label] = BADGE[day.status] ?? ["badge badge--dot", day.status];
-  return el("span", className, label);
-}
 
 // Week dots: [class suffix, export code, words]. The code is what CSV export writes ("P,P,L,P,P").
 const WEEK = {
