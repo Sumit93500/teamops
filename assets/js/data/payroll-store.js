@@ -125,6 +125,15 @@ export function payrollRun(year, month, { preparedBy = null } = {}) {
 
 export const totalNetPay = (run) => run.rows.reduce((sum, r) => sum + r.net, 0);
 
+// A run's totals over every row (on-hold rows too): gross paid, deductions and
+// net, and the loss of pay already taken off the gross.
+export const runTotals = (run) => run.rows.reduce((t, r) => ({
+  gross: t.gross + r.gross,
+  deductions: t.deductions + r.deductions,
+  net: t.net + r.net,
+  lossOfPay: t.lossOfPay + r.lop.amount,
+}), { gross: 0, deductions: 0, net: 0, lossOfPay: 0 });
+
 // Separation of duties: someone must approve, and not the person who prepared it.
 export const canApprove = (run, userId) => Boolean(userId) && userId !== run.preparedBy;
 
