@@ -25,13 +25,13 @@ import {
 } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns } from "../ui/chart.js";
+import { correctionDetails } from "../ui/attendance-view.js";
 
 const CHART_DAYS = 14;
 const CHART_FLOOR = 5;       // the chart's top is at least 5 requests, so one request isn't a full-height bar
 const SHOWN_APPROVALS = 3;
 const SHOWN_DECISIONS = 3;
 const TABLE_ROWS = 10;
-const ISSUE_LABEL = { "late-arrival": "Late arrival", "missed-check-in": "Missed check-in", "missed-check-out": "Missed check-out" };
 
 const userId = getCurrentUserId();
 const role = getCurrentRole()?.key;
@@ -60,9 +60,6 @@ let statusFilter = "";
 
 // ---------- helpers ----------
 
-const issueLabel = (r) => ISSUE_LABEL[r.issue] ?? r.issue;
-// "Late arrival, 10:24 to 09:30", or "Missed check-out, 18:00" when nothing was recorded (as in the inbox).
-const correctionDetails = (r) => `${issueLabel(r)}, ${r.recordedTime ? `${r.recordedTime} to ${r.time}` : r.time}`;
 // Newest sent first; the id breaks ties between two sent the same day.
 const newestSent = (a, b) => b.appliedOn.localeCompare(a.appliedOn) || b.id.localeCompare(a.id, "en", { numeric: true });
 

@@ -1,10 +1,11 @@
 // ui/attendance-view.js
 // Display helpers shared by the attendance pages (mark-attendance,
 // my-attendance, team-attendance) and the dashboards: worked time as "8h 44m",
-// the status badge for a day worked out by data/attendance-store.js, and the
+// the status badge for a day worked out by data/attendance-store.js, the
 // pieces team-attendance and the admin dashboard both show for a date (the
-// Present card's line, the check-in and hours cells). Everything is built with
-// DOM calls, never innerHTML.
+// Present card's line, the check-in and hours cells), and the words for an
+// attendance correction request. Everything is built with DOM calls,
+// never innerHTML.
 
 import { ATTENDANCE_RULES } from "../data/attendance-store.js";
 import { el, percent } from "./leave-view.js";
@@ -89,3 +90,12 @@ export function hoursCell(day) {
   if (day.inProgress) td.append(el("span", "table__user-sub", "so far"));
   return td;
 }
+
+// ---------- attendance corrections (regularization, approvals inbox, HR dashboard, the decision modal) ----------
+
+export const ISSUE_LABEL = { "late-arrival": "Late arrival", "missed-check-in": "Missed check-in", "missed-check-out": "Missed check-out" };
+
+// "Late arrival"; an issue not in the list shows as it is.
+export const issueLabel = (r) => ISSUE_LABEL[r.issue] ?? r.issue;
+// "Late arrival, 10:24 to 09:30", or "Missed check-out, 18:00" when nothing was recorded.
+export const correctionDetails = (r) => `${issueLabel(r)}, ${r.recordedTime ? `${r.recordedTime} to ${r.time}` : r.time}`;

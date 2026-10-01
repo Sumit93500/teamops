@@ -14,10 +14,10 @@ import { allRegularizations, pendingRegularizations, dayFor } from "../data/atte
 import { renderPagination } from "../ui/pagination.js";
 import { approveCorrection, openRejectCorrectionModal, decisionButtons } from "../ui/leave-decision.js";
 import { el, formatDay, statusBadge, departmentName, decisionOf, nameOf, personCell } from "../ui/leave-view.js";
+import { issueLabel } from "../ui/attendance-view.js";
 
 const PAGE_SIZE = 10;
 const PILL_TAB = { "Pending": "pending", "Approved": "approved", "Rejected": "rejected" };
-const ISSUE_LABEL = { "late-arrival": "Late arrival", "missed-check-in": "Missed check-in", "missed-check-out": "Missed check-out" };
 
 const userId = getCurrentUserId();
 const role = getCurrentRole()?.key;
@@ -100,7 +100,7 @@ function row(request) {
   tr.append(
     personCell(request.userId, person, departmentName(person?.department)),
     el("td", "", formatDay(request.date)),
-    el("td", "", ISSUE_LABEL[request.issue] ?? request.issue),
+    el("td", "", issueLabel(request)),
     timesCell(request),
     el("td", "reg-reason", request.reason),
     status,

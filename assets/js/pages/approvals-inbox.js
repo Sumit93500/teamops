@@ -20,9 +20,9 @@ import {
   initials, avatarClass, decisionOf, localDateOf, nameOf,
 } from "../ui/leave-view.js";
 import { setStatValue, setOptionalStatNote } from "../ui/stats.js";
+import { correctionDetails } from "../ui/attendance-view.js";
 
 const PILL_TAB = { "Pending": "pending", "Approved": "approved", "Rejected": "rejected" };
-const ISSUE_LABEL = { "late-arrival": "Late arrival", "missed-check-in": "Missed check-in", "missed-check-out": "Missed check-out" };
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const userId = getCurrentUserId();
@@ -51,9 +51,6 @@ const staticDecided = readStatic(decidedBody);
 
 const leaveTitle = (r) => `Leave: ${nameOf(r.userId)}, ${requestDates(r)}`;
 const correctionTitle = (r) => `Regularization: ${nameOf(r.userId)}, ${formatDay(r.date)}`;
-const issueLabel = (r) => ISSUE_LABEL[r.issue] ?? r.issue;
-// "Late arrival, 10:12 to 09:30", or "Missed check-out, 18:00" when nothing was recorded.
-const correctionDetails = (r) => `${issueLabel(r)}, ${r.recordedTime ? `${r.recordedTime} to ${r.time}` : r.time}`;
 const decisionDate = (r) => localDateOf(decisionOf(r).at);
 const weekStart = () => isoFromDayNumber(dayNumber(todayIso()) - 6);   // the last 7 days, today included
 

@@ -21,6 +21,7 @@ import { decideRegularization } from "../data/attendance-store.js";
 import { openModal, closeModal } from "./modal.js";
 import { showToast } from "./toast.js";
 import { el, escapeHtml, requestTitle, formatDay, nameOf } from "./leave-view.js";
+import { issueLabel } from "./attendance-view.js";
 
 const decider = () => ({ id: getCurrentUserId(), role: getCurrentRole()?.key });
 
@@ -208,13 +209,9 @@ export const openRejectModal = leaveFlow.openReject;
 
 // ---------- attendance corrections ----------
 
-// The same words as the Issue column on regularization.html. The pages still
-// keep their own copy for their tables (a later round moves it to one place).
-const ISSUE_LABEL = { "late-arrival": "Late arrival", "missed-check-in": "Missed check-in", "missed-check-out": "Missed check-out" };
-
 export const correctionFlow = createDecisionFlow({
   decide: decideRegularization,
-  describe: (r) => `${nameOf(r.userId)}: ${ISSUE_LABEL[r.issue] ?? r.issue}, ${formatDay(r.date)}, corrected to ${r.time}`,
+  describe: (r) => `${nameOf(r.userId)}: ${issueLabel(r)}, ${formatDay(r.date)}, corrected to ${r.time}`,
   modalId: "reject-correction-modal",
   noteId: "reject-correction-note",
   labels: {
