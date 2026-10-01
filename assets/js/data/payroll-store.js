@@ -9,8 +9,8 @@
 // ("YYYY-MM-DD"), regime: "new" }. A revision is a new record with a later
 // effectiveFrom; a month uses the record in effect on its first day.
 //
-// Nothing writes salaries yet (no page edits them), and the Reset demo data
-// button doesn't call resetPayrollData() yet; both come with the payroll pages.
+// Nothing writes salaries yet (salary-structure.html only shows them), and the
+// Reset demo data button doesn't call resetPayrollData() yet.
 
 import { createCollection } from "./collection.js";
 import { getUser, getAllUsers } from "./store.js";
@@ -25,7 +25,8 @@ import { computePay } from "./payroll.js";
 // Arjun keep the gross the static pages showed; Aarav, Priya, Kabir and Sneha
 // are new figures in line with their roles. Effective dates follow
 // salary-structure.html's "Last revised" column (1 Apr 2026, Vikram 1 Jan 2026).
-// Divya Menon (inactive) has none.
+// Vikram also keeps the salary his 1 Jan 2026 revision replaced (SAL-10), so
+// one person has a real revision history. Divya Menon (inactive) has none.
 const SEED = [
   { id: "SAL-1", userId: "EMP-1001", gross: 160000, effectiveFrom: "2026-04-01", regime: "new" },   // Aarav Mehta, Administrator
   { id: "SAL-2", userId: "EMP-1003", gross: 125000, effectiveFrom: "2026-04-01", regime: "new" },   // Priya Nair, HR Manager
@@ -36,18 +37,26 @@ const SEED = [
   { id: "SAL-7", userId: "EMP-1042", gross: 92000,  effectiveFrom: "2026-04-01", regime: "new" },   // Rohan Gupta, Senior Software Engineer
   { id: "SAL-8", userId: "EMP-1088", gross: 64000,  effectiveFrom: "2026-01-01", regime: "new" },   // Vikram Singh, Store Keeper
   { id: "SAL-9", userId: "EMP-1105", gross: 88000,  effectiveFrom: "2026-04-01", regime: "new" },   // Arjun Kapoor, Software Engineer
+  { id: "SAL-10", userId: "EMP-1088", gross: 60000, effectiveFrom: "2025-01-01", regime: "new" },   // Vikram Singh, before his 1 Jan 2026 raise
 ];
 
-const salaries = createCollection({ key: "salaries", version: 1, seed: () => SEED, idPrefix: "SAL-" });
+// Version 2 adds SAL-10; a saved version-1 copy is replaced with the new seed.
+const salaries = createCollection({ key: "salaries", version: 2, seed: () => SEED, idPrefix: "SAL-" });
 
 // ---------- reads ----------
 
 const pad = (n) => String(n).padStart(2, "0");
 const validMonth = (year, month) => Number.isInteger(year) && Number.isInteger(month) && month >= 1 && month <= 12;
 const byName = (a, b) => a.name.localeCompare(b.name, "en") || a.id.localeCompare(b.id, "en", { numeric: true });
+const newestFirst = (a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom) || b.id.localeCompare(a.id, "en", { numeric: true });
 
 export function allSalaries() {
   return salaries.getAll();
+}
+
+// Every salary record of one person, newest effectiveFrom first ([] if none).
+export function salaryHistory(userId) {
+  return salaries.getAll().filter((s) => s.userId === userId).sort(newestFirst);
 }
 
 // The salary record in effect on the first day of the month, or null.
@@ -56,9 +65,7 @@ export function salaryFor(userId, year, month) {
   const m = Number(month);
   if (!validMonth(y, m)) return null;
   const first = `${y}-${pad(m)}-01`;
-  return salaries.getAll()
-    .filter((s) => s.userId === userId && s.effectiveFrom <= first)
-    .sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom) || b.id.localeCompare(a.id, "en", { numeric: true }))[0] ?? null;
+  return salaryHistory(userId).find((s) => s.effectiveFrom <= first) ?? null;
 }
 
 // Approved unpaid leave on the month's working days: 1 a full day, 0.5 a half

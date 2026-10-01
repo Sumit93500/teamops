@@ -114,7 +114,7 @@
       <p class="page-header__subtitle">How gross pay is built, and what gets deducted</p>
     </div>
     <div class="page-header__actions">
-      <button class="btn" type="button" data-permission="reports:export" data-export>Export</button>
+      <button class="btn" type="button" data-permission="salary:view" data-export>Export</button>
       <button class="btn btn--primary" type="button" data-permission="salary:edit" data-not-implemented="Add component">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Add component
@@ -129,7 +129,7 @@
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Salary components</h3>
-          <span class="card__meta">7 components</span>
+          <span class="card__meta" id="salary-components-meta">7 components</span>
         </div>
 
         <div class="table-wrap">
@@ -144,7 +144,7 @@
                 <th class="table__actions">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="salary-components">
               <tr>
                 <td><span class="table__user-name">Basic salary</span></td>
                 <td><span class="badge badge--success badge--square">Earning</span></td>
@@ -202,39 +202,47 @@
       <aside class="stack">
         <section class="card">
           <div class="card__header">
-            <h3 class="card__title">Example: Rohan Gupta</h3>
+            <h3 class="card__title" id="salary-example-title">Example: Rohan Gupta</h3>
             <span class="card__meta">Per month</span>
           </div>
           <div class="card__body">
+            <p class="text-muted" id="salary-example-empty" hidden>No salary on file for this month, so there's nothing to break down.</p>
+            <div id="salary-example-breakdown">
             <h4 class="breakdown__title">Earnings</h4>
             <dl class="breakdown">
-              <div class="breakdown__row"><dt>Basic salary</dt><dd>₹36,800</dd></div>
-              <div class="breakdown__row"><dt>House rent allowance</dt><dd>₹18,400</dd></div>
-              <div class="breakdown__row"><dt>Conveyance allowance</dt><dd>₹1,600</dd></div>
-              <div class="breakdown__row"><dt>Special allowance</dt><dd>₹35,200</dd></div>
-              <div class="breakdown__row breakdown__row--total"><dt>Gross pay</dt><dd>₹92,000</dd></div>
+              <div class="breakdown__row"><dt>Basic salary</dt><dd data-field="basic">₹36,800</dd></div>
+              <div class="breakdown__row"><dt>House rent allowance</dt><dd data-field="hra">₹18,400</dd></div>
+              <div class="breakdown__row"><dt>Conveyance allowance</dt><dd data-field="conveyance">₹1,600</dd></div>
+              <div class="breakdown__row"><dt>Special allowance</dt><dd data-field="special">₹35,200</dd></div>
+              <div class="breakdown__row breakdown__row--total"><dt>Gross pay</dt><dd data-field="gross">₹92,000</dd></div>
             </dl>
 
             <h4 class="breakdown__title">Deductions</h4>
             <dl class="breakdown">
-              <div class="breakdown__row"><dt>Provident fund</dt><dd>₹4,416</dd></div>
-              <div class="breakdown__row"><dt>Professional tax</dt><dd>₹200</dd></div>
-              <div class="breakdown__row"><dt>Income tax (TDS)</dt><dd>₹10,104</dd></div>
-              <div class="breakdown__row breakdown__row--total"><dt>Total deductions</dt><dd>₹14,720</dd></div>
-              <div class="breakdown__row breakdown__row--total breakdown__row--net"><dt>Net pay</dt><dd>₹77,280</dd></div>
+              <div class="breakdown__row"><dt>Provident fund</dt><dd data-field="pf">₹4,416</dd></div>
+              <div class="breakdown__row"><dt>Professional tax</dt><dd data-field="pt">₹200</dd></div>
+              <div class="breakdown__row"><dt>Income tax (TDS)</dt><dd data-field="tds">₹10,104</dd></div>
+              <div class="breakdown__row breakdown__row--total"><dt>Total deductions</dt><dd data-field="deductions">₹14,720</dd></div>
+              <div class="breakdown__row breakdown__row--total breakdown__row--net"><dt>Net pay</dt><dd data-field="net">₹77,280</dd></div>
             </dl>
 
             <h4 class="breakdown__title">Cost to company</h4>
             <dl class="breakdown">
-              <div class="breakdown__row"><dt>Gross pay</dt><dd>₹92,000</dd></div>
-              <div class="breakdown__row"><dt>Employer provident fund</dt><dd>₹4,416</dd></div>
-              <div class="breakdown__row"><dt>Monthly cost</dt><dd>₹96,416</dd></div>
-              <div class="breakdown__row breakdown__row--total"><dt>Annual cost</dt><dd>₹11,56,992</dd></div>
+              <div class="breakdown__row"><dt>Gross pay</dt><dd data-field="cost-gross">₹92,000</dd></div>
+              <div class="breakdown__row"><dt>Employer provident fund</dt><dd data-field="employer-pf">₹4,416</dd></div>
+              <div class="breakdown__row"><dt>Monthly cost</dt><dd data-field="monthly-cost">₹96,416</dd></div>
+              <div class="breakdown__row breakdown__row--total"><dt>Annual cost</dt><dd data-field="annual-cost">₹11,56,992</dd></div>
+            </dl>
+            </div>
+
+            <h4 class="breakdown__title">Salary history</h4>
+            <dl class="breakdown" id="salary-history">
+              <div class="breakdown__row"><dt>From 1 Apr 2026</dt><dd>₹92,000</dd></div>
             </dl>
           </div>
         </section>
 
-        <div class="alert alert--info">Salary figures are only visible to roles with the salary:view permission. A salary change needs Admin approval and starts from the next payroll run.</div>
+        <div class="alert alert--info">Salary figures are only visible to roles with the salary:view permission. Changing a salary isn't built yet, so Edit and Add component don't save anything. A revised salary is used from the first payroll month that starts on or after its effective date.</div>
       </aside>
 
     </div>
@@ -245,9 +253,9 @@
         <div class="table__filters">
           <div class="input-group">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search employees">
+            <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search employees" id="salary-search" data-table-filter="off">
           </div>
-          <select class="select select--sm" aria-label="Filter by department">
+          <select class="select select--sm" aria-label="Filter by department" id="salary-department">
             <option>All departments</option><option>Engineering</option><option>Sales</option>
             <option>Operations</option><option>Finance</option><option>HR</option>
           </select>
@@ -267,7 +275,7 @@
               <th class="table__actions">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="salary-rows">
             <tr>
               <td><div class="table__user"><div class="avatar avatar--1">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">EMP-1042</span></div></div></td>
               <td>Senior Software Engineer</td><td class="table__num">₹92,000</td><td class="table__num">₹11,56,992</td><td>1 Apr 2026</td>
@@ -303,11 +311,7 @@
       </div>
 
       <div class="card__footer">
-        <span class="card__meta">Showing 5 of 248 employees</span>
-        <div class="btn-group">
-          <button class="btn btn--sm" type="button" disabled>Previous</button>
-          <button class="btn btn--sm" type="button" data-not-implemented="Next page">Next</button>
-        </div>
+        <span class="card__meta" id="salary-rows-meta">Showing 5 of 248 employees</span>
       </div>
     </section>
 
@@ -317,6 +321,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/salary-structure.js"></script>
 </body>
 </html>
 <!-- END 2 -->
