@@ -6,6 +6,7 @@
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { getUser, getAllDepartments } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
+import { maskAccount, maskPan } from "../ui/pii.js";
 
 const STATUS = {
   "active":   { label: "Active",   badge: "badge badge--success badge--dot" },
@@ -94,9 +95,9 @@ if (user && role) {
   setKv("Location", orDash(user.location));
   setKv("Employment type", orDash(user.employmentType));
 
-  // Sensitive details (same masking as the employee profile page, no Reveal here)
-  setSensitive("Bank account", user.bankAccountLast4 ? `•••• •••• ${user.bankAccountLast4}` : "");
-  setSensitive("PAN", user.pan ? `•••••${user.pan.slice(-5)}` : "");
+  // Sensitive details (masked by ui/pii.js, as on the employee profile page; no Reveal here)
+  setSensitive("Bank account", maskAccount(user.bankAccountLast4));
+  setSensitive("PAN", maskPan(user.pan));
 
   // Your access. The role comes from the session: it's what this person can do right now.
   setKv("Role", role.label);

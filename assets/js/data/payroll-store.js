@@ -137,6 +137,49 @@ export const runTotals = (run) => run.rows.reduce((t, r) => ({
 // Separation of duties: someone must approve, and not the person who prepared it.
 export const canApprove = (run, userId) => Boolean(userId) && userId !== run.preparedBy;
 
+// ---------- payslips ----------
+
+// Day statuses that mean attendance was being recorded for the person (or will
+// be, later this month). A month with none of them is from before records
+// began, so its loss of pay can't be checked: it has no payslip.
+const RECORDED = ["present", "late", "half-day", "absent", "not-yet"];
+
+// Every payslip this person has, newest first: the month `today`
+// ("YYYY-MM-DD") falls in, then each month before it, back to the last one in
+// a row with attendance recorded. Each is payrollRunFor()'s row plus period
+// { from, to } (the month's first and last day) and attendance { noData,
+// notYet }: how many of its working days came before records began, and how
+// many haven't been recorded yet. [] for an unknown or inactive person or a
+// bad date.
+export function payslipsFor(userId, today) {
+  if (dayNumber(today) === null) return [];
+  let y = Number(today.slice(0, 4));
+  let m = Number(today.slice(5, 7));
+  const slips = [];
+  for (let n = 0; n < 120; n++) {   // ten years at most
+    const attendance = monthFor(userId, y, m);
+    if (!attendance?.days.some((d) => RECORDED.includes(d.status))) break;
+    slips.push({
+      ...payrollRunFor(userId, y, m),
+      period: { from: attendance.days[0].date, to: attendance.days.at(-1).date },
+      attendance: { noData: attendance.counts.noData, notYet: attendance.counts.notYet },
+    });
+    [y, m] = m === 1 ? [y - 1, 12] : [y, m - 1];
+  }
+  return slips;
+}
+
+// Totals over payslips (on-hold ones too, as runTotals counts on-hold rows):
+// gross paid, each deduction, all deductions and net.
+export const payslipTotals = (slips) => slips.reduce((t, s) => ({
+  gross: t.gross + s.gross,
+  pf: t.pf + s.deductionLines.pf,
+  pt: t.pt + s.deductionLines.pt,
+  tds: t.tds + s.deductionLines.tds,
+  deductions: t.deductions + s.deductions,
+  net: t.net + s.net,
+}), { gross: 0, pf: 0, pt: 0, tds: 0, deductions: 0, net: 0 });
+
 // ---------- reset ----------
 
 export function resetPayrollData() {

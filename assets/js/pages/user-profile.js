@@ -11,6 +11,7 @@ import { resolvePageLink } from "../core/paths.js";
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { plural } from "../ui/leave-view.js";
+import { maskAccount, maskPan } from "../ui/pii.js";
 
 const DEFAULT_ID = "EMP-1042";
 const id = new URLSearchParams(window.location.search).get("id") || DEFAULT_ID;
@@ -243,12 +244,12 @@ function render() {
   const tenure = tenureText(user.dateOfJoining);
   if (tenure) setKv("Tenure", tenure);
 
-  // Sensitive details (same masking as the static page: last 4 of the account, last 5 of the PAN)
+  // Sensitive details, masked by ui/pii.js (last 4 of the account, last 5 of the PAN)
   setupSensitive("Bank account",
-    user.bankAccountLast4 ? `•••• •••• ${user.bankAccountLast4}` : "•••• ••••",
+    maskAccount(user.bankAccountLast4) || "•••• ••••",
     user.bankAccount ? formatAccount(user.bankAccount) : "");
   setupSensitive("PAN",
-    user.pan ? `•••••${user.pan.slice(-5)}` : "",
+    maskPan(user.pan),
     user.pan ?? "");
   Array.from(document.querySelectorAll(".form-hint"))
     .find((p) => p.textContent.includes("audit log"))?.remove();

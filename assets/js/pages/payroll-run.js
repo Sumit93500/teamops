@@ -111,14 +111,12 @@ function buildRow(row) {
   if (row.holdReason) badge.title = row.holdReason;
   statusCell.append(badge);
 
-  // payslip-view.html isn't wired yet (it always shows one sample payslip), so
-  // the link carries the employee and month for the payslip round to read, and
-  // until then shows a "not available" toast instead of the wrong person's payslip.
+  // Opens this person's payslip for the run's month (payslip-view.html reads
+  // ?employee and ?month).
   const actions = el("td", "table__actions");
   const link = el("a", "btn btn--sm", "View payslip");
   link.href = `payslip-view.html?employee=${encodeURIComponent(row.userId)}&month=${row.month}`;
   link.dataset.permission = "payslips:view";
-  link.dataset.notImplemented = "Viewing a September payslip";
   actions.append(link);
 
   tr.append(
