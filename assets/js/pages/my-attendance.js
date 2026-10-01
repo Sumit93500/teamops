@@ -160,7 +160,7 @@ function renderLateAlert(summary) {
     ? ` That's ${plural(summary.penaltyHalfDays, "half day", "half days")} this month.`
     : ` ${left === 1 ? "The next one" : `${left} more`} would count as half a day.`;
   lateAlert.textContent = `You have ${plural(summary.lateMarks, "late mark", "late marks")} this month. Every ${ordinal(R.penaltyEvery)} late mark counts as half a day.`
-    + `${penalty} This is shown for information; your leave balance isn't changed.`;
+    + `${penalty} Each half day is taken from your pay, not your leave balance, when payroll is processed.`;
   lateAlert.hidden = false;
 }
 

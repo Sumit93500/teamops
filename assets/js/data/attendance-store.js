@@ -26,7 +26,7 @@ export const ATTENDANCE_RULES = {
   halfSplit: "14:00",         // where a half-day leave splits the shift
   fullDayMinutes: 8 * 60,
   halfDayMinutes: 4 * 60,     // under this = absent for the day
-  penaltyEvery: 3,            // every 3rd late mark in a month = a half-day penalty (information only)
+  penaltyEvery: 3,            // every 3rd late mark in a month = a half-day penalty, deducted from pay (data/payroll-store.js)
   requestWindowDays: 7,
 };
 

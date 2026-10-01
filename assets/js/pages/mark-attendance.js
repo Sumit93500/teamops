@@ -160,9 +160,9 @@ function renderShift(today) {
   let text = "";
   if (month.penaltyHalfDays) {
     text = `Every ${ordinal(R.penaltyEvery)} late mark in a month counts as half a day: ${month.penaltyHalfDays} this month. `
-      + "This is shown for information; your leave balance isn't changed.";
+      + "Each half day is taken from your pay, not your leave balance, when payroll is processed.";
   } else if (month.lateMarks === R.penaltyEvery - 1) {
-    text = `One more late mark this month counts as half a day (shown for information; your leave balance isn't changed).`;
+    text = `One more late mark this month counts as half a day. Each half day is taken from your pay, not your leave balance, when payroll is processed.`;
   }
   lateNote.textContent = text;
   lateNote.hidden = !text;
