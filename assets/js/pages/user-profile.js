@@ -10,8 +10,10 @@ import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
-import { plural } from "../ui/leave-view.js";
+import { plural, todayIso } from "../ui/leave-view.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
+import { salaryFor } from "../data/payroll-store.js";
+import { rupees } from "../ui/money.js";
 
 const DEFAULT_ID = "EMP-1042";
 const id = new URLSearchParams(window.location.search).get("id") || DEFAULT_ID;
@@ -253,9 +255,15 @@ function render() {
     user.pan ?? "");
   Array.from(document.querySelectorAll(".form-hint"))
     .find((p) => p.textContent.includes("audit log"))?.remove();
-  // No salary data exists yet (it will come from Payroll), so this only makes the
-  // visibility check real. Without salary:view the static "Hidden" text stays.
-  if (can("salary:view")) setKv("Salary", "Not on file");
+  // The monthly gross in effect this month, from data/payroll-store.js (as
+  // salary-structure.html shows it). Without salary:view the static "Hidden"
+  // text stays.
+  if (can("salary:view")) {
+    const today = todayIso();
+    const salary = salaryFor(user.id, Number(today.slice(0, 4)), Number(today.slice(5, 7)));
+    setKv("Salary", salary ? `${rupees(salary.gross)} a month` : "Not on file");
+    if (salary) kvDd("Salary")?.classList.remove("text-muted");
+  }
 
   // Access. "Approval chain", "Two-factor sign-in" and "Last sign-in" stay static.
   setKv("Designation", orDash(user.designation));

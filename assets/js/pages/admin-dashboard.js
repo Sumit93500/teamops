@@ -4,21 +4,25 @@
 // stores: who is present today out of who is expected, the attendance rate for
 // the last 14 days, today's attendance for every active employee with a name
 // search, a department filter and Previous / Next, and headcount by
-// department. The other stats, the pending approvals card and the activity
-// feed are static samples and stay as they are. A session without an employee
-// id (an old sign-in) leaves the static page as it is.
+// department; the total employees stat (the sidebar's count); and, for roles
+// with payroll:view, the payroll stat (the gross of the run payroll-run.html
+// shows). The low-stock stat, the pending approvals card and the activity feed
+// are static samples and stay as they are. A session without an employee id
+// (an old sign-in) leaves the static page as it is.
 
 import { getCurrentUserId } from "../core/auth.js";
 import { can } from "../core/rbac.js";
-import { getUser, getAllUsers, getAllDepartments, headcountByDepartment } from "../data/store.js";
+import { getUser, getAllUsers, getAllDepartments, headcountByDepartment, activeHeadcount } from "../data/store.js";
+import { RUN_MONTH, payrollRun, runTotals } from "../data/payroll-store.js";
 import { addDays } from "../data/holidays.js";
 import { ATTENDANCE_RULES, teamFor, summaryRange, toMinutes, nowMinutes } from "../data/attendance-store.js";
 import {
-  el, todayIso, formatRange, monthName, departmentName, fillDepartmentSelect, personCell,
+  el, todayIso, formatRange, monthName, departmentName, fillDepartmentSelect, personCell, plural,
 } from "../ui/leave-view.js";
 import { dayBadge, presentNote, checkInCell, hoursCell } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns, barRow } from "../ui/chart.js";
+import { rupees } from "../ui/money.js";
 
 const CHART_DAYS = 14;
 const PAGE_SIZE = 10;
@@ -49,6 +53,20 @@ function setStat(key, value, note) {
   if (!stat) return;
   setStatValue(stat, value);
   setStatNote(stat, note);
+}
+
+// ---------- total employees and payroll ----------
+
+// The same count as the sidebar: everyone not inactive.
+function renderTotal() {
+  const inactive = getAllUsers().length - activeHeadcount();
+  setStat("total", String(activeHeadcount()), inactive ? `Not counting ${plural(inactive, "inactive employee", "inactive employees")}` : "No inactive employees");
+}
+
+// The run's gross, as the payroll run page and the Finance dashboard show it.
+function renderPayroll() {
+  const run = payrollRun(RUN_MONTH.year, RUN_MONTH.month);
+  setStat("payroll", rupees(runTotals(run).gross), `Gross for ${plural(run.rows.length, "employee", "employees")}, draft`);
 }
 
 // ---------- present today ----------
@@ -168,4 +186,7 @@ if (user && can("attendance:view-all") && stats && chart && headcountBars && tbo
   renderPresent(range[range.length - 1], days);
   renderChart(range);
   renderHeadcount();
+  renderTotal();
+  // HR may open this page too; it holds no payroll permission.
+  if (can("payroll:view")) renderPayroll();
 }

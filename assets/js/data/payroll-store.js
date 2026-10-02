@@ -118,6 +118,12 @@ export function payrollRunFor(userId, year, month) {
   };
 }
 
+// The run the payroll run page, the Finance and Admin dashboards and the tax
+// page show: September 2026. Runs aren't stored yet, so there is no "latest
+// run" to look up. (payroll-run.js still has its own YEAR / MONTH from before
+// this existed.)
+export const RUN_MONTH = { year: 2026, month: 9 };
+
 // The month's run for everyone tracked, by name. preparedBy is whoever creates
 // the run; approvedBy stays null here (approving comes with the payroll pages).
 // The person who prepared a run may not approve it: see canApprove().

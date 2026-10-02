@@ -133,6 +133,12 @@ export function headcountByDepartment() {
   return counts;
 }
 
+// How many employees aren't inactive (people on leave count): the sidebar's
+// "N active employees" and the Admin dashboard's total.
+export function activeHeadcount() {
+  return getAllUsers().filter((u) => u.status !== "inactive").length;
+}
+
 // ---------- user writes ----------
 
 export function addUser(fields = {}) {

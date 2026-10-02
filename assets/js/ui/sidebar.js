@@ -1,12 +1,14 @@
 // ui/sidebar.js
 // Builds the sidebar from config/nav.js, keeping only the items the
 // signed-in role is allowed to see, and highlighting the current page.
+// Also fills the footer's "N active employees" line from the live employee list.
 
 import { NAV } from "../config/nav.js";
 import { can } from "../core/rbac.js";
 import { getCurrentRole } from "../core/auth.js";
 import { resolvePageLink } from "../core/paths.js";
 import { ICONS } from "./icons.js";
+import { activeHeadcount } from "../data/store.js";
 
 function currentPagePath() {
   const path = window.location.pathname;
@@ -51,4 +53,12 @@ export function renderSidebar(container) {
       container.appendChild(buildItem(item, currentPath));
     });
   });
+}
+
+// The footer's headcount line (#sidebar-headcount on every page with a sidebar):
+// everyone not inactive, the same people as a payroll run.
+export function renderHeadcount(target) {
+  if (!target) return;
+  const n = activeHeadcount();
+  target.textContent = `${n} active ${n === 1 ? "employee" : "employees"}`;
 }

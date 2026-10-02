@@ -84,7 +84,7 @@
 
     <div class="sidebar__footer">
       <strong>Northwind Technologies</strong>
-      248 active employees
+      <span id="sidebar-headcount"></span>
     </div>
   </aside>
 
@@ -189,7 +189,7 @@
             <button class="tabs__tab" type="button" role="tab">Rejected <span class="badge badge--count">1</span></button>
           </div>
           <select class="select select--sm" aria-label="Filter by type">
-            <option>All types</option><option>Access</option><option>Purchase</option><option>System</option><option>Payroll</option><option>Leave</option><option>Attendance</option>
+            <option>All types</option><option>Access</option><option>Purchase</option><option>System</option><option>Leave</option><option>Attendance</option>
           </select>
         </div>
 
@@ -288,10 +288,6 @@
             <tr data-static data-type="system" data-status="rejected" data-date="2026-09-11">
               <td><span class="table__user-name">Backup restore request</span></td><td><span class="badge badge--square">System</span></td><td>IT Support</td>
               <td><span class="badge badge--danger badge--dot">Rejected</span></td><td>11 Sep</td>
-            </tr>
-            <tr data-static data-type="payroll" data-status="approved" data-date="2026-09-10">
-              <td><span class="table__user-name">Salary revision: Meera Joshi</span></td><td><span class="badge badge--square">Payroll</span></td><td>Kabir Shah (Finance)</td>
-              <td><span class="badge badge--success badge--dot">Approved</span></td><td>10 Sep</td>
             </tr>
           </tbody>
         </table>

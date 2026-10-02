@@ -64,7 +64,7 @@
 
     <div class="sidebar__footer">
       <strong>Northwind Technologies</strong>
-      248 active employees
+      <span id="sidebar-headcount"></span>
     </div>
   </aside>
 
@@ -125,14 +125,14 @@
   <div class="stack">
 
     <section class="stat-strip" aria-label="Key numbers">
-      <div class="stat">
+      <div class="stat" data-stat="payroll" data-permission="payroll:view">
         <div class="stat__icon stat__icon--1">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
         </div>
         <div>
           <span class="stat__label">Payroll, Sep</span>
-          <strong class="stat__value">₹58.4L</strong>
-          <span class="stat__delta">+2.1% vs Aug</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat">
@@ -145,24 +145,24 @@
           <span class="stat__delta stat__delta--down">14 open claims</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="tds" data-permission="payroll:view">
         <div class="stat__icon stat__icon--3">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5 5 19M6.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M17.5 20a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/></svg>
         </div>
         <div>
           <span class="stat__label">Tax deducted (TDS)</span>
-          <strong class="stat__value">₹6.8L</strong>
+          <strong class="stat__value">—</strong>
           <span class="stat__delta">Filing due 7 Oct</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="net" data-permission="payroll:view">
         <div class="stat__icon stat__icon--4">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"/></svg>
         </div>
         <div>
-          <span class="stat__label">Bonuses queued</span>
-          <strong class="stat__value">3</strong>
-          <span class="stat__delta">Approve by 25 Sep</span>
+          <span class="stat__label">Net pay, Sep</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
     </section>
@@ -171,34 +171,18 @@
 
       <section class="card">
         <div class="card__header">
-          <h3 class="card__title">Monthly payroll cost, ₹ lakh</h3>
-          <span class="card__meta">Aug 2025 – Sep 2026</span>
+          <h3 class="card__title">Monthly payroll cost</h3>
+          <span class="card__meta">No history yet</span>
         </div>
         <div class="card__body">
-          <div class="chart" role="img" aria-label="Monthly payroll cost rising from 51 to 58.4 lakh rupees over 14 months">
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:40" title="Aug 2025: ₹51L"></span></div><span class="chart__label">A</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:47" title="Sep 2025: ₹52L"></span></div><span class="chart__label">S</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:47" title="Oct 2025: ₹52L"></span></div><span class="chart__label">O</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:60" title="Nov 2025: ₹54L"></span></div><span class="chart__label">N</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:53" title="Dec 2025: ₹53L"></span></div><span class="chart__label">D</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:67" title="Jan 2026: ₹55L"></span></div><span class="chart__label">J</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:73" title="Feb 2026: ₹56L"></span></div><span class="chart__label">F</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:67" title="Mar 2026: ₹55L"></span></div><span class="chart__label">M</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:80" title="Apr 2026: ₹57L"></span></div><span class="chart__label">A</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:80" title="May 2026: ₹57L"></span></div><span class="chart__label">M</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:80" title="Jun 2026: ₹57L"></span></div><span class="chart__label">J</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:87" title="Jul 2026: ₹58L"></span></div><span class="chart__label">J</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:87" title="Aug 2026: ₹58L"></span></div><span class="chart__label">A</span></div>
-            <div class="chart__col"><div class="chart__track"><span class="chart__bar" style="--h:89" title="Sep 2026: ₹58.4L"></span></div><span class="chart__label">S</span></div>
-          </div>
-          <p class="text-xs text-muted mt-2">The scale starts at ₹45L so the changes are visible.</p>
+          <p class="text-sm text-muted">There are no past months to chart yet. Pay is worked out live from the attendance and leave records, and payroll runs aren't stored, so no month's totals are kept.</p>
         </div>
       </section>
 
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Pending approvals</h3>
-          <span class="card__meta">3 open</span>
+          <span class="card__meta">1 open</span>
         </div>
         <div class="list">
           <div class="list__item">
@@ -212,28 +196,6 @@
               <button class="btn btn--primary btn--sm" type="button" data-not-implemented="Approve">Approve</button>
             </div>
           </div>
-          <div class="list__item">
-            <div class="avatar avatar--2">AK</div>
-            <div class="list__content">
-              <span class="list__title">Salary revision: Arjun Kapoor</span>
-              <span class="list__sub">Effective 1 Oct</span>
-            </div>
-            <div class="btn-group">
-              <button class="btn btn--sm" type="button" data-not-implemented="Reject">Reject</button>
-              <button class="btn btn--primary btn--sm" type="button" data-not-implemented="Approve">Approve</button>
-            </div>
-          </div>
-          <div class="list__item">
-            <div class="avatar avatar--3">QS</div>
-            <div class="list__content">
-              <span class="list__title">Bonus payout: Q2 sales team</span>
-              <span class="list__sub">₹2.6L, 11 employees</span>
-            </div>
-            <div class="btn-group">
-              <button class="btn btn--sm" type="button" data-not-implemented="Reject">Reject</button>
-              <button class="btn btn--primary btn--sm" type="button" data-not-implemented="Approve">Approve</button>
-            </div>
-          </div>
         </div>
       </section>
     </div>
@@ -241,18 +203,12 @@
  
     <div class="grid grid-2">
 
-      <section class="card">
+      <section class="card" data-permission="payroll:view">
         <div class="card__header">
           <h3 class="card__title">Payroll cost by department</h3>
-          <span class="card__meta">₹ lakh, Sep</span>
+          <span class="card__meta">Gross pay, Sep 2026</span>
         </div>
-        <div class="card__body">
-          <div class="bar-row"><span>Engineering</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:100%"></span></div><span class="bar-row__value">24</span></div>
-          <div class="bar-row"><span>Sales</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:63%"></span></div><span class="bar-row__value">15</span></div>
-          <div class="bar-row"><span>Operations</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:42%"></span></div><span class="bar-row__value">10</span></div>
-          <div class="bar-row"><span>Finance</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:21%"></span></div><span class="bar-row__value">5</span></div>
-          <div class="bar-row"><span>HR</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:17%"></span></div><span class="bar-row__value">4</span></div>
-        </div>
+        <div class="card__body" id="fin-dept-bars"></div>
       </section>
 
       <section class="card">
@@ -262,26 +218,14 @@
         </div>
         <div class="activity">
           <div class="activity__item">
-            <span class="activity__dot activity__dot--success"></span>
-            <div class="activity__text">Payroll draft ready: 248 payslips<span class="activity__time">20 min ago</span></div>
-          </div>
-          <div class="activity__item">
             <span class="activity__dot activity__dot--warning"></span>
             <div class="activity__text">Expense claim from Ananya Iyer, ₹8,400<span class="activity__time">2 hours ago</span></div>
-          </div>
-          <div class="activity__item">
-            <span class="activity__dot activity__dot--primary"></span>
-            <div class="activity__text">PF challan generated<span class="activity__time">Yesterday</span></div>
-          </div>
-          <div class="activity__item">
-            <span class="activity__dot activity__dot--danger"></span>
-            <div class="activity__text">2 salary structure edits are awaiting approval<span class="activity__time">Yesterday</span></div>
           </div>
         </div>
       </section>
     </div>
 
-    <section class="card">
+    <section class="card" data-permission="payroll:view">
       <div class="table__toolbar">
         <h3 class="card__title">Payroll run, Sep 2026</h3>
         <div class="table__filters">
@@ -289,9 +233,6 @@
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
             <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search employees">
           </div>
-          <select class="select select--sm" aria-label="Filter by status">
-            <option>All statuses</option><option>Draft</option><option>Processing</option><option>Paid</option>
-          </select>
         </div>
       </div>
 
@@ -306,38 +247,12 @@
               <th>Status</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><div class="table__user"><div class="avatar avatar--1">RG</div><span class="table__user-name">Rohan Gupta</span></div></td>
-              <td class="table__num">₹92,000</td><td class="table__num">₹14,720</td><td class="table__num">₹77,280</td>
-              <td><span class="badge badge--warning badge--dot">Draft</span></td>
-            </tr>
-            <tr>
-              <td><div class="table__user"><div class="avatar avatar--2">AI</div><span class="table__user-name">Ananya Iyer</span></div></td>
-              <td class="table__num">₹78,500</td><td class="table__num">₹11,240</td><td class="table__num">₹67,260</td>
-              <td><span class="badge badge--warning badge--dot">Draft</span></td>
-            </tr>
-            <tr>
-              <td><div class="table__user"><div class="avatar avatar--3">VS</div><span class="table__user-name">Vikram Singh</span></div></td>
-              <td class="table__num">₹64,000</td><td class="table__num">₹8,960</td><td class="table__num">₹55,040</td>
-              <td><span class="badge badge--info badge--dot">Processing</span></td>
-            </tr>
-            <tr>
-              <td><div class="table__user"><div class="avatar avatar--4">MJ</div><span class="table__user-name">Meera Joshi</span></div></td>
-              <td class="table__num">₹1,05,000</td><td class="table__num">₹17,850</td><td class="table__num">₹87,150</td>
-              <td><span class="badge badge--warning badge--dot">Draft</span></td>
-            </tr>
-            <tr>
-              <td><div class="table__user"><div class="avatar avatar--1">AK</div><span class="table__user-name">Arjun Kapoor</span></div></td>
-              <td class="table__num">₹88,000</td><td class="table__num">₹13,900</td><td class="table__num">₹74,100</td>
-              <td><span class="badge badge--success badge--dot">Paid</span></td>
-            </tr>
-          </tbody>
+          <tbody id="fin-run-rows"></tbody>
         </table>
       </div>
 
       <div class="card__footer">
-        <span class="card__meta">Showing 5 of 248 employees</span>
+        <span class="card__meta" id="fin-run-meta"></span>
         <a class="btn btn--sm" href="../payroll/payroll-run.html">Open payroll run</a>
       </div>
     </section>
@@ -348,6 +263,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/finance-dashboard.js"></script>
 </body>
 </html>
 <!-- END 3 -->

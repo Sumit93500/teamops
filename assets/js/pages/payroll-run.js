@@ -211,15 +211,6 @@ function renderApproval(run, approvers) {
   $("run-alert").textContent = `${lead} ${live}`;
 }
 
-// ---------- sidebar ----------
-
-// The shared sidebar says "248 active employees" on every page; this page
-// shows the real count (everyone not inactive, the same people as the run).
-function renderHeadcount() {
-  const n = getAllUsers().filter((u) => u.status !== "inactive").length;
-  $("sidebar-headcount").textContent = `${n} active ${n === 1 ? "employee" : "employees"}`;
-}
-
 // ---------- start ----------
 
 // The guard already sends anyone without payroll:view to the 403 page; this
@@ -227,7 +218,6 @@ function renderHeadcount() {
 if (can("payroll:view")) {
   const run = payrollRun(YEAR, MONTH, { preparedBy: PREPARED_BY });
   const approvers = approverNames(run);
-  renderHeadcount();
   renderStats(run);
   renderProgress(run, approvers);
   renderRows(run);

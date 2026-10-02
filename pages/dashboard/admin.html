@@ -86,7 +86,7 @@
 
     <div class="sidebar__footer">
       <strong>Northwind Technologies</strong>
-      248 active employees
+      <span id="sidebar-headcount"></span>
     </div>
   </aside>
   <!-- END 1 -->
@@ -161,8 +161,8 @@
             </div>
             <div>
               <span class="stat__label">Total employees</span>
-              <strong class="stat__value">248</strong>
-              <span class="stat__delta stat__delta--up">+12 this quarter</span>
+              <strong class="stat__value">—</strong>
+              <span class="stat__delta"></span>
             </div>
           </div>
 
@@ -177,14 +177,14 @@
             </div>
           </div>
 
-          <div class="stat" data-stat="payroll">
+          <div class="stat" data-stat="payroll" data-permission="payroll:view">
             <div class="stat__icon stat__icon--3">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
             </div>
             <div>
               <span class="stat__label">Payroll, Sep</span>
-              <strong class="stat__value">₹58.4L</strong>
-              <span class="stat__delta">+2.1% vs Aug</span>
+              <strong class="stat__value">—</strong>
+              <span class="stat__delta"></span>
             </div>
           </div>
 
@@ -302,10 +302,6 @@
               <div class="activity__item">
                 <span class="activity__dot activity__dot--primary"></span>
                 <div class="activity__text">Priya Nair (HR) gave Team Lead access to Sneha Rao<span class="activity__time">5 min ago</span></div>
-              </div>
-              <div class="activity__item">
-                <span class="activity__dot activity__dot--success"></span>
-                <div class="activity__text">Payroll draft for September created<span class="activity__time">1 hour ago</span></div>
               </div>
               <div class="activity__item">
                 <span class="activity__dot activity__dot--warning"></span>

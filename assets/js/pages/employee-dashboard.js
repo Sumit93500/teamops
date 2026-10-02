@@ -3,20 +3,22 @@
 // leave, whatever their role: days present and late marks this month, leave
 // left, open requests, working hours for the last 14 days, the newest pending
 // request, the leave balance card, decisions on their own requests (merged
-// with the static updates) and their last 5 working days. Everything comes
-// from data/attendance-store.js and data/leave-store.js. The payslip, the
-// laptop request and the announcement lines are static samples (marked
-// data-static in the HTML) and stay as they are. A session without an
-// employee id (an old sign-in) leaves the static page as it is.
+// with the static updates) and their last 5 working days, from
+// data/attendance-store.js and data/leave-store.js; and this month's payslip,
+// from data/payroll-store.js, as payslips.html shows it. The laptop request and
+// the announcement lines are static samples (marked data-static in the HTML)
+// and stay as they are. A session without an employee id (an old sign-in)
+// leaves the static page as it is.
 
 import { getCurrentUserId } from "../core/auth.js";
 import { getUser } from "../data/store.js";
 import { addDays } from "../data/holidays.js";
 import { LEAVE_TYPES, balanceFor, requestsFor, currentApproverName } from "../data/leave-store.js";
 import { monthFor, rangeFor, regularizationsFor } from "../data/attendance-store.js";
+import { payslipsFor } from "../data/payroll-store.js";
 import {
   el, todayIso, formatDay, formatRange, monthName, typeLabel, requestDates,
-  statusBadge, newestPending, decisionOf, localDateOf, shortDate, whenText, plural,
+  statusBadge, newestPending, decisionOf, localDateOf, shortDate, whenText, plural, monthShort,
 } from "../ui/leave-view.js";
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
@@ -100,6 +102,19 @@ function renderOpenRequests(leave, corrections) {
   if (correctionsPending) parts.push(plural(correctionsPending, "correction", "corrections"));
   if (otherText) parts.push(otherText);
   setStat("requests", String(leavePending + correctionsPending + otherCount), parts.join(", ") || "None");
+}
+
+// The payslip for this month, as payslips.html's "Next payslip" card shows it.
+// No payroll run is stored or approved and there's no payroll calendar, so it
+// is a Draft (or On hold) with no pay date.
+function renderPayslip() {
+  const slip = payslipsFor(user.id, today).find((s) => s.month === today.slice(0, 7));
+  if (!slip) {
+    setStat("payslip", "—", "No payslip yet");
+    return;
+  }
+  const status = slip.status === "on-hold" ? `On hold: ${slip.holdReason}` : "Draft, not paid yet";
+  setStat("payslip", `${monthShort(slip.period.from)} ${slip.month.slice(0, 4)}`, `${status}; no pay date set`);
 }
 
 // ---------- hours chart ----------
@@ -233,6 +248,7 @@ if (user && stats && chart && requestList && balanceCard && updates && recentBod
   renderPresent(monthFor(user.id, year, month));
   renderBalanceStat(balance);
   renderOpenRequests(leave, corrections);
+  renderPayslip();
   if (days.length) {
     renderChart(days.slice(-CHART_DAYS));
   } else {

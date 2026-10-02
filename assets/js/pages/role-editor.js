@@ -1,8 +1,8 @@
 // pages/role-editor.js
-// Runs on role-editor.html. Updates the "X of 44 enabled" count as checkboxes toggle.
+// Runs on role-editor.html. Updates the Permissions card's "X of N enabled" count as checkboxes toggle.
 
 const matrix = document.querySelector(".matrix");
-const countLabel = document.querySelector(".card__meta");
+const countLabel = matrix?.closest(".card")?.querySelector(".card__meta");
 
 if (matrix) {
   const checkboxes = matrix.querySelectorAll('input[type="checkbox"]:not(:disabled)');

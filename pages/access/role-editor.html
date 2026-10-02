@@ -84,7 +84,7 @@
 
     <div class="sidebar__footer">
       <strong>Northwind Technologies</strong>
-      248 active employees
+      <span id="sidebar-headcount"></span>
     </div>
   </aside>
 
@@ -209,7 +209,7 @@
     <section class="card">
       <div class="card__header">
         <h3 class="card__title">Permissions</h3>
-        <span class="card__meta">18 of 44 enabled</span>
+        <span class="card__meta">18 of 42 enabled</span>
       </div>
       <div class="matrix-note">Each tick is a permission key such as <code>users:view</code>. Data scope limits whose records the role can reach.</div>
 
@@ -273,11 +273,11 @@
 
             <tr class="matrix__group"><td colspan="7">Finance</td></tr>
             <tr>
-              <td><span class="matrix__module-name">Payroll</span><span class="matrix__module-desc">Salary structure, runs, payslips</span></td>
+              <td><span class="matrix__module-name">Payroll</span><span class="matrix__module-desc">Payroll runs</span></td>
               <td><label class="check"><input type="checkbox" value="payroll:view" aria-label="payroll:view"></label></td>
               <td><label class="check"><input type="checkbox" value="payroll:create" aria-label="payroll:create"></label></td>
-              <td><label class="check"><input type="checkbox" value="payroll:edit" aria-label="payroll:edit"></label></td>
-              <td><label class="check"><input type="checkbox" value="payroll:delete" aria-label="payroll:delete"></label></td>
+              <td class="matrix__na">–</td>
+              <td class="matrix__na">–</td>
               <td><label class="check"><input type="checkbox" value="payroll:approve" aria-label="payroll:approve"></label></td>
               <td><select class="select select--sm matrix__scope" aria-label="Payroll data scope" disabled><option>All</option><option>Department</option><option>Team</option><option>Own</option></select></td>
             </tr>
