@@ -7,12 +7,25 @@
 //
 // The page is open to anyone with dashboard:view, and these are everyone's
 // salaries, so nothing is drawn without payroll:view (the HTML also hides
-// those parts). Reimbursements and the pending approvals stay static samples.
+// those parts).
+//
+// Expenses, from data/expenses-store.js, the same way:
+//   - "Reimbursements due" (approved claims waiting to be paid, the figure
+//     expenses.html calls Approved) and the recent expense activity: every
+//     claim, so drawn only with expenses:view (the HTML hides both without it,
+//     and a stats export then says "—").
+//   - Pending approvals: only the claims waiting for the signed-in person's own
+//     decision (pendingFor(), the approvals inbox's rule), each linking to the
+//     inbox, where it's decided. Nobody sees a claim they couldn't decide.
 
 import { RUN_MONTH, payrollRun, runTotals, payslipTotals } from "../data/payroll-store.js";
 import { getUser, getAllDepartments } from "../data/store.js";
+import { allExpenses, pendingFor, expenseTotals } from "../data/expenses-store.js";
+import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { can } from "../core/rbac.js";
-import { el, plural, departmentName, personCell } from "../ui/leave-view.js";
+import { resolvePageLink } from "../core/paths.js";
+import { STAGE_NAME, categoryLabel } from "../ui/expense-view.js";
+import { el, plural, departmentName, personCell, nameOf, initials, avatarClass, formatDay, localDateOf } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
 import { rupees } from "../ui/money.js";
@@ -78,6 +91,71 @@ function renderRows(run) {
   $("fin-run-meta").textContent = `All ${people(run.rows.length)} in the run`;
 }
 
+// ---------- expenses ----------
+
+const claimsText = (n) => plural(n, "claim", "claims");
+const claimText = (claim) => `${rupees(claim.amount)} claim from ${nameOf(claim.userId)}`;
+
+function renderReimbursements() {
+  const { approved } = expenseTotals(allExpenses()).byStatus;
+  setStatValue(stat("reimbursements"), rupees(approved.amount));
+  setStatNote(stat("reimbursements"), approved.count ? `${claimsText(approved.count)} waiting to be paid` : "Nothing waiting to be paid", approved.count ? "up" : "");
+}
+
+// Oldest first, as the inbox lists them.
+function renderPendingApprovals(card) {
+  const user = getUser(getCurrentUserId());
+  const claims = (user ? pendingFor(user.id, getCurrentRole()?.key) : [])
+    .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id, "en", { numeric: true }));
+  card.querySelector(".card__meta").textContent = `${claims.length} open`;
+  const list = card.querySelector(".list");
+  if (!claims.length) {
+    list.replaceChildren(el("p", "card__body text-sm text-muted", "No expense claims are waiting for you."));
+    return;
+  }
+  list.replaceChildren(...claims.map((claim) => {
+    const item = el("div", "list__item");
+    item.dataset.claimId = claim.id;
+    const content = el("div", "list__content");
+    content.append(
+      el("span", "list__title", `Expense claim: ${nameOf(claim.userId)}`),
+      el("span", "list__sub", `${rupees(claim.amount)}, ${categoryLabel(claim.category)}, ${STAGE_NAME[claim.stage]} stage`),
+    );
+    const open = el("a", "btn btn--sm", "Review");
+    open.href = resolvePageLink("requests/approvals-inbox.html");
+    item.append(el("div", avatarClass(claim.userId), initials(nameOf(claim.userId))), content, open);
+    return item;
+  }));
+}
+
+// What happened to claims lately: sent, approved, rejected, paid. Skipped
+// stages and an Admin's own automatic approvals aren't events anyone did.
+const EVENT = {
+  applied:  { dot: "warning", text: (c) => `Expense claim from ${nameOf(c.userId)}, ${rupees(c.amount)}` },
+  approved: { dot: "success", text: (c, h) => `${claimText(c)} approved by ${nameOf(h.byUserId)}` },
+  rejected: { dot: "danger",  text: (c, h) => `${claimText(c)} rejected by ${nameOf(h.byUserId)}` },
+  paid:     { dot: "success", text: (c, h) => `${claimText(c)} paid by ${nameOf(h.byUserId)}` },
+};
+const ACTIVITY_SHOWN = 5;
+
+function renderActivity(list) {
+  const events = allExpenses()
+    .flatMap((claim) => claim.history.filter((h) => EVENT[h.decision]).map((h) => ({ claim, h })))
+    .sort((a, b) => b.h.at.localeCompare(a.h.at))
+    .slice(0, ACTIVITY_SHOWN);
+  if (!events.length) {
+    list.replaceChildren(el("p", "card__body text-sm text-muted", "No expense activity yet."));
+    return;
+  }
+  list.replaceChildren(...events.map(({ claim, h }) => {
+    const item = el("div", "activity__item");
+    const text = el("div", "activity__text", EVENT[h.decision].text(claim, h));
+    text.append(el("span", "activity__time", formatDay(localDateOf(h.at))));
+    item.append(el("span", `activity__dot activity__dot--${EVENT[h.decision].dot}`), text);
+    return item;
+  }));
+}
+
 // ---------- start ----------
 
 if (can("payroll:view")) {
@@ -86,3 +164,12 @@ if (can("payroll:view")) {
   renderDepartments(run);
   renderRows(run);
 }
+
+if (can("expenses:view")) {
+  renderReimbursements();
+  const activity = $("fin-activity");
+  if (activity) renderActivity(activity);
+}
+
+const approvalsCard = $("fin-approvals");
+if (approvalsCard) renderPendingApprovals(approvalsCard);

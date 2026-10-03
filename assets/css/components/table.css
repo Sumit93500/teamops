@@ -53,3 +53,12 @@
 /* keep month names on one line and action buttons side by side */
 .table__user-name { white-space: nowrap; }
 .table__actions .btn-group { flex-wrap: nowrap; }
+
+/* A table whose last column must show without scrolling sideways (the approvals
+   inbox, My requests): long titles and notes wrap, buttons and badges don't,
+   column headings may take two lines, and cells are a little narrower. */
+.table--fit th, .table--fit td { padding-left: 10px; padding-right: 10px; }
+.table--fit th { white-space: normal; }
+.table--fit .table__user-name { white-space: normal; }
+.table--fit .table__actions { white-space: normal; }
+.table--fit .table__actions .btn { white-space: nowrap; }

@@ -28,7 +28,6 @@
       <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
         Approvals
-        <span class="nav__count">3</span>
       </a>
 
       <div class="nav__group-title">People</div>
@@ -228,7 +227,7 @@
               <tr>
                 <td><span class="table__user-name">Expense claim</span><span class="table__user-sub">Travel and reimbursements</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">Employee</span><span class="chain__step">Manager</span><span class="chain__step">Finance</span><span class="chain__step chain__step--end">Admin</span></div></td>
-                <td>Admin only above ₹50,000</td>
+                <td>Admin added above ₹50,000. A stage nobody else can decide is skipped</td>
                 <td><span class="badge badge--success badge--dot">Active</span></td>
                 <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
@@ -321,7 +320,7 @@
           </li>
           <li class="stepper__step is-current">
             <span class="stepper__dot">2</span>
-            <div class="stepper__text"><strong>Manager</strong><small class="text-muted">Confirms the trip happened</small></div>
+            <div class="stepper__text"><strong>Manager</strong><small class="text-muted">The person they report to confirms the trip happened</small></div>
           </li>
           <li class="stepper__step">
             <span class="stepper__dot">3</span>

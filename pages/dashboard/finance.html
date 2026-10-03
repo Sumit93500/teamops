@@ -28,7 +28,6 @@
       <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
         Approvals
-        <span class="nav__count">3</span>
       </a>
 
       <div class="nav__group-title">Payroll</div>
@@ -135,14 +134,14 @@
           <span class="stat__delta"></span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="reimbursements" data-permission="expenses:view">
         <div class="stat__icon stat__icon--2">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18"/></svg>
         </div>
         <div>
           <span class="stat__label">Reimbursements due</span>
-          <strong class="stat__value">₹1.2L</strong>
-          <span class="stat__delta stat__delta--down">14 open claims</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat" data-stat="tds" data-permission="payroll:view">
@@ -179,24 +178,12 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card" id="fin-approvals">
         <div class="card__header">
           <h3 class="card__title">Pending approvals</h3>
-          <span class="card__meta">1 open</span>
+          <span class="card__meta"></span>
         </div>
-        <div class="list">
-          <div class="list__item">
-            <div class="avatar avatar--1">AI</div>
-            <div class="list__content">
-              <span class="list__title">Expense claim: Ananya Iyer</span>
-              <span class="list__sub">₹8,400, client travel</span>
-            </div>
-            <div class="btn-group">
-              <button class="btn btn--sm" type="button" data-not-implemented="Reject">Reject</button>
-              <button class="btn btn--primary btn--sm" type="button" data-not-implemented="Approve">Approve</button>
-            </div>
-          </div>
-        </div>
+        <div class="list"></div>
       </section>
     </div>
 <!-- END 2 -->
@@ -211,17 +198,12 @@
         <div class="card__body" id="fin-dept-bars"></div>
       </section>
 
-      <section class="card">
+      <section class="card" data-permission="expenses:view">
         <div class="card__header">
-          <h3 class="card__title">Recent activity</h3>
-          <a class="link text-sm" href="../payroll/payroll-run.html">View payroll run</a>
+          <h3 class="card__title">Recent expense activity</h3>
+          <a class="link text-sm" href="../finance/expenses.html">View expenses</a>
         </div>
-        <div class="activity">
-          <div class="activity__item">
-            <span class="activity__dot activity__dot--warning"></span>
-            <div class="activity__text">Expense claim from Ananya Iyer, ₹8,400<span class="activity__time">2 hours ago</span></div>
-          </div>
-        </div>
+        <div class="activity" id="fin-activity"></div>
       </section>
     </div>
 

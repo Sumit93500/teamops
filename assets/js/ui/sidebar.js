@@ -2,6 +2,8 @@
 // Builds the sidebar from config/nav.js, keeping only the items the
 // signed-in role is allowed to see (or, for an item marked alsoForManagers,
 // that the person sees as a manager), and highlighting the current page.
+// An item with countWaiting shows how many requests wait for the person's
+// decision (ui/waiting.js, the same rows as the approvals inbox).
 // Also fills the footer's "N active employees" line from the live employee list.
 
 import { NAV } from "../config/nav.js";
@@ -11,6 +13,7 @@ import { resolvePageLink } from "../core/paths.js";
 import { ICONS } from "./icons.js";
 import { activeHeadcount } from "../data/store.js";
 import { managesAnyone, pendingFor } from "../data/expenses-store.js";
+import { waitingCount } from "./waiting.js";
 
 function currentPagePath() {
   const path = window.location.pathname;
@@ -20,7 +23,7 @@ function currentPagePath() {
   return path.slice(idx + marker.length);
 }
 
-function buildItem(item, currentPath, showBadge) {
+function buildItem(item, currentPath) {
   const href = item.href === "@landing"
     ? getCurrentRole()?.landing ?? "auth/login.html"
     : item.href;
@@ -32,9 +35,35 @@ function buildItem(item, currentPath, showBadge) {
   a.className = "nav__item" + (isActive ? " is-active" : "");
   a.href = link;
   const path = ICONS[item.icon] ?? ICONS.default;
-  const count = item.badge && showBadge ? `<span class="nav__count">${item.badge}</span>` : "";
-  a.innerHTML = `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"></path></svg>${item.label}${count}`;
+  a.innerHTML = `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"></path></svg>${item.label}`;
+  if (item.countWaiting) {
+    a.dataset.countWaiting = "";
+    setWaitingCount(a);
+  }
   return a;
+}
+
+// The count on a drawn item: how many requests wait for the signed-in person,
+// none shown at 0.
+function setWaitingCount(a) {
+  const n = waitingCount(getCurrentUserId(), getCurrentRole()?.key);
+  let count = a.querySelector(".nav__count");
+  if (!n) {
+    count?.remove();
+    return;
+  }
+  if (!count) {
+    count = document.createElement("span");
+    count.className = "nav__count";
+    a.append(count);
+  }
+  count.textContent = String(n);
+}
+
+// After a decision changes what waits (ui/leave-decision.js calls this), the
+// counts already in the sidebar are brought up to date without redrawing it.
+export function refreshWaitingCount(root = document) {
+  root.querySelectorAll(".nav__item[data-count-waiting]").forEach(setWaitingCount);
 }
 
 // Has people reporting to them, or an expense claim waiting on them as its
@@ -50,8 +79,6 @@ export function renderSidebar(container) {
   const currentPath = currentPagePath();
 
   NAV.forEach((group) => {
-    // A manager without the item's permission sees it without the badge, which
-    // is the static count for permission holders.
     const visibleItems = group.items.filter((item) => can(item.permission) || (item.alsoForManagers && isManager()));
     if (visibleItems.length === 0) return;
 
@@ -61,7 +88,7 @@ export function renderSidebar(container) {
     container.appendChild(groupTitle);
 
     visibleItems.forEach((item) => {
-      container.appendChild(buildItem(item, currentPath, can(item.permission)));
+      container.appendChild(buildItem(item, currentPath));
     });
   });
 }

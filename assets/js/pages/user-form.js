@@ -5,6 +5,7 @@
 import { getUser, getAllUsers, addUser, updateUser, peekNextId, getAllDepartments } from "../data/store.js";
 import { DESIGNATIONS } from "../data/users.js";
 import { ROLES } from "../config/roles.js";
+import { ALL_PERMISSIONS } from "../config/permissions.js";
 import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
 
@@ -98,9 +99,30 @@ fillSelect(field("manager"), "No reporting manager",
     .map((u) => ({ value: u.name, label: u.name })));
 
 function updateDefaultRole() {
+  renderEffectivePermissions();
   if (!designationSelect || !defaultRoleInput) return;
   const roleKey = designationSelect.selectedOptions[0]?.dataset.role;
   defaultRoleInput.value = ROLES[roleKey]?.label ?? "";
+}
+
+// The role saving would store (buildRecord's rule): the designation's default
+// role, else the employee's current one, else Employee.
+const roleOnSave = () => DESIGNATIONS.find((d) => d.title === designationSelect?.value)?.defaultRole ?? editing?.role ?? "emp";
+
+// "Effective permissions": the permissions of that role, which is all can()
+// checks. Additional roles and overrides are saved but not applied, and the
+// card says so.
+function renderEffectivePermissions() {
+  const box = field("effective-permissions");
+  if (!box) return;
+  const permissions = ROLES[roleOnSave()]?.permissions ?? [];
+  const count = field("effective-count");
+  if (count) count.textContent = String(permissions.length);
+  if (permissions.length === ALL_PERMISSIONS.length) {
+    box.replaceChildren(Object.assign(document.createElement("span"), { className: "text-sm text-muted", textContent: `Every permission (${permissions.length})` }));
+    return;
+  }
+  box.replaceChildren(...permissions.map((perm) => Object.assign(document.createElement("span"), { className: "perm-chip", textContent: perm })));
 }
 
 designationSelect?.addEventListener("change", updateDefaultRole);
@@ -194,7 +216,7 @@ function buildRecord() {
     email: field("work-email").value.trim(),
     department: field("department").value,
     designation,
-    role: DESIGNATIONS.find((d) => d.title === designation)?.defaultRole ?? editing?.role ?? "emp",
+    role: roleOnSave(),
     status,
     phone: field("phone").value.trim(),
     dob: field("dob").value,

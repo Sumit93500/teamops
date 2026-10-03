@@ -28,7 +28,6 @@
       <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
         Approvals
-        <span class="nav__count">3</span>
       </a>
 
       <div class="nav__group-title">Payroll</div>
@@ -128,8 +127,8 @@
         </div>
         <div>
           <span class="stat__label">Open claims</span>
-          <strong class="stat__value">14</strong>
-          <span class="stat__delta stat__delta--down">₹1.2L to review</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat" data-stat="approved">
@@ -138,8 +137,8 @@
         </div>
         <div>
           <span class="stat__label">Approved, to pay</span>
-          <strong class="stat__value">₹3.4L</strong>
-          <span class="stat__delta stat__delta--up">41 claims</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat" data-stat="rejected">
@@ -148,8 +147,8 @@
         </div>
         <div>
           <span class="stat__label">Rejected</span>
-          <strong class="stat__value">3</strong>
-          <span class="stat__delta">Mostly missing bills</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat" data-stat="processing">
@@ -158,8 +157,8 @@
         </div>
         <div>
           <span class="stat__label">Average processing</span>
-          <strong class="stat__value">2.1 days</strong>
-          <span class="stat__delta stat__delta--up">Target is 3 days</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
     </section>
@@ -169,10 +168,10 @@
       <section class="card">
         <div class="table__toolbar">
           <div class="tabs tabs--pill" role="tablist">
-            <button class="tabs__tab is-active" type="button" role="tab">Pending <span class="badge badge--count">14</span></button>
-            <button class="tabs__tab" type="button" role="tab">Approved <span class="badge badge--count">41</span></button>
-            <button class="tabs__tab" type="button" role="tab">Paid <span class="badge badge--count">38</span></button>
-            <button class="tabs__tab" type="button" role="tab">Rejected <span class="badge badge--count">3</span></button>
+            <button class="tabs__tab is-active" type="button" role="tab">Pending <span class="badge badge--count">—</span></button>
+            <button class="tabs__tab" type="button" role="tab">Approved <span class="badge badge--count">—</span></button>
+            <button class="tabs__tab" type="button" role="tab">Paid <span class="badge badge--count">—</span></button>
+            <button class="tabs__tab" type="button" role="tab">Rejected <span class="badge badge--count">—</span></button>
           </div>
           <div class="table__filters">
             <div class="input-group">
@@ -199,48 +198,6 @@
               </tr>
             </thead>
             <tbody id="expense-rows">
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--1">AI</div><div><span class="table__user-name">Ananya Iyer</span><span class="table__user-sub">Sales</span></div></div></td>
-                <td>Client travel</td><td>16 Sep</td><td class="table__num"><span class="expense-amount">₹8,400</span></td>
-                <td><a class="receipt" href="#"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4"/></svg>bill.pdf</a></td>
-                <td><span class="badge badge--info badge--dot">With Finance</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="expenses:approve" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="expenses:approve" data-not-implemented="Approve">Approve</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--2">MA</div><div><span class="table__user-name">Meenal Arora</span><span class="table__user-sub">Sales</span></div></div></td>
-                <td>Client visit, Bengaluru</td><td>14 Sep</td><td class="table__num"><span class="expense-amount">₹62,000</span></td>
-                <td><a class="receipt" href="#"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4"/></svg>bills.zip</a></td>
-                <td><span class="badge badge--warning badge--dot">Needs Admin next</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="expenses:approve" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="expenses:approve" data-not-implemented="Approve">Approve</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--3">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">Engineering</span></div></div></td>
-                <td>Team lunch</td><td>15 Sep</td><td class="table__num"><span class="expense-amount">₹2,150</span></td>
-                <td><a class="receipt" href="#"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4"/></svg>bill.jpg</a></td>
-                <td><span class="badge badge--info badge--dot">With Finance</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="expenses:approve" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="expenses:approve" data-not-implemented="Approve">Approve</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--4">VS</div><div><span class="table__user-name">Vikram Singh</span><span class="table__user-sub">Operations</span></div></div></td>
-                <td>Fuel</td><td>12 Sep</td><td class="table__num"><span class="expense-amount">₹4,800</span></td>
-                <td><a class="receipt" href="#"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4"/></svg>fuel-sep.pdf</a></td>
-                <td><span class="badge badge--info badge--dot">With Finance</span></td>
-                <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="expenses:approve" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="expenses:approve" data-not-implemented="Approve">Approve</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--1">NK</div><div><span class="table__user-name">Neha Kulkarni</span><span class="table__user-sub">Operations</span></div></div></td>
-                <td>Software subscription</td><td>10 Sep</td><td class="table__num"><span class="expense-amount">₹6,200</span></td>
-                <td><a class="receipt" href="#"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7zM14 3v4h4"/></svg>invoice.pdf</a></td>
-                <td><span class="badge badge--warning badge--dot">With manager</span></td>
-                <td class="table__actions"><span class="text-sm text-muted">Waiting for manager</span></td>
-              </tr>
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--2">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">Engineering</span></div></div></td>
-                <td>Meals</td><td>2 Aug</td><td class="table__num"><span class="expense-amount">₹3,200</span></td>
-                <td><span class="receipt receipt--missing">No receipt</span></td>
-                <td><span class="badge badge--danger badge--dot">Rejected</span></td>
-                <td class="table__actions"><span class="text-sm text-muted">Bill missing</span></td>
-              </tr>
             </tbody>
           </table>
         </div>
@@ -256,11 +213,6 @@
             <span class="card__meta" id="expense-spend-meta">Approved and paid claims</span>
           </div>
           <div class="card__body" id="expense-spend">
-            <div class="bar-row"><span>Travel</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:100%"></span></div><span class="bar-row__value">148</span></div>
-            <div class="bar-row"><span>Meals</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:42%"></span></div><span class="bar-row__value">62</span></div>
-            <div class="bar-row"><span>Fuel</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:36%"></span></div><span class="bar-row__value">54</span></div>
-            <div class="bar-row"><span>Software</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:31%"></span></div><span class="bar-row__value">46</span></div>
-            <div class="bar-row"><span>Other</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:20%"></span></div><span class="bar-row__value">30</span></div>
           </div>
         </section>
 
@@ -277,7 +229,7 @@
           </div>
         </section>
 
-        <div class="alert alert--info" id="expense-alert">Meenal Arora's ₹62,000 claim is above ₹50,000. After you approve it, it goes to an Admin for the last approval.</div>
+        <div class="alert alert--info" id="expense-alert" hidden></div>
 
       </aside>
     </div>

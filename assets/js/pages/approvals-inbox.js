@@ -20,10 +20,10 @@
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
-import { allRequests, pendingFor } from "../data/leave-store.js";
-import { allRegularizations, pendingRegularizations } from "../data/attendance-store.js";
+import { allRequests } from "../data/leave-store.js";
+import { allRegularizations } from "../data/attendance-store.js";
 import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
-import { pendingFor as pendingExpenses, expenseDecisionsBy, managesAnyone } from "../data/expenses-store.js";
+import { expenseDecisionsBy, managesAnyone } from "../data/expenses-store.js";
 import { EXPENSE_POLICY } from "../data/expenses.js";
 import { approveLeave, openRejectModal, approveCorrection, openRejectCorrectionModal, decisionButtons } from "../ui/leave-decision.js";
 import { STAGE_NAME, categoryLabel, chainText, expenseFlow } from "../ui/expense-view.js";
@@ -34,6 +34,7 @@ import {
 } from "../ui/leave-view.js";
 import { setStatValue, setOptionalStatNote } from "../ui/stats.js";
 import { correctionDetails } from "../ui/attendance-view.js";
+import { waitingFor } from "../ui/waiting.js";
 
 const PILL_TAB = { "Pending": "pending", "Approved": "approved", "Rejected": "rejected" };
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -83,18 +84,19 @@ function waitingSince(timestamp) {
   return `${days} ${days === 1 ? "day" : "days"}`;
 }
 
-const leavePending = () => (showLeave ? pendingFor(userId, role) : [])
+// What waits for this person (ui/waiting.js, which the sidebar's Approvals
+// count also uses): leave and corrections by permission, expense claims by
+// pendingFor(), which is the only judge of who may decide which claim (a claim
+// keeps the manager it was sent to, even after that person's reports change).
+const leavePending = () => waitingFor(userId, role).leave
   .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id));
 const leaveDecided = (status) => (showLeave ? allRequests().filter((r) => r.status === status) : [])
   .sort((a, b) => decisionOf(b).at.localeCompare(decisionOf(a).at));
-const correctionsPending = () => (showCorrections ? pendingRegularizations(userId, role) : [])
+const correctionsPending = () => waitingFor(userId, role).corrections
   .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id, "en", { numeric: true }));
 const correctionsDecided = (status) => (showCorrections ? allRegularizations().filter((r) => r.status === status) : [])
   .sort((a, b) => decisionOf(b).at.localeCompare(decisionOf(a).at));
-// Expense rows aren't gated by a permission: pendingFor() is the only judge of
-// who may decide which claim (a claim keeps the manager it was sent to, even
-// after that person's reports change).
-const expensesPending = () => (user ? pendingExpenses(userId, role) : [])
+const expensesPending = () => waitingFor(userId, role).expenses
   .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id, "en", { numeric: true }));
 // [{ claim, entry }]: this person's own decision ("approved" or "rejected").
 const expensesDecided = (decision) => (user ? expenseDecisionsBy(userId) : []).filter((d) => d.entry.decision === decision);

@@ -3,7 +3,9 @@
 // pages so they behave the same. Approve asks with confirm(); Reject opens a
 // small modal (the same markup pattern as the department modal) that needs a
 // note. Both go through the kind's decide function as the signed-in person,
-// then call back so the page can re-render.
+// then call back so the page can re-render. Whatever the outcome, the
+// sidebar's Approvals count is brought up to date first (what waits may have
+// changed, here or elsewhere).
 //
 // createDecisionFlow() builds that pair for one kind of request. Both kinds
 // are built once, here: the leave pair (approveLeave, openRejectModal) for
@@ -22,6 +24,7 @@ import { openModal, closeModal } from "./modal.js";
 import { showToast } from "./toast.js";
 import { el, escapeHtml, requestTitle, formatDay, nameOf } from "./leave-view.js";
 import { issueLabel } from "./attendance-view.js";
+import { refreshWaitingCount } from "./sidebar.js";
 
 const decider = () => ({ id: getCurrentUserId(), role: getCurrentRole()?.key });
 
@@ -62,6 +65,7 @@ export function createDecisionFlow({ decide, describe, modalId, noteId, labels }
     const result = decide(request.id, id, role, "approve");
     if (result.ok) showToast(approvedText(result), "success");
     else showToast(failure(labels.approveFailed, result), "danger");
+    refreshWaitingCount();
     onDone?.(result);
   }
 
@@ -157,12 +161,14 @@ export function createDecisionFlow({ decide, describe, modalId, noteId, labels }
       closeModal(modalId);
       current = null;
       showToast(failure(labels.rejectFailed, result), "danger");
+      refreshWaitingCount();
       onDone?.(result);
       return;
     }
     closeModal(modalId);
     current = null;
     showToast(labels.rejected, "success");
+    refreshWaitingCount();
     onDone?.(result);
   }
 

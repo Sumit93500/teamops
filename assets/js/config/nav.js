@@ -4,7 +4,10 @@
 // ui/sidebar.js keeps only the items the signed-in person's permissions allow.
 // alsoForManagers: true also shows the item to managers: anyone who has people
 // reporting to them, or an expense claim waiting on them as its manager (they
-// decide it at the manager stage). They see it without its badge.
+// decide it at the manager stage).
+// countWaiting: true shows how many requests wait for the person's decision (the
+// approvals inbox's real Pending rows, ui/waiting.js), to everyone who sees the
+// item; no count when nothing waits.
 //
 // href is relative to the "pages" folder. The special value "@landing" means
 // "the signed-in role's own dashboard" (see config/roles.js).
@@ -14,7 +17,7 @@ export const NAV = [
     group: "Overview",
     items: [
       { label: "Dashboard", icon: "home",  href: "@landing", permission: "dashboard:view" },
-      { label: "Approvals", icon: "check", href: "requests/approvals-inbox.html", permission: "approvals:view", badge: 3, alsoForManagers: true },
+      { label: "Approvals", icon: "check", href: "requests/approvals-inbox.html", permission: "approvals:view", countWaiting: true, alsoForManagers: true },
     ],
   },
   {

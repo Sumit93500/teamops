@@ -28,7 +28,6 @@
       <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
         Approvals
-        <span class="nav__count">3</span>
       </a>
 
       <div class="nav__group-title">People</div>
@@ -270,11 +269,12 @@
               <label class="check"><input type="checkbox" name="extraRole" value="inventory-manager"> Inventory Manager</label>
               <label class="check"><input type="checkbox" name="extraRole" value="auditor"> Auditor</label>
             </div>
+            <span class="form-hint">Recorded with the employee. Additional roles don't change what they can do yet.</span>
           </div>
         </div>
 
         <h4 class="form-subtitle">Permission overrides</h4>
-        <p class="form-hint mb-4">Use these only for exceptions. Everything else comes from the roles above.</p>
+        <p class="form-hint mb-4">Recorded with the employee. Overrides don't change what they can do yet: access comes from the default role.</p>
         <div class="form-grid">
           <div class="form-field">
             <span class="form-label">Extra permissions</span>
@@ -326,18 +326,11 @@
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Effective permissions</h3>
-          <span class="card__meta">6</span>
+          <span class="card__meta" id="effective-count"></span>
         </div>
         <div class="card__body">
-          <div class="perm-chips">
-            <span class="perm-chip">attendance:view</span>
-            <span class="perm-chip">attendance:create</span>
-            <span class="perm-chip">leave:view</span>
-            <span class="perm-chip">leave:create</span>
-            <span class="perm-chip">payroll:view</span>
-            <span class="perm-chip">expenses:create</span>
-          </div>
-          <p class="form-hint mt-4">Updates as you change the designation, roles and overrides.</p>
+          <div class="perm-chips" id="effective-permissions"></div>
+          <p class="form-hint mt-4">The default role's permissions, which is what the app checks. Updates as you change the designation. Additional roles and overrides aren't applied yet.</p>
         </div>
       </section>
     </aside>

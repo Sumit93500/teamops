@@ -28,7 +28,6 @@
       <a class="nav__item" href="../requests/approvals-inbox.html" data-permission="approvals:view">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>
         Approvals
-        <span class="nav__count">3</span>
       </a>
 
       <div class="nav__group-title">People</div>
@@ -144,7 +143,7 @@
 
   <div class="stack">
 
-    <div class="alert alert--info">System roles are locked and can't be deleted. Custom roles can be edited or removed by an admin.</div>
+    <div class="alert alert--info">These are the app's four roles, set in its configuration. They can't be deleted, and custom roles can't be created yet.</div>
 
     <section class="card">
       <div class="table__toolbar">
@@ -168,67 +167,35 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><div class="role-name"><span class="role-name__icon role-name__icon--system"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">Super Admin</span><span class="table__user-sub">super-admin</span></div></div></td>
+            <tr data-role="admin">
+              <td><div class="role-name"><span class="role-name__icon role-name__icon--system"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">Admin</span><span class="table__user-sub">admin</span></div></div></td>
               <td class="text-muted">Full access to everything, including roles and backup</td>
-              <td>2</td>
-              <td><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:100%"></span></span><span class="text-sm text-muted">44 / 44</span></div></td>
+              <td data-cell="users">—</td>
+              <td data-cell="permissions"><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:0%"></span></span><span class="text-sm text-muted">—</span></div></td>
               <td><span class="badge badge--info badge--square">System</span></td>
               <td class="table__actions"><a class="btn btn--sm" href="role-editor.html">View</a></td>
             </tr>
-            <tr>
-              <td><div class="role-name"><span class="role-name__icon role-name__icon--system"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">Admin</span><span class="table__user-sub">admin</span></div></div></td>
-              <td class="text-muted">Runs the office day to day, cannot restore backups</td>
-              <td>3</td>
-              <td><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:91%"></span></span><span class="text-sm text-muted">40 / 44</span></div></td>
+            <tr data-role="hr">
+              <td><div class="role-name"><span class="role-name__icon role-name__icon--system"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">HR Manager</span><span class="table__user-sub">hr</span></div></div></td>
+              <td class="text-muted">People operations, leave and attendance</td>
+              <td data-cell="users">—</td>
+              <td data-cell="permissions"><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:0%"></span></span><span class="text-sm text-muted">—</span></div></td>
               <td><span class="badge badge--info badge--square">System</span></td>
               <td class="table__actions"><a class="btn btn--sm" href="role-editor.html">Edit</a></td>
             </tr>
-            <tr>
-              <td><div class="role-name"><span class="role-name__icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">HR Manager</span><span class="table__user-sub">hr-manager</span></div></div></td>
-              <td class="text-muted">People operations, leave and attendance</td>
-              <td>2</td>
-              <td><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:41%"></span></span><span class="text-sm text-muted">18 / 44</span></div></td>
-              <td><span class="badge badge--square">Custom</span></td>
-              <td class="table__actions"><a class="btn btn--sm" href="role-editor.html">Edit</a></td>
-            </tr>
-            <tr>
-              <td><div class="role-name"><span class="role-name__icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">HR Staff</span><span class="table__user-sub">hr-staff</span></div></div></td>
-              <td class="text-muted">Handles records and leave requests for HR</td>
-              <td>14</td>
-              <td><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:25%"></span></span><span class="text-sm text-muted">11 / 44</span></div></td>
-              <td><span class="badge badge--square">Custom</span></td>
-              <td class="table__actions"><a class="btn btn--sm" href="role-editor.html">Edit</a></td>
-            </tr>
-            <tr>
-              <td><div class="role-name"><span class="role-name__icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">Finance Manager</span><span class="table__user-sub">finance-manager</span></div></div></td>
+            <tr data-role="fin">
+              <td><div class="role-name"><span class="role-name__icon role-name__icon--system"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">Finance Manager</span><span class="table__user-sub">fin</span></div></div></td>
               <td class="text-muted">Payroll, expenses and financial reports</td>
-              <td>3</td>
-              <td><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:39%"></span></span><span class="text-sm text-muted">17 / 44</span></div></td>
-              <td><span class="badge badge--square">Custom</span></td>
+              <td data-cell="users">—</td>
+              <td data-cell="permissions"><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:0%"></span></span><span class="text-sm text-muted">—</span></div></td>
+              <td><span class="badge badge--info badge--square">System</span></td>
               <td class="table__actions"><a class="btn btn--sm" href="role-editor.html">Edit</a></td>
             </tr>
-            <tr>
-              <td><div class="role-name"><span class="role-name__icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">Team Lead</span><span class="table__user-sub">team-lead</span></div></div></td>
-              <td class="text-muted">Approves leave and attendance for their team</td>
-              <td>28</td>
-              <td><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:27%"></span></span><span class="text-sm text-muted">12 / 44</span></div></td>
-              <td><span class="badge badge--square">Custom</span></td>
-              <td class="table__actions"><a class="btn btn--sm" href="role-editor.html">Edit</a></td>
-            </tr>
-            <tr>
-              <td><div class="role-name"><span class="role-name__icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">Inventory Manager</span><span class="table__user-sub">inventory-manager</span></div></div></td>
-              <td class="text-muted">Stock, vendors and asset assignment</td>
-              <td>4</td>
-              <td><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:20%"></span></span><span class="text-sm text-muted">9 / 44</span></div></td>
-              <td><span class="badge badge--square">Custom</span></td>
-              <td class="table__actions"><a class="btn btn--sm" href="role-editor.html">Edit</a></td>
-            </tr>
-            <tr>
-              <td><div class="role-name"><span class="role-name__icon role-name__icon--system"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">Employee</span><span class="table__user-sub">employee</span></div></div></td>
-              <td class="text-muted">Own attendance, leave, payslips and requests</td>
-              <td>179</td>
-              <td><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:14%"></span></span><span class="text-sm text-muted">6 / 44</span></div></td>
+            <tr data-role="emp">
+              <td><div class="role-name"><span class="role-name__icon role-name__icon--system"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="table__user-name">Employee</span><span class="table__user-sub">emp</span></div></div></td>
+              <td class="text-muted">Own attendance, leave, payslips, requests and expense claims</td>
+              <td data-cell="users">—</td>
+              <td data-cell="permissions"><div class="meter-cell"><span class="meter"><span class="meter__fill" style="--w:0%"></span></span><span class="text-sm text-muted">—</span></div></td>
               <td><span class="badge badge--info badge--square">System</span></td>
               <td class="table__actions"><a class="btn btn--sm" href="role-editor.html">Edit</a></td>
             </tr>
@@ -243,6 +210,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/roles-list.js"></script>
 </body>
 </html>
 <!-- END 2 -->
