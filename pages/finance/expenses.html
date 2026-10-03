@@ -111,18 +111,18 @@
   <div class="page-header">
     <div>
       <h1>Expenses</h1>
-      <p class="page-header__subtitle">Claims and reimbursements waiting for Finance</p>
+      <p class="page-header__subtitle">Expense claims at every stage, from sending to payment</p>
     </div>
     <div class="page-header__actions">
-      <button class="btn" type="button" data-permission="reports:export" data-export>Export</button>
-      <button class="btn btn--primary" type="button" data-permission="expenses:pay" data-not-implemented="Pay approved claims">Pay approved claims</button>
+      <button class="btn" type="button" data-permission="expenses:view" data-export>Export</button>
+      <button class="btn btn--primary" type="button" data-permission="expenses:pay" id="pay-approved">Pay approved claims</button>
     </div>
   </div>
 
   <div class="stack">
 
     <section class="stat-strip" aria-label="Key numbers">
-      <div class="stat">
+      <div class="stat" data-stat="open">
         <div class="stat__icon stat__icon--3">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18"/></svg>
         </div>
@@ -132,27 +132,27 @@
           <span class="stat__delta stat__delta--down">₹1.2L to review</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="approved">
         <div class="stat__icon stat__icon--2">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
         </div>
         <div>
-          <span class="stat__label">Approved this month</span>
+          <span class="stat__label">Approved, to pay</span>
           <strong class="stat__value">₹3.4L</strong>
           <span class="stat__delta stat__delta--up">41 claims</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="rejected">
         <div class="stat__icon stat__icon--4">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M9 9l6 6M15 9l-6 6"/></svg>
         </div>
         <div>
-          <span class="stat__label">Rejected this month</span>
+          <span class="stat__label">Rejected</span>
           <strong class="stat__value">3</strong>
           <span class="stat__delta">Mostly missing bills</span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="processing">
         <div class="stat__icon stat__icon--1">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"/></svg>
         </div>
@@ -177,9 +177,9 @@
           <div class="table__filters">
             <div class="input-group">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-              <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search claims">
+              <input class="input input--sm input--search" type="search" placeholder="Search employees" aria-label="Search claims" id="expense-search" data-table-filter="off">
             </div>
-            <select class="select select--sm" aria-label="Filter by category">
+            <select class="select select--sm" aria-label="Filter by category" id="expense-category">
               <option>All categories</option><option>Travel</option><option>Meals</option><option>Fuel</option><option>Software</option>
             </select>
           </div>
@@ -198,7 +198,7 @@
                 <th class="table__actions">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="expense-rows">
               <tr>
                 <td><div class="table__user"><div class="avatar avatar--1">AI</div><div><span class="table__user-name">Ananya Iyer</span><span class="table__user-sub">Sales</span></div></div></td>
                 <td>Client travel</td><td>16 Sep</td><td class="table__num"><span class="expense-amount">₹8,400</span></td>
@@ -245,13 +245,7 @@
           </table>
         </div>
 
-        <div class="card__footer">
-          <span class="card__meta">Showing 6 of 14 open claims</span>
-          <div class="btn-group">
-            <button class="btn btn--sm" type="button" disabled>Previous</button>
-            <button class="btn btn--sm" type="button" data-not-implemented="Next page">Next</button>
-          </div>
-        </div>
+        <div class="pagination is-empty" id="expense-pagination"></div>
       </section>
 
       <aside class="stack">
@@ -259,9 +253,9 @@
         <section class="card">
           <div class="card__header">
             <h3 class="card__title">Spend by category</h3>
-            <span class="card__meta">₹ thousand, Sep</span>
+            <span class="card__meta" id="expense-spend-meta">Approved and paid claims</span>
           </div>
-          <div class="card__body">
+          <div class="card__body" id="expense-spend">
             <div class="bar-row"><span>Travel</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:100%"></span></div><span class="bar-row__value">148</span></div>
             <div class="bar-row"><span>Meals</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:42%"></span></div><span class="bar-row__value">62</span></div>
             <div class="bar-row"><span>Fuel</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:36%"></span></div><span class="bar-row__value">54</span></div>
@@ -273,17 +267,17 @@
         <section class="card">
           <div class="card__header"><h3 class="card__title">Expense policy</h3></div>
           <div class="card__body">
-            <dl class="kv">
-              <div class="kv__row"><dt>Manager approves up to</dt><dd>₹50,000</dd></div>
-              <div class="kv__row"><dt>Above that</dt><dd>Finance, then Admin</dd></div>
+            <dl class="kv" id="expense-policy">
+              <div class="kv__row"><dt>Every claim</dt><dd>Manager, then Finance</dd></div>
+              <div class="kv__row"><dt>Above ₹50,000</dt><dd>Then an Admin too</dd></div>
               <div class="kv__row"><dt>Receipt needed above</dt><dd>₹500</dd></div>
               <div class="kv__row"><dt>Claim within</dt><dd>30 days of spending</dd></div>
-              <div class="kv__row"><dt>Paid</dt><dd>Within 5 working days</dd></div>
+              <div class="kv__row"><dt>Paid</dt><dd>Within 5 working days (target)</dd></div>
             </dl>
           </div>
         </section>
 
-        <div class="alert alert--info">Meenal Arora's ₹62,000 claim is above ₹50,000. After you approve it, it goes to an Admin for the last approval.</div>
+        <div class="alert alert--info" id="expense-alert">Meenal Arora's ₹62,000 claim is above ₹50,000. After you approve it, it goes to an Admin for the last approval.</div>
 
       </aside>
     </div>
@@ -293,6 +287,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/expenses.js"></script>
 </body>
 </html>
 <!-- END 2 -->

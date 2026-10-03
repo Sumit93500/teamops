@@ -9,8 +9,8 @@
 // ("YYYY-MM-DD"), regime: "new" }. A revision is a new record with a later
 // effectiveFrom; a month uses the record in effect on its first day.
 //
-// Nothing writes salaries yet (salary-structure.html only shows them), and the
-// Reset demo data button doesn't call resetPayrollData() yet.
+// Nothing writes salaries yet (salary-structure.html only shows them). The
+// Reset demo data button (users-list.js) calls resetPayrollData().
 
 import { createCollection } from "./collection.js";
 import { getUser, getAllUsers } from "./store.js";

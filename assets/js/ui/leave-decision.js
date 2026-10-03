@@ -41,7 +41,10 @@ function closeIcon() {
 //   decide(requestId, deciderUserId, deciderRole, "approve" | "reject", note) -> { ok, error, field }
 //   describe(request)   one line naming the request, for confirm() and the modal (never a toast)
 //   modalId, noteId     ids for the reject modal and its note, unique on the page
-//   labels: { title, approved, rejected }        modal title and the success toasts
+//   labels: { title, approved, rejected }        modal title and the success toasts; approved
+//                                                may instead be a function of the decide
+//                                                result returning fixed text (a request
+//                                                with more than one approval stage)
 //           { approveFailed, rejectFailed }      optional fixed failure toasts; left out,
 //                                                the store's error is shown, escaped
 export function createDecisionFlow({ decide, describe, modalId, noteId, labels }) {
@@ -49,6 +52,7 @@ export function createDecisionFlow({ decide, describe, modalId, noteId, labels }
   let current = null;   // { request, onDone } while the modal is open
 
   const failure = (fixed, result) => fixed ?? escapeHtml(result.error);
+  const approvedText = (result) => (typeof labels.approved === "function" ? labels.approved(result) : labels.approved);
 
   // ---------- approve ----------
 
@@ -56,7 +60,7 @@ export function createDecisionFlow({ decide, describe, modalId, noteId, labels }
     if (!window.confirm(`Approve this request?\n${describe(request)}`)) return;
     const { id, role } = decider();
     const result = decide(request.id, id, role, "approve");
-    if (result.ok) showToast(labels.approved, "success");
+    if (result.ok) showToast(approvedText(result), "success");
     else showToast(failure(labels.approveFailed, result), "danger");
     onDone?.(result);
   }
