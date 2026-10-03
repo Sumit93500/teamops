@@ -94,7 +94,8 @@ function todayIso() {
 }
 
 const STAGE_ROLE = { finance: "fin", admin: "admin" };
-const STAGE_NAME = { manager: "manager", finance: "Finance", admin: "Admin" };
+// Each stage as words say it ("the Finance stage"); ui/expense-view.js shows the same names.
+export const STAGE_NAME = { manager: "manager", finance: "Finance", admin: "Admin" };
 const roleCan = (roleKey, permission) => Boolean(ROLES[roleKey]?.permissions.includes(permission));
 const isActive = (user) => Boolean(user) && user.status !== "inactive";
 
@@ -294,6 +295,22 @@ export function waitingOn(claim) {
   if (claim.status === "pending") return holdersOf(claim, claim.stage);
   if (claim.status === "approved") return getAllUsers().filter((u) => canPay(claim, u)).map((u) => u.id);
   return [];
+}
+
+// Does anyone (active) report to this person? Such a person decides their
+// reports' claims at the manager stage, whatever their role.
+export function managesAnyone(userId) {
+  return Boolean(userId) && getAllUsers().some((u) => u.id !== userId && managerFor(u.id) === userId);
+}
+
+// The claims this person decided: one { claim, entry } per claim, entry being
+// their latest "approved" or "rejected" history entry on it (auto-approvals
+// of their own claims and payments aren't decisions). Newest decision first.
+export function expenseDecisionsBy(userId) {
+  return expenses.getAll()
+    .map((claim) => ({ claim, entry: [...claim.history].reverse().find((h) => h.byUserId === userId && (h.decision === "approved" || h.decision === "rejected")) }))
+    .filter((d) => d.entry)
+    .sort((a, b) => b.entry.at.localeCompare(a.entry.at) || b.claim.id.localeCompare(a.claim.id, "en", { numeric: true }));
 }
 
 // ---------- totals ----------

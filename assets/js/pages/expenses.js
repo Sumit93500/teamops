@@ -6,10 +6,10 @@
 // from the same claims. Figures cover every claim held now, not a calendar
 // month. Cancelled claims have no tab: nothing is left to do with them.
 //
-// Approve and Reject (ui/leave-decision.js's createDecisionFlow) are offered
-// only at the Finance and Admin stages, to whoever holds that stage. A claim
-// at its manager stage waits for the manager, who can't decide it from this
-// page (that comes with the approvals inbox). "Pay approved claims" marks
+// Approve and Reject (ui/expense-view.js's expenseFlow, shared with the
+// approvals inbox) are offered only at the Finance and Admin stages, to
+// whoever holds that stage. A claim at its manager stage waits for the
+// manager, who decides it in the approvals inbox. "Pay approved claims" marks
 // paid every approved claim the signed-in person may pay (payableFor); it
 // records the payment, nothing more. Receipts are names only: no file is
 // stored, so they aren't links.
@@ -17,11 +17,12 @@
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
-import { EXPENSE_POLICY, CATEGORIES, CATEGORY_KEYS, chainFor, needsReceipt } from "../data/expenses.js";
+import { EXPENSE_POLICY, CATEGORY_KEYS, needsReceipt } from "../data/expenses.js";
 import {
-  allExpenses, decideExpense, payExpense, pendingFor, payableFor, waitingOn, expenseTotals, averageProcessingDays,
+  allExpenses, payExpense, pendingFor, payableFor, waitingOn, expenseTotals, averageProcessingDays,
 } from "../data/expenses-store.js";
-import { createDecisionFlow, decisionButtons } from "../ui/leave-decision.js";
+import { decisionButtons } from "../ui/leave-decision.js";
+import { STAGE_NAME, categoryLabel, stageBadge, chainText, expenseFlow } from "../ui/expense-view.js";
 import { el, formatDay, localDateOf, plural, nameOf, departmentName, personCell } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
@@ -33,15 +34,6 @@ const PAGE_SIZE = 10;
 const PILL_TAB = { "Pending": "pending", "Approved": "approved", "Paid": "paid", "Rejected": "rejected" };
 // The stages decided on this page; the manager stage isn't (see the top).
 const PAGE_STAGES = ["finance", "admin"];
-const STAGE_NAME = { manager: "manager", finance: "Finance", admin: "Admin" };
-const BADGE = {
-  manager:  { label: "With manager", badge: "badge badge--warning badge--dot" },
-  finance:  { label: "With Finance", badge: "badge badge--info badge--dot" },
-  admin:    { label: "With Admin",   badge: "badge badge--warning badge--dot" },
-  approved: { label: "Approved",     badge: "badge badge--success badge--dot" },
-  paid:     { label: "Paid",         badge: "badge badge--success badge--dot" },
-  rejected: { label: "Rejected",     badge: "badge badge--danger badge--dot" },
-};
 const EMPTY = {
   pending: "No claims are waiting for approval.",
   approved: "No approved claims are waiting to be paid.",
@@ -52,7 +44,6 @@ const EMPTY = {
 const $ = (id) => document.getElementById(id);
 const stat = (key) => document.querySelector(`[data-stat="${key}"]`);
 const claimsText = (n) => plural(n, "claim", "claims");
-const categoryLabel = (key) => CATEGORIES[key]?.label ?? key;
 
 const userId = getCurrentUserId();
 const role = getCurrentRole()?.key;
@@ -95,22 +86,6 @@ function decidableIds() {
 
 const names = (ids) => ids.map(nameOf).join(", ");
 
-// ---------- approve / reject ----------
-
-const flow = createDecisionFlow({
-  decide: decideExpense,
-  describe: (claim) => `${nameOf(claim.userId)}: ${categoryLabel(claim.category)}, ${rupees(claim.amount)}, spent ${formatDay(claim.date)} (${claim.id})`,
-  modalId: "reject-expense-modal",
-  noteId: "reject-expense-note",
-  labels: {
-    title: "Reject expense claim",
-    approved: (result) => (result.record.status === "approved"
-      ? "Claim approved. It's ready to be paid."
-      : `Claim approved. It goes to ${result.record.stage === "admin" ? "an Admin" : "Finance"} next.`),
-    rejected: "Claim rejected.",
-  },
-});
-
 // ---------- table ----------
 
 // The category, and the claimant's reason under it.
@@ -135,9 +110,8 @@ function receiptCell(claim) {
 }
 
 function stageCell(claim) {
-  const look = BADGE[claim.status === "pending" ? claim.stage : claim.status];
   const td = el("td");
-  td.append(el("span", look?.badge ?? "badge", look?.label ?? claim.status));
+  td.append(stageBadge(claim));
   return td;
 }
 
@@ -151,7 +125,7 @@ function actionsCell(claim, decidable) {
   const td = el("td", "table__actions");
   if (claim.status === "pending") {
     if (decidable.has(claim.id)) {
-      td.append(decisionButtons("expenses:approve", () => flow.openReject(claim, render), () => flow.approve(claim, render)));
+      td.append(decisionButtons("expenses:approve", () => expenseFlow.openReject(claim, render), () => expenseFlow.approve(claim, render)));
       return td;
     }
     const ids = waitingOn(claim);
@@ -265,12 +239,10 @@ function renderPolicy() {
   const list = $("expense-policy");
   if (!list) return;
   const { adminAbove, receiptAbove, claimWithinDays, payWithinWorkingDays } = EXPENSE_POLICY;
-  const stageText = (stage, i) => (i === 0 ? STAGE_NAME[stage].charAt(0).toUpperCase() + STAGE_NAME[stage].slice(1) : STAGE_NAME[stage]);
-  const always = chainFor(adminAbove);
-  const extra = chainFor(adminAbove + 1).filter((s) => !always.includes(s));
+  const chain = chainText();
   const rows = [
-    ["Every claim", always.map(stageText).join(", then ")],
-    [`Above ${rupees(adminAbove)}`, `Then ${extra.map((s) => (s === "admin" ? "an Admin" : STAGE_NAME[s])).join(", then ")} too`],
+    ["Every claim", chain.always],
+    [`Above ${rupees(adminAbove)}`, `Then ${chain.extra} too`],
     ["Receipt needed above", rupees(receiptAbove)],
     ["Claim within", `${claimWithinDays} days of spending`],
     ["Paid", `Within ${payWithinWorkingDays} working days (target)`],

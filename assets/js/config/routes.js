@@ -10,7 +10,7 @@ export const ROUTES = {
   "dashboard/finance.html":  "dashboard:view",
   "dashboard/employee.html": "dashboard:view",
 
-  "requests/approvals-inbox.html": "approvals:view",
+  "requests/approvals-inbox.html": null,   // a personal inbox: it shows only what waits for you (approvals-inbox.js)
   "requests/my-requests.html":     "requests:view-own",
 
   "users/users-list.html":   "users:view",

@@ -2,6 +2,9 @@
 // The sidebar, described as data. One list for the whole app.
 // Each item says which permission is needed to see it. Nothing here mentions a role.
 // ui/sidebar.js keeps only the items the signed-in person's permissions allow.
+// alsoForManagers: true also shows the item to managers: anyone who has people
+// reporting to them, or an expense claim waiting on them as its manager (they
+// decide it at the manager stage). They see it without its badge.
 //
 // href is relative to the "pages" folder. The special value "@landing" means
 // "the signed-in role's own dashboard" (see config/roles.js).
@@ -11,7 +14,7 @@ export const NAV = [
     group: "Overview",
     items: [
       { label: "Dashboard", icon: "home",  href: "@landing", permission: "dashboard:view" },
-      { label: "Approvals", icon: "check", href: "requests/approvals-inbox.html", permission: "approvals:view", badge: 3 },
+      { label: "Approvals", icon: "check", href: "requests/approvals-inbox.html", permission: "approvals:view", badge: 3, alsoForManagers: true },
     ],
   },
   {

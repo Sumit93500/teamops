@@ -183,16 +183,19 @@ export function createDecisionFlow({ decide, describe, modalId, noteId, labels }
 // ---------- buttons ----------
 
 // Reject + Approve for one pending request; permission goes on both as
-// data-permission, so the page's applyPermissions() can hide them.
+// data-permission, so the page's applyPermissions() can hide them. null means
+// no permission gate: a decision that goes by relationship (an expense
+// claim's manager stage), where the store's pendingFor() already decided who
+// gets the buttons.
 export function decisionButtons(permission, onReject, onApprove) {
   const group = el("div", "btn-group");
   const reject = el("button", "btn btn--sm", "Reject");
   reject.type = "button";
-  reject.dataset.permission = permission;
+  if (permission) reject.dataset.permission = permission;
   reject.addEventListener("click", onReject);
   const approve = el("button", "btn btn--primary btn--sm", "Approve");
   approve.type = "button";
-  approve.dataset.permission = permission;
+  if (permission) approve.dataset.permission = permission;
   approve.addEventListener("click", onApprove);
   group.append(reject, approve);
   return group;

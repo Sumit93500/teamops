@@ -189,7 +189,7 @@
             <button class="tabs__tab" type="button" role="tab">Rejected <span class="badge badge--count">1</span></button>
           </div>
           <select class="select select--sm" aria-label="Filter by type">
-            <option>All types</option><option>Access</option><option>Purchase</option><option>System</option><option>Leave</option><option>Attendance</option>
+            <option>All types</option><option>Access</option><option>Purchase</option><option>System</option><option>Leave</option><option>Attendance</option><option>Expense</option>
           </select>
         </div>
 
@@ -206,7 +206,7 @@
               </tr>
             </thead>
             <tbody>
-              <!-- data-static rows are samples: nothing stores their decisions. Real leave requests and attendance corrections are added by approvals-inbox.js. -->
+              <!-- data-static rows are samples: nothing stores their decisions, and only people with approvals:view see them. Real leave requests, attendance corrections and expense claims are added by approvals-inbox.js. -->
               <tr data-static data-type="access" data-status="pending">
                 <td><div class="table__user"><div class="avatar avatar--1">SR</div><span class="table__user-name">Role change: Sneha Rao</span></div></td>
                 <td><span class="badge badge--square">Access</span></td>
@@ -244,7 +244,9 @@
         <section class="card">
           <div class="card__header"><h3 class="card__title">Who approves what</h3></div>
           <div class="card__body">
-            <dl class="kv">
+            <dl class="kv" id="who-approves">
+              <div class="kv__row"><dt>Expense claims</dt><dd>Manager, then Finance</dd></div>
+              <div class="kv__row"><dt></dt><dd>Then an Admin too, above ₹50,000</dd></div>
               <div class="kv__row"><dt>Purchase orders</dt><dd>Store, up to ₹1,00,000</dd></div>
               <div class="kv__row"><dt></dt><dd>Admin, above that</dd></div>
               <div class="kv__row"><dt>Role changes</dt><dd>HR proposes, Admin approves</dd></div>

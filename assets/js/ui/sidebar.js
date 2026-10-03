@@ -1,14 +1,16 @@
 // ui/sidebar.js
 // Builds the sidebar from config/nav.js, keeping only the items the
-// signed-in role is allowed to see, and highlighting the current page.
+// signed-in role is allowed to see (or, for an item marked alsoForManagers,
+// that the person sees as a manager), and highlighting the current page.
 // Also fills the footer's "N active employees" line from the live employee list.
 
 import { NAV } from "../config/nav.js";
 import { can } from "../core/rbac.js";
-import { getCurrentRole } from "../core/auth.js";
+import { getCurrentRole, getCurrentUserId } from "../core/auth.js";
 import { resolvePageLink } from "../core/paths.js";
 import { ICONS } from "./icons.js";
 import { activeHeadcount } from "../data/store.js";
+import { managesAnyone, pendingFor } from "../data/expenses-store.js";
 
 function currentPagePath() {
   const path = window.location.pathname;
@@ -18,7 +20,7 @@ function currentPagePath() {
   return path.slice(idx + marker.length);
 }
 
-function buildItem(item, currentPath) {
+function buildItem(item, currentPath, showBadge) {
   const href = item.href === "@landing"
     ? getCurrentRole()?.landing ?? "auth/login.html"
     : item.href;
@@ -30,9 +32,16 @@ function buildItem(item, currentPath) {
   a.className = "nav__item" + (isActive ? " is-active" : "");
   a.href = link;
   const path = ICONS[item.icon] ?? ICONS.default;
-  const count = item.badge ? `<span class="nav__count">${item.badge}</span>` : "";
+  const count = item.badge && showBadge ? `<span class="nav__count">${item.badge}</span>` : "";
   a.innerHTML = `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"></path></svg>${item.label}${count}`;
   return a;
+}
+
+// Has people reporting to them, or an expense claim waiting on them as its
+// manager (a claim keeps the manager it was sent to).
+function isManager() {
+  const id = getCurrentUserId();
+  return managesAnyone(id) || pendingFor(id, getCurrentRole()?.key).length > 0;
 }
 
 export function renderSidebar(container) {
@@ -41,7 +50,9 @@ export function renderSidebar(container) {
   const currentPath = currentPagePath();
 
   NAV.forEach((group) => {
-    const visibleItems = group.items.filter((item) => can(item.permission));
+    // A manager without the item's permission sees it without the badge, which
+    // is the static count for permission holders.
+    const visibleItems = group.items.filter((item) => can(item.permission) || (item.alsoForManagers && isManager()));
     if (visibleItems.length === 0) return;
 
     const groupTitle = document.createElement("div");
@@ -50,7 +61,7 @@ export function renderSidebar(container) {
     container.appendChild(groupTitle);
 
     visibleItems.forEach((item) => {
-      container.appendChild(buildItem(item, currentPath));
+      container.appendChild(buildItem(item, currentPath, can(item.permission)));
     });
   });
 }
