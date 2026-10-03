@@ -297,6 +297,22 @@ export function waitingOn(claim) {
   return [];
 }
 
+// Where a claim of this amount from this person would go if sent now, by the
+// same rules submitExpense() and decideExpense() use (nothing is stored):
+// [{ stage, holderIds }] in order, holderIds [] for a stage that would be
+// skipped. A later stage's holders are worked out from the people as they are
+// now; the real claim checks again when it gets there. [] for an Admin (their
+// claims are approved at once) or someone unknown.
+export function previewRoute(userId, amount) {
+  const user = getUser(userId);
+  if (!isActive(user) || user.role === "admin") return [];
+  const draft = { userId: user.id, managerId: managerFor(user.id) };
+  const chain = chainFor(amount);
+  const first = firstStage(chain, isHeldFor(draft));
+  const stages = first.stage && !chain.includes(first.stage) ? [...chain, first.stage] : chain;
+  return stages.map((stage) => ({ stage, holderIds: holdersOf(draft, stage) }));
+}
+
 // Does anyone (active) report to this person? Such a person decides their
 // reports' claims at the manager stage, whatever their role.
 export function managesAnyone(userId) {

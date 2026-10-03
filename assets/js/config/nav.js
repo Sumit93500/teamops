@@ -25,6 +25,7 @@ export const NAV = [
       { label: "My leave",        icon: "calendar", href: "leave/my-leave.html",             permission: "leave:view-own" },
       { label: "My payslips",     icon: "doc",      href: "payroll/payslips.html",           permission: "payslip:view-own" },
       { label: "Requests",        icon: "chat",     href: "requests/my-requests.html",       permission: "requests:view-own" },
+      { label: "Claim expense",   icon: "wallet",   href: "requests/claim-expense.html",     permission: "expenses:create" },
       { label: "My assets",       icon: "laptop",   href: "inventory/my-assets.html",        permission: "assets:view-own" },
     ],
   },

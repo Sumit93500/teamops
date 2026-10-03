@@ -1,16 +1,20 @@
 // pages/my-requests.js
 // Runs on my-requests.html. The signed-in person's leave requests come from
-// the leave store and their attendance corrections from the attendance store,
-// both with a working Cancel. The asset and expense rows are still static
-// samples (marked data-static in the HTML) and are kept as they are. The tabs,
-// type filter and side stepper cover all of them. A session without an
-// employee id (an old sign-in) leaves the static page as it is.
+// the leave store, their attendance corrections from the attendance store and
+// their expense claims from the expense store, all with a working Cancel while
+// pending. The asset rows are still static samples (marked data-static in the
+// HTML) and are kept as they are. The tabs, type filter and side stepper cover
+// all of them. A session without an employee id (an old sign-in) leaves the
+// static page as it is.
 
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { requestsFor, cancelLeave, currentApproverName } from "../data/leave-store.js";
 import { regularizationsFor, cancelRegularization } from "../data/attendance-store.js";
+import { expensesFor, cancelExpense, waitingOn } from "../data/expenses-store.js";
+import { categoryLabel, stageBadge, expenseSteps } from "../ui/expense-view.js";
+import { rupees } from "../ui/money.js";
 import { showToast } from "../ui/toast.js";
 import {
   el, escapeHtml, formatDay, requestDates, requestTitle, typeLabel, statusBadge,
@@ -115,13 +119,66 @@ function correctionRow(request) {
   return tr;
 }
 
+// ---------- expense claim rows ----------
+
+const expenseTitle = (claim) => `${categoryLabel(claim.category)}, ${rupees(claim.amount)}`;
+const names = (ids) => ids.map((id) => getUser(id)?.name ?? id).join(", ");
+
+// Who it's with: whoever may decide it now, whoever may pay it once approved,
+// then whoever paid or rejected it.
+function expenseWith(claim) {
+  if (claim.status === "pending" || claim.status === "approved") {
+    const ids = waitingOn(claim);
+    if (!ids.length) return "Nobody yet";
+    return claim.status === "approved" ? `Payment: ${names(ids)}` : names(ids);
+  }
+  const last = [...claim.history].reverse().find((h) => h.decision === "paid" || h.decision === "rejected");
+  return last ? names([last.byUserId]) : "—";
+}
+
+function cancelClaim(claim) {
+  if (!window.confirm(`Cancel your expense claim for ${expenseTitle(claim)}?`)) return;
+  const result = cancelExpense(claim.id, user.id);
+  if (!result.ok) showToast("Couldn't cancel the claim. It may already have been decided.", "danger");
+  else showToast("Expense claim cancelled.", "success");
+  render();
+}
+
+function expenseRow(claim) {
+  const tr = el("tr");
+  tr.dataset.claimId = claim.id;
+  const titleCell = el("td");
+  titleCell.append(el("span", "table__user-name", expenseTitle(claim)));
+  const typeCell = el("td");
+  typeCell.append(el("span", "badge badge--square", "Expense"));
+  // A paid claim says so; every other status reads like the other requests.
+  const statusCell = el("td");
+  statusCell.append(claim.status === "paid" ? stageBadge(claim) : statusBadge(claim.status));
+
+  const actions = el("td", "table__actions");
+  if (claim.status === "pending") {
+    const cancel = el("button", "btn btn--sm btn--danger", "Cancel");
+    cancel.type = "button";
+    cancel.dataset.permission = "requests:cancel";
+    cancel.addEventListener("click", () => cancelClaim(claim));
+    actions.append(cancel);
+  } else if (claim.status === "rejected" && rejectionNote(claim)) {
+    actions.append(el("span", "text-sm text-muted", rejectionNote(claim)));
+  }
+
+  tr.append(titleCell, typeCell, el("td", "", formatDay(claim.appliedOn)), el("td", "", expenseWith(claim)), statusCell, actions);
+  return tr;
+}
+
 // ---------- rendering ----------
 
 function allRows() {
   const leave = requestsFor(user.id).map((r) => ({ node: leaveRow(r), type: "leave", status: r.status, sent: r.appliedOn, id: r.id }));
   const corrections = regularizationsFor(user.id).map((r) => ({ node: correctionRow(r), type: "attendance", status: r.status, sent: r.appliedOn, id: r.id }));
+  // A paid claim counts as approved for the tabs (it was approved, then paid).
+  const claims = expensesFor(user.id).map((c) => ({ node: expenseRow(c), type: "expense", status: c.status === "paid" ? "approved" : c.status, sent: c.appliedOn, id: c.id }));
   // Newest sent first; the id breaks ties between two sent the same day.
-  return [...leave, ...corrections, ...staticRows].sort((a, b) => b.sent.localeCompare(a.sent) || b.id.localeCompare(a.id));
+  return [...leave, ...corrections, ...claims, ...staticRows].sort((a, b) => b.sent.localeCompare(a.sent) || b.id.localeCompare(a.id));
 }
 
 function pillStatus(pill) {
@@ -129,16 +186,18 @@ function pillStatus(pill) {
   return PILL_STATUS[label] ?? "all";
 }
 
-// The newest pending request of either kind: leave or an attendance correction.
+// The newest pending request of any kind: leave, an attendance correction or
+// an expense claim (whose steps come from its own history: ui/expense-view.js).
 function renderProgress() {
-  const request = newestPending([...requestsFor(user.id), ...regularizationsFor(user.id)]);
+  const request = newestPending([...requestsFor(user.id), ...regularizationsFor(user.id), ...expensesFor(user.id)]);
   progressCard.hidden = !request;
   if (!request) return;
-  progressCard.querySelector(".card__title").textContent = request.issue
-    ? correctionTitle(request)
-    : `${typeLabel(request.type)}, ${requestDates(request)}`;
+  const isClaim = request.id.startsWith("EXP-");
+  progressCard.querySelector(".card__title").textContent = isClaim
+    ? `Expense: ${expenseTitle(request)}`
+    : request.issue ? correctionTitle(request) : `${typeLabel(request.type)}, ${requestDates(request)}`;
   const stepper = el("ol", "stepper stepper--vertical");
-  stepper.append(...pendingSteps(request));
+  stepper.append(...(isClaim ? expenseSteps(request) : pendingSteps(request)));
   progressCard.querySelector(".card__body").replaceChildren(stepper);
 }
 
@@ -169,7 +228,7 @@ function render() {
 // ---------- start ----------
 
 if (user && tbody && progressCard) {
-  tbody.querySelectorAll("tr[data-sample]").forEach((tr) => tr.remove());   // replaced by the real leave and correction rows
+  tbody.querySelectorAll("tr[data-sample]").forEach((tr) => tr.remove());   // replaced by the real leave, correction and expense rows
 
   // ui/tabs.js already moves the is-active highlight between pills on click.
   pills.forEach((pill) => pill.addEventListener("click", () => {

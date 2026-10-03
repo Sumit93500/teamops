@@ -18,7 +18,7 @@ export const PERMISSIONS = {
   payslips:      ["view"],                       // all employees' payslips
   payslip:       ["view-own", "download"],       // my own payslip
   salary:        ["view", "edit"],
-  expenses:      ["view", "approve", "pay"],
+  expenses:      ["view", "approve", "pay", "create"],   // create: send your own claim (every role, SELF_SERVICE)
   tax:           ["view", "manage"],
   inventory:     ["view", "create", "edit"],
   assets:        ["view-own", "assign", "approve", "report", "request"],

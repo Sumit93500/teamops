@@ -11,6 +11,7 @@ const SELF_SERVICE = [
   "dashboard:view",
   "attendance:view-own", "attendance:mark", "attendance:regularize",
   "leave:view-own", "leave:create", "leave:cancel",
+  "expenses:create",
   "payslip:view-own", "payslip:download",
   "requests:view-own", "requests:cancel",
   "assets:view-own", "assets:request", "assets:report",

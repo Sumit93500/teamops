@@ -2,16 +2,17 @@
 // How an expense claim is shown wherever someone can act on it, written once
 // so finance/expenses.html and the approvals inbox can't word it differently:
 // the category, the stage badge, the one-line description, the approval chain
-// as text, and the Approve / Reject flow. Both pages decide through the same
+// as text, the Approve / Reject flow, and a claim's progress steps for its
+// claimant (my-requests.html). Both pages decide through the same
 // decideExpense() (data/expenses-store.js) via this one flow.
 //
 // Toasts use fixed text only (toast.js uses innerHTML); names appear only in
 // confirm() and the reject modal's description, which are plain text.
 
-import { EXPENSE_POLICY, CATEGORIES, chainFor } from "../data/expenses.js";
-import { decideExpense, STAGE_NAME } from "../data/expenses-store.js";
+import { EXPENSE_POLICY, CATEGORIES, STAGES, chainFor } from "../data/expenses.js";
+import { decideExpense, waitingOn, STAGE_NAME } from "../data/expenses-store.js";
 import { createDecisionFlow } from "./leave-decision.js";
-import { el, formatDay, nameOf } from "./leave-view.js";
+import { el, formatDay, localDateOf, nameOf, step } from "./leave-view.js";
 import { rupees } from "./money.js";
 
 // The stage names are the store's, so a page and the store's messages agree.
@@ -69,3 +70,58 @@ export const expenseFlow = createDecisionFlow({
     rejected: "Claim rejected.",
   },
 });
+
+// ---------- progress ----------
+
+const STEP_TITLE = { manager: "Manager approval", finance: "Finance approval", admin: "Admin approval" };
+// Who decides a stage the claim hasn't reached yet.
+const LATER = { finance: "Finance", admin: "An Admin" };
+
+// The stages this claim goes through: its chain for the amount, plus any stage
+// its history shows or that it's waiting at now (the Admin stage of a claim
+// whose every stage was skipped, which has no history entry until decided),
+// in STAGES order.
+function stagesOf(claim) {
+  const seen = new Set([...chainFor(claim.amount), ...claim.history.map((h) => h.stage), claim.stage].filter((s) => STAGES.includes(s)));
+  return STAGES.filter((s) => seen.has(s));
+}
+
+const names = (ids) => ids.map(nameOf).join(", ");
+const onDay = (at) => formatDay(localDateOf(at));
+
+// The steps of a claim for its claimant (my-requests.html), from what its
+// history recorded, not from the rules as they are now: sent; each approval
+// stage (done by whom, skipped and why, current with whom it waits, or still
+// to come); then payment.
+export function expenseSteps(claim) {
+  const steps = [step("done", 1, "Sent", `${formatDay(claim.appliedOn)} by you`)];
+  for (const stage of stagesOf(claim)) {
+    const n = steps.length + 1;
+    const entry = [...claim.history].reverse().find((h) => h.stage === stage && h.decision !== "applied" && h.decision !== "cancelled");
+    if (claim.status === "pending" && claim.stage === stage) {
+      const ids = waitingOn(claim);
+      steps.push(step("current", n, STEP_TITLE[stage], ids.length ? `Waiting for ${names(ids)}` : "Nobody can decide this now"));
+    } else if (entry?.decision === "skipped") {
+      steps.push(step("done", n, `${STEP_TITLE[stage]} skipped`, entry.note));
+    } else if (entry?.decision === "approved") {
+      steps.push(step("done", n, STEP_TITLE[stage], `Approved by ${nameOf(entry.byUserId)}, ${onDay(entry.at)}`));
+    } else if (entry?.decision === "auto-approved") {
+      steps.push(step("done", n, STEP_TITLE[stage], "Approved automatically (Admin)"));
+    } else if (entry?.decision === "rejected") {
+      steps.push(step("done", n, STEP_TITLE[stage], `Rejected by ${nameOf(entry.byUserId)}, ${onDay(entry.at)}`));
+    } else {
+      steps.push(step("", n, STEP_TITLE[stage], stage === "manager" ? (claim.managerId ? nameOf(claim.managerId) : "Your manager") : LATER[stage]));
+    }
+  }
+  const n = steps.length + 1;
+  const paid = [...claim.history].reverse().find((h) => h.decision === "paid");
+  if (paid) {
+    steps.push(step("done", n, "Payment", `Paid by ${nameOf(paid.byUserId)}, ${onDay(paid.at)}`));
+  } else if (claim.status === "approved") {
+    const ids = waitingOn(claim);
+    steps.push(step("current", n, "Payment", ids.length ? `Waiting for ${names(ids)}` : "Nobody can pay this now"));
+  } else {
+    steps.push(step("", n, "Payment", "Finance or an Admin pays approved claims"));
+  }
+  return steps;
+}

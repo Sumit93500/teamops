@@ -12,6 +12,7 @@ export const ROUTES = {
 
   "requests/approvals-inbox.html": null,   // a personal inbox: it shows only what waits for you (approvals-inbox.js)
   "requests/my-requests.html":     "requests:view-own",
+  "requests/claim-expense.html":   "expenses:create",
 
   "users/users-list.html":   "users:view",
   "users/user-form.html":    "users:create",
