@@ -137,58 +137,60 @@
       <p class="page-header__subtitle">Who holds which laptop, monitor or access card</p>
     </div>
     <div class="page-header__actions">
-      <button class="btn" type="button" data-permission="reports:export" data-export>Export</button>
-      <button class="btn btn--primary" type="button" data-permission="assets:assign" data-not-implemented="Assign asset">
+      <button class="btn" type="button" data-permission="assets:view" data-export>Export</button>
+      <a class="btn btn--primary" href="#assign-form" data-permission="assets:assign">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Assign asset
-      </button>
+      </a>
     </div>
   </div>
 
   <div class="stack">
 
     <section class="stat-strip" aria-label="Key numbers">
-      <div class="stat">
+      <div class="stat" data-stat="total">
         <div class="stat__icon stat__icon--1">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg>
         </div>
         <div>
           <span class="stat__label">Total assets</span>
-          <strong class="stat__value">128</strong>
-          <span class="stat__delta">Laptops, monitors, cards</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="assigned">
         <div class="stat__icon stat__icon--2">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
         </div>
         <div>
           <span class="stat__label">Assigned</span>
-          <strong class="stat__value">97</strong>
-          <span class="stat__delta">76% of all assets</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="available">
         <div class="stat__icon stat__icon--3">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"/></svg>
         </div>
         <div>
           <span class="stat__label">Available</span>
-          <strong class="stat__value">24</strong>
-          <span class="stat__delta stat__delta--up">Ready to assign</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="repair">
         <div class="stat__icon stat__icon--4">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0"/></svg>
         </div>
         <div>
           <span class="stat__label">In repair</span>
-          <strong class="stat__value">7</strong>
-          <span class="stat__delta stat__delta--down">2 for over 2 weeks</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
     </section>
+
+    <div class="alert alert--warning" id="inactive-alert" hidden></div>
 
     <section class="card">
       <div class="table__toolbar">
@@ -201,10 +203,10 @@
         <div class="table__filters">
           <div class="input-group">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input class="input input--sm input--search" type="search" placeholder="Search tag or person" aria-label="Search assets">
+            <input class="input input--sm input--search" type="search" placeholder="Search tag, asset or person" aria-label="Search assets" id="asset-search" data-table-filter="off">
           </div>
-          <select class="select select--sm" aria-label="Filter by type">
-            <option>All types</option><option>Laptop</option><option>Monitor</option><option>Access card</option>
+          <select class="select select--sm" aria-label="Filter by type" id="asset-type">
+            <option value="">All types</option>
           </select>
         </div>
       </div>
@@ -222,63 +224,12 @@
               <th class="table__actions">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><span class="asset-tag">AST-0188</span></td>
-              <td><span class="table__user-name">Dell Latitude 5420</span></td>
-              <td><div class="table__user"><div class="avatar avatar--1">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">Engineering</span></div></div></td>
-              <td>12 Jan 2023</td>
-              <td><span class="badge badge--warning badge--square">Fair</span></td>
-              <td><span class="badge badge--info badge--dot">Assigned</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign" data-not-implemented="Return">Return</button></td>
-            </tr>
-            <tr>
-              <td><span class="asset-tag">AST-0119</span></td>
-              <td><span class="table__user-name">MacBook Pro 14"</span></td>
-              <td><div class="table__user"><div class="avatar avatar--2">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">Engineering</span></div></div></td>
-              <td>3 Mar 2025</td>
-              <td><span class="badge badge--success badge--square">Good</span></td>
-              <td><span class="badge badge--info badge--dot">Assigned</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign" data-not-implemented="Return">Return</button></td>
-            </tr>
-            <tr>
-              <td><span class="asset-tag">AST-0302</span></td>
-              <td><span class="table__user-name">Dell 24" monitor</span></td>
-              <td><div class="table__user"><div class="avatar avatar--1">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">Engineering</span></div></div></td>
-              <td>12 Jan 2023</td>
-              <td><span class="badge badge--success badge--square">Good</span></td>
-              <td><span class="badge badge--info badge--dot">Assigned</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign" data-not-implemented="Return">Return</button></td>
-            </tr>
-            <tr>
-              <td><span class="asset-tag">AST-0217</span></td>
-              <td><span class="table__user-name">Dell Latitude 5440</span></td>
-              <td class="text-muted">Store room A</td>
-              <td>–</td>
-              <td><span class="badge badge--success badge--square">Good</span></td>
-              <td><span class="badge badge--success badge--dot">Available</span></td>
-              <td class="table__actions"><button class="btn btn--primary btn--sm" type="button" data-permission="assets:assign" data-not-implemented="Assign">Assign</button></td>
-            </tr>
-            <tr>
-              <td><span class="asset-tag">AST-0099</span></td>
-              <td><span class="table__user-name">Dell Latitude 5410</span></td>
-              <td class="text-muted">With vendor</td>
-              <td>–</td>
-              <td><span class="badge badge--danger badge--square">Poor</span></td>
-              <td><span class="badge badge--warning badge--dot">In repair</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:assign" data-not-implemented="Update">Update</button></td>
-            </tr>
+          <tbody id="asset-rows">
           </tbody>
         </table>
       </div>
 
-      <div class="card__footer">
-        <span class="card__meta">Showing 5 of 128 assets</span>
-        <div class="btn-group">
-          <button class="btn btn--sm" type="button" disabled>Previous</button>
-          <button class="btn btn--sm" type="button" data-not-implemented="Next page">Next</button>
-        </div>
-      </div>
+      <div class="pagination is-empty" id="asset-pagination"></div>
     </section>
 
     <div class="grid grid-2">
@@ -286,8 +237,9 @@
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Pending asset requests</h3>
-          <span class="card__meta">2 open</span>
+          <span class="card__meta">Sample, not built yet</span>
         </div>
+        <div class="card__body"><p class="form-hint">Asset requests come in a later round. These two show how requests will look here; their buttons don't save anything.</p></div>
         <div class="list">
           <div class="list__item">
             <div class="avatar avatar--1">AK</div>
@@ -298,8 +250,8 @@
             </div>
           </div>
           <div class="list__item">
-            <div class="avatar avatar--3">IB</div>
-            <div class="list__content"><span class="list__title">Ishita Bose, second monitor</span><span class="list__sub">Sales, needed for reporting</span></div>
+            <div class="avatar avatar--3">AI</div>
+            <div class="list__content"><span class="list__title">Ananya Iyer, second monitor</span><span class="list__sub">Sales, needed for reporting</span></div>
             <div class="btn-group">
               <button class="btn btn--sm" type="button" data-permission="assets:approve" data-not-implemented="Reject">Reject</button>
               <button class="btn btn--primary btn--sm" type="button" data-permission="assets:approve" data-not-implemented="Approve">Approve</button>
@@ -308,36 +260,35 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card" data-permission="assets:assign">
         <div class="card__header"><h3 class="card__title">Assign an asset</h3></div>
         <div class="card__body">
-          <form class="form" action="asset-assignment.html">
+          <form class="form" id="assign-form" action="asset-assignment.html" novalidate>
             <div class="form-grid">
               <div class="form-field">
                 <label class="form-label form-label--required" for="a-asset">Asset</label>
                 <select class="select" id="a-asset" required>
                   <option value="">Select available asset</option>
-                  <option>AST-0217, Dell Latitude 5440</option>
                 </select>
               </div>
               <div class="form-field">
                 <label class="form-label form-label--required" for="a-person">Employee</label>
                 <select class="select" id="a-person" required>
                   <option value="">Select employee</option>
-                  <option>Sneha Rao</option><option>Ishita Bose</option><option>Neha Kulkarni</option>
                 </select>
               </div>
               <div class="form-field">
                 <label class="form-label" for="a-date">Assigned on</label>
                 <input class="input" id="a-date" type="date">
+                <span class="form-hint">Leave empty for today.</span>
               </div>
               <div class="form-field">
                 <label class="form-label" for="a-cond">Condition</label>
-                <select class="select" id="a-cond"><option>Good</option><option>Fair</option></select>
+                <select class="select" id="a-cond"><option value="good">Good</option><option value="fair">Fair</option><option value="poor">Poor</option></select>
               </div>
             </div>
             <div class="form-actions">
-              <button class="btn btn--primary" type="submit" data-permission="assets:assign" data-not-implemented="Assign asset">Assign asset</button>
+              <button class="btn btn--primary" type="submit">Assign asset</button>
             </div>
           </form>
         </div>
@@ -349,7 +300,51 @@
   </div>
 </div>
 
+<!-- Update an asset: what fits its state now (asset-assignment.js fills it). Hidden until opened. -->
+<div class="modal" id="asset-modal" role="dialog" aria-modal="true" aria-labelledby="asset-modal-title">
+  <div class="modal__dialog">
+    <div class="modal__header">
+      <div>
+        <h3 class="modal__title" id="asset-modal-title">Update asset</h3>
+        <p class="modal__desc" id="asset-modal-desc"></p>
+      </div>
+      <button class="modal__close" type="button" aria-label="Close">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <form id="asset-modal-form" action="asset-assignment.html" novalidate>
+      <div class="modal__body">
+        <div class="form">
+          <div class="form-field">
+            <label class="form-label form-label--required" for="u-action">What happened?</label>
+            <select class="select" id="u-action" required></select>
+          </div>
+          <div class="form-grid">
+            <div class="form-field" id="u-cond-field">
+              <label class="form-label form-label--required" for="u-cond">Condition</label>
+              <select class="select" id="u-cond" required></select>
+            </div>
+            <div class="form-field" id="u-loc-field">
+              <label class="form-label form-label--required" for="u-loc">Location</label>
+              <select class="select" id="u-loc" required></select>
+            </div>
+          </div>
+          <div class="form-field" id="u-note-field" hidden>
+            <label class="form-label form-label--required" for="u-note">What's wrong?</label>
+            <textarea class="textarea" id="u-note" placeholder="e.g. Screen flickers; battery drains in an hour" required></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn" type="button" data-modal-close>Cancel</button>
+        <button class="btn btn--primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/asset-assignment.js"></script>
 </body>
 </html>
 <!-- END 2 -->

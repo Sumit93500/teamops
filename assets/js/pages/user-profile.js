@@ -10,10 +10,12 @@ import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
-import { plural, todayIso } from "../ui/leave-view.js";
+import { el, formatDay, plural, todayIso } from "../ui/leave-view.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
 import { salaryFor } from "../data/payroll-store.js";
 import { rupees } from "../ui/money.js";
+import { allItems, assetsFor } from "../data/inventory-store.js";
+import { conditionBadge } from "../ui/inventory-view.js";
 
 const DEFAULT_ID = "EMP-1042";
 const id = new URLSearchParams(window.location.search).get("id") || DEFAULT_ID;
@@ -186,6 +188,34 @@ function emptyCard(title, text, count) {
   }
 }
 
+// The equipment assigned to this person now (data/inventory-store.js), as
+// my-assets.html shows the person themselves. users:view (the page's route)
+// is enough to see it (decision 16).
+function renderAssets() {
+  const card = cardTitled("Assets");
+  if (!card) return;
+  const mine = assetsFor(user.id).sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true }));
+  if (!mine.length) {
+    emptyCard("Assets", "No assets assigned", 0);
+    return;
+  }
+  const names = new Map(allItems().map((i) => [i.sku, i.name]));
+  const list = el("div", "list");
+  list.append(...mine.map((asset) => {
+    const item = el("div", "list__item");
+    const content = el("div", "list__content");
+    const sub = el("span", "list__sub");
+    sub.append(el("span", "asset-tag", asset.id), ` since ${formatDay(asset.since, true)}`);
+    content.append(el("span", "list__title", names.get(asset.sku) ?? asset.sku), sub);
+    item.append(content, conditionBadge(asset.condition));
+    return item;
+  }));
+  Array.from(card.children).filter((c) => !c.classList.contains("card__header")).forEach((c) => c.remove());
+  card.append(list);
+  const meta = card.querySelector(".card__meta");
+  if (meta) meta.textContent = String(mine.length);
+}
+
 function renderOverrides() {
   const card = cardTitled("Permission overrides");
   if (!card) return;
@@ -271,8 +301,8 @@ function render() {
   setKv("Data scope", role?.dataScope === "all" ? "All records" : "Own records");
 
   renderOverrides();
+  renderAssets();
   // No data source exists for these yet, so say so instead of showing Rohan's sample content.
-  emptyCard("Assets", "No assets assigned", 0);
   emptyCard("Leave balance", "No leave data available yet");
   emptyCard("Recent activity", "No recent activity");
 

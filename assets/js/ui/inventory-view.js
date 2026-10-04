@@ -1,16 +1,32 @@
 // ui/inventory-view.js
 // How inventory things look on a page: category and status labels, the stock
-// status badge, the movement type badge and signed quantity, and the time of
-// a movement in office time. Shared by items.js and stock-movements.js, so
-// the two pages can't word or colour the same thing differently.
+// status badge, the movement type badge and signed quantity, an asset's
+// condition and status badges, and times in office time. Shared by items.js,
+// stock-movements.js, asset-assignment.js, my-assets.js and user-profile.js,
+// so no two pages word or colour the same thing differently.
 
-import { CATEGORIES, ASSET_TYPES, STOCK_STATUSES, MOVEMENT_TYPES } from "../data/inventory.js";
+import { CATEGORIES, ASSET_TYPES, STOCK_STATUSES, MOVEMENT_TYPES, CONDITIONS, ASSET_STATUSES, LOCATIONS } from "../data/inventory.js";
 import { el, formatDay } from "./leave-view.js";
 
 export const categoryLabel = (key) => CATEGORIES[key]?.label ?? key;
 export const assetTypeLabel = (key) => ASSET_TYPES[key]?.label ?? key;
 export const stockStatusLabel = (key) => STOCK_STATUSES[key]?.label ?? key;
 export const movementTypeLabel = (key) => MOVEMENT_TYPES[key]?.label ?? key;
+export const conditionLabel = (key) => CONDITIONS[key]?.label ?? key;
+export const assetStatusLabel = (key) => ASSET_STATUSES[key]?.label ?? key;
+export const locationLabel = (key) => LOCATIONS[key]?.label ?? key;
+
+// The colours asset-assignment.html and my-assets.html have always used.
+const CONDITION_BADGE = { good: "badge badge--success badge--square", fair: "badge badge--warning badge--square", poor: "badge badge--danger badge--square" };
+const ASSET_STATUS_BADGE = { assigned: "badge badge--info badge--dot", available: "badge badge--success badge--dot", "in-repair": "badge badge--warning badge--dot" };
+
+export function conditionBadge(condition) {
+  return el("span", CONDITION_BADGE[condition] ?? "badge badge--square", conditionLabel(condition));
+}
+
+export function assetStatusBadge(status) {
+  return el("span", ASSET_STATUS_BADGE[status] ?? "badge badge--dot", assetStatusLabel(status));
+}
 
 // badge.css: success = fine, warning = needs attention, danger = act now; no
 // modifier (grey) = nothing to do. The stock cell's colour classes go with them.
@@ -63,3 +79,6 @@ export function officeTime(timestamp) {
   const thisYear = officeParts(new Date().toISOString()).year;
   return `${formatDay(at.iso, at.year !== thisYear)}, ${at.time}`;
 }
+
+// The office-time calendar date of a stored instant, as ISO ("2026-09-08").
+export const officeDate = (timestamp) => officeParts(timestamp).iso;

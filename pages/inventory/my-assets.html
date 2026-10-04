@@ -124,11 +124,11 @@
     <section class="card">
       <div class="card__header">
         <h3 class="card__title">Assigned to me</h3>
-        <span class="card__meta">3 assets</span>
+        <span class="card__meta" id="my-assets-meta">—</span>
       </div>
 
       <div class="table-wrap">
-        <table class="table">
+        <table class="table table--fit">
           <thead>
             <tr>
               <th>Tag</th>
@@ -139,31 +139,7 @@
               <th class="table__actions">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><span class="asset-tag">AST-0188</span></td>
-              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span><div><span class="item__name">Dell Latitude 5420</span><span class="item__sku">Laptop</span></div></div></td>
-              <td>12 Jan 2023</td>
-              <td><span class="badge badge--warning badge--square">Fair</span></td>
-              <td><span class="badge badge--info badge--dot">Assigned</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:report" data-not-implemented="Report issue">Report issue</button></td>
-            </tr>
-            <tr>
-              <td><span class="asset-tag">AST-0302</span></td>
-              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span><div><span class="item__name">Dell 24" monitor</span><span class="item__sku">Monitor</span></div></div></td>
-              <td>12 Jan 2023</td>
-              <td><span class="badge badge--success badge--square">Good</span></td>
-              <td><span class="badge badge--info badge--dot">Assigned</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:report" data-not-implemented="Report issue">Report issue</button></td>
-            </tr>
-            <tr>
-              <td><span class="asset-tag">AST-0455</span></td>
-              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18"/></svg></span><div><span class="item__name">Office access card</span><span class="item__sku">Access card</span></div></div></td>
-              <td>12 Jan 2023</td>
-              <td><span class="badge badge--success badge--square">Good</span></td>
-              <td><span class="badge badge--info badge--dot">Assigned</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="assets:report" data-not-implemented="Report issue">Report issue</button></td>
-            </tr>
+          <tbody id="my-asset-rows">
           </tbody>
         </table>
       </div>
@@ -173,22 +149,23 @@
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Laptop upgrade request</h3>
-          <span class="badge badge--warning badge--dot">In review</span>
+          <span class="card__meta">Sample, not built yet</span>
         </div>
         <div class="card__body">
-          <p class="fw-medium mb-4">Replaces AST-0188, 3 years old</p>
+          <p class="form-hint mb-4">Asset requests come in a later round. This shows how a request will look while it's on its way.</p>
+          <p class="fw-medium mb-4">Replaces a laptop that's 3 years old</p>
           <ol class="stepper stepper--vertical">
             <li class="stepper__step is-done">
               <span class="stepper__dot"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
-              <div class="stepper__text"><strong>Sent</strong><small class="text-muted">17 Sep by you</small></div>
+              <div class="stepper__text"><strong>Sent</strong><small class="text-muted">By you</small></div>
             </li>
             <li class="stepper__step is-current">
               <span class="stepper__dot">2</span>
-              <div class="stepper__text"><strong>IT Support review</strong><small class="text-muted">Checking stock and device age</small></div>
+              <div class="stepper__text"><strong>Manager approval</strong><small class="text-muted">Your manager</small></div>
             </li>
             <li class="stepper__step">
               <span class="stepper__dot">3</span>
-              <div class="stepper__text"><strong>Admin approval</strong><small class="text-muted">Aarav Mehta</small></div>
+              <div class="stepper__text"><strong>Admin approval</strong><small class="text-muted">An Admin</small></div>
             </li>
           </ol>
         </div>
@@ -203,6 +180,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/my-assets.js"></script>
 </body>
 </html>
 <!-- END 2 -->

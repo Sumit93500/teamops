@@ -21,7 +21,7 @@ export const PERMISSIONS = {
   expenses:      ["view", "approve", "pay", "create"],   // create: send your own claim (every role, SELF_SERVICE)
   tax:           ["view", "manage"],
   inventory:     ["view", "create", "edit"],
-  assets:        ["view-own", "assign", "approve", "report", "request"],
+  assets:        ["view-own", "assign", "approve", "report", "request", "view"],   // view: see who holds what (asset-assignment.html); Admin only for now
   vendors:       ["create", "edit"],
   recruitment:   ["view", "create", "edit"],
   announcements: ["view", "create"],
