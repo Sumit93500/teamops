@@ -40,7 +40,7 @@
   white-space: nowrap;
 }
 
-/* ---------- Stock value by category (items.html) ----------
+/* ---------- Value by category (items.html's stock value, expenses.html's spend) ----------
    The amounts are full rupees ("₹5,65,000"), wider than the 36px value column
    .bar-row has for counts; a fixed width keeps every bar the same length. */
 .value-bars .bar-row { grid-template-columns: 96px minmax(0, 1fr) 76px; }

@@ -3,6 +3,14 @@
    Breakpoints: 1100px (small laptop), 820px (tablet/phone), 560px (small phone)
    ========================================================== */
 
+/* ---------- Main + aside that needs a wide main column ----------
+   .grid-main-aside--wide stacks below 1440px instead of 1100px. For a table
+   that can't shrink to the main column's width on a laptop (the approvals
+   inbox: six columns, two buttons a row). */
+@media (max-width: 1439px) {
+  .grid-main-aside--wide { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* ---------- Small laptop / large tablet ---------- */
 @media (max-width: 1100px) {
   .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

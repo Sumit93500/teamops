@@ -178,7 +178,7 @@
       </div>
     </section>
 
-    <div class="grid grid-main-aside">
+    <div class="grid grid-main-aside grid-main-aside--wide">
 
       <section class="card">
         <div class="table__toolbar">
@@ -205,9 +205,9 @@
               </tr>
             </thead>
             <tbody>
-              <!-- data-static rows are samples: nothing stores their decisions, and only people with approvals:view see them. Real leave requests, attendance corrections, expense claims and asset requests are added by approvals-inbox.js. -->
+              <!-- data-static rows are samples (each says "Sample, not built yet" under its name): nothing stores their decisions, and only people with approvals:view see them. Real leave requests, attendance corrections, expense claims and asset requests are added by approvals-inbox.js. -->
               <tr data-static data-type="access" data-status="pending">
-                <td><div class="table__user"><div class="avatar avatar--1">SR</div><span class="table__user-name">Role change: Sneha Rao</span></div></td>
+                <td><div class="table__user"><div class="avatar avatar--1">SR</div><div><span class="table__user-name">Role change: Sneha Rao</span><span class="table__user-sub">Sample, not built yet</span></div></div></td>
                 <td><span class="badge badge--square">Access</span></td>
                 <td>Priya Nair (HR)</td>
                 <td>Employee to Team Lead</td>
@@ -215,15 +215,15 @@
                 <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="approvals:decide" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="approvals:decide" data-not-implemented="Approve">Approve</button></div></td>
               </tr>
               <tr data-static data-type="purchase" data-status="pending">
-                <td><div class="table__user"><div class="avatar avatar--3">PO</div><span class="table__user-name">Purchase order PO-2291</span></div></td>
+                <td><div class="table__user"><div class="avatar avatar--3">PO</div><div><span class="table__user-name">Purchase order PO-2291</span><span class="table__user-sub">Sample, not built yet</span></div></div></td>
                 <td><span class="badge badge--square">Purchase</span></td>
                 <td>Vikram Singh (Store)</td>
-                <td>₹1,40,000, TechNova</td>
+                <td>₹9,75,000, TechNova</td>
                 <td>1 day</td>
                 <td class="table__actions"><div class="btn-group"><button class="btn btn--sm" type="button" data-permission="approvals:decide" data-not-implemented="Reject">Reject</button><button class="btn btn--primary btn--sm" type="button" data-permission="approvals:decide" data-not-implemented="Approve">Approve</button></div></td>
               </tr>
               <tr data-static data-type="system" data-status="pending">
-                <td><div class="table__user"><div class="avatar avatar--4">BR</div><span class="table__user-name">Backup restore request</span></div></td>
+                <td><div class="table__user"><div class="avatar avatar--4">BR</div><div><span class="table__user-name">Backup restore request</span><span class="table__user-sub">Sample, not built yet</span></div></div></td>
                 <td><span class="badge badge--square">System</span></td>
                 <td>IT Support</td>
                 <td>Backup of 14 Sep, 1.2 GB</td>
@@ -246,11 +246,10 @@
             <dl class="kv" id="who-approves">
               <div class="kv__row"><dt>Expense claims</dt><dd>Manager, then Finance</dd></div>
               <div class="kv__row"><dt></dt><dd>Then an Admin too, above ₹50,000</dd></div>
-              <div class="kv__row"><dt>Purchase orders</dt><dd>Store, up to ₹1,00,000</dd></div>
-              <div class="kv__row"><dt></dt><dd>Admin, above that</dd></div>
-              <div class="kv__row"><dt>Role changes</dt><dd>HR proposes, Admin approves</dd></div>
-              <div class="kv__row"><dt>Salary revisions</dt><dd>Finance proposes, Admin approves</dd></div>
-              <div class="kv__row"><dt>Backup restore</dt><dd>Admin only</dd></div>
+              <div class="kv__row"><dt>Purchase orders</dt><dd>Not built yet</dd></div>
+              <div class="kv__row"><dt>Role changes</dt><dd>Not built yet</dd></div>
+              <div class="kv__row"><dt>Salary revisions</dt><dd>Not built yet</dd></div>
+              <div class="kv__row"><dt>Backup restore</dt><dd>Not built yet</dd></div>
               <div class="kv__row"><dt>Asset requests</dt><dd>Manager, then an Admin</dd></div>
             </dl>
           </div>
@@ -279,11 +278,11 @@
           </thead>
           <tbody>
             <tr data-static data-type="access" data-status="approved" data-date="2026-09-16">
-              <td><span class="table__user-name">Role change: Divya Menon</span></td><td><span class="badge badge--square">Access</span></td><td>Priya Nair (HR)</td>
+              <td><div class="table__user"><div><span class="table__user-name">Role change: Divya Menon</span><span class="table__user-sub">Sample, not built yet</span></div></div></td><td><span class="badge badge--square">Access</span></td><td>Priya Nair (HR)</td>
               <td><span class="badge badge--success badge--dot">Approved</span></td><td>16 Sep</td>
             </tr>
             <tr data-static data-type="system" data-status="rejected" data-date="2026-09-11">
-              <td><span class="table__user-name">Backup restore request</span></td><td><span class="badge badge--square">System</span></td><td>IT Support</td>
+              <td><div class="table__user"><div><span class="table__user-name">Backup restore request</span><span class="table__user-sub">Sample, not built yet</span></div></div></td><td><span class="badge badge--square">System</span></td><td>IT Support</td>
               <td><span class="badge badge--danger badge--dot">Rejected</span></td><td>11 Sep</td>
             </tr>
           </tbody>

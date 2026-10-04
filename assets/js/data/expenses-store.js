@@ -159,7 +159,7 @@ export function submitExpense(userId, fields = {}) {
   const reason = String(fields.reason ?? "").trim();
   const receipt = String(fields.receipt ?? "").trim() || null;
 
-  if (!CATEGORIES[category]) return fail("Choose a category.", "category");
+  if (!Object.hasOwn(CATEGORIES, category)) return fail("Choose a category.", "category");   // not inherited names like "constructor"
   if (!Number.isSafeInteger(amount) || amount <= 0) return fail("Enter the amount in whole rupees, more than ₹0.", "amount");
   if (dayNumber(date) === null) return fail("Pick a valid date.", "date");
   const today = todayIso();

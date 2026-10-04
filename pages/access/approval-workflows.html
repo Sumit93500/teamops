@@ -155,7 +155,7 @@
         <div>
           <span class="stat__label">Workflows</span>
           <strong class="stat__value">8</strong>
-          <span class="stat__delta">All active</span>
+          <span class="stat__delta">4 active, 4 not built yet</span>
         </div>
       </div>
       <div class="stat">
@@ -199,7 +199,7 @@
         </div>
 
         <div class="table-wrap">
-          <table class="table">
+          <table class="table table--fit">
             <thead>
               <tr>
                 <th>Request</th>
@@ -235,21 +235,21 @@
                 <td><span class="table__user-name">Purchase order</span><span class="table__user-sub">Stock and equipment</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">Store Manager</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>Admin only above ₹1,00,000</td>
-                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td><span class="badge badge--dot">Not built</span></td>
                 <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Role change</span><span class="table__user-sub">Giving or removing access</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">HR</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>Every change</td>
-                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td><span class="badge badge--dot">Not built</span></td>
                 <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Salary revision</span><span class="table__user-sub">Changes to pay</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">Finance</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>Every change</td>
-                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td><span class="badge badge--dot">Not built</span></td>
                 <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
@@ -263,7 +263,7 @@
                 <td><span class="table__user-name">Backup restore</span><span class="table__user-sub">Rolling back company data</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">IT Support</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>Admin only</td>
-                <td><span class="badge badge--success badge--dot">Active</span></td>
+                <td><span class="badge badge--dot">Not built</span></td>
                 <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
             </tbody>
@@ -276,8 +276,9 @@
         <section class="card">
           <div class="card__header">
             <h3 class="card__title">Purchase order limits</h3>
-            <button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Add tier">Add tier</button>
+            <span class="card__meta">Sample, not built yet</span>
           </div>
+          <div class="card__body"><p class="form-hint">Purchase orders aren't part of OfficeOS, so these limits don't apply to anything. They show how amount tiers could look.</p></div>
           <div>
             <div class="tier">
               <div><span class="tier__range">Up to ₹1,00,000</span><span class="table__user-sub">Store Manager approves</span></div>
