@@ -7,6 +7,8 @@
 //   - attendance corrections: only with attendance:approve
 //   - expense claims: pendingFor() in data/expenses-store.js judges each stage
 //     itself (the claimant's manager decides by relationship, no permission)
+//   - asset requests: pendingFor() in data/asset-requests-store.js, the same
+//     way (the requester's manager, then an Admin with assets:approve)
 // The inbox's static sample rows aren't counted: nothing real waits behind them.
 // A session without an employee id (an old sign-in) has nothing: the inbox
 // lists no real rows for it.
@@ -16,18 +18,20 @@ import { getUser } from "../data/store.js";
 import { pendingFor as pendingLeave } from "../data/leave-store.js";
 import { pendingRegularizations } from "../data/attendance-store.js";
 import { pendingFor as pendingExpenses } from "../data/expenses-store.js";
+import { pendingFor as pendingAssetRequests } from "../data/asset-requests-store.js";
 
-// { leave, corrections, expenses }: arrays, in store order.
+// { leave, corrections, expenses, assets }: arrays, in store order.
 export function waitingFor(userId, roleKey) {
-  if (!getUser(userId)) return { leave: [], corrections: [], expenses: [] };
+  if (!getUser(userId)) return { leave: [], corrections: [], expenses: [], assets: [] };
   return {
     leave: can("leave:approve") ? pendingLeave(userId, roleKey) : [],
     corrections: can("attendance:approve") ? pendingRegularizations(userId, roleKey) : [],
     expenses: pendingExpenses(userId, roleKey),
+    assets: pendingAssetRequests(userId, roleKey),
   };
 }
 
 export function waitingCount(userId, roleKey) {
-  const { leave, corrections, expenses } = waitingFor(userId, roleKey);
-  return leave.length + corrections.length + expenses.length;
+  const { leave, corrections, expenses, assets } = waitingFor(userId, roleKey);
+  return leave.length + corrections.length + expenses.length + assets.length;
 }

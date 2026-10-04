@@ -50,6 +50,8 @@ function closeIcon() {
 //                                                with more than one approval stage)
 //           { approveFailed, rejectFailed }      optional fixed failure toasts; left out,
 //                                                the store's error is shown, escaped
+//           { submit }                           optional text for the modal's button
+//                                                (default "Reject request")
 export function createDecisionFlow({ decide, describe, modalId, noteId, labels }) {
   let modal = null;
   let current = null;   // { request, onDone } while the modal is open
@@ -112,7 +114,7 @@ export function createDecisionFlow({ decide, describe, modalId, noteId, labels }
     const cancel = el("button", "btn", "Cancel");
     cancel.type = "button";
     cancel.dataset.modalClose = "";
-    const submit = el("button", "btn btn--danger", "Reject request");
+    const submit = el("button", "btn btn--danger", labels.submit ?? "Reject request");
     submit.type = "submit";
     footer.append(cancel, submit);
     form.append(body, footer);

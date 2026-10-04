@@ -1,9 +1,9 @@
 // pages/approvals-inbox.js
 // Runs on approvals-inbox.html, a personal inbox: any signed-in person can open
 // it (route null) and it shows only what waits for them. Real leave requests,
-// attendance corrections and expense claims join the static sample rows (role
-// change, purchase order, backup restore; marked data-static in the HTML,
-// whose buttons stay not-implemented).
+// attendance corrections, expense claims and asset requests join the static
+// sample rows (role change, purchase order, backup restore; marked data-static
+// in the HTML, whose buttons stay not-implemented).
 //   - samples: only with approvals:view (taken off the page otherwise)
 //   - leave: only with leave:approve; corrections: only with attendance:approve
 //   - expense claims: pendingFor() in data/expenses-store.js, which checks each
@@ -11,11 +11,14 @@
 //     how a Team Lead such as Sneha Rao, role Employee, decides), Finance and
 //     Admin (by role + expenses:approve). Approved / Rejected list only the
 //     claims this person decided themselves.
+//   - asset requests: pendingFor() in data/asset-requests-store.js, the same
+//     way: the requester's manager (by relationship), then an Admin (by role +
+//     assets:approve). Approved / Rejected list only this person's decisions.
 // Approve / Reject use the same flows as leave-approvals.html,
-// regularization.html and finance/expenses.html (ui/leave-decision.js,
-// ui/expense-view.js). A session without an employee id (an old sign-in)
-// leaves the static page as it is with approvals:view, and an empty inbox
-// without it.
+// regularization.html, finance/expenses.html and asset-assignment.html
+// (ui/leave-decision.js, ui/expense-view.js, ui/asset-request-view.js). A
+// session without an employee id (an old sign-in) leaves the static page as
+// it is with approvals:view, and an empty inbox without it.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
@@ -27,6 +30,9 @@ import { expenseDecisionsBy, managesAnyone } from "../data/expenses-store.js";
 import { EXPENSE_POLICY } from "../data/expenses.js";
 import { approveLeave, openRejectModal, approveCorrection, openRejectCorrectionModal, decisionButtons } from "../ui/leave-decision.js";
 import { STAGE_NAME, categoryLabel, chainText, expenseFlow } from "../ui/expense-view.js";
+import { assetRequestDecisionsBy } from "../data/asset-requests-store.js";
+import { STAGE_NAME as ASSET_STAGE_NAME, requestTitle as assetRequestTitle, assetRequestFlow } from "../ui/asset-request-view.js";
+import { assetTypeLabel } from "../ui/inventory-view.js";
 import { rupees } from "../ui/money.js";
 import {
   el, todayIso, formatDay, formatDays, requestDates, typeLabel, statusBadge,
@@ -100,11 +106,17 @@ const expensesPending = () => waitingFor(userId, role).expenses
   .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id, "en", { numeric: true }));
 // [{ claim, entry }]: this person's own decision ("approved" or "rejected").
 const expensesDecided = (decision) => (user ? expenseDecisionsBy(userId) : []).filter((d) => d.entry.decision === decision);
-// Whether expense figures belong in the stats: anyone who can decide a stage,
-// has one waiting, or has decided one.
+const assetsPending = () => waitingFor(userId, role).assets
+  .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id, "en", { numeric: true }));
+// [{ request, entry }]: this person's own decision ("approved" or "rejected").
+const assetsDecided = (decision) => (user ? assetRequestDecisionsBy(userId) : []).filter((d) => d.entry.decision === decision);
+// Whether expense and asset-request figures belong in the stats: anyone who
+// can decide a stage, has one waiting, or has decided one.
 const showsExpenses = () => Boolean(user) && (can("expenses:approve") || managesAnyone(userId) || expensesPending().length > 0 || expenseDecisionsBy(userId).length > 0);
+const showsAssets = () => Boolean(user) && (can("assets:approve") || managesAnyone(userId) || assetsPending().length > 0 || assetRequestDecisionsBy(userId).length > 0);
 
 const expenseTitle = (claim) => `Expense: ${nameOf(claim.userId)}, ${rupees(claim.amount)}`;
+const assetTitle = (request) => `Asset: ${nameOf(request.userId)}, ${assetTypeLabel(request.assetType).toLowerCase()}`;
 // When a claim reached the stage this entry decided: the entry just before it.
 const reachedAt = (claim, entry) => claim.history[claim.history.indexOf(entry) - 1]?.at ?? claim.history[0].at;
 
@@ -204,6 +216,47 @@ function expenseRow(claim, decided = null) {
   return tr;
 }
 
+// As an expense row: pending shows the request's current stage (and when this
+// person approved it at the manager stage, if they did); decided, their own
+// decision. Waiting counts from when it reached its current stage.
+function assetRow(request, decided = null) {
+  const tr = el("tr");
+  tr.dataset.type = "asset";
+  tr.dataset.requestId = request.id;
+  const titleCell = el("td");
+  const wrap = el("div", "table__user");
+  wrap.append(el("div", avatarClass(request.userId), initials(nameOf(request.userId))), el("span", "table__user-name", assetTitle(request)));
+  titleCell.append(wrap);
+  const typeCell = el("td");
+  typeCell.append(el("span", "badge badge--square", "Asset"));
+
+  let details;
+  if (decided) {
+    details = `${assetRequestTitle(request)}, you ${decided.decision} it at the ${ASSET_STAGE_NAME[decided.stage]} stage`;
+  } else {
+    details = `${assetRequestTitle(request)}, ${ASSET_STAGE_NAME[request.stage]} stage`;
+    const earlier = request.history.find((h) => h.byUserId === userId && h.decision === "approved" && h.stage !== request.stage);
+    if (earlier) details += `. You approved it at the ${ASSET_STAGE_NAME[earlier.stage]} stage on ${formatDay(localDateOf(earlier.at))}`;
+  }
+
+  const actions = el("td", "table__actions");
+  if (!decided) {
+    // The manager stage goes by relationship, so its buttons carry no permission.
+    actions.append(decisionButtons(request.stage === "manager" ? null : "assets:approve",
+      () => assetRequestFlow.openReject(request, render), () => assetRequestFlow.approve(request, render)));
+  }
+
+  tr.append(
+    titleCell,
+    typeCell,
+    el("td", "", nameOf(request.userId)),
+    el("td", "", details),
+    el("td", "", decided ? formatDay(localDateOf(decided.at)) : waitingSince(request.history.at(-1).at)),
+    actions,
+  );
+  return tr;
+}
+
 // A static "Recently decided" row shown in the inbox's Approved/Rejected tab:
 // same columns as the inbox, no details, the decision date in place of waiting.
 function decidedClone(tr) {
@@ -218,21 +271,23 @@ function decidedClone(tr) {
   return out;
 }
 
-// Leave, corrections and expense claims together: pending by date sent (oldest
-// first), decided by decision (newest first). The sort is stable, so each kind
-// keeps its own order.
+// Leave, corrections, expense claims and asset requests together: pending by
+// date sent (oldest first), decided by decision (newest first). The sort is
+// stable, so each kind keeps its own order.
 function realRows(which) {
   if (which === "pending") {
     return [
       ...leavePending().map((r) => ({ key: r.appliedOn, node: leaveRow(r) })),
       ...correctionsPending().map((r) => ({ key: r.appliedOn, node: correctionRow(r) })),
       ...expensesPending().map((c) => ({ key: c.appliedOn, node: expenseRow(c) })),
+      ...assetsPending().map((r) => ({ key: r.appliedOn, node: assetRow(r) })),
     ].sort((a, b) => a.key.localeCompare(b.key)).map((x) => x.node);
   }
   return [
     ...leaveDecided(which).map((r) => ({ key: decisionOf(r).at, node: leaveRow(r) })),
     ...correctionsDecided(which).map((r) => ({ key: decisionOf(r).at, node: correctionRow(r) })),
     ...expensesDecided(which).map((d) => ({ key: d.entry.at, node: expenseRow(d.claim, d.entry) })),
+    ...assetsDecided(which).map((d) => ({ key: d.entry.at, node: assetRow(d.request, d.entry) })),
   ].sort((a, b) => b.key.localeCompare(a.key)).map((x) => x.node);
 }
 
@@ -252,11 +307,11 @@ function setStat(label, value) {
 }
 
 // Leave and corrections: every decision on them (as before), sent -> decided.
-// Expense claims: this person's own decisions, from the claim reaching their
-// stage to their decision.
+// Expense claims and asset requests: this person's own decisions, from the
+// claim or request reaching their stage to their decision.
 function renderStats(pendingCount) {
   setStat("Waiting for you", String(pendingCount));
-  if (!showLeave && !showCorrections && !showsExpenses()) {
+  if (!showLeave && !showCorrections && !showsExpenses() && !showsAssets()) {
     ["Approved this week", "Rejected this week", "Average response"].forEach((label) => setStat(label, "—"));
     return;
   }
@@ -265,7 +320,9 @@ function renderStats(pendingCount) {
     .map((r) => ({ status: r.status, date: decisionDate(r), auto: decisionOf(r).decision === "auto-approved", days: (Date.parse(decisionOf(r).at) - Date.parse(r.history[0].at)) / DAY_MS }));
   const claims = [...expensesDecided("approved"), ...expensesDecided("rejected")]
     .map(({ claim, entry }) => ({ status: entry.decision, date: localDateOf(entry.at), auto: false, days: (Date.parse(entry.at) - Date.parse(reachedAt(claim, entry))) / DAY_MS }));
-  const decided = [...requests, ...claims];
+  const assets = [...assetsDecided("approved"), ...assetsDecided("rejected")]
+    .map(({ request, entry }) => ({ status: entry.decision, date: localDateOf(entry.at), auto: false, days: (Date.parse(entry.at) - Date.parse(reachedAt(request, entry))) / DAY_MS }));
+  const decided = [...requests, ...claims, ...assets];
   setStat("Approved this week", String(decided.filter((d) => d.status === "approved" && d.date >= since).length));
   setStat("Rejected this week", String(decided.filter((d) => d.status === "rejected" && d.date >= since).length));
   // Auto-approved Admin requests took no decision, so they'd only pull the average down.
@@ -298,7 +355,10 @@ function renderRecentlyDecided() {
   const claims = [...expensesDecided("approved"), ...expensesDecided("rejected")]
     .map(({ claim, entry }) => decidedRow({ ...claim, status: entry.decision, decidedOn: localDateOf(entry.at) }, expenseTitle(claim), "Expense"))
     .filter((tr) => tr.dataset.date >= since);
-  decidedBody.replaceChildren(...[...staticDecided, ...leave, ...fixes, ...claims].sort((a, b) => (b.dataset.date ?? "").localeCompare(a.dataset.date ?? "")));
+  const assets = [...assetsDecided("approved"), ...assetsDecided("rejected")]
+    .map(({ request, entry }) => decidedRow({ ...request, status: entry.decision, decidedOn: localDateOf(entry.at) }, assetTitle(request), "Asset"))
+    .filter((tr) => tr.dataset.date >= since);
+  decidedBody.replaceChildren(...[...staticDecided, ...leave, ...fixes, ...claims, ...assets].sort((a, b) => (b.dataset.date ?? "").localeCompare(a.dataset.date ?? "")));
 }
 
 // "Who approves what": the expense lines, from the rules (ui/expense-view.js).

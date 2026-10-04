@@ -13,6 +13,7 @@ import { resolvePageLink } from "../core/paths.js";
 import { ICONS } from "./icons.js";
 import { activeHeadcount } from "../data/store.js";
 import { managesAnyone, pendingFor } from "../data/expenses-store.js";
+import { pendingFor as pendingAssetRequests } from "../data/asset-requests-store.js";
 import { waitingCount } from "./waiting.js";
 
 function currentPagePath() {
@@ -66,11 +67,12 @@ export function refreshWaitingCount(root = document) {
   root.querySelectorAll(".nav__item[data-count-waiting]").forEach(setWaitingCount);
 }
 
-// Has people reporting to them, or an expense claim waiting on them as its
-// manager (a claim keeps the manager it was sent to).
+// Has people reporting to them, or an expense claim or asset request waiting
+// on them as its manager (each keeps the manager it was sent to).
 function isManager() {
   const id = getCurrentUserId();
-  return managesAnyone(id) || pendingFor(id, getCurrentRole()?.key).length > 0;
+  const role = getCurrentRole()?.key;
+  return managesAnyone(id) || pendingFor(id, role).length > 0 || pendingAssetRequests(id, role).length > 0;
 }
 
 export function renderSidebar(container) {

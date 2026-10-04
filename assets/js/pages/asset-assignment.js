@@ -17,10 +17,19 @@
 // (Q8: warn, don't block): such rows say "Inactive" next to the name, and an
 // alert above the table counts them.
 //
-// The "Pending asset requests" card is a static sample: asset requests come in
-// a later round.
+// "Open asset requests" lists every request still open
+// (data/asset-requests-store.js), oldest first:
+//   - waiting for a decision: Approve / Reject for whoever the store's
+//     pendingFor() says decides it now (an Admin with assets:approve at the
+//     Admin stage; the requester's manager, by relationship, at the manager
+//     stage), the same flow as the approvals inbox (ui/asset-request-view.js).
+//     Anyone else sees who it's with.
+//   - approved, waiting for an asset (assets:assign): Assign fills the Assign
+//     form for that request (the requester, and only available assets of the
+//     requested type) and hands one over through fulfilAssetRequest(); Close
+//     ends it without an asset, with a note.
 
-import { getCurrentUserId } from "../core/auth.js";
+import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { getUser, getAllUsers } from "../data/store.js";
 import { dayNumber } from "../data/holidays.js";
@@ -28,10 +37,15 @@ import { ASSET_TYPE_KEYS, CONDITION_KEYS, LOCATION_KEYS } from "../data/inventor
 import {
   allAssets, allItems, assetTypeOf, assetTotals, assetsHeldByInactive, assignAsset, returnAsset, sendForRepair, returnFromRepair,
 } from "../data/inventory-store.js";
+import { allAssetRequests, pendingFor, waitingOn, fulfilAssetRequest } from "../data/asset-requests-store.js";
 import {
   assetTypeLabel, conditionLabel, locationLabel, conditionBadge, assetStatusBadge, officeDate,
 } from "../ui/inventory-view.js";
-import { el, escapeHtml, formatDay, plural, nameOf, departmentName, personCell, todayIso } from "../ui/leave-view.js";
+import { requestTitle, requestBadge, assetRequestFlow, openCloseModal } from "../ui/asset-request-view.js";
+import { decisionButtons } from "../ui/leave-decision.js";
+import {
+  el, escapeHtml, formatDay, plural, nameOf, departmentName, personCell, todayIso, initials, avatarClass,
+} from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { renderPagination } from "../ui/pagination.js";
 import { openModal, closeModal } from "../ui/modal.js";
@@ -194,6 +208,65 @@ function renderInactiveAlert() {
   alert.textContent = `${plural(held.length, "asset is", "assets are")} still assigned to people who are inactive: ${list}. Take ${held.length === 1 ? "it" : "them"} back with Update, then Return to the store.`;
 }
 
+// ---------- open asset requests ----------
+
+const isOpenRequest = (r) => r.status === "pending" || r.status === "approved";
+const oldestFirst = (a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id, "en", { numeric: true });
+
+// What it waits for, and on whom.
+function requestStatusText(request, decidable) {
+  if (request.status === "approved") return "Approved, waiting for an asset";
+  if (decidable) return request.stage === "manager" ? "Waiting for you, as their manager" : "Waiting for your approval";
+  const ids = waitingOn(request);
+  return ids.length ? `With ${ids.map(nameOf).join(", ")}` : "Nobody can decide this now";
+}
+
+// decidable: the store's pendingFor() puts it with the signed-in person now.
+function requestItem(request, decidable) {
+  const item = el("div", "list__item");
+  item.dataset.request = request.id;
+  const content = el("div", "list__content");
+  content.append(
+    el("span", "list__title", `${nameOf(request.userId)}: ${requestTitle(request)}`),
+    el("span", "list__sub", request.reason),
+    el("span", "list__sub", requestStatusText(request, decidable)),
+  );
+  let side;
+  if (decidable) {
+    // The manager stage goes by relationship, so its buttons carry no permission.
+    side = decisionButtons(request.stage === "manager" ? null : "assets:approve",
+      () => assetRequestFlow.openReject(request, render), () => assetRequestFlow.approve(request, render));
+  } else if (request.status === "approved") {
+    side = el("div", "btn-group");
+    const close = el("button", "btn btn--sm", "Close");
+    close.type = "button";
+    close.dataset.permission = "assets:assign";
+    close.addEventListener("click", () => openCloseModal(request, render));
+    const assign = el("button", "btn btn--primary btn--sm", "Assign");
+    assign.type = "button";
+    assign.dataset.permission = "assets:assign";
+    assign.addEventListener("click", () => startFulfil(request));
+    side.append(close, assign);
+  } else {
+    side = requestBadge(request);
+  }
+  item.append(el("div", avatarClass(request.userId), initials(nameOf(request.userId))), content, side);
+  return item;
+}
+
+function renderRequests() {
+  const list = $("asset-request-list");
+  if (!list) return;
+  const open = allAssetRequests().filter(isOpenRequest).sort(oldestFirst);
+  const decidable = new Set(pendingFor(getCurrentUserId(), getCurrentRole()?.key).map((r) => r.id));
+  const meta = $("asset-requests-meta");
+  if (meta) meta.textContent = open.length ? `${open.length} open` : "None open";
+  list.replaceChildren(...(open.length
+    ? open.map((r) => requestItem(r, decidable.has(r.id)))
+    : [el("div", "list__item text-muted", "No asset requests are open.")]));
+  applyPermissions(list);
+}
+
 // ---------- the Assign form ----------
 
 const form = $("assign-form");
@@ -220,21 +293,56 @@ function showError(input, message, scope = form) {
 
 const option = (value, text) => { const o = el("option", "", text); o.value = value; return o; };
 
+// The approved request the form is fulfilling, or null for a plain assignment.
+let fulfilling = null;
+
+// While fulfilling a request: only available assets of its type, and the
+// requester as the only person (even if they've since left: the store then
+// refuses, at Employee).
 function fillAssignForm() {
   const items = itemsBySku();
-  const available = allAssets().filter((a) => a.status === "available").sort(byTag);
+  const available = allAssets().filter((a) => a.status === "available" && (!fulfilling || assetTypeOf(a) === fulfilling.assetType)).sort(byTag);
   const chosen = assetSelect.value;
-  assetSelect.replaceChildren(option("", available.length ? "Select available asset" : "Nothing available to assign"),
+  const none = fulfilling ? `No ${assetTypeLabel(fulfilling.assetType).toLowerCase()} is available to assign` : "Nothing available to assign";
+  assetSelect.replaceChildren(option("", available.length ? "Select available asset" : none),
     ...available.map((a) => option(a.id, `${a.id}, ${items.get(a.sku)?.name ?? a.sku}`)));
   if (available.some((a) => a.id === chosen)) assetSelect.value = chosen;
 
-  const people = getAllUsers().filter(isActive).sort((a, b) => a.name.localeCompare(b.name, "en"));
-  const person = personSelect.value;
-  personSelect.replaceChildren(option("", "Select employee"), ...people.map((u) => option(u.id, `${u.name}, ${departmentName(u.department)}`)));
-  if (people.some((u) => u.id === person)) personSelect.value = person;
+  if (fulfilling) {
+    const requester = getUser(fulfilling.userId);
+    personSelect.replaceChildren(option(fulfilling.userId, requester ? `${requester.name}, ${departmentName(requester.department)}` : fulfilling.userId));
+    personSelect.disabled = true;
+  } else {
+    const people = getAllUsers().filter(isActive).sort((a, b) => a.name.localeCompare(b.name, "en"));
+    const person = personSelect.value;
+    personSelect.replaceChildren(option("", "Select employee"), ...people.map((u) => option(u.id, `${u.name}, ${departmentName(u.department)}`)));
+    if (people.some((u) => u.id === person)) personSelect.value = person;
+    personSelect.disabled = false;
+  }
 
   condSelect.replaceChildren(...CONDITION_KEYS.map((k) => option(k, conditionLabel(k))));
   syncCondition();
+  renderFulfilNote();
+}
+
+// Says which request the form is for, with a way back to a plain assignment.
+function renderFulfilNote() {
+  const note = $("a-request");
+  if (!note) return;
+  note.hidden = !fulfilling;
+  if (!fulfilling) {
+    note.replaceChildren();
+    return;
+  }
+  const replaces = fulfilling.replacesTag ? ` It replaces ${fulfilling.replacesTag}: take that back with Update once this one is handed over.` : "";
+  const stop = el("button", "btn btn--ghost btn--sm", "Assign without a request");
+  stop.type = "button";
+  stop.addEventListener("click", () => {
+    fulfilling = null;
+    clearError();
+    fillAssignForm();
+  });
+  note.replaceChildren(`For ${nameOf(fulfilling.userId)}'s ${assetTypeLabel(fulfilling.assetType).toLowerCase()} request (${fulfilling.id}).${replaces} `, stop);
 }
 
 // The condition starts as the chosen asset's own.
@@ -243,7 +351,7 @@ function syncCondition() {
   if (asset) condSelect.value = asset.condition;
 }
 
-const ASSIGN_FIELD = { holderId: personSelect, date: dateInput, condition: condSelect };
+const ASSIGN_FIELD = { holderId: personSelect, date: dateInput, condition: condSelect, tag: assetSelect };
 
 function submitAssign(e) {
   e.preventDefault();
@@ -253,20 +361,36 @@ function submitAssign(e) {
     return;
   }
   const tag = assetSelect.value;
-  const result = assignAsset(getCurrentUserId(), tag, { holderId: personSelect.value, date: dateInput.value, condition: condSelect.value });
+  const request = fulfilling;
+  const result = request
+    ? fulfilAssetRequest(request.id, getCurrentUserId(), tag, { date: dateInput.value, condition: condSelect.value })
+    : assignAsset(getCurrentUserId(), tag, { holderId: personSelect.value, date: dateInput.value, condition: condSelect.value });
   if (!result.ok) {
     const input = ASSIGN_FIELD[result.field];
     if (input) showError(input, result.error);
     else showError(assetSelect, result.error);
     return;
   }
-  showToast(escapeHtml(`${tag} assigned to ${nameOf(result.record.holderId)}.`), "success");
+  const holder = request ? request.userId : result.record.holderId;
+  showToast(escapeHtml(`${tag} assigned to ${nameOf(holder)}.${request ? ` Request ${request.id} is fulfilled.` : ""}`), "success");
+  fulfilling = null;
   form.reset();
   render();
 }
 
-// A row's Assign: the form, with that asset chosen.
+// An open request's Assign: the form, for that request.
+function startFulfil(request) {
+  fulfilling = request;
+  form.reset();
+  clearError();
+  fillAssignForm();
+  form.scrollIntoView?.({ block: "nearest" });
+  assetSelect.focus();
+}
+
+// A row's Assign: the form, with that asset chosen (a plain assignment).
 function startAssign(tag) {
+  fulfilling = null;
   fillAssignForm();
   assetSelect.value = tag;
   syncCondition();
@@ -352,6 +476,9 @@ function render() {
   renderTable(assets);
   renderStats(assets);
   renderInactiveAlert();
+  renderRequests();
+  // A request closed or cancelled meanwhile can't be fulfilled any more.
+  if (fulfilling) fulfilling = allAssetRequests().find((r) => r.id === fulfilling.id && r.status === "approved") ?? null;
   if (can("assets:assign") && form) fillAssignForm();
 }
 

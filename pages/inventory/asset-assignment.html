@@ -236,27 +236,10 @@
 
       <section class="card">
         <div class="card__header">
-          <h3 class="card__title">Pending asset requests</h3>
-          <span class="card__meta">Sample, not built yet</span>
+          <h3 class="card__title">Open asset requests</h3>
+          <span class="card__meta" id="asset-requests-meta">—</span>
         </div>
-        <div class="card__body"><p class="form-hint">Asset requests come in a later round. These two show how requests will look here; their buttons don't save anything.</p></div>
-        <div class="list">
-          <div class="list__item">
-            <div class="avatar avatar--1">AK</div>
-            <div class="list__content"><span class="list__title">Arjun Kapoor, laptop upgrade</span><span class="list__sub">Replaces AST-0188, 3 years old</span></div>
-            <div class="btn-group">
-              <button class="btn btn--sm" type="button" data-permission="assets:approve" data-not-implemented="Reject">Reject</button>
-              <button class="btn btn--primary btn--sm" type="button" data-permission="assets:approve" data-not-implemented="Approve">Approve</button>
-            </div>
-          </div>
-          <div class="list__item">
-            <div class="avatar avatar--3">AI</div>
-            <div class="list__content"><span class="list__title">Ananya Iyer, second monitor</span><span class="list__sub">Sales, needed for reporting</span></div>
-            <div class="btn-group">
-              <button class="btn btn--sm" type="button" data-permission="assets:approve" data-not-implemented="Reject">Reject</button>
-              <button class="btn btn--primary btn--sm" type="button" data-permission="assets:approve" data-not-implemented="Approve">Approve</button>
-            </div>
-          </div>
+        <div class="list" id="asset-request-list">
         </div>
       </section>
 
@@ -264,6 +247,7 @@
         <div class="card__header"><h3 class="card__title">Assign an asset</h3></div>
         <div class="card__body">
           <form class="form" id="assign-form" action="asset-assignment.html" novalidate>
+            <div class="alert alert--info" id="a-request" hidden></div>
             <div class="form-grid">
               <div class="form-field">
                 <label class="form-label form-label--required" for="a-asset">Asset</label>

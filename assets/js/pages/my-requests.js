@@ -1,11 +1,11 @@
 // pages/my-requests.js
 // Runs on my-requests.html. The signed-in person's leave requests come from
-// the leave store, their attendance corrections from the attendance store and
-// their expense claims from the expense store, all with a working Cancel while
-// pending. The asset rows are still static samples (marked data-static in the
-// HTML) and are kept as they are. The tabs, type filter and side stepper cover
-// all of them. A session without an employee id (an old sign-in) leaves the
-// static page as it is.
+// the leave store, their attendance corrections from the attendance store,
+// their expense claims from the expense store and their asset requests from
+// the asset-request store, all with a working Cancel while pending (an asset
+// request also while approved, until an asset is handed over). The tabs, type
+// filter and side stepper cover all of them. A session without an employee
+// id (an old sign-in) leaves the static page as it is.
 
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions } from "../core/rbac.js";
@@ -13,7 +13,9 @@ import { getUser } from "../data/store.js";
 import { requestsFor, cancelLeave, currentApproverName } from "../data/leave-store.js";
 import { regularizationsFor, cancelRegularization } from "../data/attendance-store.js";
 import { expensesFor, cancelExpense, waitingOn } from "../data/expenses-store.js";
+import { assetRequestsFor, cancelAssetRequest, waitingOn as assetWaitingOn } from "../data/asset-requests-store.js";
 import { categoryLabel, stageBadge, expenseSteps } from "../ui/expense-view.js";
+import { requestTitle as assetTitle, statusBadgeOf, endNote, assetRequestSteps } from "../ui/asset-request-view.js";
 import { rupees } from "../ui/money.js";
 import { showToast } from "../ui/toast.js";
 import {
@@ -34,11 +36,6 @@ const progressCard = document.getElementById("request-progress");
 
 let statusFilter = "all";
 let typeFilter = "";
-
-// The static sample rows that stay, read once from the HTML.
-const staticRows = Array.from(tbody?.querySelectorAll("tr[data-static]") ?? []).map((node) => ({
-  node, type: node.dataset.type, status: node.dataset.status, sent: node.dataset.sent ?? "", id: "",
-}));
 
 // ---------- leave rows ----------
 
@@ -170,15 +167,67 @@ function expenseRow(claim) {
   return tr;
 }
 
+// ---------- asset request rows ----------
+
+// Who it's with: whoever may decide it now, whoever may hand over an asset
+// once approved, then whoever handed one over, rejected or closed it.
+function assetWith(request) {
+  if (request.status === "pending" || request.status === "approved") {
+    const ids = assetWaitingOn(request);
+    if (!ids.length) return "Nobody yet";
+    return request.status === "approved" ? `Assign: ${names(ids)}` : names(ids);
+  }
+  const last = [...request.history].reverse().find((h) => ["fulfilled", "rejected", "closed"].includes(h.decision));
+  return last ? names([last.byUserId]) : "—";
+}
+
+function cancelAsset(request) {
+  if (!window.confirm(`Cancel your asset request (${assetTitle(request)})?`)) return;
+  const result = cancelAssetRequest(request.id, user.id);
+  if (!result.ok) showToast("Couldn't cancel the request. An asset may already have been handed over.", "danger");
+  else showToast("Asset request cancelled.", "success");
+  render();
+}
+
+function assetRow(request) {
+  const tr = el("tr");
+  tr.dataset.requestId = request.id;
+  const titleCell = el("td");
+  titleCell.append(el("span", "table__user-name", assetTitle(request)));
+  const typeCell = el("td");
+  typeCell.append(el("span", "badge badge--square", "Asset"));
+  const statusCell = el("td");
+  statusCell.append(statusBadgeOf(request));
+
+  const actions = el("td", "table__actions");
+  if (request.status === "pending" || request.status === "approved") {
+    const cancel = el("button", "btn btn--sm btn--danger", "Cancel");
+    cancel.type = "button";
+    cancel.dataset.permission = "requests:cancel";
+    cancel.addEventListener("click", () => cancelAsset(request));
+    actions.append(cancel);
+  } else if (endNote(request)) {
+    actions.append(el("span", "text-sm text-muted", endNote(request)));
+  }
+
+  tr.append(titleCell, typeCell, el("td", "", formatDay(request.appliedOn)), el("td", "", assetWith(request)), statusCell, actions);
+  return tr;
+}
+
 // ---------- rendering ----------
+
+// The tabs an asset request counts under: fulfilled as approved (it was
+// approved, then handed over); closed, like cancelled, only under All.
+const ASSET_TAB = { fulfilled: "approved" };
 
 function allRows() {
   const leave = requestsFor(user.id).map((r) => ({ node: leaveRow(r), type: "leave", status: r.status, sent: r.appliedOn, id: r.id }));
   const corrections = regularizationsFor(user.id).map((r) => ({ node: correctionRow(r), type: "attendance", status: r.status, sent: r.appliedOn, id: r.id }));
   // A paid claim counts as approved for the tabs (it was approved, then paid).
   const claims = expensesFor(user.id).map((c) => ({ node: expenseRow(c), type: "expense", status: c.status === "paid" ? "approved" : c.status, sent: c.appliedOn, id: c.id }));
+  const assets = assetRequestsFor(user.id).map((r) => ({ node: assetRow(r), type: "asset", status: ASSET_TAB[r.status] ?? r.status, sent: r.appliedOn, id: r.id }));
   // Newest sent first; the id breaks ties between two sent the same day.
-  return [...leave, ...corrections, ...claims, ...staticRows].sort((a, b) => b.sent.localeCompare(a.sent) || b.id.localeCompare(a.id));
+  return [...leave, ...corrections, ...claims, ...assets].sort((a, b) => b.sent.localeCompare(a.sent) || b.id.localeCompare(a.id));
 }
 
 function pillStatus(pill) {
@@ -186,18 +235,21 @@ function pillStatus(pill) {
   return PILL_STATUS[label] ?? "all";
 }
 
-// The newest pending request of any kind: leave, an attendance correction or
-// an expense claim (whose steps come from its own history: ui/expense-view.js).
+// The newest pending request of any kind: leave, an attendance correction, an
+// expense claim or an asset request (the last two's steps come from their own
+// history: ui/expense-view.js, ui/asset-request-view.js).
 function renderProgress() {
-  const request = newestPending([...requestsFor(user.id), ...regularizationsFor(user.id), ...expensesFor(user.id)]);
+  const request = newestPending([...requestsFor(user.id), ...regularizationsFor(user.id), ...expensesFor(user.id), ...assetRequestsFor(user.id)]);
   progressCard.hidden = !request;
   if (!request) return;
   const isClaim = request.id.startsWith("EXP-");
+  const isAsset = request.id.startsWith("ARQ-");
   progressCard.querySelector(".card__title").textContent = isClaim
     ? `Expense: ${expenseTitle(request)}`
+    : isAsset ? `Asset: ${assetTitle(request)}`
     : request.issue ? correctionTitle(request) : `${typeLabel(request.type)}, ${requestDates(request)}`;
   const stepper = el("ol", "stepper stepper--vertical");
-  stepper.append(...(isClaim ? expenseSteps(request) : pendingSteps(request)));
+  stepper.append(...(isClaim ? expenseSteps(request) : isAsset ? assetRequestSteps(request) : pendingSteps(request)));
   progressCard.querySelector(".card__body").replaceChildren(stepper);
 }
 
@@ -228,7 +280,7 @@ function render() {
 // ---------- start ----------
 
 if (user && tbody && progressCard) {
-  tbody.querySelectorAll("tr[data-sample]").forEach((tr) => tr.remove());   // replaced by the real leave, correction and expense rows
+  tbody.querySelectorAll("tr[data-sample]").forEach((tr) => tr.remove());   // replaced by the real leave, correction, expense and asset rows
 
   // ui/tabs.js already moves the is-active highlight between pills on click.
   pills.forEach((pill) => pill.addEventListener("click", () => {

@@ -4,11 +4,11 @@
 // left, open requests, working hours for the last 14 days, the newest pending
 // request, the leave balance card, decisions on their own requests (merged
 // with the static updates) and their last 5 working days, from
-// data/attendance-store.js and data/leave-store.js; and this month's payslip,
-// from data/payroll-store.js, as payslips.html shows it. The laptop request and
-// the announcement lines are static samples (marked data-static in the HTML)
-// and stay as they are. A session without an employee id (an old sign-in)
-// leaves the static page as it is.
+// data/attendance-store.js and data/leave-store.js; their asset requests, from
+// data/asset-requests-store.js; and this month's payslip, from
+// data/payroll-store.js, as payslips.html shows it. The announcement line is a
+// static sample (marked data-static in the HTML) and stays as it is. A session
+// without an employee id (an old sign-in) leaves the static page as it is.
 
 import { getCurrentUserId } from "../core/auth.js";
 import { getUser } from "../data/store.js";
@@ -16,6 +16,8 @@ import { addDays } from "../data/holidays.js";
 import { LEAVE_TYPES, balanceFor, requestsFor, currentApproverName } from "../data/leave-store.js";
 import { monthFor, rangeFor, regularizationsFor } from "../data/attendance-store.js";
 import { payslipsFor } from "../data/payroll-store.js";
+import { assetRequestsFor, waitingOn as assetWaitingOn } from "../data/asset-requests-store.js";
+import { assetTypeLabel } from "../ui/inventory-view.js";
 import {
   el, todayIso, formatDay, formatRange, monthName, typeLabel, requestDates,
   statusBadge, newestPending, decisionOf, localDateOf, shortDate, whenText, plural, monthShort,
@@ -47,12 +49,15 @@ const updates = document.getElementById("updates");
 const recentBody = document.getElementById("my-days");
 
 // The static samples that stay, read once from the HTML.
-const staticRequests = Array.from(requestList?.querySelectorAll("[data-static]") ?? []);
 const staticUpdates = Array.from(updates?.querySelectorAll("[data-static]") ?? []);
 
 // ---------- formatting ----------
 
 const isPending = (r) => r.status === "pending";
+const isAsset = (r) => r.id.startsWith("ARQ-");
+// An asset request is open until an asset is handed over (or it ends otherwise).
+const isOpenAsset = (r) => r.status === "pending" || r.status === "approved";
+const assetName = (r) => `${assetTypeLabel(r.assetType)} request`;
 const isOff = (day) => day.status === "weekend" || day.status === "holiday";
 
 // "Casual leave, 5 Oct" or "Regularization, 25 Sep", as on my-requests.
@@ -91,17 +96,15 @@ function renderBalanceStat(rows) {
   setStat("balance", `${total} ${total === 1 ? "day" : "days"}`, most.map((r) => `${SHORT[r.type]} ${r.left}`).join(", "));
 }
 
-function renderOpenRequests(leave, corrections) {
-  const delta = stats.querySelector('[data-stat="requests"] .stat__delta');
-  const otherCount = Number(delta?.dataset.staticCount ?? 0);
-  const otherText = delta?.dataset.staticText ?? "";
+function renderOpenRequests(leave, corrections, assets) {
   const leavePending = leave.filter(isPending).length;
   const correctionsPending = corrections.filter(isPending).length;
+  const assetsOpen = assets.filter(isOpenAsset).length;
   const parts = [];
   if (leavePending) parts.push(`${leavePending} leave`);
   if (correctionsPending) parts.push(plural(correctionsPending, "correction", "corrections"));
-  if (otherText) parts.push(otherText);
-  setStat("requests", String(leavePending + correctionsPending + otherCount), parts.join(", ") || "None");
+  if (assetsOpen) parts.push(plural(assetsOpen, "asset", "assets"));
+  setStat("requests", String(leavePending + correctionsPending + assetsOpen), parts.join(", ") || "None");
 }
 
 // The payslip for this month, as payslips.html's "Next payslip" card shows it.
@@ -187,17 +190,22 @@ function renderRecent(days) {
 
 // ---------- requests, balance, updates ----------
 
-function renderRequestList(leave, corrections) {
-  const request = newestPending([...leave, ...corrections]);
+// Who a pending asset request waits on, by name ("" if nobody can decide it).
+const assetApprovers = (r) => assetWaitingOn(r).map((id) => getUser(id)?.name ?? id).join(", ");
+
+function renderRequestList(leave, corrections, assets) {
+  const request = newestPending([...leave, ...corrections, ...assets]);
   const items = [];
   if (request) {
     const item = el("div", "list__item");
     const content = el("div", "list__content");
-    content.append(el("span", "list__title", requestName(request)), el("span", "list__sub", `Waiting for ${currentApproverName(request)}`));
-    item.append(el("div", "avatar avatar--2", request.issue ? "R" : "L"), content, statusBadge("pending"));
+    const waiting = isAsset(request) ? assetApprovers(request) : currentApproverName(request);
+    content.append(el("span", "list__title", isAsset(request) ? assetName(request) : requestName(request)),
+      el("span", "list__sub", waiting ? `Waiting for ${waiting}` : "Nobody can decide it now"));
+    item.append(el("div", isAsset(request) ? "avatar avatar--4" : "avatar avatar--2", isAsset(request) ? "A" : request.issue ? "R" : "L"), content, statusBadge("pending"));
     items.push(item);
   }
-  requestList.replaceChildren(...items, ...staticRequests);
+  requestList.replaceChildren(...items);
 }
 
 function renderBalanceCard(rows) {
@@ -210,18 +218,32 @@ function renderBalanceCard(rows) {
   balanceCard.replaceChildren(...bars);
 }
 
-// The newest decisions on the person's own leave and corrections, merged with
-// the static lines by date (a static line without a date stays at the end).
-function renderUpdates(leave, corrections) {
-  const decided = [...leave, ...corrections]
-    .map((request) => ({ request, decision: decisionOf(request) }))
+// What last happened to an asset request that's no longer waiting for a
+// decision: its final approval, a rejection, the hand-over or its closing.
+// null while pending (a manager's approval isn't the answer yet) or cancelled.
+function assetOutcome(request) {
+  if (request.status === "pending" || request.status === "cancelled") return null;
+  return [...request.history].reverse().find((h) => ["approved", "auto-approved", "rejected", "fulfilled", "closed"].includes(h.decision)) ?? null;
+}
+
+const ASSET_VERB = { approved: "approved", "auto-approved": "approved automatically", rejected: "rejected", fulfilled: "fulfilled", closed: "closed without an asset" };
+
+// The newest decisions on the person's own leave, corrections and asset
+// requests, merged with the static lines by date (a static line without a
+// date stays at the end).
+function renderUpdates(leave, corrections, assets) {
+  const decided = [...leave, ...corrections, ...assets]
+    .map((request) => ({ request, decision: isAsset(request) ? assetOutcome(request) : decisionOf(request) }))
     .filter((x) => x.decision)
     .sort((a, b) => b.decision.at.localeCompare(a.decision.at))
     .slice(0, SHOWN_DECISIONS)
     .map(({ request, decision }) => {
-      const approved = decision.decision !== "rejected";
-      const what = request.issue ? `regularization for ${formatDay(request.date)}` : `${typeLabel(request.type).toLowerCase()} for ${requestDates(request)}`;
-      const verb = { approved: "approved", rejected: "rejected", "auto-approved": "approved automatically" }[decision.decision];
+      const approved = decision.decision !== "rejected" && decision.decision !== "closed";
+      const what = isAsset(request) ? `${assetTypeLabel(request.assetType).toLowerCase()} request`
+        : request.issue ? `regularization for ${formatDay(request.date)}` : `${typeLabel(request.type).toLowerCase()} for ${requestDates(request)}`;
+      const verb = isAsset(request)
+        ? `${ASSET_VERB[decision.decision]}${decision.decision === "fulfilled" ? `: ${request.assetTag}` : ""}`
+        : { approved: "approved", rejected: "rejected", "auto-approved": "approved automatically" }[decision.decision];
       const date = localDateOf(decision.at);
       const item = el("div", "activity__item");
       const text = el("div", "activity__text", `Your ${what} was ${verb}`);
@@ -242,12 +264,13 @@ if (user && stats && chart && requestList && balanceCard && updates && recentBod
 
   const leave = requestsFor(user.id);
   const corrections = regularizationsFor(user.id);
+  const assets = assetRequestsFor(user.id);
   const days = rangeFor(user.id, addDays(today, -(LOOK_BACK - 1)), today) ?? [];
   const balance = limitedBalance();
 
   renderPresent(monthFor(user.id, year, month));
   renderBalanceStat(balance);
-  renderOpenRequests(leave, corrections);
+  renderOpenRequests(leave, corrections, assets);
   renderPayslip();
   if (days.length) {
     renderChart(days.slice(-CHART_DAYS));
@@ -256,8 +279,8 @@ if (user && stats && chart && requestList && balanceCard && updates && recentBod
     hoursRange.textContent = "–";
     hoursNote.textContent = "Attendance isn't tracked.";
   }
-  renderRequestList(leave, corrections);
+  renderRequestList(leave, corrections, assets);
   renderBalanceCard(balance);
-  renderUpdates(leave, corrections);
+  renderUpdates(leave, corrections, assets);
   renderRecent(days);
 }
