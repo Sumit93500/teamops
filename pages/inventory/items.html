@@ -135,6 +135,7 @@
     <div class="page-header__actions">
       <a class="btn" href="stock-movements.html">Stock movements</a>
       <a class="btn" href="asset-assignment.html">Assets</a>
+      <button class="btn" type="button" data-permission="inventory:view" data-export>Export</button>
       <button class="btn btn--primary" type="button" data-permission="inventory:create" data-not-implemented="Add item">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Add item
@@ -145,44 +146,44 @@
   <div class="stack">
 
     <section class="stat-strip" aria-label="Key numbers">
-      <div class="stat">
+      <div class="stat" data-stat="items">
         <div class="stat__icon stat__icon--1">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
         </div>
         <div>
           <span class="stat__label">Total items</span>
-          <strong class="stat__value">342</strong>
-          <span class="stat__delta">5 categories</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="value">
         <div class="stat__icon stat__icon--2">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
         </div>
         <div>
           <span class="stat__label">Stock value</span>
-          <strong class="stat__value">₹18.6L</strong>
-          <span class="stat__delta stat__delta--up">+₹1.4L this month</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="low">
         <div class="stat__icon stat__icon--3">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0"/></svg>
         </div>
         <div>
           <span class="stat__label">Low stock</span>
-          <strong class="stat__value">7</strong>
-          <span class="stat__delta stat__delta--down">3 awaiting approval</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat" data-stat="out">
         <div class="stat__icon stat__icon--4">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M9 9l6 6M15 9l-6 6"/></svg>
         </div>
         <div>
           <span class="stat__label">Out of stock</span>
-          <strong class="stat__value">2</strong>
-          <span class="stat__delta stat__delta--down">Reorder now</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
     </section>
@@ -199,16 +200,16 @@
         <div class="table__filters">
           <div class="input-group">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input class="input input--sm input--search" type="search" placeholder="Search item or SKU" aria-label="Search items">
+            <input class="input input--sm input--search" type="search" placeholder="Search item or SKU" aria-label="Search items" id="item-search" data-table-filter="off">
           </div>
-          <select class="select select--sm" aria-label="Filter by stock status">
-            <option>All stock levels</option><option>In stock</option><option>Low stock</option><option>Out of stock</option>
+          <select class="select select--sm" aria-label="Filter by stock status" id="item-status">
+            <option value="">All stock levels</option>
           </select>
         </div>
       </div>
 
       <div class="table-wrap">
-        <table class="table">
+        <table class="table" data-export-name="inventory-items">
           <thead>
             <tr>
               <th>Item</th>
@@ -221,79 +222,12 @@
               <th class="table__actions">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span><div><span class="item__name">Dell Latitude 5440</span><span class="item__sku">IT-1021</span></div></div></td>
-              <td>IT equipment</td>
-              <td><div class="stock"><span class="stock__qty">6</span><div class="progress progress--sm"><span class="progress__bar" style="--w:60%"></span></div></div></td>
-              <td class="table__num">5</td><td class="table__num">₹78,500</td><td>Store room A</td>
-              <td><span class="badge badge--success badge--dot">In stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
-            <tr>
-              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span><div><span class="item__name">Logitech MX Keys keyboard</span><span class="item__sku">IT-1044</span></div></div></td>
-              <td>IT equipment</td>
-              <td><div class="stock stock--low"><span class="stock__qty">3</span><div class="progress progress--sm progress--warning"><span class="progress__bar" style="--w:15%"></span></div></div></td>
-              <td class="table__num">10</td><td class="table__num">₹9,500</td><td>Store room A</td>
-              <td><span class="badge badge--warning badge--dot">Low stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
-            <tr>
-              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM2 19h20"/></svg></span><div><span class="item__name">HDMI cable, 2 m</span><span class="item__sku">IT-1102</span></div></div></td>
-              <td>IT equipment</td>
-              <td><div class="stock stock--out"><span class="stock__qty">0</span><div class="progress progress--sm progress--danger"><span class="progress__bar" style="--w:0%"></span></div></div></td>
-              <td class="table__num">20</td><td class="table__num">₹450</td><td>Store room A</td>
-              <td><span class="badge badge--danger badge--dot">Out of stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
-            <tr>
-              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><span class="item__name">Ergonomic office chair</span><span class="item__sku">FUR-2010</span></div></div></td>
-              <td>Furniture</td>
-              <td><div class="stock"><span class="stock__qty">14</span><div class="progress progress--sm"><span class="progress__bar" style="--w:100%"></span></div></div></td>
-              <td class="table__num">5</td><td class="table__num">₹12,800</td><td>Warehouse</td>
-              <td><span class="badge badge--success badge--dot">In stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
-            <tr>
-              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><span class="item__name">A4 paper ream</span><span class="item__sku">STA-3001</span></div></div></td>
-              <td>Stationery</td>
-              <td><div class="stock stock--low"><span class="stock__qty">42</span><div class="progress progress--sm progress--warning"><span class="progress__bar" style="--w:42%"></span></div></div></td>
-              <td class="table__num">50</td><td class="table__num">₹320</td><td>Store room B</td>
-              <td><span class="badge badge--warning badge--dot">Low stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
-            <tr>
-              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><span class="item__name">Whiteboard markers, pack of 4</span><span class="item__sku">STA-3015</span></div></div></td>
-              <td>Stationery</td>
-              <td><div class="stock"><span class="stock__qty">60</span><div class="progress progress--sm"><span class="progress__bar" style="--w:100%"></span></div></div></td>
-              <td class="table__num">30</td><td class="table__num">₹160</td><td>Store room B</td>
-              <td><span class="badge badge--success badge--dot">In stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
-            <tr>
-              <td><div class="item"><span class="item__thumb"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><span class="item__name">Coffee beans, 1 kg</span><span class="item__sku">PAN-4002</span></div></div></td>
-              <td>Pantry</td>
-              <td><div class="stock stock--low"><span class="stock__qty">8</span><div class="progress progress--sm progress--warning"><span class="progress__bar" style="--w:40%"></span></div></div></td>
-              <td class="table__num">10</td><td class="table__num">₹850</td><td>Pantry store</td>
-              <td><span class="badge badge--warning badge--dot">Low stock</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="inventory:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
+          <tbody id="item-rows">
           </tbody>
         </table>
       </div>
 
-      <div class="pagination">
-        <span>Showing 1 to 7 of 342</span>
-        <div class="pagination__pages">
-          <button class="pagination__btn" type="button" disabled>Prev</button>
-          <button class="pagination__btn is-active" type="button">1</button>
-          <button class="pagination__btn" type="button" data-not-implemented="Page 2">2</button>
-          <button class="pagination__btn" type="button" data-not-implemented="Page 3">3</button>
-          <span class="pagination__gap">...</span>
-          <button class="pagination__btn" type="button" data-not-implemented="Page 49">49</button>
-          <button class="pagination__btn" type="button" data-not-implemented="Next page">Next</button>
-        </div>
-      </div>
+      <div class="pagination is-empty" id="item-pagination"></div>
     </section>
 
     <div class="grid grid-2">
@@ -301,42 +235,18 @@
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Reorder alerts</h3>
-          <span class="card__meta">9 items</span>
+          <span class="card__meta" id="reorder-meta">—</span>
         </div>
-        <div class="list">
-          <div class="list__item">
-            <div class="list__content"><span class="list__title">HDMI cable, 2 m</span><span class="list__sub">0 left, reorder level is 20</span></div>
-            <span class="badge badge--danger">Out</span>
-          </div>
-          <div class="list__item">
-            <div class="list__content"><span class="list__title">Logitech MX Keys keyboard</span><span class="list__sub">3 left, reorder level is 10</span></div>
-            <span class="badge badge--warning">Low</span>
-          </div>
-          <div class="list__item">
-            <div class="list__content"><span class="list__title">A4 paper ream</span><span class="list__sub">42 left, reorder level is 50</span></div>
-            <span class="badge badge--warning">Low</span>
-          </div>
-          <div class="list__item">
-            <div class="list__content"><span class="list__title">Coffee beans, 1 kg</span><span class="list__sub">8 left, reorder level is 10</span></div>
-            <span class="badge badge--warning">Low</span>
-          </div>
-        </div>
-        <div class="card__footer">
-          <span class="card__meta">Purchase order PO-2291 is waiting for approval</span>
-          <a class="btn btn--sm" href="vendors.html">View orders</a>
+        <div class="list" id="reorder-list">
         </div>
       </section>
 
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Stock value by category</h3>
-          <span class="card__meta">₹ lakh</span>
+          <span class="card__meta">At current unit prices</span>
         </div>
-        <div class="card__body">
-          <div class="bar-row"><span>IT equipment</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:100%"></span></div><span class="bar-row__value">11.2</span></div>
-          <div class="bar-row"><span>Furniture</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:52%"></span></div><span class="bar-row__value">5.8</span></div>
-          <div class="bar-row"><span>Stationery</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:9%"></span></div><span class="bar-row__value">1.0</span></div>
-          <div class="bar-row"><span>Pantry</span><div class="bar-row__track"><span class="bar-row__fill" style="--w:6%"></span></div><span class="bar-row__value">0.6</span></div>
+        <div class="card__body value-bars" id="value-by-category">
         </div>
       </section>
 
@@ -347,6 +257,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/items.js"></script>
 </body>
 </html>
 <!-- END 2 -->

@@ -137,7 +137,7 @@
       <p class="page-header__subtitle">Every item that came in, went out or was corrected</p>
     </div>
     <div class="page-header__actions">
-      <button class="btn" type="button" data-permission="reports:export" data-export>Export</button>
+      <button class="btn" type="button" data-permission="inventory:view" data-export>Export</button>
     </div>
   </div>
 
@@ -150,15 +150,16 @@
           <button class="tabs__tab" type="button" role="tab">Stock in</button>
           <button class="tabs__tab" type="button" role="tab">Stock out</button>
           <button class="tabs__tab" type="button" role="tab">Adjustments</button>
+          <button class="tabs__tab" type="button" role="tab">Returns</button>
         </div>
         <div class="input-group">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input class="input input--sm input--search" type="search" placeholder="Search item or reference" aria-label="Search movements">
+          <input class="input input--sm input--search" type="search" placeholder="Search item or reference" aria-label="Search movements" id="movement-search" data-table-filter="off">
         </div>
       </div>
 
       <div class="table-wrap">
-        <table class="table" data-export-name="stock-movements">
+        <table class="table table--fit" data-export-name="stock-movements">
           <thead>
             <tr>
               <th>Date</th>
@@ -169,114 +170,59 @@
               <th>Recorded by</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>18 Sep, 16:40</td>
-              <td><span class="table__user-name">Dell Latitude 5440</span></td>
-              <td><span class="badge badge--info badge--square">Stock out</span></td>
-              <td class="table__num"><span class="qty qty--out">-1</span></td>
-              <td>Assigned to Sneha Rao</td><td>Vikram Singh</td>
-            </tr>
-            <tr>
-              <td>18 Sep, 11:05</td>
-              <td><span class="table__user-name">A4 paper ream</span></td>
-              <td><span class="badge badge--info badge--square">Stock out</span></td>
-              <td class="table__num"><span class="qty qty--out">-10</span></td>
-              <td>Finance department request</td><td>Vikram Singh</td>
-            </tr>
-            <tr>
-              <td>17 Sep, 15:20</td>
-              <td><span class="table__user-name">Ergonomic office chair</span></td>
-              <td><span class="badge badge--success badge--square">Stock in</span></td>
-              <td class="table__num"><span class="qty qty--in">+6</span></td>
-              <td><span class="asset-tag">PO-2270</span></td><td>Vikram Singh</td>
-            </tr>
-            <tr>
-              <td>17 Sep, 10:12</td>
-              <td><span class="table__user-name">Logitech MX Keys keyboard</span></td>
-              <td><span class="badge badge--info badge--square">Stock out</span></td>
-              <td class="table__num"><span class="qty qty--out">-2</span></td>
-              <td>Engineering team</td><td>Vikram Singh</td>
-            </tr>
-            <tr>
-              <td>16 Sep, 14:00</td>
-              <td><span class="table__user-name">HDMI cable, 2 m</span></td>
-              <td><span class="badge badge--warning badge--square">Adjustment</span></td>
-              <td class="table__num"><span class="qty qty--out">-3</span></td>
-              <td>Stock count correction</td><td>Vikram Singh</td>
-            </tr>
-            <tr>
-              <td>15 Sep, 09:30</td>
-              <td><span class="table__user-name">Coffee beans, 1 kg</span></td>
-              <td><span class="badge badge--success badge--square">Stock in</span></td>
-              <td class="table__num"><span class="qty qty--in">+12</span></td>
-              <td><span class="asset-tag">PO-2264</span></td><td>Vikram Singh</td>
-            </tr>
-            <tr>
-              <td>14 Sep, 17:45</td>
-              <td><span class="table__user-name">Dell Latitude 5440</span></td>
-              <td><span class="badge badge--primary badge--square">Return</span></td>
-              <td class="table__num"><span class="qty qty--in">+1</span></td>
-              <td>Returned by Divya Menon</td><td>Vikram Singh</td>
-            </tr>
+          <tbody id="movement-rows">
           </tbody>
         </table>
       </div>
 
-      <div class="pagination">
-        <span>Showing 1 to 7 of 186</span>
-        <div class="pagination__pages">
-          <button class="pagination__btn" type="button" disabled>Prev</button>
-          <button class="pagination__btn is-active" type="button">1</button>
-          <button class="pagination__btn" type="button" data-not-implemented="Page 2">2</button>
-          <button class="pagination__btn" type="button" data-not-implemented="Page 3">3</button>
-          <span class="pagination__gap">...</span>
-          <button class="pagination__btn" type="button" data-not-implemented="Page 27">27</button>
-          <button class="pagination__btn" type="button" data-not-implemented="Next page">Next</button>
-        </div>
-      </div>
+      <div class="pagination is-empty" id="movement-pagination"></div>
     </section>
 
     <aside class="stack aside-sticky">
-      <section class="card">
+      <section class="card" data-permission="inventory:create">
         <div class="card__header"><h3 class="card__title">Record a movement</h3></div>
         <div class="card__body">
-          <form class="form" action="stock-movements.html">
+          <form class="form" id="movement-form" action="stock-movements.html" novalidate>
             <div class="form-field">
               <label class="form-label form-label--required" for="m-item">Item</label>
               <select class="select" id="m-item" required>
                 <option value="">Select item</option>
-                <option>Dell Latitude 5440</option><option>Logitech MX Keys keyboard</option>
-                <option>HDMI cable, 2 m</option><option>Ergonomic office chair</option>
-                <option>A4 paper ream</option><option>Coffee beans, 1 kg</option>
               </select>
             </div>
             <div class="form-grid">
               <div class="form-field">
                 <label class="form-label form-label--required" for="m-type">Type</label>
                 <select class="select" id="m-type" required>
-                  <option>Stock in</option><option>Stock out</option><option>Adjustment</option><option>Return</option>
+                  <option value="in">Stock in</option><option value="out">Stock out</option><option value="adjustment">Adjustment</option><option value="return">Return</option>
                 </select>
               </div>
               <div class="form-field">
                 <label class="form-label form-label--required" for="m-qty">Quantity</label>
-                <input class="input" id="m-qty" type="number" min="1" placeholder="0" required>
+                <input class="input" id="m-qty" type="number" min="1" step="1" placeholder="0" required>
               </div>
             </div>
+            <span class="form-hint" id="m-type-hint" hidden>This item is tagged: it goes out and comes back on the asset register. Here you can record stock in or an adjustment.</span>
+            <span class="form-hint" id="m-qty-hint">A whole number, at least 1.</span>
             <div class="form-field">
-              <label class="form-label" for="m-ref">Reference</label>
-              <input class="input" id="m-ref" type="text" placeholder="PO number or who it went to">
+              <label class="form-label form-label--required" for="m-ref">Reference</label>
+              <input class="input" id="m-ref" type="text" placeholder="PO number or who it went to" required>
+            </div>
+            <div class="form-field" id="m-dept-field" hidden>
+              <label class="form-label" for="m-dept">Issued to</label>
+              <select class="select" id="m-dept">
+                <option value="">Not issued to a department</option>
+              </select>
             </div>
             <div class="form-field">
               <label class="form-label" for="m-note">Note</label>
               <textarea class="textarea" id="m-note" placeholder="Optional"></textarea>
             </div>
-            <button class="btn btn--primary btn--block" type="submit" data-permission="inventory:create" data-not-implemented="Record movement">Record movement</button>
+            <button class="btn btn--primary btn--block" type="submit">Record movement</button>
           </form>
         </div>
       </section>
 
-      <div class="alert alert--info">Movements can't be edited or deleted. A mistake is fixed with an adjustment, so the history always stays complete for the audit log.</div>
+      <div class="alert alert--info">Movements can't be edited or deleted. A mistake is fixed with an adjustment, so the history always stays complete.</div>
     </aside>
 
   </div>
@@ -285,6 +231,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/stock-movements.js"></script>
 </body>
 </html>
 <!-- END 2 -->
