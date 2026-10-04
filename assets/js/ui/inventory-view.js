@@ -1,11 +1,12 @@
 // ui/inventory-view.js
 // How inventory things look on a page: category and status labels, the stock
 // status badge, the movement type badge and signed quantity, an asset's
-// condition and status badges, and times in office time. Shared by items.js,
-// stock-movements.js, asset-assignment.js, my-assets.js and user-profile.js,
-// so no two pages word or colour the same thing differently.
+// condition and status badges, a vendor's status badge, and times in office
+// time. Shared by items.js, stock-movements.js, asset-assignment.js,
+// my-assets.js, user-profile.js and vendors.js, so no two pages word or
+// colour the same thing differently.
 
-import { CATEGORIES, ASSET_TYPES, STOCK_STATUSES, MOVEMENT_TYPES, CONDITIONS, ASSET_STATUSES, LOCATIONS } from "../data/inventory.js";
+import { CATEGORIES, ASSET_TYPES, STOCK_STATUSES, MOVEMENT_TYPES, CONDITIONS, ASSET_STATUSES, LOCATIONS, VENDOR_STATUSES } from "../data/inventory.js";
 import { el, formatDay } from "./leave-view.js";
 
 export const categoryLabel = (key) => CATEGORIES[key]?.label ?? key;
@@ -15,6 +16,7 @@ export const movementTypeLabel = (key) => MOVEMENT_TYPES[key]?.label ?? key;
 export const conditionLabel = (key) => CONDITIONS[key]?.label ?? key;
 export const assetStatusLabel = (key) => ASSET_STATUSES[key]?.label ?? key;
 export const locationLabel = (key) => LOCATIONS[key]?.label ?? key;
+export const vendorStatusLabel = (key) => VENDOR_STATUSES[key]?.label ?? key;
 
 // The colours asset-assignment.html and my-assets.html have always used.
 const CONDITION_BADGE = { good: "badge badge--success badge--square", fair: "badge badge--warning badge--square", poor: "badge badge--danger badge--square" };
@@ -26,6 +28,13 @@ export function conditionBadge(condition) {
 
 export function assetStatusBadge(status) {
   return el("span", ASSET_STATUS_BADGE[status] ?? "badge badge--dot", assetStatusLabel(status));
+}
+
+// The colours vendors.html has always used.
+const VENDOR_STATUS_BADGE = { active: "badge badge--success badge--dot", "on-hold": "badge badge--warning badge--dot" };
+
+export function vendorStatusBadge(status) {
+  return el("span", VENDOR_STATUS_BADGE[status] ?? "badge badge--dot", vendorStatusLabel(status));
 }
 
 // badge.css: success = fine, warning = needs attention, danger = act now; no

@@ -58,7 +58,7 @@ export const NAV = [
       { label: "Inventory",          icon: "box",   href: "inventory/items.html",            permission: "inventory:view" },
       { label: "Stock movements",    icon: "arrows", href: "inventory/stock-movements.html", permission: "inventory:view" },
       { label: "Asset assignment",   icon: "laptop", href: "inventory/asset-assignment.html", permission: "assets:view" },
-      { label: "Vendors",            icon: "truck", href: "inventory/vendors.html",          permission: "vendors:create" },
+      { label: "Vendors",            icon: "truck", href: "inventory/vendors.html",          permission: "vendors:view" },
     ],
   },
   {

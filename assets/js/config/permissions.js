@@ -22,7 +22,7 @@ export const PERMISSIONS = {
   tax:           ["view", "manage"],
   inventory:     ["view", "create", "edit"],
   assets:        ["view-own", "assign", "approve", "report", "request", "view"],   // view: see who holds what (asset-assignment.html); Admin only for now
-  vendors:       ["create", "edit"],
+  vendors:       ["create", "edit", "view"],   // view: the vendor list (vendors.html); Admin only for now
   recruitment:   ["view", "create", "edit"],
   announcements: ["view", "create"],
   requests:      ["view-own", "cancel"],

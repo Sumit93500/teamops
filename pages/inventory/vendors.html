@@ -134,10 +134,10 @@
         <li class="breadcrumb__item" aria-current="page">Vendors</li>
       </ol>
       <h1>Vendors</h1>
-      <p class="page-header__subtitle">Suppliers and their purchase orders</p>
+      <p class="page-header__subtitle">Suppliers, their contacts and payment terms</p>
     </div>
     <div class="page-header__actions">
-      <button class="btn" type="button" data-permission="reports:export" data-export>Export</button>
+      <button class="btn" type="button" data-permission="vendors:view" data-export>Export</button>
       <button class="btn btn--primary" type="button" data-permission="vendors:create" data-not-implemented="Add vendor">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Add vendor
@@ -153,93 +153,55 @@
         <div class="table__filters">
           <div class="input-group">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input class="input input--sm input--search" type="search" placeholder="Search vendors" aria-label="Search vendors">
+            <input class="input input--sm input--search" type="search" placeholder="Search vendors" aria-label="Search vendors" id="vendor-search" data-table-filter="off">
           </div>
-          <select class="select select--sm" aria-label="Filter by status">
-            <option>All statuses</option><option>Active</option><option>On hold</option>
+          <select class="select select--sm" aria-label="Filter by status" id="vendor-status">
+            <option value="">All statuses</option>
           </select>
         </div>
       </div>
 
       <div class="table-wrap">
-        <table class="table" data-export-name="vendors">
+        <table class="table table--fit" data-export-name="vendors">
           <thead>
             <tr>
               <th>Vendor</th>
               <th>Supplies</th>
-              <th class="table__num">Open orders</th>
               <th>Payment terms</th>
               <th>Status</th>
               <th class="table__actions">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><div class="table__user"><div class="avatar avatar--1">SO</div><div><span class="table__user-name">Sharma Office Supplies</span><span class="table__user-sub">Rajiv Sharma, +91 98110 22334</span></div></div></td>
-              <td>Stationery, pantry</td><td class="table__num">2</td><td>Net 30 days</td>
-              <td><span class="badge badge--success badge--dot">Active</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="vendors:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
-            <tr>
-              <td><div class="table__user"><div class="avatar avatar--2">TN</div><div><span class="table__user-name">TechNova Distributors</span><span class="table__user-sub">Meenal Kapoor, +91 98180 45521</span></div></div></td>
-              <td>Laptops, accessories</td><td class="table__num">1</td><td>Net 45 days</td>
-              <td><span class="badge badge--success badge--dot">Active</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="vendors:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
-            <tr>
-              <td><div class="table__user"><div class="avatar avatar--3">FC</div><div><span class="table__user-name">FurniCraft India</span><span class="table__user-sub">Sanjay Bhatia, +91 99101 87650</span></div></div></td>
-              <td>Office furniture</td><td class="table__num">0</td><td>Net 30 days</td>
-              <td><span class="badge badge--success badge--dot">Active</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="vendors:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
-            <tr>
-              <td><div class="table__user"><div class="avatar avatar--4">CA</div><div><span class="table__user-name">CoolAir Services</span><span class="table__user-sub">Amit Verma, +91 98730 11098</span></div></div></td>
-              <td>AC maintenance</td><td class="table__num">0</td><td>Yearly contract</td>
-              <td><span class="badge badge--success badge--dot">Active</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="vendors:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
-            <tr>
-              <td><div class="table__user"><div class="avatar avatar--1">QP</div><div><span class="table__user-name">QuickPrint Solutions</span><span class="table__user-sub">Neeraj Jain, +91 98999 30412</span></div></div></td>
-              <td>Printing, id cards</td><td class="table__num">1</td><td>Advance payment</td>
-              <td><span class="badge badge--warning badge--dot">On hold</span></td>
-              <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="vendors:edit" data-not-implemented="Edit">Edit</button></td>
-            </tr>
+          <tbody id="vendor-rows">
           </tbody>
         </table>
       </div>
 
-      <div class="card__footer">
-        <span class="card__meta">Showing 5 of 12 vendors</span>
-        <div class="btn-group">
-          <button class="btn btn--sm" type="button" disabled>Previous</button>
-          <button class="btn btn--sm" type="button" data-not-implemented="Next page">Next</button>
-        </div>
-      </div>
+      <div class="pagination is-empty" id="vendor-pagination"></div>
     </section>
 
     <aside class="stack">
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Recent purchase orders</h3>
-          <span class="card__meta">Last 30 days</span>
+          <span class="card__meta">Sample, not built yet</span>
         </div>
+        <div class="card__body"><p class="form-hint">Purchase orders aren't part of OfficeOS. These three show how orders could look here; nothing on this card is saved or sent for approval.</p></div>
         <div class="list">
           <div class="list__item">
-            <div class="list__content"><span class="list__title"><span class="asset-tag">PO-2291</span> TechNova</span><span class="list__sub">10 laptops and 20 keyboards</span></div>
+            <div class="list__content"><span class="list__title"><span class="asset-tag">PO-2291</span> TechNova Distributors</span><span class="list__sub">10 laptops and 20 keyboards</span></div>
             <div><span class="po__amount">₹1,40,000</span><span class="badge badge--warning badge--dot">Awaiting approval</span></div>
           </div>
           <div class="list__item">
-            <div class="list__content"><span class="list__title"><span class="asset-tag">PO-2270</span> FurniCraft</span><span class="list__sub">6 ergonomic chairs</span></div>
+            <div class="list__content"><span class="list__title"><span class="asset-tag">PO-2270</span> FurniCraft India</span><span class="list__sub">6 ergonomic chairs</span></div>
             <div><span class="po__amount">₹76,800</span><span class="badge badge--success badge--dot">Received</span></div>
           </div>
           <div class="list__item">
-            <div class="list__content"><span class="list__title"><span class="asset-tag">PO-2264</span> Sharma Supplies</span><span class="list__sub">Coffee beans and paper</span></div>
+            <div class="list__content"><span class="list__title"><span class="asset-tag">PO-2264</span> Sharma Office Supplies</span><span class="list__sub">12 kg coffee beans</span></div>
             <div><span class="po__amount">₹10,200</span><span class="badge badge--success badge--dot">Received</span></div>
           </div>
         </div>
       </section>
-
-      <div class="alert alert--warning">PO-2291 is above the ₹1,00,000 limit for a Store Manager, so it needs an Admin's approval. It is in your Approvals inbox.</div>
     </aside>
 
   </div>
@@ -248,6 +210,7 @@
 </div>
 
 <script type="module" src="../../assets/js/app.js"></script>
+<script type="module" src="../../assets/js/pages/vendors.js"></script>
 </body>
 </html>
 <!-- END 2 -->

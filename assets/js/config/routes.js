@@ -47,7 +47,7 @@ export const ROUTES = {
   "inventory/items.html":            "inventory:view",
   "inventory/stock-movements.html":  "inventory:view",
   "inventory/asset-assignment.html": "assets:view",
-  "inventory/vendors.html":          "vendors:create",
+  "inventory/vendors.html":          "vendors:view",
   "inventory/my-assets.html":        "assets:view-own",
 
   "recruitment/job-openings.html": "recruitment:view",
