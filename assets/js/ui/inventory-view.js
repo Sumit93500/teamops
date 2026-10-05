@@ -1,10 +1,10 @@
 // ui/inventory-view.js
 // How inventory things look on a page: category and status labels, the stock
 // status badge, the movement type badge and signed quantity, an asset's
-// condition and status badges, a vendor's status badge, and times in office
-// time. Shared by items.js, stock-movements.js, asset-assignment.js,
-// my-assets.js, user-profile.js and vendors.js, so no two pages word or
-// colour the same thing differently.
+// condition, status and problem-report badges, a vendor's status badge, and
+// times in office time. Shared by items.js, stock-movements.js,
+// asset-assignment.js, my-assets.js, user-profile.js and vendors.js, so no two
+// pages word or colour the same thing differently.
 
 import { CATEGORIES, ASSET_TYPES, STOCK_STATUSES, MOVEMENT_TYPES, CONDITIONS, ASSET_STATUSES, LOCATIONS, VENDOR_STATUSES } from "../data/inventory.js";
 import { el, formatDay } from "./leave-view.js";
@@ -28,6 +28,14 @@ export function conditionBadge(condition) {
 
 export function assetStatusBadge(status) {
   return el("span", ASSET_STATUS_BADGE[status] ?? "badge badge--dot", assetStatusLabel(status));
+}
+
+// An open problem report (data/inventory-store.js's openReportOf()), on
+// asset-assignment.html's register: the day and what's wrong in its tooltip.
+export function reportBadge(report) {
+  const badge = el("span", "badge badge--danger badge--dot", "Problem reported");
+  badge.title = `Reported ${formatDay(officeDate(report.at), true)}: ${report.note}`;
+  return badge;
 }
 
 // The colours vendors.html has always used.

@@ -335,15 +335,18 @@ const blank = () => ({ count: 0, amount: 0 });
 const STATUSES = ["pending", "approved", "paid", "rejected", "cancelled"];
 
 // Over any list of claims: how many and how much, overall, by status and by
-// category (every status and category is present, at 0 if none).
+// category (every status and category is present, at 0 if none). A claim
+// whose status or category isn't one of these still counts in the overall
+// figures; inherited names ("constructor", "__proto__") never index in.
 export function expenseTotals(claims) {
   const out = {
     ...blank(),
     byStatus: Object.fromEntries(STATUSES.map((s) => [s, blank()])),
     byCategory: Object.fromEntries(CATEGORY_KEYS.map((c) => [c, blank()])),
   };
+  const own = (totals, key) => (Object.hasOwn(totals, key) ? totals[key] : null);
   for (const c of claims) {
-    for (const t of [out, out.byStatus[c.status], out.byCategory[c.category]]) {
+    for (const t of [out, own(out.byStatus, c.status), own(out.byCategory, c.category)]) {
       if (!t) continue;
       t.count += 1;
       t.amount += c.amount;

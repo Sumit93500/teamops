@@ -17,6 +17,13 @@
 // (Q8: warn, don't block): such rows say "Inactive" next to the name, and an
 // alert above the table counts them.
 //
+// Problem reports (my-assets.html's "Report a problem";
+// data/inventory-store.js's openReportOf()): a reported asset shows "Problem
+// reported" by its status, and an alert above the table lists them. Its Update
+// modal shows the report and settles it: Send for repair (what's wrong starts
+// as the report's text) or Return to the store close it, or "Close the report,
+// no action needed" with a note (closeReport).
+//
 // "Open asset requests" lists every request still open
 // (data/asset-requests-store.js), oldest first:
 //   - waiting for a decision: Approve / Reject for whoever the store's
@@ -36,10 +43,11 @@ import { dayNumber } from "../data/holidays.js";
 import { ASSET_TYPE_KEYS, CONDITION_KEYS, LOCATION_KEYS } from "../data/inventory.js";
 import {
   allAssets, allItems, assetTypeOf, assetTotals, assetsHeldByInactive, assignAsset, returnAsset, sendForRepair, returnFromRepair,
+  openReportOf, assetsWithOpenReports, closeReport,
 } from "../data/inventory-store.js";
 import { allAssetRequests, pendingFor, waitingOn, fulfilAssetRequest } from "../data/asset-requests-store.js";
 import {
-  assetTypeLabel, conditionLabel, locationLabel, conditionBadge, assetStatusBadge, officeDate,
+  assetTypeLabel, conditionLabel, locationLabel, conditionBadge, assetStatusBadge, reportBadge, officeDate,
 } from "../ui/inventory-view.js";
 import { requestTitle, requestBadge, assetRequestFlow, openCloseModal } from "../ui/asset-request-view.js";
 import { decisionButtons } from "../ui/leave-decision.js";
@@ -145,6 +153,8 @@ function row(asset, items) {
   condition.append(conditionBadge(asset.condition));
   const status = el("td");
   status.append(assetStatusBadge(asset.status));
+  const report = openReportOf(asset);
+  if (report) status.append(" ", reportBadge(report));
   const tr = el("tr");
   tr.dataset.tag = asset.id;
   tr.append(tag, assetCell(asset, items.get(asset.sku)), holderCell(asset), sinceCell(asset), condition, status, actionsCell(asset));
@@ -206,6 +216,17 @@ function renderInactiveAlert() {
   if (!held.length) return;
   const list = held.map((a) => `${a.id} (${nameOf(a.holderId)})`).join(", ");
   alert.textContent = `${plural(held.length, "asset is", "assets are")} still assigned to people who are inactive: ${list}. Take ${held.length === 1 ? "it" : "them"} back with Update, then Return to the store.`;
+}
+
+// Assets with an open problem report, oldest report first.
+function renderReportAlert() {
+  const alert = $("report-alert");
+  if (!alert) return;
+  const reported = assetsWithOpenReports();
+  alert.hidden = reported.length === 0;
+  if (!reported.length) return;
+  const list = reported.map((a) => `${a.id} (${nameOf(a.holderId)}, ${formatDay(officeDate(openReportOf(a).at), true)})`).join(", ");
+  alert.textContent = `${plural(reported.length, "asset has", "assets have")} a problem reported: ${list}. Open Update to send ${reported.length === 1 ? "it" : "them"} for repair, take ${reported.length === 1 ? "it" : "them"} back, or close the report.`;
 }
 
 // ---------- open asset requests ----------
@@ -408,20 +429,32 @@ const uCond = $("u-cond");
 const uLoc = $("u-loc");
 const uNote = $("u-note");
 let updating = null;   // the tag the modal is open for
+let openReport = null;   // that asset's open problem report, if any
+let noteDefault = "";    // what the note was filled with for the chosen action
 
-// What can happen next, by status (data/inventory-store.js's own rules).
+// What can happen next, by status (data/inventory-store.js's own rules). An
+// asset with an open problem report can also have the report closed.
 const ACTIONS = {
   assigned: [["return", "Return to the store"], ["repair", "Send for repair"]],
   available: [["repair", "Send for repair"]],
   "in-repair": [["repaired", "Back from repair"]],
 };
+const CLOSE_REPORT = ["close-report", "Close the report, no action needed"];
 
-// Return and Back from repair ask where it goes and in what state; Send for repair asks what's wrong.
+// Return and Back from repair ask where it goes and in what state; Send for
+// repair asks what's wrong (starting as the report's text, if there is one);
+// closing the report asks what was done. A note typed by hand is kept when
+// the action changes.
 function syncModal() {
-  const repair = actionSelect.value === "repair";
-  $("u-cond-field").hidden = repair;
-  $("u-loc-field").hidden = repair;
-  $("u-note-field").hidden = !repair;
+  const action = actionSelect.value;
+  const noted = action === "repair" || action === "close-report";
+  $("u-cond-field").hidden = noted;
+  $("u-loc-field").hidden = noted;
+  $("u-note-field").hidden = !noted;
+  $("u-note-label").textContent = action === "close-report" ? "What was done?" : "What's wrong?";
+  const fresh = action === "repair" ? openReport?.note ?? "" : "";
+  if (uNote.value === noteDefault) uNote.value = fresh;
+  noteDefault = fresh;
 }
 
 function openUpdate(tag) {
@@ -433,19 +466,26 @@ function openUpdate(tag) {
   const where = asset.status === "assigned" ? `assigned to ${nameOf(asset.holderId)}`
     : asset.status === "available" ? `available in ${locationLabel(asset.location)}` : "in repair, with the vendor";
   $("asset-modal-desc").textContent = `${item?.name ?? asset.sku}, ${where}.`;
-  actionSelect.replaceChildren(...ACTIONS[asset.status].map(([v, t]) => option(v, t)));
+  openReport = openReportOf(asset);
+  const box = $("u-report");
+  if (box) {
+    box.hidden = !openReport;
+    box.textContent = openReport ? `${nameOf(openReport.byUserId)} reported a problem on ${formatDay(officeDate(openReport.at), true)}: ${openReport.note}` : "";
+  }
+  actionSelect.replaceChildren(...[...ACTIONS[asset.status], ...(openReport ? [CLOSE_REPORT] : [])].map(([v, t]) => option(v, t)));
   uCond.replaceChildren(option("", "Select condition"), ...CONDITION_KEYS.map((k) => option(k, conditionLabel(k))));
   uCond.value = asset.condition;
   uLoc.replaceChildren(option("", "Select location"), ...LOCATION_KEYS.map((k) => option(k, locationLabel(k))));
   uLoc.value = item?.location ?? "";
   uNote.value = "";
+  noteDefault = "";
   clearError(null, modalForm);
   syncModal();
   openModal("asset-modal");
 }
 
 const UPDATE_FIELD = { condition: uCond, location: uLoc, note: uNote };
-const DONE = { return: "returned to the store", repair: "sent for repair", repaired: "back from repair" };
+const DONE = { return: "returned to the store", repair: "sent for repair", repaired: "back from repair", "close-report": "problem report closed" };
 
 function submitUpdate(e) {
   e.preventDefault();
@@ -456,6 +496,7 @@ function submitUpdate(e) {
   const fields = { condition: uCond.value, location: uLoc.value };
   const result = action === "return" ? returnAsset(actor, tag, fields)
     : action === "repaired" ? returnFromRepair(actor, tag, fields)
+    : action === "close-report" ? closeReport(actor, tag, uNote.value)
     : sendForRepair(actor, tag, uNote.value);
   if (!result.ok) {
     const input = UPDATE_FIELD[result.field];
@@ -476,6 +517,7 @@ function render() {
   renderTable(assets);
   renderStats(assets);
   renderInactiveAlert();
+  renderReportAlert();
   renderRequests();
   // A request closed or cancelled meanwhile can't be fulfilled any more.
   if (fulfilling) fulfilling = allAssetRequests().find((r) => r.id === fulfilling.id && r.status === "approved") ?? null;

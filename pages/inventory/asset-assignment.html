@@ -191,6 +191,7 @@
     </section>
 
     <div class="alert alert--warning" id="inactive-alert" hidden></div>
+    <div class="alert alert--warning" id="report-alert" hidden></div>
 
     <section class="card">
       <div class="table__toolbar">
@@ -299,6 +300,7 @@
     <form id="asset-modal-form" action="asset-assignment.html" novalidate>
       <div class="modal__body">
         <div class="form">
+          <div class="alert alert--warning" id="u-report" hidden></div>
           <div class="form-field">
             <label class="form-label form-label--required" for="u-action">What happened?</label>
             <select class="select" id="u-action" required></select>
@@ -314,7 +316,7 @@
             </div>
           </div>
           <div class="form-field" id="u-note-field" hidden>
-            <label class="form-label form-label--required" for="u-note">What's wrong?</label>
+            <label class="form-label form-label--required" for="u-note" id="u-note-label">What's wrong?</label>
             <textarea class="textarea" id="u-note" placeholder="e.g. Screen flickers; battery drains in an hour" required></textarea>
           </div>
         </div>

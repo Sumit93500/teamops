@@ -20,8 +20,10 @@
 // condition, status, holderId, since ("YYYY-MM-DD" while assigned, else null),
 // location (while available, else null), history }. history entries are
 // { action, at, byUserId, holderId, movementId, note }, action "assigned",
-// "returned", "sent-to-repair" or "repaired". Assets assigned before the
-// register was kept have no entries; their `since` says when.
+// "returned", "sent-to-repair" or "repaired", or, for a problem report (no
+// movement, movementId null), "reported" (by the holder) or "report-closed"
+// (by an Admin). Assets assigned before the register was kept have no
+// entries; their `since` says when.
 //
 // Tagged assets are units of their item: an available asset is counted in
 // its item's stock, so assigning one is a stock-out and taking one back is a
@@ -32,7 +34,8 @@
 // Who may do what (permissions.js; today only Admin holds these):
 //   recordMovement                              inventory:create
 //   assignAsset, returnAsset, sendForRepair,
-//   returnFromRepair                            assets:assign
+//   returnFromRepair, closeReport               assets:assign
+//   reportProblem (the asset's holder only)     assets:report (everyone)
 //
 // The Reset demo data button (users-list.js) calls resetInventoryData().
 
@@ -301,6 +304,37 @@ export function returnFromRepair(actorUserId, tag, fields = {}) {
   return moveAsset(asset, "repaired", actor, 1, null, { status: "available", location, condition });
 }
 
+// ---------- writes: problem reports ----------
+
+// The person holding an asset says something is wrong with it. note (required)
+// says what. One open report per asset; it changes neither the asset's status
+// nor its condition, and moves no stock.
+export function reportProblem(userId, tag, note = "") {
+  const user = actorWith(userId, "assets:report");
+  if (!user) return fail("You can't report problems with equipment.");
+  if (!String(tag ?? "")) return fail("Choose an asset.", "tag");
+  const asset = assets.get(tag);
+  if (!asset || asset.status !== "assigned" || asset.holderId !== user.id) return fail("You can only report a problem with equipment assigned to you.", "tag");
+  if (openReportOf(asset)) return fail(`You've already reported a problem with ${tag}. An Admin will look at it.`, "tag");
+  const text = String(note ?? "").trim();
+  if (!text) return fail("Say what's wrong with it.", "note");
+  return moveAsset(asset, "reported", user, 0, user.id, {}, text);
+}
+
+// An Admin closes an open report without returning or repairing the asset.
+// note (required) says what was done. (Taking the asset back or sending it
+// for repair closes the report too, through returnAsset / sendForRepair.)
+export function closeReport(actorUserId, tag, note = "") {
+  const actor = actorWith(actorUserId, "assets:assign");
+  if (!actor) return fail("You can't close problem reports.");
+  const asset = assets.get(tag);
+  if (!asset) return fail(`No asset ${tag}.`);
+  if (!openReportOf(asset)) return fail(`${tag} has no open problem report.`);
+  const text = String(note ?? "").trim();
+  if (!text) return fail("Say what was done about it.", "note");
+  return moveAsset(asset, "report-closed", actor, 0, asset.holderId, {}, text);
+}
+
 // ---------- reads: items and stock (always deep copies) ----------
 
 // Every item with { stock, status, value } worked out from the ledger.
@@ -383,6 +417,25 @@ export function assetTypeOf(asset) {
 // prevented (people may leave holding equipment); pages warn about them.
 export function assetsHeldByInactive() {
   return assets.getAll().filter((a) => a.status === "assigned" && !isActive(getUser(a.holderId)));
+}
+
+// Actions that settle a problem report: an Admin closing it, or the asset
+// leaving its holder (taken back, or sent for repair).
+const CLOSES_REPORT = ["report-closed", "returned", "sent-to-repair"];
+
+// The asset's open problem report (its "reported" history entry), or null.
+// Worked out from the history, never stored, so it can't disagree with it.
+export function openReportOf(asset) {
+  for (const entry of [...(asset?.history ?? [])].reverse()) {
+    if (entry.action === "reported") return entry;
+    if (CLOSES_REPORT.includes(entry.action)) return null;
+  }
+  return null;
+}
+
+// Assets with an open problem report, oldest report first.
+export function assetsWithOpenReports() {
+  return assets.getAll().filter((a) => openReportOf(a)).sort((a, b) => openReportOf(a).at.localeCompare(openReportOf(b).at));
 }
 
 // Over any list of assets: how many, by status and by type (every status and

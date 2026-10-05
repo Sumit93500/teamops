@@ -12,16 +12,19 @@
 // newest request and how far it has got. my-requests.html's "Request an
 // asset" links here with #request, which opens the form.
 //
-// "Report a problem" and each row's "Report issue" stay placeholders: problem
-// reports come in a later round.
+// "Report a problem" (assets:report) and each row's "Report issue" open one
+// form sent through data/inventory-store.js's reportProblem(): which of their
+// assets (the row's, when opened from a row) and what's wrong. An asset with
+// an open report has a disabled "Reported" button instead (its tooltip: the
+// day and what was said) until an Admin settles it on asset-assignment.html.
 
 import { getCurrentUserId } from "../core/auth.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { ASSET_TYPE_KEYS } from "../data/inventory.js";
-import { allItems, assetsFor, assetTypeOf } from "../data/inventory-store.js";
+import { allItems, assetsFor, assetTypeOf, openReportOf, reportProblem } from "../data/inventory-store.js";
 import { submitAssetRequest, assetRequestsFor, previewRoute } from "../data/asset-requests-store.js";
-import { assetTypeLabel, conditionBadge, assetStatusBadge } from "../ui/inventory-view.js";
+import { assetTypeLabel, conditionBadge, assetStatusBadge, officeDate } from "../ui/inventory-view.js";
 import { requestTitle, requestBadge, endNote, assetRequestSteps } from "../ui/asset-request-view.js";
 import { el, escapeHtml, formatDay, plural, nameOf } from "../ui/leave-view.js";
 import { openModal, closeModal } from "../ui/modal.js";
@@ -63,11 +66,17 @@ function row(asset, item) {
   condition.append(conditionBadge(asset.condition));
   const status = el("td");
   status.append(assetStatusBadge(asset.status));
+  // An open report: the button itself says so (no badge: one would widen the table past its card at 1280).
+  const open = openReportOf(asset);
   const actions = el("td", "table__actions");
-  const report = el("button", "btn btn--sm", "Report issue");
+  const report = el("button", "btn btn--sm", open ? "Reported" : "Report issue");
   report.type = "button";
   report.dataset.permission = "assets:report";
-  report.dataset.notImplemented = "Report issue";
+  report.dataset.reportTag = asset.id;
+  if (open) {
+    report.disabled = true;
+    report.title = `Reported ${formatDay(officeDate(open.at), true)}: ${open.note}. An Admin will look at it.`;
+  }
   actions.append(report);
   const tr = el("tr");
   tr.dataset.tag = asset.id;
@@ -196,6 +205,62 @@ function submitRequest(e, user) {
   renderRequestCard(user);
 }
 
+// ---------- the report form ----------
+
+const reportBtn = $("report-btn");
+const reportForm = $("report-form");
+const tagSelect = $("p-tag");
+const noteInput = $("p-note");
+
+// Where each field named by reportProblem()'s result.field shows its error.
+const REPORT_FIELD = { tag: tagSelect, note: noteInput };
+
+function clearReportError(input) {
+  const scope = input ? input.closest(".form-field") : reportForm;
+  scope?.querySelectorAll(".form-error").forEach((error) => error.remove());
+  (input ? [input] : Object.values(REPORT_FIELD)).forEach((i) => i?.removeAttribute("aria-describedby"));
+}
+
+function showReportError(input, message) {
+  clearReportError();
+  const error = el("span", "form-error", message);
+  error.id = `${input.id}-error`;
+  input.closest(".form-field").appendChild(error);
+  input.setAttribute("aria-describedby", error.id);
+  input.focus();
+}
+
+// Their assets; one already reported stays listed, but can't be chosen again.
+function openReportForm(user, tag = "") {
+  reportForm.reset();
+  clearReportError();
+  const items = new Map(allItems().map((i) => [i.sku, i]));
+  const mine = assetsFor(user.id).sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true }));
+  tagSelect.replaceChildren(option("", "Choose an asset"), ...mine.map((a) => {
+    const o = option(a.id, `${a.id}, ${items.get(a.sku)?.name ?? a.sku}${openReportOf(a) ? " (already reported)" : ""}`);
+    o.disabled = Boolean(openReportOf(a));
+    return o;
+  }));
+  tagSelect.value = mine.some((a) => a.id === tag && !openReportOf(a)) ? tag : "";
+  openModal("report-modal");
+  (tagSelect.value ? noteInput : tagSelect).focus();
+}
+
+function submitReport(e, user) {
+  e.preventDefault();
+  clearReportError();
+  const result = reportProblem(user.id, tagSelect.value, noteInput.value);
+  if (!result.ok) {
+    const input = REPORT_FIELD[result.field];
+    if (input) showReportError(input, result.error);
+    else showToast(escapeHtml(result.error), "danger");
+    return;
+  }
+  closeModal("report-modal");
+  showToast("Problem reported. An Admin will look at it.", "success");
+  renderAssets(user);
+}
+
 // ---------- start ----------
 
 // can() matters because guard.js only redirects; this script would still run.
@@ -212,5 +277,18 @@ if (can("assets:view-own") && tbody) {
     replacesSelect.addEventListener("change", () => clearError(replacesSelect));
     form.addEventListener("submit", (e) => submitRequest(e, user));
     if (window.location.hash === "#request") openRequestForm(user);
+  }
+
+  // Nothing to report on without a record, or with nothing assigned.
+  if (reportBtn) reportBtn.disabled = !user || !assetsFor(user.id).length;
+  if (user && can("assets:report") && reportBtn && reportForm && tagSelect && noteInput) {
+    reportBtn.addEventListener("click", () => openReportForm(user));
+    tbody.addEventListener("click", (e) => {
+      const button = e.target.closest("button[data-report-tag]");
+      if (button && !button.disabled) openReportForm(user, button.dataset.reportTag);
+    });
+    Object.values(REPORT_FIELD).forEach((input) => input.addEventListener("input", () => clearReportError(input)));
+    tagSelect.addEventListener("change", () => clearReportError(tagSelect));
+    reportForm.addEventListener("submit", (e) => submitReport(e, user));
   }
 }
