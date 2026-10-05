@@ -39,6 +39,18 @@
   font-size: var(--text-sm); color: var(--color-text-muted);
   border-bottom: 1px solid var(--color-border);
 }
+
+/* ---------- Role page: a module's permissions as labelled ticks ----------
+   <td class="matrix__actions"><div class="perm-ticks">
+     <span class="perm-tick"><span class="matrix__yes">…</span><span>view</span></span>
+     <span class="perm-tick perm-tick--off"><span class="matrix__no"></span><span>export</span></span>
+   </div></td> */
+.matrix th.matrix__actions, .matrix td.matrix__actions { text-align: left; }
+.perm-ticks { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.perm-tick { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--text-xs); white-space: nowrap; }
+.perm-tick--off { color: var(--color-text-muted); }
+/* matrix.css keeps the module column at least 220px; on a phone that pushes this table past its card */
+@media (max-width: 600px) { .matrix--perms th:first-child, .matrix--perms td:first-child { min-width: 140px; } }
 /* ==========================================================
    Approval workflows
    <div class="chain">

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit role | OfficeOS</title>
+  <title>Role | OfficeOS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -131,48 +131,31 @@
     <div>
       <ol class="breadcrumb mb-2" aria-label="Breadcrumb">
         <li class="breadcrumb__item"><a href="roles-list.html">Roles &amp; permissions</a></li>
-        <li class="breadcrumb__item" aria-current="page">HR Manager</li>
+        <li class="breadcrumb__item" aria-current="page" id="role-crumb">Role</li>
       </ol>
-      <h1>HR Manager</h1>
-      <p class="page-header__subtitle">Custom role, assigned to 2 users</p>
+      <h1 id="role-title">Role</h1>
+      <p class="page-header__subtitle" id="role-subtitle"></p>
     </div>
     <div class="page-header__actions">
-      <a class="btn" href="roles-list.html">Cancel</a>
-      <button class="btn btn--primary" type="button" data-permission="roles:manage" data-not-implemented="Save changes">Save changes</button>
+      <a class="btn" href="roles-list.html">All roles</a>
     </div>
   </div>
 
   <div class="stack">
+
+    <div class="alert alert--info">Roles are set in the app's configuration. This page shows what the role can do; it can't be changed here yet.</div>
 
     <div class="grid grid-main-aside">
 
       <section class="card">
         <div class="card__header"><h3 class="card__title">Role details</h3></div>
         <div class="card__body">
-          <div class="form-grid">
-            <div class="form-field">
-              <label class="form-label form-label--required" for="role-name">Role name</label>
-              <input class="input" id="role-name" type="text" value="HR Manager">
-            </div>
-            <div class="form-field">
-              <label class="form-label" for="role-key">Role key</label>
-              <input class="input" id="role-key" type="text" value="hr-manager" disabled>
-              <span class="form-hint">Used by the system. Can't be changed.</span>
-            </div>
-            <div class="form-field form-field--full">
-              <label class="form-label" for="role-desc">Description</label>
-              <textarea class="textarea" id="role-desc">People operations, leave and attendance</textarea>
-            </div>
-            <div class="form-field">
-              <label class="form-label" for="landing">Landing page after sign-in</label>
-              <select class="select" id="landing">
-                <option>Dashboard</option><option selected>Leave approvals</option><option>My attendance</option>
-              </select>
-            </div>
-            <div class="form-field form-field--full">
-              <label class="switch"><input type="checkbox" checked> Require two-factor sign-in for this role</label>
-            </div>
-          </div>
+          <dl class="kv">
+            <div class="kv__row"><dt>Key</dt><dd id="role-key">—</dd></div>
+            <div class="kv__row"><dt>Type</dt><dd>System</dd></div>
+            <div class="kv__row"><dt>Landing page after sign-in</dt><dd id="role-landing">—</dd></div>
+            <div class="kv__row"><dt>Data scope</dt><dd id="role-scope">—</dd></div>
+          </dl>
         </div>
       </section>
 
@@ -180,22 +163,11 @@
         <section class="card">
           <div class="card__header">
             <h3 class="card__title">Users with this role</h3>
-            <span class="card__meta">2</span>
+            <span class="card__meta" id="role-user-count">—</span>
           </div>
-          <div class="list">
-            <div class="list__item">
-              <div class="avatar avatar--2">PN</div>
-              <div class="list__content"><span class="list__title">Priya Nair</span><span class="list__sub">HR Manager</span></div>
-            </div>
-            <div class="list__item">
-              <div class="avatar avatar--3">AV</div>
-              <div class="list__content"><span class="list__title">Anil Verma</span><span class="list__sub">HR Manager</span></div>
-            </div>
-          </div>
+          <div class="list" id="role-users"></div>
           <div class="card__footer"><a class="link text-sm" href="../users/users-list.html">Manage users</a></div>
         </section>
-
-        <div class="alert alert--warning">Changes apply the next time each user signs in or refreshes the page.</div>
       </aside>
     </div>
 <!-- END 2 -->
@@ -203,126 +175,16 @@
     <section class="card">
       <div class="card__header">
         <h3 class="card__title">Permissions</h3>
-        <span class="card__meta">19 of 40 enabled</span>
+        <span class="card__meta" id="permission-count">—</span>
       </div>
-      <div class="matrix-note">Each tick is a permission key such as <code>users:view</code>. Data scope limits whose records the role can reach.</div>
+      <div class="matrix-note">Every permission in the app, by module. A tick means this role has it; each one is a permission key such as <code>users:view</code>.</div>
 
       <div class="table-wrap">
-        <table class="matrix">
+        <table class="matrix matrix--perms">
           <thead>
-            <tr>
-              <th>Module</th><th>View</th><th>Create</th><th>Edit</th><th>Delete</th><th>Approve</th><th>Data scope</th>
-            </tr>
+            <tr><th>Module</th><th class="matrix__actions">Permissions</th></tr>
           </thead>
-          <tbody>
-
-            <tr class="matrix__group"><td colspan="7">People</td></tr>
-            <tr>
-              <td><span class="matrix__module-name">Users</span><span class="matrix__module-desc">Employee records</span></td>
-              <td><label class="check"><input type="checkbox" value="users:view" aria-label="users:view" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="users:create" aria-label="users:create" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="users:edit" aria-label="users:edit" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="users:delete" aria-label="users:delete"></label></td>
-              <td class="matrix__na">–</td>
-              <td><select class="select select--sm matrix__scope" aria-label="Users data scope"><option selected>All</option><option>Department</option><option>Team</option><option>Own</option></select></td>
-            </tr>
-            <tr>
-              <td><span class="matrix__module-name">Roles &amp; permissions</span><span class="matrix__module-desc">Assign roles to designations</span></td>
-              <td><label class="check"><input type="checkbox" value="roles:view" aria-label="roles:view" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="roles:create" aria-label="roles:create"></label></td>
-              <td><label class="check"><input type="checkbox" value="roles:edit" aria-label="roles:edit" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="roles:delete" aria-label="roles:delete"></label></td>
-              <td class="matrix__na">–</td>
-              <td class="matrix__na">–</td>
-            </tr>
-            <tr>
-              <td><span class="matrix__module-name">Designations</span><span class="matrix__module-desc">Job titles and default roles</span></td>
-              <td><label class="check"><input type="checkbox" value="designations:view" aria-label="designations:view" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="designations:create" aria-label="designations:create" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="designations:edit" aria-label="designations:edit" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="designations:delete" aria-label="designations:delete"></label></td>
-              <td class="matrix__na">–</td>
-              <td class="matrix__na">–</td>
-            </tr>
-
-            <tr class="matrix__group"><td colspan="7">Time</td></tr>
-            <tr>
-              <td><span class="matrix__module-name">Attendance</span><span class="matrix__module-desc">Check-in, regularization</span></td>
-              <td><label class="check"><input type="checkbox" value="attendance:view" aria-label="attendance:view" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="attendance:create" aria-label="attendance:create" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="attendance:edit" aria-label="attendance:edit" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="attendance:delete" aria-label="attendance:delete"></label></td>
-              <td><label class="check"><input type="checkbox" value="attendance:approve" aria-label="attendance:approve" checked></label></td>
-              <td><select class="select select--sm matrix__scope" aria-label="Attendance data scope"><option selected>All</option><option>Department</option><option>Team</option><option>Own</option></select></td>
-            </tr>
-            <tr>
-              <td><span class="matrix__module-name">Leave</span><span class="matrix__module-desc">Requests and balances</span></td>
-              <td><label class="check"><input type="checkbox" value="leave:view" aria-label="leave:view" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="leave:create" aria-label="leave:create" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="leave:edit" aria-label="leave:edit" checked></label></td>
-              <td><label class="check"><input type="checkbox" value="leave:delete" aria-label="leave:delete"></label></td>
-              <td><label class="check"><input type="checkbox" value="leave:approve" aria-label="leave:approve" checked></label></td>
-              <td><select class="select select--sm matrix__scope" aria-label="Leave data scope"><option selected>All</option><option>Department</option><option>Team</option><option>Own</option></select></td>
-            </tr>
-
-            <tr class="matrix__group"><td colspan="7">Finance</td></tr>
-            <tr>
-              <td><span class="matrix__module-name">Payroll</span><span class="matrix__module-desc">Payroll runs</span></td>
-              <td><label class="check"><input type="checkbox" value="payroll:view" aria-label="payroll:view"></label></td>
-              <td><label class="check"><input type="checkbox" value="payroll:create" aria-label="payroll:create"></label></td>
-              <td class="matrix__na">–</td>
-              <td class="matrix__na">–</td>
-              <td><label class="check"><input type="checkbox" value="payroll:approve" aria-label="payroll:approve"></label></td>
-              <td><select class="select select--sm matrix__scope" aria-label="Payroll data scope" disabled><option>All</option><option>Department</option><option>Team</option><option>Own</option></select></td>
-            </tr>
-            <tr>
-              <td><span class="matrix__module-name">Expenses</span><span class="matrix__module-desc">Claims and reimbursements</span></td>
-              <td><label class="check"><input type="checkbox" value="expenses:view" aria-label="expenses:view"></label></td>
-              <td><label class="check"><input type="checkbox" value="expenses:create" aria-label="expenses:create" checked></label></td>
-              <td class="matrix__na">–</td>
-              <td class="matrix__na">–</td>
-              <td><label class="check"><input type="checkbox" value="expenses:approve" aria-label="expenses:approve"></label></td>
-              <td><select class="select select--sm matrix__scope" aria-label="Expenses data scope" disabled><option>All</option><option>Department</option><option>Team</option><option>Own</option></select></td>
-            </tr>
-
-            <tr class="matrix__group"><td colspan="7">Operations</td></tr>
-            <tr>
-              <td><span class="matrix__module-name">Inventory</span><span class="matrix__module-desc">Items, stock, assets</span></td>
-              <td><label class="check"><input type="checkbox" value="inventory:view" aria-label="inventory:view"></label></td>
-              <td><label class="check"><input type="checkbox" value="inventory:create" aria-label="inventory:create"></label></td>
-              <td><label class="check"><input type="checkbox" value="inventory:edit" aria-label="inventory:edit"></label></td>
-              <td><label class="check"><input type="checkbox" value="inventory:delete" aria-label="inventory:delete"></label></td>
-              <td><label class="check"><input type="checkbox" value="inventory:approve" aria-label="inventory:approve"></label></td>
-              <td><select class="select select--sm matrix__scope" aria-label="Inventory data scope" disabled><option>All</option><option>Department</option><option>Team</option><option>Own</option></select></td>
-            </tr>
-
-            <tr class="matrix__group"><td colspan="7">System</td></tr>
-            <tr>
-              <td><span class="matrix__module-name">Reports</span><span class="matrix__module-desc">View and export reports</span></td>
-              <td><label class="check"><input type="checkbox" value="reports:view" aria-label="reports:view" checked></label></td>
-              <td class="matrix__na">–</td><td class="matrix__na">–</td><td class="matrix__na">–</td><td class="matrix__na">–</td><td class="matrix__na">–</td>
-            </tr>
-            <tr>
-              <td><span class="matrix__module-name">Audit log</span><span class="matrix__module-desc">Who changed what, and when</span></td>
-              <td><label class="check"><input type="checkbox" value="audit:view" aria-label="audit:view" checked></label></td>
-              <td class="matrix__na">–</td><td class="matrix__na">–</td><td class="matrix__na">–</td><td class="matrix__na">–</td><td class="matrix__na">–</td>
-            </tr>
-            <tr>
-              <td><span class="matrix__module-name">Settings</span><span class="matrix__module-desc">Company and security settings</span></td>
-              <td><label class="check"><input type="checkbox" value="settings:view" aria-label="settings:view"></label></td>
-              <td class="matrix__na">–</td>
-              <td><label class="check"><input type="checkbox" value="settings:edit" aria-label="settings:edit"></label></td>
-              <td class="matrix__na">–</td><td class="matrix__na">–</td><td class="matrix__na">–</td>
-            </tr>
-            <tr>
-              <td><span class="matrix__module-name">Backup</span><span class="matrix__module-desc">Create and restore backups</span></td>
-              <td><label class="check"><input type="checkbox" value="backup:view" aria-label="backup:view"></label></td>
-              <td><label class="check"><input type="checkbox" value="backup:create" aria-label="backup:create"></label></td>
-              <td class="matrix__na">–</td><td class="matrix__na">–</td>
-              <td><label class="check"><input type="checkbox" value="backup:approve" aria-label="backup:approve"></label></td>
-              <td class="matrix__na">–</td>
-            </tr>
-
+          <tbody id="matrix-rows">
           </tbody>
         </table>
       </div>
