@@ -292,13 +292,29 @@
         </section>
 
         <section class="card">
-          <div class="card__header"><h3 class="card__title">Rules for every workflow</h3></div>
+          <div class="card__header">
+            <h3 class="card__title">Rules for every workflow</h3>
+            <span class="card__meta">Always on</span>
+          </div>
           <div class="card__body">
             <div class="toggle-list">
               <label class="switch"><input type="checkbox" checked disabled> Nobody approves their own request</label>
-              <label class="switch"><input type="checkbox" checked> Remind the approver after 1 day</label>
-              <label class="switch"><input type="checkbox" checked> Escalate after 2 days with no decision</label>
-              <label class="switch"><input type="checkbox" checked> A reason is required when rejecting</label>
+              <label class="switch"><input type="checkbox" checked disabled> A reason is required when rejecting</label>
+            </div>
+            <p class="form-hint mt-4">All four active workflows enforce both, and neither can be turned off. An Admin's own requests are approved automatically.</p>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__header">
+            <h3 class="card__title">Reminders and escalation</h3>
+            <span class="card__meta">Sample, not built yet</span>
+          </div>
+          <div class="card__body">
+            <p class="form-hint">Nothing in OfficeOS sends reminders or passes a request on when it waits, so these don't apply to anything. "Waiting over 2 days" above counts the requests that have waited that long.</p>
+            <div class="toggle-list mt-4">
+              <label class="switch"><input type="checkbox" disabled> Remind the approver after 1 day</label>
+              <label class="switch"><input type="checkbox" disabled> Escalate after 2 days with no decision</label>
             </div>
           </div>
         </section>
