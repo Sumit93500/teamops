@@ -110,7 +110,7 @@
   <div class="page-header">
     <div>
       <h1>Tax &amp; deductions</h1>
-      <p class="page-header__subtitle">Statutory deductions, filing dates and tax slabs for September 2026</p>
+      <p class="page-header__subtitle" id="tax-subtitle">Statutory deductions, filing dates and tax slabs</p>
     </div>
     <div class="page-header__actions">
       <button class="btn" type="button" data-permission="reports:export" data-export>Export</button>
@@ -128,7 +128,7 @@
         <div>
           <span class="stat__label">Income tax (TDS)</span>
           <strong class="stat__value">—</strong>
-          <span class="stat__delta">Deposit by 7 Oct</span>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat" data-stat="pf">
@@ -170,10 +170,10 @@
         <section class="card">
           <div class="card__header">
             <h3 class="card__title">Statutory deductions</h3>
-            <span class="card__meta">September 2026</span>
+            <span class="card__meta" id="tax-month"></span>
           </div>
           <div class="table-wrap">
-            <table class="table" data-export-name="statutory-deductions">
+            <table class="table table--fit" data-export-name="statutory-deductions">
               <thead>
                 <tr>
                   <th>Deduction</th>
@@ -188,26 +188,26 @@
               <tbody>
                 <tr>
                   <td><span class="table__user-name">Provident fund, employee</span></td>
-                  <td>12% of basic</td><td>Employee</td><td class="table__num" data-amount="pf">—</td><td>15 Oct</td>
-                  <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                  <td>12% of basic</td><td>Employee</td><td class="table__num" data-amount="pf">—</td><td data-due="pf">—</td>
+                  <td><span class="badge badge--dot" title="Filing and challans aren't built yet">Not built</span></td>
                   <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage" data-not-implemented="Challan">Challan</button></td>
                 </tr>
                 <tr>
                   <td><span class="table__user-name">Provident fund, employer</span></td>
-                  <td>12% of basic</td><td>Company</td><td class="table__num" data-amount="employer-pf">—</td><td>15 Oct</td>
-                  <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                  <td>12% of basic</td><td>Company</td><td class="table__num" data-amount="employer-pf">—</td><td data-due="employer-pf">—</td>
+                  <td><span class="badge badge--dot" title="Filing and challans aren't built yet">Not built</span></td>
                   <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage" data-not-implemented="Challan">Challan</button></td>
                 </tr>
                 <tr>
                   <td><span class="table__user-name">Professional tax</span></td>
-                  <td>₹200 a month</td><td>Employee</td><td class="table__num" data-amount="pt">—</td><td>30 Sep</td>
-                  <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                  <td>₹200 a month</td><td>Employee</td><td class="table__num" data-amount="pt">—</td><td data-due="pt">—</td>
+                  <td><span class="badge badge--dot" title="Filing and challans aren't built yet">Not built</span></td>
                   <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage" data-not-implemented="Challan">Challan</button></td>
                 </tr>
                 <tr>
                   <td><span class="table__user-name">Income tax (TDS)</span></td>
-                  <td>As per slab</td><td>Employee</td><td class="table__num" data-amount="tds">—</td><td>7 Oct</td>
-                  <td><span class="badge badge--warning badge--dot">Draft</span></td>
+                  <td>As per slab</td><td>Employee</td><td class="table__num" data-amount="tds">—</td><td data-due="tds">—</td>
+                  <td><span class="badge badge--dot" title="Filing and challans aren't built yet">Not built</span></td>
                   <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="tax:manage" data-not-implemented="Challan">Challan</button></td>
                 </tr>
               </tbody>
@@ -250,30 +250,9 @@
         <section class="card">
           <div class="card__header">
             <h3 class="card__title">Filing calendar</h3>
-            <span class="card__meta">Next 60 days</span>
+            <span class="card__meta">Sample rules</span>
           </div>
-          <div class="list">
-            <div class="list__item">
-              <div class="date-tile"><span class="date-tile__month">Oct</span><span class="date-tile__day">7</span></div>
-              <div class="list__content"><span class="list__title">Deposit TDS</span><span class="list__sub">For September salaries</span></div>
-              <span class="badge badge--warning">Due soon</span>
-            </div>
-            <div class="list__item">
-              <div class="date-tile"><span class="date-tile__month">Oct</span><span class="date-tile__day">15</span></div>
-              <div class="list__content"><span class="list__title">Provident fund</span><span class="list__sub">Employee and employer share</span></div>
-              <span class="badge">Upcoming</span>
-            </div>
-            <div class="list__item">
-              <div class="date-tile"><span class="date-tile__month">Oct</span><span class="date-tile__day">31</span></div>
-              <div class="list__content"><span class="list__title">TDS return</span><span class="list__sub">Quarter July to September</span></div>
-              <span class="badge">Upcoming</span>
-            </div>
-            <div class="list__item">
-              <div class="date-tile"><span class="date-tile__month">Nov</span><span class="date-tile__day">7</span></div>
-              <div class="list__content"><span class="list__title">Deposit TDS</span><span class="list__sub">For October salaries</span></div>
-              <span class="badge">Upcoming</span>
-            </div>
-          </div>
+          <div class="list" id="tax-calendar"></div>
         </section>
 
         <section class="card">

@@ -109,12 +109,12 @@
 
   <div class="page-header">
     <div>
-      <h1>Payroll run, September 2026</h1>
-      <p class="page-header__subtitle">Pay period 1 – 30 Sep, pay date 28 Sep</p>
+      <h1 id="run-title">Payroll run</h1>
+      <p class="page-header__subtitle" id="run-subtitle"></p>
     </div>
     <div class="page-header__actions">
       <button class="btn" type="button" data-permission="payroll:export" data-not-implemented="Export bank file">Export bank file</button>
-      <button class="btn btn--primary" type="button" id="approve-run" data-permission="payroll:approve" disabled title="You prepared this run, so someone else has to approve it">Approve run</button>
+      <button class="btn btn--primary" type="button" id="approve-run" data-permission="payroll:approve" disabled>Approve run</button>
     </div>
   </div>
 
@@ -127,8 +127,8 @@
         </div>
         <div>
           <span class="stat__label">Employees</span>
-          <strong class="stat__value">248</strong>
-          <span class="stat__delta">3 on hold</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat" data-stat="gross">
@@ -137,8 +137,8 @@
         </div>
         <div>
           <span class="stat__label">Gross pay</span>
-          <strong class="stat__value">₹58.4L</strong>
-          <span class="stat__delta">+2.1% vs Aug</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat" data-stat="deductions">
@@ -147,7 +147,7 @@
         </div>
         <div>
           <span class="stat__label">Deductions</span>
-          <strong class="stat__value">₹9.1L</strong>
+          <strong class="stat__value">—</strong>
           <span class="stat__delta">PF, PT and TDS</span>
         </div>
       </div>
@@ -157,8 +157,8 @@
         </div>
         <div>
           <span class="stat__label">Net pay</span>
-          <strong class="stat__value">₹49.3L</strong>
-          <span class="stat__delta stat__delta--up">To be paid on 28 Sep</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta">Draft, not paid yet</span>
         </div>
       </div>
     </section>
@@ -172,7 +172,7 @@
         <ol class="stepper" id="run-steps">
           <li class="stepper__step is-done">
             <span class="stepper__dot"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
-            <div class="stepper__text"><strong>Draft created</strong><small class="text-muted">18 Sep by Kabir Shah</small></div>
+            <div class="stepper__text"><strong>Draft created</strong><small class="text-muted">Worked out when the page opens</small></div>
           </li>
           <li class="stepper__step is-current">
             <span class="stepper__dot">2</span>
@@ -180,11 +180,11 @@
           </li>
           <li class="stepper__step">
             <span class="stepper__dot">3</span>
-            <div class="stepper__text"><strong>Approval</strong><small class="text-muted">Aarav Mehta, Admin</small></div>
+            <div class="stepper__text"><strong>Approval</strong><small class="text-muted">An Admin</small></div>
           </li>
           <li class="stepper__step">
             <span class="stepper__dot">4</span>
-            <div class="stepper__text"><strong>Payment</strong><small class="text-muted">28 Sep</small></div>
+            <div class="stepper__text"><strong>Payment</strong><small class="text-muted">Not built yet</small></div>
           </li>
         </ol>
       </div>
@@ -218,43 +218,12 @@
                 <th class="table__actions">Actions</th>
               </tr>
             </thead>
-            <tbody id="run-rows">
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--1">RG</div><div><span class="table__user-name">Rohan Gupta</span><span class="table__user-sub">Engineering</span></div></div></td>
-                <td class="table__num">₹92,000</td><td class="table__num">₹14,720</td><td class="table__num">₹77,280</td>
-                <td><span class="badge badge--warning badge--dot">Draft</span></td>
-                <td class="table__actions"><a class="btn btn--sm" href="payslip-view.html" data-permission="payslips:view">View payslip</a></td>
-              </tr>
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--2">AI</div><div><span class="table__user-name">Ananya Iyer</span><span class="table__user-sub">Sales</span></div></div></td>
-                <td class="table__num">₹78,500</td><td class="table__num">₹11,240</td><td class="table__num">₹67,260</td>
-                <td><span class="badge badge--warning badge--dot">Draft</span></td>
-                <td class="table__actions"><a class="btn btn--sm" href="payslip-view.html" data-permission="payslips:view">View payslip</a></td>
-              </tr>
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--3">VS</div><div><span class="table__user-name">Vikram Singh</span><span class="table__user-sub">Operations</span></div></div></td>
-                <td class="table__num">₹64,000</td><td class="table__num">₹8,960</td><td class="table__num">₹55,040</td>
-                <td><span class="badge badge--danger badge--dot">On hold</span></td>
-                <td class="table__actions"><a class="btn btn--sm" href="payslip-view.html" data-permission="payslips:view">View payslip</a></td>
-              </tr>
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--4">MJ</div><div><span class="table__user-name">Meera Joshi</span><span class="table__user-sub">Finance</span></div></div></td>
-                <td class="table__num">₹1,05,000</td><td class="table__num">₹17,850</td><td class="table__num">₹87,150</td>
-                <td><span class="badge badge--warning badge--dot">Draft</span></td>
-                <td class="table__actions"><a class="btn btn--sm" href="payslip-view.html" data-permission="payslips:view">View payslip</a></td>
-              </tr>
-              <tr>
-                <td><div class="table__user"><div class="avatar avatar--1">AK</div><div><span class="table__user-name">Arjun Kapoor</span><span class="table__user-sub">Engineering</span></div></div></td>
-                <td class="table__num">₹88,000</td><td class="table__num">₹13,900</td><td class="table__num">₹74,100</td>
-                <td><span class="badge badge--warning badge--dot">Draft</span></td>
-                <td class="table__actions"><a class="btn btn--sm" href="payslip-view.html" data-permission="payslips:view">View payslip</a></td>
-              </tr>
-            </tbody>
+            <tbody id="run-rows"></tbody>
           </table>
         </div>
 
         <div class="card__footer">
-          <span class="card__meta" id="run-rows-meta">Showing 5 of 248 employees</span>
+          <span class="card__meta" id="run-rows-meta"></span>
         </div>
       </section>
 
@@ -262,42 +231,25 @@
         <section class="card">
           <div class="card__header">
             <h3 class="card__title">Checks before approval</h3>
-            <span class="card__meta" id="run-checks-meta">4 checks</span>
+            <span class="card__meta" id="run-checks-meta"></span>
           </div>
-          <div class="list" id="run-checks">
-            <div class="list__item">
-              <div class="list__content"><span class="list__title">Bank details missing</span><span class="list__sub">3 employees cannot be paid yet</span></div>
-              <span class="badge badge--danger">Fix</span>
-            </div>
-            <div class="list__item">
-              <div class="list__content"><span class="list__title">Salary edits pending</span><span class="list__sub">2 changes are waiting for approval</span></div>
-              <span class="badge badge--warning">Review</span>
-            </div>
-            <div class="list__item">
-              <div class="list__content"><span class="list__title">Loss-of-pay days</span><span class="list__sub">14 employees have unpaid days</span></div>
-              <span class="badge badge--info">Review</span>
-            </div>
-            <div class="list__item">
-              <div class="list__content"><span class="list__title">Leave balances updated</span><span class="list__sub">All approved leave is included</span></div>
-              <span class="badge badge--success">Done</span>
-            </div>
-          </div>
+          <div class="list" id="run-checks"></div>
         </section>
 
         <section class="card">
           <div class="card__header"><h3 class="card__title">Run details</h3></div>
           <div class="card__body">
             <dl class="kv">
-              <div class="kv__row"><dt>Prepared by</dt><dd id="run-prepared-by">Kabir Shah</dd></div>
-              <div class="kv__row"><dt>Approver</dt><dd id="run-approver">Aarav Mehta, Admin</dd></div>
-              <div class="kv__row"><dt>Attendance locked on</dt><dd>25 Sep</dd></div>
-              <div class="kv__row"><dt>Pay date</dt><dd>28 Sep</dd></div>
-              <div class="kv__row"><dt>Bank file</dt><dd>NEFT bulk upload</dd></div>
+              <div class="kv__row"><dt>Prepared by</dt><dd id="run-prepared-by">—</dd></div>
+              <div class="kv__row"><dt>Approver</dt><dd id="run-approver">—</dd></div>
+              <div class="kv__row"><dt>Attendance locked on</dt><dd class="text-muted">Not built yet</dd></div>
+              <div class="kv__row"><dt>Pay date</dt><dd class="text-muted">Not set</dd></div>
+              <div class="kv__row"><dt>Bank file</dt><dd class="text-muted">Not built yet</dd></div>
             </dl>
           </div>
         </section>
 
-        <div class="alert alert--warning" id="run-alert">You prepared this run, so you can't approve it. An Admin has to approve it before payslips are released. Figures can still change until attendance is locked on 25 Sep.</div>
+        <div class="alert alert--warning" id="run-alert">Payroll runs aren't stored yet, so these figures are worked out from the live attendance and leave records each time the page opens.</div>
       </aside>
 
     </div>

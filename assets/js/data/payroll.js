@@ -85,6 +85,41 @@ export function monthlyTds(monthlyGross) {
   return Math.round(annualTax(taxable) / 12);
 }
 
+// ---------- filing deadlines ----------
+
+// SAMPLE VALUES, like TAX_SAMPLE: the rules behind the dates on
+// finance/tax-deductions.html. A month's TDS is deposited by the 7th of the
+// next month and its PF by the 15th; professional tax by the month's last day
+// (it really depends on the state). The quarterly TDS return is due on the
+// last day of the month after the quarter, except January to March's, due on
+// 31 May. Quarters follow the financial year: Apr-Jun, Jul-Sep, Oct-Dec, Jan-Mar.
+export const FILING_SAMPLE = { tdsDepositDay: 7, pfDay: 15, marchQuarterReturn: { month: 5, day: 31 } };
+
+const two = (n) => String(n).padStart(2, "0");
+const leap = (year) => (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+const lastDay = (year, month) => (month === 2 ? (leap(year) ? 29 : 28) : [4, 6, 9, 11].includes(month) ? 30 : 31);
+const nextMonth = (year, month) => (month === 12 ? [year + 1, 1] : [year, month + 1]);
+
+// The TDS return for the quarter a month is in: { year, from, to } (the
+// quarter's first and last month, `year` being its last month's) and due
+// ("YYYY-MM-DD").
+export function tdsReturn(year, month) {
+  const to = Math.ceil(month / 3) * 3;
+  const [dy, dm] = to === 3 ? [year, FILING_SAMPLE.marchQuarterReturn.month] : nextMonth(year, to);
+  const day = to === 3 ? FILING_SAMPLE.marchQuarterReturn.day : lastDay(dy, dm);
+  return { year, from: to - 2, to, due: `${dy}-${two(dm)}-${two(day)}` };
+}
+
+// A month's deadlines, "YYYY-MM-DD": TDS deposit, PF, professional tax.
+export function filingDates(year, month) {
+  const [ny, nm] = nextMonth(year, month);
+  return {
+    tds: `${ny}-${two(nm)}-${two(FILING_SAMPLE.tdsDepositDay)}`,
+    pf: `${ny}-${two(nm)}-${two(FILING_SAMPLE.pfDay)}`,
+    pt: `${year}-${two(month)}-${two(lastDay(year, month))}`,
+  };
+}
+
 // ---------- loss of pay ----------
 
 // Loss-of-pay days for a month: each late-mark penalty half day is 0.5, each

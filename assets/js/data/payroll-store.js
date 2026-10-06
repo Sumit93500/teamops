@@ -94,6 +94,10 @@ export function unpaidLeaveDays(userId, year, month) {
 // One person's pay for a month, or null for an unknown or inactive person or a
 // bad month. A row is "on-hold" (with holdReason) when there's no salary for
 // the month (all amounts 0) or no bank account to pay into; otherwise "draft".
+// It also carries period { from, to } (the month's first and last day) and
+// attendance { noData, notYet }: how many of its working days came before
+// records began (paid in full, with no loss-of-pay check) and how many haven't
+// been recorded yet.
 export function payrollRunFor(userId, year, month) {
   const y = Number(year);
   const m = Number(month);
@@ -115,17 +119,25 @@ export function payrollRunFor(userId, year, month) {
     ...pay,
     status: holdReason ? "on-hold" : "draft",
     holdReason,
+    period: { from: attendance.days[0].date, to: attendance.days.at(-1).date },
+    attendance: { noData: attendance.counts.noData, notYet: attendance.counts.notYet },
   };
 }
 
-// The run the payroll run page, the Finance and Admin dashboards and the tax
-// page show: September 2026. Runs aren't stored yet, so there is no "latest
-// run" to look up. (payroll-run.js still has its own YEAR / MONTH from before
-// this existed.)
-export const RUN_MONTH = { year: 2026, month: 9 };
+// The month the payroll run page, the Finance and Admin dashboards and the tax
+// page show: the one `today` ("YYYY-MM-DD") falls in, the same month
+// payslipsFor() starts from. Runs aren't stored yet, so there is no "latest
+// run" to look up. It's the current month because attendance is seeded back
+// to the 1st of the month it's first created in: an earlier month can have
+// days from before records began, the current month never does. null for a
+// bad date.
+export function runMonth(today) {
+  if (dayNumber(today) === null) return null;
+  return { year: Number(today.slice(0, 4)), month: Number(today.slice(5, 7)) };
+}
 
 // The month's run for everyone tracked, by name. preparedBy is whoever creates
-// the run; approvedBy stays null here (approving comes with the payroll pages).
+// the run; approvedBy stays null (runs aren't stored, so nothing is approved).
 // The person who prepared a run may not approve it: see canApprove().
 export function payrollRun(year, month, { preparedBy = null } = {}) {
   const y = Number(year);
@@ -159,11 +171,9 @@ const RECORDED = ["present", "late", "half-day", "absent", "not-yet"];
 
 // Every payslip this person has, newest first: the month `today`
 // ("YYYY-MM-DD") falls in, then each month before it, back to the last one in
-// a row with attendance recorded. Each is payrollRunFor()'s row plus period
-// { from, to } (the month's first and last day) and attendance { noData,
-// notYet }: how many of its working days came before records began, and how
-// many haven't been recorded yet. [] for an unknown or inactive person or a
-// bad date.
+// a row with attendance recorded. Each is payrollRunFor()'s row (with its
+// period and attendance counts). [] for an unknown or inactive person or a bad
+// date.
 export function payslipsFor(userId, today) {
   if (dayNumber(today) === null) return [];
   let y = Number(today.slice(0, 4));
@@ -172,11 +182,7 @@ export function payslipsFor(userId, today) {
   for (let n = 0; n < 120; n++) {   // ten years at most
     const attendance = monthFor(userId, y, m);
     if (!attendance?.days.some((d) => RECORDED.includes(d.status))) break;
-    slips.push({
-      ...payrollRunFor(userId, y, m),
-      period: { from: attendance.days[0].date, to: attendance.days.at(-1).date },
-      attendance: { noData: attendance.counts.noData, notYet: attendance.counts.notYet },
-    });
+    slips.push(payrollRunFor(userId, y, m));
     [y, m] = m === 1 ? [y - 1, 12] : [y, m - 1];
   }
   return slips;

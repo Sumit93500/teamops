@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payslip, August 2026 | OfficeOS</title>
+  <title>Payslip | OfficeOS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -109,15 +109,15 @@
     <div>
       <ol class="breadcrumb mb-2" aria-label="Breadcrumb">
         <li class="breadcrumb__item"><a href="payslips.html" id="payslip-crumb-parent">My payslips</a></li>
-        <li class="breadcrumb__item" aria-current="page" id="payslip-crumb">August 2026</li>
+        <li class="breadcrumb__item" aria-current="page" id="payslip-crumb">Payslip</li>
       </ol>
-      <h1 id="payslip-title">Payslip, August 2026</h1>
-      <p class="page-header__subtitle" id="payslip-subtitle">Paid on 31 Aug 2026</p>
+      <h1 id="payslip-title">Payslip</h1>
+      <p class="page-header__subtitle" id="payslip-subtitle"></p>
     </div>
     <div class="page-header__actions">
       <a class="btn" href="payslips.html" id="payslip-back">Back to payslips</a>
       <button class="btn" type="button" id="payslip-download" data-permission="payslip:download" data-not-implemented="Download PDF">Download PDF</button>
-      <button class="btn btn--primary" type="button" id="payslip-print" onclick="window.print()">Print</button>
+      <button class="btn btn--primary" type="button" id="payslip-print" onclick="window.print()" hidden>Print</button>
     </div>
   </div>
 
@@ -128,7 +128,7 @@
     </div>
   </section>
 
-  <article class="payslip" id="payslip" aria-label="Payslip for August 2026">
+  <article class="payslip" id="payslip" aria-label="Payslip" hidden>
 
     <header class="payslip__head">
       <div class="payslip__brand">
@@ -140,44 +140,44 @@
       </div>
       <div class="payslip__period">
         <span>Payslip for</span>
-        <strong id="payslip-month">August 2026</strong>
-        <small class="text-muted" id="payslip-period">Pay period 1 – 31 Aug 2026</small>
+        <strong id="payslip-month">—</strong>
+        <small class="text-muted" id="payslip-period"></small>
       </div>
     </header>
 
     <dl class="payslip__info">
-      <div><dt>Employee name</dt><dd data-field="name">Arjun Kapoor</dd></div>
-      <div><dt>Employee ID</dt><dd data-field="id">EMP-1105</dd></div>
-      <div><dt>Designation</dt><dd data-field="designation">Software Engineer</dd></div>
-      <div><dt>Department</dt><dd data-field="department">Engineering</dd></div>
-      <div><dt>Date of joining</dt><dd data-field="joined">12 Jan 2023</dd></div>
-      <div><dt>Pay date</dt><dd data-field="pay-date">31 Aug 2026</dd></div>
-      <div><dt>Bank account</dt><dd class="masked" data-field="bank">•••• •••• 4821</dd></div>
-      <div><dt>PAN</dt><dd class="masked" data-field="pan">•••••3421F</dd></div>
-      <div><dt>Tax regime</dt><dd data-field="regime">New regime</dd></div>
-      <div><dt>Working days</dt><dd data-field="working-days">21</dd></div>
-      <div><dt>Days paid</dt><dd data-field="days-paid">21</dd></div>
-      <div><dt>Loss of pay days</dt><dd data-field="lop-days">0</dd></div>
+      <div><dt>Employee name</dt><dd data-field="name">—</dd></div>
+      <div><dt>Employee ID</dt><dd data-field="id">—</dd></div>
+      <div><dt>Designation</dt><dd data-field="designation">—</dd></div>
+      <div><dt>Department</dt><dd data-field="department">—</dd></div>
+      <div><dt>Date of joining</dt><dd data-field="joined">—</dd></div>
+      <div><dt>Pay date</dt><dd data-field="pay-date">—</dd></div>
+      <div><dt>Bank account</dt><dd data-field="bank">—</dd></div>
+      <div><dt>PAN</dt><dd data-field="pan">—</dd></div>
+      <div><dt>Tax regime</dt><dd data-field="regime">—</dd></div>
+      <div><dt>Working days</dt><dd data-field="working-days">—</dd></div>
+      <div><dt>Days paid</dt><dd data-field="days-paid">—</dd></div>
+      <div><dt>Loss of pay days</dt><dd data-field="lop-days">—</dd></div>
     </dl>
 
     <div class="payslip__cols" id="payslip-cols">
       <section class="payslip__col">
         <h3>Earnings</h3>
         <dl>
-          <div class="pay-line"><dt>Basic salary</dt><dd data-field="basic">₹35,200</dd></div>
-          <div class="pay-line"><dt>House rent allowance</dt><dd data-field="hra">₹17,600</dd></div>
-          <div class="pay-line"><dt>Conveyance allowance</dt><dd data-field="conveyance">₹1,600</dd></div>
-          <div class="pay-line"><dt>Special allowance</dt><dd data-field="special">₹33,600</dd></div>
-          <div class="pay-line pay-line--total"><dt>Gross earnings</dt><dd data-field="gross">₹88,000</dd></div>
+          <div class="pay-line"><dt>Basic salary</dt><dd data-field="basic">—</dd></div>
+          <div class="pay-line"><dt>House rent allowance</dt><dd data-field="hra">—</dd></div>
+          <div class="pay-line"><dt>Conveyance allowance</dt><dd data-field="conveyance">—</dd></div>
+          <div class="pay-line"><dt>Special allowance</dt><dd data-field="special">—</dd></div>
+          <div class="pay-line pay-line--total"><dt>Gross earnings</dt><dd data-field="gross">—</dd></div>
         </dl>
       </section>
       <section class="payslip__col">
         <h3>Deductions</h3>
         <dl>
-          <div class="pay-line"><dt>Provident fund</dt><dd data-field="pf">₹4,224</dd></div>
-          <div class="pay-line"><dt>Professional tax</dt><dd data-field="pt">₹200</dd></div>
-          <div class="pay-line"><dt>Income tax (TDS)</dt><dd data-field="tds">₹9,476</dd></div>
-          <div class="pay-line pay-line--total"><dt>Total deductions</dt><dd data-field="deductions">₹13,900</dd></div>
+          <div class="pay-line"><dt>Provident fund</dt><dd data-field="pf">—</dd></div>
+          <div class="pay-line"><dt>Professional tax</dt><dd data-field="pt">—</dd></div>
+          <div class="pay-line"><dt>Income tax (TDS)</dt><dd data-field="tds">—</dd></div>
+          <div class="pay-line pay-line--total"><dt>Total deductions</dt><dd data-field="deductions">—</dd></div>
         </dl>
       </section>
     </div>
@@ -185,17 +185,17 @@
     <div class="payslip__net">
       <div>
         <span>Net pay (gross earnings minus deductions)</span>
-        <strong data-field="net">₹74,100</strong>
+        <strong data-field="net">—</strong>
       </div>
-      <span class="badge badge--success badge--dot" id="payslip-status">Paid</span>
+      <span class="badge" id="payslip-status"></span>
     </div>
 
-    <p class="payslip__words" id="payslip-words">Amount in words: Seventy-four thousand one hundred rupees only.</p>
+    <p class="payslip__words" id="payslip-words"></p>
     <div id="payslip-notes" hidden></div>
 
     <footer class="payslip__foot">
       <span>This is a computer-generated payslip and does not need a signature.</span>
-      <span>Bank and PAN details are masked. Only HR and Finance can see them in full.</span>
+      <span>Bank and PAN details are always masked on payslips. HR and Admins can see them in full on the employee's profile.</span>
     </footer>
 
   </article>

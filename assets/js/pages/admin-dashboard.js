@@ -13,7 +13,7 @@
 import { getCurrentUserId } from "../core/auth.js";
 import { can } from "../core/rbac.js";
 import { getUser, getAllUsers, getAllDepartments, headcountByDepartment, activeHeadcount } from "../data/store.js";
-import { RUN_MONTH, payrollRun, runTotals } from "../data/payroll-store.js";
+import { runMonth, payrollRun, runTotals } from "../data/payroll-store.js";
 import { addDays } from "../data/holidays.js";
 import { ATTENDANCE_RULES, teamFor, summaryRange, toMinutes, nowMinutes } from "../data/attendance-store.js";
 import {
@@ -63,9 +63,13 @@ function renderTotal() {
   setStat("total", String(activeHeadcount()), inactive ? `Not counting ${plural(inactive, "inactive employee", "inactive employees")}` : "No inactive employees");
 }
 
-// The run's gross, as the payroll run page and the Finance dashboard show it.
+// This month's run's gross, as the payroll run page and the Finance dashboard
+// show it, labelled with the month.
 function renderPayroll() {
-  const run = payrollRun(RUN_MONTH.year, RUN_MONTH.month);
+  const { year, month } = runMonth(today);
+  const run = payrollRun(year, month);
+  const label = stats.querySelector('[data-stat="payroll"] .stat__label');
+  if (label) label.textContent = `Payroll, ${monthName(month).slice(0, 3)}`;
   setStat("payroll", rupees(runTotals(run).gross), `Gross for ${plural(run.rows.length, "employee", "employees")}, draft`);
 }
 

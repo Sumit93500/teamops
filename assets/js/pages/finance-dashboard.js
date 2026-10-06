@@ -2,8 +2,10 @@
 // Runs on dashboard/finance.html. The payroll parts of the page, from
 // data/payroll-store.js: the payroll, TDS and net pay stats, gross pay by
 // department, and every employee in the run. It is the same run that
-// payroll-run.html shows (RUN_MONTH), so the two pages agree. Nothing here
-// works out pay; the store does.
+// payroll-run.html shows (this month's, runMonth()), so the two pages agree,
+// and the month's name in the labels comes from it. The TDS deposit date is
+// data/payroll.js's sample filing rule for that month. Nothing here works out
+// pay; the store does.
 //
 // The page is open to anyone with dashboard:view, and these are everyone's
 // salaries, so nothing is drawn without payroll:view (the HTML also hides
@@ -18,14 +20,15 @@
 //     decision (pendingFor(), the approvals inbox's rule), each linking to the
 //     inbox, where it's decided. Nobody sees a claim they couldn't decide.
 
-import { RUN_MONTH, payrollRun, runTotals, payslipTotals } from "../data/payroll-store.js";
+import { runMonth, payrollRun, runTotals, payslipTotals } from "../data/payroll-store.js";
+import { filingDates } from "../data/payroll.js";
 import { getUser, getAllDepartments } from "../data/store.js";
 import { allExpenses, pendingFor, expenseTotals } from "../data/expenses-store.js";
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { can } from "../core/rbac.js";
 import { resolvePageLink } from "../core/paths.js";
 import { STAGE_NAME, categoryLabel } from "../ui/expense-view.js";
-import { el, plural, departmentName, personCell, nameOf, initials, avatarClass, formatDay, localDateOf } from "../ui/leave-view.js";
+import { el, plural, departmentName, personCell, nameOf, initials, avatarClass, formatDay, localDateOf, todayIso, monthShort } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
 import { rupees } from "../ui/money.js";
@@ -41,11 +44,18 @@ const people = (n) => plural(n, "employee", "employees");
 
 // ---------- stats ----------
 
-function renderStats(run) {
+// "Oct" and "Oct 2026" for the run's month.
+const short = (run) => monthShort(`${run.month}-01`);
+const shortWithYear = (run) => `${short(run)} ${run.month.slice(0, 4)}`;
+
+function renderStats(run, year, month) {
   const totals = runTotals(run);
+  stat("payroll").querySelector(".stat__label").textContent = `Payroll, ${short(run)}`;
   setStatValue(stat("payroll"), rupees(totals.gross));
   setStatNote(stat("payroll"), `Gross for ${people(run.rows.length)}, draft`);
   setStatValue(stat("tds"), rupees(payslipTotals(run.rows).tds));
+  setStatNote(stat("tds"), `Deposit by ${formatDay(filingDates(year, month).tds)}`);
+  stat("net").querySelector(".stat__label").textContent = `Net pay, ${short(run)}`;
   setStatValue(stat("net"), rupees(totals.net));
   setStatNote(stat("net"), "Draft, not paid yet");
 }
@@ -63,6 +73,7 @@ function renderDepartments(run) {
     gross.get(code).amount += row.gross;
   }
   const top = Math.max(1, ...[...gross.values()].map((g) => g.amount));
+  $("fin-dept-meta").textContent = `Gross pay, ${shortWithYear(run)}`;
   $("fin-dept-bars").replaceChildren(...[...gross.values()].map((g) => barRow(g.name, rupees(g.amount), Math.round((g.amount / top) * 100))));
 }
 
@@ -87,6 +98,7 @@ function buildRow(row) {
 }
 
 function renderRows(run) {
+  $("fin-run-title").textContent = `Payroll run, ${shortWithYear(run)}`;
   $("fin-run-rows").replaceChildren(...run.rows.map(buildRow));
   $("fin-run-meta").textContent = `All ${people(run.rows.length)} in the run`;
 }
@@ -159,8 +171,9 @@ function renderActivity(list) {
 // ---------- start ----------
 
 if (can("payroll:view")) {
-  const run = payrollRun(RUN_MONTH.year, RUN_MONTH.month);
-  renderStats(run);
+  const { year, month } = runMonth(todayIso());
+  const run = payrollRun(year, month);
+  renderStats(run, year, month);
   renderDepartments(run);
   renderRows(run);
 }

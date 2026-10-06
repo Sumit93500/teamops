@@ -112,7 +112,7 @@
     </div>
     <div class="page-header__actions">
       <select class="select select--sm" id="payslip-year" aria-label="Choose financial year">
-        <option>Financial year 2026 – 27</option><option>Financial year 2025 – 26</option>
+        <option>Financial year</option>
       </select>
       <button class="btn" type="button" data-permission="payslip:download" data-not-implemented="Download all">Download all</button>
     </div>
@@ -126,9 +126,9 @@
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1"/></svg>
         </div>
         <div>
-          <span class="stat__label">Net pay, August</span>
-          <strong class="stat__value">₹74,100</strong>
-          <span class="stat__delta stat__delta--up">Credited on 31 Aug</span>
+          <span class="stat__label">Net pay</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat" data-stat="ytd-net">
@@ -137,8 +137,8 @@
         </div>
         <div>
           <span class="stat__label">Net pay this year</span>
-          <strong class="stat__value">₹3,70,500</strong>
-          <span class="stat__delta">Apr to Aug, 5 payslips</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat" data-stat="ytd-tds">
@@ -147,8 +147,8 @@
         </div>
         <div>
           <span class="stat__label">Tax deducted this year</span>
-          <strong class="stat__value">₹47,380</strong>
-          <span class="stat__delta">TDS, Apr to Aug</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
       <div class="stat" data-stat="next">
@@ -157,8 +157,8 @@
         </div>
         <div>
           <span class="stat__label">Next payslip</span>
-          <strong class="stat__value">30 Sep</strong>
-          <span class="stat__delta">September 2026</span>
+          <strong class="stat__value">—</strong>
+          <span class="stat__delta"></span>
         </div>
       </div>
     </section>
@@ -168,7 +168,7 @@
       <section class="card">
         <div class="card__header">
           <h3 class="card__title">Payslip history</h3>
-          <span class="card__meta" id="payslip-history-meta">Financial year 2026 – 27</span>
+          <span class="card__meta" id="payslip-history-meta"></span>
         </div>
 
         <div class="table-wrap">
@@ -184,38 +184,7 @@
                 <th class="table__actions">Actions</th>
               </tr>
             </thead>
-            <tbody id="payslip-rows">
-              <tr>
-                <td><span class="table__user-name">August 2026</span></td><td>1 – 31 Aug</td>
-                <td class="table__num">₹88,000</td><td class="table__num">₹13,900</td><td class="table__num">₹74,100</td>
-                <td><span class="badge badge--success badge--dot">Paid</span></td>
-                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="payslip-view.html">View</a><button class="btn btn--sm" type="button" data-permission="payslip:download" data-not-implemented="Download">Download</button></div></td>
-              </tr>
-              <tr>
-                <td><span class="table__user-name">July 2026</span></td><td>1 – 31 Jul</td>
-                <td class="table__num">₹88,000</td><td class="table__num">₹13,900</td><td class="table__num">₹74,100</td>
-                <td><span class="badge badge--success badge--dot">Paid</span></td>
-                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="payslip-view.html">View</a><button class="btn btn--sm" type="button" data-permission="payslip:download" data-not-implemented="Download">Download</button></div></td>
-              </tr>
-              <tr>
-                <td><span class="table__user-name">June 2026</span></td><td>1 – 30 Jun</td>
-                <td class="table__num">₹88,000</td><td class="table__num">₹13,900</td><td class="table__num">₹74,100</td>
-                <td><span class="badge badge--success badge--dot">Paid</span></td>
-                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="payslip-view.html">View</a><button class="btn btn--sm" type="button" data-permission="payslip:download" data-not-implemented="Download">Download</button></div></td>
-              </tr>
-              <tr>
-                <td><span class="table__user-name">May 2026</span></td><td>1 – 31 May</td>
-                <td class="table__num">₹88,000</td><td class="table__num">₹13,900</td><td class="table__num">₹74,100</td>
-                <td><span class="badge badge--success badge--dot">Paid</span></td>
-                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="payslip-view.html">View</a><button class="btn btn--sm" type="button" data-permission="payslip:download" data-not-implemented="Download">Download</button></div></td>
-              </tr>
-              <tr>
-                <td><span class="table__user-name">April 2026</span></td><td>1 – 30 Apr</td>
-                <td class="table__num">₹88,000</td><td class="table__num">₹13,900</td><td class="table__num">₹74,100</td>
-                <td><span class="badge badge--success badge--dot">Paid</span></td>
-                <td class="table__actions"><div class="btn-group"><a class="btn btn--sm" href="payslip-view.html">View</a><button class="btn btn--sm" type="button" data-permission="payslip:download" data-not-implemented="Download">Download</button></div></td>
-              </tr>
-            </tbody>
+            <tbody id="payslip-rows"></tbody>
           </table>
         </div>
       </section>
@@ -224,21 +193,21 @@
         <section class="card">
           <div class="card__header">
             <h3 class="card__title">Year to date</h3>
-            <span class="card__meta" id="payslip-ytd-meta">Apr – Aug 2026</span>
+            <span class="card__meta" id="payslip-ytd-meta"></span>
           </div>
           <div class="card__body">
             <dl class="breakdown">
-              <div class="breakdown__row"><dt>Gross earnings</dt><dd data-field="gross">₹4,40,000</dd></div>
-              <div class="breakdown__row"><dt>Provident fund</dt><dd data-field="pf">₹21,120</dd></div>
-              <div class="breakdown__row"><dt>Professional tax</dt><dd data-field="pt">₹1,000</dd></div>
-              <div class="breakdown__row"><dt>Income tax (TDS)</dt><dd data-field="tds">₹47,380</dd></div>
-              <div class="breakdown__row breakdown__row--total"><dt>Total deductions</dt><dd data-field="deductions">₹69,500</dd></div>
-              <div class="breakdown__row breakdown__row--total breakdown__row--net"><dt>Net pay</dt><dd data-field="net">₹3,70,500</dd></div>
+              <div class="breakdown__row"><dt>Gross earnings</dt><dd data-field="gross">—</dd></div>
+              <div class="breakdown__row"><dt>Provident fund</dt><dd data-field="pf">—</dd></div>
+              <div class="breakdown__row"><dt>Professional tax</dt><dd data-field="pt">—</dd></div>
+              <div class="breakdown__row"><dt>Income tax (TDS)</dt><dd data-field="tds">—</dd></div>
+              <div class="breakdown__row breakdown__row--total"><dt>Total deductions</dt><dd data-field="deductions">—</dd></div>
+              <div class="breakdown__row breakdown__row--total breakdown__row--net"><dt>Net pay</dt><dd data-field="net">—</dd></div>
             </dl>
           </div>
         </section>
 
-        <div class="alert alert--info">Your bank account and PAN are shown masked on payslips. Only HR and Finance can see them in full.</div>
+        <div class="alert alert--info">Your bank account and PAN are always masked on payslips. HR and Admins can see them in full on your employee profile.</div>
       </aside>
 
     </div>

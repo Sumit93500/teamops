@@ -180,7 +180,7 @@ function start() {
   const me = getCurrentUserId();
   const scope = scopeOf(me, asked.employee);
   if (scope === "forbidden") {
-    $("payslip").hidden = true;   // not even the static sample while the 403 page loads
+    $("payslip").hidden = true;   // already hidden in the HTML; kept hidden while the 403 page loads
     window.location.href = resolvePageLink("errors/403.html");
     return;
   }
@@ -220,6 +220,10 @@ function start() {
   renderInfo(user, slip);
   renderAmounts(slip);
   renderNotes(slip);
+  // The payslip and Print start hidden in the HTML, so nothing shows until a
+  // payslip this person may see has been drawn.
+  $("payslip").hidden = false;
+  $("payslip-print").hidden = false;
 }
 
 // The guard sends anyone not signed in to the login page; this stops anything
