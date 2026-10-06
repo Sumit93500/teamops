@@ -1,8 +1,11 @@
 // pages/regularization.js
 // Runs on regularization.html (needs attendance:approve). Pending / Approved /
 // Rejected tabs of attendance correction requests from the attendance store,
-// with search and pagination. Pending holds what the signed-in person may
-// decide (never their own request); cancelled requests appear in no tab.
+// with search and pagination. Pending lists every request still waiting
+// (never the viewer's own), at either stage of the chain
+// (data/approval-chain.js); Approve / Reject show only where the viewer may
+// decide now, and a request still with its manager says who it waits for.
+// Cancelled requests appear in no tab.
 // Approve and Reject go through the shared correction flow in
 // ui/leave-decision.js, so they work like leave approvals. A session without
 // an employee id (an old sign-in) leaves the static page as it is.
@@ -11,6 +14,7 @@ import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { allRegularizations, pendingRegularizations, dayFor } from "../data/attendance-store.js";
+import { currentApproverName } from "../data/leave-store.js";
 import { renderPagination } from "../ui/pagination.js";
 import { approveCorrection, openRejectCorrectionModal, decisionButtons } from "../ui/leave-decision.js";
 import { el, formatDay, statusBadge, departmentName, decisionOf, nameOf, personCell } from "../ui/leave-view.js";
@@ -42,7 +46,8 @@ const byId = (a, b) => a.id.localeCompare(b.id, "en", { numeric: true });
 // Pending: oldest sent first, like a queue. Decided: most recent decision first.
 function tabRequests(which) {
   if (which === "pending") {
-    return pendingRegularizations(userId, role).sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || byId(a, b));
+    return allRegularizations().filter((r) => r.status === "pending" && r.userId !== userId)
+      .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || byId(a, b));
   }
   return allRegularizations().filter((r) => r.status === which).sort((a, b) => decidedAt(b).localeCompare(decidedAt(a)) || byId(b, a));
 }
@@ -93,7 +98,11 @@ function row(request) {
   const actions = el("td", "table__actions");
   actions.hidden = tab !== "pending";
   if (tab === "pending") {
-    actions.append(decisionButtons("attendance:approve", () => openRejectCorrectionModal(request, render), () => approveCorrection(request, render)));
+    const mine = pendingRegularizations(userId, role).some((r) => r.id === request.id);
+    // currentApproverName() reads only the stage and the manager, the same for a correction as for leave.
+    actions.append(mine
+      ? decisionButtons("attendance:approve", () => openRejectCorrectionModal(request, render), () => approveCorrection(request, render))
+      : el("span", "text-muted text-sm", `Waiting for ${currentApproverName(request)}`));
   }
 
   const person = getUser(request.userId);

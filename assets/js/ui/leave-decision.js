@@ -216,7 +216,11 @@ const leaveFlow = createDecisionFlow({
   describe: (request) => `${nameOf(request.userId)}: ${requestTitle(request)}`,
   modalId: "reject-leave-modal",
   noteId: "reject-note",
-  labels: { title: "Reject leave request", approved: "Leave request approved.", rejected: "Leave request rejected." },
+  labels: {
+    title: "Reject leave request",
+    approved: (result) => (result.record.status === "approved" ? "Leave request approved." : "Approved. It now goes to HR or an Admin."),
+    rejected: "Leave request rejected.",
+  },
 });
 
 export const approveLeave = leaveFlow.approve;
@@ -231,7 +235,7 @@ export const correctionFlow = createDecisionFlow({
   noteId: "reject-correction-note",
   labels: {
     title: "Reject correction request",
-    approved: "Correction approved. The attendance record is updated.",
+    approved: (result) => (result.record.status === "approved" ? "Correction approved. The attendance record is updated." : "Approved. It now goes to HR or an Admin."),
     rejected: "Correction request rejected.",
     approveFailed: "Couldn't approve the request. It may already have been decided, or the attendance record has changed.",
     rejectFailed: "Couldn't reject the request. It may already have been decided.",

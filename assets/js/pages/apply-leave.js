@@ -140,11 +140,11 @@ function renderChain() {
     text = "As an Admin, your leave is approved as soon as you send it.";
   } else if (manager) {
     steps.push(step("", 2, "First approval", [manager.name, manager.designation].filter(Boolean).join(", ")));
-    steps.push(step("", 3, "Final approval", "HR"));
-    text = `Your request goes to ${manager.name} first, then to HR.`;
+    steps.push(step("", 3, "Final approval", "HR or an Admin"));
+    text = `${manager.name} approves your request first, then HR or an Admin.`;
   } else {
-    steps.push(step("", 2, "Approval", "HR"));
-    text = "Your request goes to HR.";
+    steps.push(step("", 2, "Approval", "HR or an Admin"));
+    text = "Your request goes to HR or an Admin.";
   }
   chainList.replaceChildren(...steps);
   if (subtitle) subtitle.textContent = text;

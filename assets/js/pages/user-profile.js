@@ -13,6 +13,7 @@ import { applyPermissions, can } from "../core/rbac.js";
 import { el, formatDay, plural, todayIso } from "../ui/leave-view.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
 import { salaryFor } from "../data/payroll-store.js";
+import { approvalChainText } from "../data/leave-store.js";
 import { rupees } from "../ui/money.js";
 import { allItems, assetsFor } from "../data/inventory-store.js";
 import { conditionBadge } from "../ui/inventory-view.js";
@@ -295,10 +296,12 @@ function render() {
     if (salary) kvDd("Salary")?.classList.remove("text-muted");
   }
 
-  // Access. "Approval chain", "Two-factor sign-in" and "Last sign-in" stay static.
+  // Access. "Two-factor sign-in" and "Last sign-in" stay static; the approval
+  // chain is the one this person's leave and corrections really go through.
   setKv("Designation", orDash(user.designation));
   setKv("Default role", role?.label ?? user.role);
   setKv("Data scope", role?.dataScope === "all" ? "All records" : "Own records");
+  setKv("Approval chain", approvalChainText(user.id));
 
   renderOverrides();
   renderAssets();

@@ -302,7 +302,7 @@ function showFieldError(input, message) {
 function sentToText() {
   if (user?.role === "admin") return "Approved straight away (Admin)";
   const manager = getUser(managerFor(userId));
-  return manager ? `${manager.name} first, then HR (HR or an Admin decides)` : "HR (HR or an Admin decides)";
+  return manager ? `${manager.name} first, then HR or an Admin` : "HR or an Admin";
 }
 
 // Opens the modal, empty or with a day (and what went wrong) filled in.

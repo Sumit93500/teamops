@@ -1,14 +1,18 @@
 // pages/leave-approvals.js
 // Runs on leave-approvals.html (needs leave:approve). Pending / Approved /
 // Rejected tabs from the leave store, with search, type filter and pagination;
-// Approve and Reject go through ui/leave-decision.js. Also the stat strip,
+// Approve and Reject go through ui/leave-decision.js. Pending lists every
+// request still waiting (never the viewer's own), at either stage of the chain
+// (data/approval-chain.js); Approve / Reject show only where the viewer may
+// decide now, and a request still with its manager says who it waits for.
+// Also the stat strip,
 // "Out next week" and the team-overlap alert, all from real data. A session
 // without an employee id (an old sign-in) leaves the static page as it is.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
-import { LEAVE_POLICY, allRequests, pendingFor, overlaps } from "../data/leave-store.js";
+import { LEAVE_POLICY, allRequests, pendingFor, overlaps, currentApproverName } from "../data/leave-store.js";
 import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
 import { renderPagination } from "../ui/pagination.js";
 import { approveLeave, openRejectModal, decisionButtons } from "../ui/leave-decision.js";
@@ -49,7 +53,8 @@ const decidedAt = (r) => decisionOf(r)?.at ?? "";
 // Pending: oldest sent first, like a queue. Decided: most recent decision first.
 function tabRequests(which) {
   if (which === "pending") {
-    return pendingFor(userId, role).sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id));
+    return allRequests().filter((r) => r.status === "pending" && r.userId !== userId)
+      .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id));
   }
   return allRequests().filter((r) => r.status === which).sort((a, b) => decidedAt(b).localeCompare(decidedAt(a)));
 }
@@ -79,7 +84,10 @@ function row(request) {
   const actions = el("td", "table__actions");
   actions.hidden = tab !== "pending";
   if (tab === "pending") {
-    actions.append(decisionButtons("leave:approve", () => openRejectModal(request, render), () => approveLeave(request, render)));
+    const mine = pendingFor(userId, role).some((r) => r.id === request.id);
+    actions.append(mine
+      ? decisionButtons("leave:approve", () => openRejectModal(request, render), () => approveLeave(request, render))
+      : el("span", "text-muted text-sm", `Waiting for ${currentApproverName(request)}`));
   }
 
   const person = getUser(request.userId);

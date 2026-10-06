@@ -5,7 +5,11 @@
 // sample rows (role change, purchase order, backup restore; marked data-static
 // in the HTML, whose buttons stay not-implemented).
 //   - samples: only with approvals:view (taken off the page otherwise)
-//   - leave: only with leave:approve; corrections: only with attendance:approve
+//   - leave requests and attendance corrections: what waits at a stage this
+//     person holds (ui/waiting.js): the requester's manager by relationship,
+//     then HR / an Admin (leave:approve, attendance:approve). Approved /
+//     Rejected list every decided one for HR / Admin, and for a manager the
+//     ones they decided at some stage.
 //   - expense claims: pendingFor() in data/expenses-store.js, which checks each
 //     stage on its own: the claimant's manager (by relationship, no permission:
 //     how a Team Lead such as Sneha Rao, role Employee, decides), Finance and
@@ -23,7 +27,7 @@
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
-import { allRequests } from "../data/leave-store.js";
+import { allRequests, decidedBy } from "../data/leave-store.js";
 import { allRegularizations } from "../data/attendance-store.js";
 import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
 import { expenseDecisionsBy, managesAnyone } from "../data/expenses-store.js";
@@ -48,8 +52,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const userId = getCurrentUserId();
 const role = getCurrentRole()?.key;
 const user = getUser(userId);
-const showLeave = can("leave:approve");
-const showCorrections = can("attendance:approve");
+// HR / an Admin see every decided leave request and correction; anyone else,
+// the ones they decided themselves (a manager's stage).
+const allLeave = can("leave:approve");
+const allCorrections = can("attendance:approve");
 const showSamples = can("approvals:view");
 
 const inboxBody = document.querySelector("#inbox-table tbody");
@@ -96,11 +102,18 @@ function waitingSince(timestamp) {
 // keeps the manager it was sent to, even after that person's reports change).
 const leavePending = () => waitingFor(userId, role).leave
   .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id));
-const leaveDecided = (status) => (showLeave ? allRequests().filter((r) => r.status === status) : [])
+// A manager's own decision on a request: the request as it stood when they decided (their entry last, their decision
+// as its status), so their tabs, dates and stats show what they decided, as expense claims and asset requests do.
+// null if they never decided it.
+function asDecidedBy(request) {
+  const i = request.history.map((h) => h.byUserId === userId && (h.decision === "approved" || h.decision === "rejected")).lastIndexOf(true);
+  return i < 0 ? null : { ...request, status: request.history[i].decision, history: request.history.slice(0, i + 1) };
+}
+const leaveDecided = (status) => (allLeave ? allRequests().filter((r) => r.status === status) : allRequests().map(asDecidedBy).filter((r) => r?.status === status))
   .sort((a, b) => decisionOf(b).at.localeCompare(decisionOf(a).at));
 const correctionsPending = () => waitingFor(userId, role).corrections
   .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id, "en", { numeric: true }));
-const correctionsDecided = (status) => (showCorrections ? allRegularizations().filter((r) => r.status === status) : [])
+const correctionsDecided = (status) => (allCorrections ? allRegularizations().filter((r) => r.status === status) : allRegularizations().map(asDecidedBy).filter((r) => r?.status === status))
   .sort((a, b) => decisionOf(b).at.localeCompare(decisionOf(a).at));
 const expensesPending = () => waitingFor(userId, role).expenses
   .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id, "en", { numeric: true }));
@@ -114,6 +127,9 @@ const assetsDecided = (decision) => (user ? assetRequestDecisionsBy(userId) : []
 // can decide a stage, has one waiting, or has decided one.
 const showsExpenses = () => Boolean(user) && (can("expenses:approve") || managesAnyone(userId) || expensesPending().length > 0 || expenseDecisionsBy(userId).length > 0);
 const showsAssets = () => Boolean(user) && (can("assets:approve") || managesAnyone(userId) || assetsPending().length > 0 || assetRequestDecisionsBy(userId).length > 0);
+// The same for leave and corrections: HR / Admin, a manager, or anyone with one waiting or decided.
+const showLeave = Boolean(user) && (allLeave || managesAnyone(userId) || leavePending().length > 0 || allRequests().some((r) => decidedBy(r, userId)));
+const showCorrections = Boolean(user) && (allCorrections || managesAnyone(userId) || correctionsPending().length > 0 || allRegularizations().some((r) => decidedBy(r, userId)));
 
 const expenseTitle = (claim) => `Expense: ${nameOf(claim.userId)}, ${rupees(claim.amount)}`;
 const assetTitle = (request) => `Asset: ${nameOf(request.userId)}, ${assetTypeLabel(request.assetType).toLowerCase()}`;
@@ -134,7 +150,8 @@ function leaveRow(request) {
 
   const actions = el("td", "table__actions");
   if (request.status === "pending") {
-    actions.append(decisionButtons("leave:approve", () => openRejectModal(request, render), () => approveLeave(request, render)));
+    // The manager stage needs no permission (it goes by relationship); the HR stage needs leave:approve.
+    actions.append(decisionButtons(request.stage === "manager" ? null : "leave:approve", () => openRejectModal(request, render), () => approveLeave(request, render)));
   }
 
   tr.append(
@@ -160,7 +177,7 @@ function correctionRow(request) {
 
   const actions = el("td", "table__actions");
   if (request.status === "pending") {
-    actions.append(decisionButtons("attendance:approve", () => openRejectCorrectionModal(request, render), () => approveCorrection(request, render)));
+    actions.append(decisionButtons(request.stage === "manager" ? null : "attendance:approve", () => openRejectCorrectionModal(request, render), () => approveCorrection(request, render)));
   }
 
   tr.append(

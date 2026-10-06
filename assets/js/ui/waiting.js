@@ -3,8 +3,10 @@
 // Pending tab. The inbox (pages/approvals-inbox.js) lists them and the
 // sidebar's Approvals count (ui/sidebar.js) counts them, so the two can't
 // disagree.
-//   - leave requests: only with leave:approve
-//   - attendance corrections: only with attendance:approve
+//   - leave requests and attendance corrections: pendingFor() in
+//     data/leave-store.js and pendingRegularizations() in
+//     data/attendance-store.js judge each stage (data/approval-chain.js): the
+//     requester's manager by relationship (no permission), then HR / an Admin
 //   - expense claims: pendingFor() in data/expenses-store.js judges each stage
 //     itself (the claimant's manager decides by relationship, no permission)
 //   - asset requests: pendingFor() in data/asset-requests-store.js, the same
@@ -24,8 +26,8 @@ import { pendingFor as pendingAssetRequests } from "../data/asset-requests-store
 export function waitingFor(userId, roleKey) {
   if (!getUser(userId)) return { leave: [], corrections: [], expenses: [], assets: [] };
   return {
-    leave: can("leave:approve") ? pendingLeave(userId, roleKey) : [],
-    corrections: can("attendance:approve") ? pendingRegularizations(userId, roleKey) : [],
+    leave: pendingLeave(userId, roleKey),
+    corrections: pendingRegularizations(userId, roleKey),
     expenses: pendingExpenses(userId, roleKey),
     assets: pendingAssetRequests(userId, roleKey),
   };

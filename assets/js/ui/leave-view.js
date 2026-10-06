@@ -223,15 +223,16 @@ export function step(state, number, title, detail) {
 }
 
 // The steps of a pending request, as on my-leave.html: sent, then who it is
-// waiting on. A request with a manager shows the manager, then HR; one
-// without goes straight to HR.
+// waiting on. A request at the manager stage shows the manager, then HR or
+// an Admin; one at the HR stage (no manager on file, or the manager approved)
+// is waiting for HR.
 export function pendingSteps(request) {
   const sent = step("done", 1, "Sent", `${formatDay(request.appliedOn)} by you`);
   if (request.stage === "manager") {
     return [
       sent,
       step("current", 2, "First approval", `Waiting for ${currentApproverName(request)}`),
-      step("", 3, "Final approval", "HR"),
+      step("", 3, "Final approval", "HR or an Admin"),
     ];
   }
   return [sent, step("current", 2, "Approval", `Waiting for ${currentApproverName(request)}`)];

@@ -24,7 +24,7 @@ import { save, load, remove as removeKey } from "../core/storage.js";
 import { getUser, getAllUsers } from "./store.js";
 import { dayNumber, isoFromDayNumber, isValidDate, isWeekend, getAllHolidays, dayOffChecker } from "./holidays.js";
 import { allRequests, managerFor } from "./leave-store.js";
-import { ROLES } from "../config/roles.js";
+import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
 
 // The General shift, the only one for now.
 export const ATTENDANCE_RULES = {
@@ -70,7 +70,8 @@ function stampOf(date, hhmm) {
   return new Date(y, m - 1, d, Math.floor(minutes / 60), minutes % 60).toISOString();
 }
 
-const canDecide = (roleKey) => Boolean(ROLES[roleKey]?.permissions.includes("attendance:approve"));
+// Who may decide which stage: the two-step chain shared with leave requests (data/approval-chain.js).
+const chain = createChain("attendance:approve");
 const isTracked = (user) => Boolean(user) && user.status !== "inactive";   // "on-leave" is a profile label, not a leave
 const byName = (a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id);
 
@@ -140,7 +141,8 @@ const SPECIAL = {
 const TODAY_IN = { "EMP-1042": "09:12", "EMP-1017": "09:31", "EMP-1029": "09:20", "EMP-1088": "10:24" };
 
 // The seeded corrections, one per SPECIAL day that has one.
-//   decision: "approved" / "rejected" (by Priya Nair, HR, on the next working day) or pending
+//   decision: "approved" / "rejected" (the requester's manager approves first, if there is one, then
+//             Priya Nair, HR, decides; both on the next working day) or pending
 const SEED_REQUESTS = [
   { id: "RG-101", userId: "EMP-1105", day: 1, issue: "late-arrival", time: "09:30", recordedTime: "10:12",
     reason: "Client call ran over before I left home; Sneha knew in the morning", decision: "approved" },
@@ -204,7 +206,8 @@ function generateSeed({ date: today, minutes: now }) {
       const managerId = managerFor(r.userId);
       const stage = managerId ? "manager" : "hr";
       const history = [{ stage, byUserId: r.userId, decision: "applied", at: stampOf(r.day === 1 ? date : sentOn, r.day === 1 ? "18:40" : "09:40"), note: "" }];
-      if (r.decision) history.push({ stage, byUserId: HR_DECIDER, decision: r.decision, at: stampOf(sentOn, "11:00"), note: r.note ?? "" });
+      if (r.decision && managerId) history.push({ stage: "manager", byUserId: managerId, decision: "approved", at: stampOf(sentOn, "10:30"), note: "" });
+      if (r.decision) history.push({ stage: "hr", byUserId: HR_DECIDER, decision: r.decision, at: stampOf(sentOn, "11:00"), note: r.note ?? "" });
       return {
         id: r.id, userId: r.userId, date, issue: r.issue, time: r.time, recordedTime: r.recordedTime, reason: r.reason,
         status: r.decision ?? "pending", stage: r.decision ? "done" : stage, managerId,
@@ -546,11 +549,13 @@ export function regularizationsFor(userId) {
   return regularizations.getAll().filter((r) => r.userId === userId);
 }
 
-// Pending requests this person may decide: none for roles without
-// attendance:approve, and never their own.
+// Pending requests at a stage this person may decide: as the requester's
+// manager, or as HR / an Admin. Never their own. [] for an unknown or inactive
+// person, or a roleKey that isn't theirs.
 export function pendingRegularizations(deciderUserId, roleKey) {
-  if (!canDecide(roleKey)) return [];
-  return regularizations.getAll().filter((r) => r.status === "pending" && r.userId !== deciderUserId);
+  const decider = getUser(deciderUserId);
+  if (!isTracked(decider) || decider.role !== roleKey) return [];
+  return regularizations.getAll().filter((r) => r.status === "pending" && chain.holds(r, r.stage, decider));
 }
 
 // ---------- check in / check out (always today, at the current time) ----------
@@ -675,7 +680,7 @@ export function requestRegularization(userId, fields = {}) {
   const history = [{ stage, byUserId: user.id, decision: "applied", at: now, note: "" }];
   const recordedTime = issue === "late-arrival" ? record.checkIn : null;
   const autoApprove = user.role === "admin";
-  if (autoApprove) history.push({ stage, byUserId: user.id, decision: "auto-approved", at: now, note: "Auto-approved (Admin)" });
+  if (autoApprove) CHAIN_STAGES.forEach((s) => history.push({ stage: s, byUserId: user.id, decision: "auto-approved", at: now, note: "Auto-approved (Admin)" }));
 
   const added = regularizations.add({
     userId: user.id, date, issue, time, recordedTime, reason,
@@ -689,31 +694,34 @@ export function requestRegularization(userId, fields = {}) {
   return applied;
 }
 
-// decision: "approve" | "reject". Only a role with attendance:approve (HR, Admin),
-// never on your own request, only while pending. Rejecting needs a note.
-// Approving writes the corrected time into the attendance record first; if the
-// record has changed so the correction no longer fits, nothing is decided.
+// decision: "approve" | "reject", for the request's current stage only, as
+// with leave: the requester's manager (or HR / an Admin if the manager can no
+// longer decide), then HR or an Admin (attendance:approve). Never on your own
+// request, only while pending. Rejecting at either stage needs a note.
+// Approving at the manager stage moves it to HR and changes no attendance.
+// The final approval writes the corrected time into the attendance record
+// first; if the record has changed so the correction no longer fits, nothing
+// is decided.
 export function decideRegularization(requestId, deciderUserId, deciderRole, decision, note = "") {
   const request = regularizations.get(requestId);
   if (!request) return fail(`No correction request ${requestId}.`);
-  if (!canDecide(deciderRole)) return fail("Only HR or an Admin can decide attendance corrections.");
   const decider = getUser(deciderUserId);
-  if (!decider || decider.status === "inactive" || decider.role !== deciderRole) {
-    return fail("Only HR or an Admin can decide attendance corrections.");
-  }
+  if (!isTracked(decider) || decider.role !== deciderRole) return fail("You can't decide attendance corrections.");
   if (deciderUserId === request.userId) return fail("You can't decide your own correction request.");
   if (request.status !== "pending") return fail(`This request is already ${request.status}.`);
+  if (!chain.holds(request, request.stage, decider)) return fail(chain.refusal(request));
   if (decision !== "approve" && decision !== "reject") return fail('Decision must be "approve" or "reject".');
   const text = String(note ?? "").trim();
   if (decision === "reject" && !text) return fail("Add a note saying why the request is rejected.", "note");
 
-  if (decision === "approve") {
-    const applied = applyCorrection(request, deciderUserId);
-    if (!applied.ok) return applied;
-  }
-  const outcome = decision === "approve" ? "approved" : "rejected";
-  const entry = { stage: request.stage, byUserId: deciderUserId, decision: outcome, at: new Date().toISOString(), note: text };
-  return regularizations.update(requestId, { status: outcome, stage: "done", history: [...request.history, entry] });
+  const now = new Date().toISOString();
+  const entry = { stage: request.stage, byUserId: deciderUserId, decision: decision === "approve" ? "approved" : "rejected", at: now, note: text };
+  if (decision === "reject") return regularizations.update(requestId, { status: "rejected", stage: "done", history: [...request.history, entry] });
+  const next = chain.nextStage(request, request.stage);
+  if (next.stage) return regularizations.update(requestId, { status: "pending", stage: next.stage, history: [...request.history, entry] });
+  const applied = applyCorrection(request, deciderUserId);
+  if (!applied.ok) return applied;
+  return regularizations.update(requestId, { status: "approved", stage: "done", history: [...request.history, entry, ...next.skipped.map((s) => skippedEntry(s, now))] });
 }
 
 // Only the person who asked, only while it's pending.

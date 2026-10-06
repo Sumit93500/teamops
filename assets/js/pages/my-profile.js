@@ -7,6 +7,7 @@ import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { getUser, getAllDepartments } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
+import { approvalChainText } from "../data/leave-store.js";
 
 const STATUS = {
   "active":   { label: "Active",   badge: "badge badge--success badge--dot" },
@@ -102,7 +103,7 @@ if (user && role) {
   // Your access. The role comes from the session: it's what this person can do right now.
   setKv("Role", role.label);
   setKv("Data scope", role.dataScope === "all" ? "All records" : "Own records");
-  setKv("Leave approved by", orDash(user.leaveApprovedBy));
+  setKv("Leave approved by", approvalChainText(user.id));   // the real chain (the stored leaveApprovedBy text is no longer shown)
 
   // Contact details
   setField("p-name", String(user.name ?? "").split(" ")[0]);

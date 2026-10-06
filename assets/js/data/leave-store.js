@@ -8,7 +8,7 @@
 import { createCollection, fail } from "./collection.js";
 import { getUser, getAllUsers } from "./store.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker, resetHolidays } from "./holidays.js";
-import { ROLES } from "../config/roles.js";
+import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
 
 // allowance: days per period; null = no limit.
 export const LEAVE_POLICY = {
@@ -30,24 +30,27 @@ const COUNTED = ["pending", "approved"];              // statuses that use up ba
 // Each request is attributed to the year (month, for wfh) of its first day.
 const at = (date, time = "10:00") => `${date}T${time}:00.000Z`;
 const applied = (stage, userId, date) => ({ stage, byUserId: userId, decision: "applied", at: at(date, "09:30"), note: "" });
-const decided = (stage, decision, date, note = "") => ({ stage, byUserId: "EMP-1003", decision, at: at(date), note });   // Priya Nair, HR
+// A decision: by Priya Nair (HR) at the HR stage unless another decider is named (the requester's manager at the
+// manager stage). An approval at the manager stage is followed by HR's decision.
+const decided = (stage, decision, date, note = "", byUserId = "EMP-1003", time = "10:00") => ({ stage, byUserId, decision, at: at(date, time), note });
+const byManager = (managerId, decision, date, note = "", time = "09:45") => decided("manager", decision, date, note, managerId, time);
 
 const SEED = [
   { id: "LV-2101", userId: "EMP-1105", type: "casual", from: "2026-01-20", to: "2026-01-22", duration: "full", days: 3,
     reason: "Family trip", contactPhone: "", status: "rejected", stage: "done", managerId: "EMP-1029", appliedOn: "2026-01-05",
-    history: [applied("manager", "EMP-1105", "2026-01-05"), decided("manager", "rejected", "2026-01-06", "Project deadline")] },
+    history: [applied("manager", "EMP-1105", "2026-01-05"), byManager("EMP-1029", "rejected", "2026-01-06", "Project deadline")] },
   { id: "LV-2124", userId: "EMP-1105", type: "casual", from: "2026-05-14", to: "2026-05-15", duration: "full", days: 2,
     reason: "Cousin's wedding", contactPhone: "+91 98765 43210", status: "approved", stage: "done", managerId: "EMP-1029", appliedOn: "2026-04-28",
-    history: [applied("manager", "EMP-1105", "2026-04-28"), decided("manager", "approved", "2026-04-29")] },
+    history: [applied("manager", "EMP-1105", "2026-04-28"), byManager("EMP-1029", "approved", "2026-04-28", "", "16:00"), decided("hr", "approved", "2026-04-29")] },
   { id: "LV-2147", userId: "EMP-1105", type: "sick", from: "2026-07-02", to: "2026-07-03", duration: "full", days: 2,
     reason: "Fever", contactPhone: "", status: "approved", stage: "done", managerId: "EMP-1029", appliedOn: "2026-07-02",
-    history: [applied("manager", "EMP-1105", "2026-07-02"), decided("manager", "approved", "2026-07-02")] },
+    history: [applied("manager", "EMP-1105", "2026-07-02"), byManager("EMP-1029", "approved", "2026-07-02", "", "11:00"), decided("hr", "approved", "2026-07-02", "", "EMP-1003", "15:00")] },
   { id: "LV-2160", userId: "EMP-1105", type: "wfh", from: "2026-08-12", to: "2026-08-12", duration: "full", days: 1,
     reason: "Home repairs", contactPhone: "", status: "approved", stage: "done", managerId: "EMP-1029", appliedOn: "2026-08-10",
-    history: [applied("manager", "EMP-1105", "2026-08-10"), decided("manager", "approved", "2026-08-11")] },
+    history: [applied("manager", "EMP-1105", "2026-08-10"), byManager("EMP-1029", "approved", "2026-08-10", "", "15:00"), decided("hr", "approved", "2026-08-11")] },
   { id: "LV-2172", userId: "EMP-1023", type: "earned", from: "2026-09-21", to: "2026-10-01", duration: "full", days: 9,
     reason: "Annual vacation", contactPhone: "", status: "approved", stage: "done", managerId: "EMP-1008", appliedOn: "2026-09-01",
-    history: [applied("manager", "EMP-1023", "2026-09-01"), decided("manager", "approved", "2026-09-03")] },
+    history: [applied("manager", "EMP-1023", "2026-09-01"), byManager("EMP-1008", "approved", "2026-09-02"), decided("hr", "approved", "2026-09-03")] },
   { id: "LV-2180", userId: "EMP-1042", type: "wfh", from: "2026-09-16", to: "2026-09-16", duration: "full", days: 1,
     reason: "Internet installation", contactPhone: "", status: "cancelled", stage: "done", managerId: "EMP-1029", appliedOn: "2026-09-10",
     history: [applied("manager", "EMP-1042", "2026-09-10"), { stage: "manager", byUserId: "EMP-1042", decision: "cancelled", at: at("2026-09-14"), note: "" }] },
@@ -97,7 +100,8 @@ function clash(a, b) {
   return !(halves && a.duration !== b.duration);
 }
 
-const canDecide = (roleKey) => Boolean(ROLES[roleKey]?.permissions.includes("leave:approve"));
+// Who may decide which stage: the two-step chain shared with attendance corrections (data/approval-chain.js).
+const chain = createChain("leave:approve");
 
 // The requester's reportingManager is a name. It counts only if exactly one
 // active user has that exact name (and it isn't the requester).
@@ -209,7 +213,7 @@ export function applyLeave(userId, fields = {}) {
   let status = "pending";
   let finalStage = stage;
   if (user.role === "admin") {
-    history.push({ stage, byUserId: userId, decision: "auto-approved", at: now, note: "Auto-approved (Admin)" });
+    CHAIN_STAGES.forEach((s) => history.push({ stage: s, byUserId: userId, decision: "auto-approved", at: now, note: "Auto-approved (Admin)" }));
     status = "approved";
     finalStage = "done";
   }
@@ -221,25 +225,33 @@ export function applyLeave(userId, fields = {}) {
   return result.ok ? { ...result, advisories } : result;
 }
 
-// decision: "approve" | "reject". Only a role with leave:approve (HR, Admin),
-// never on your own request, only while pending. One decision is final.
+// decision: "approve" | "reject", for the request's current stage only:
+//   manager  the requester's manager (or, if they can no longer decide, HR or an Admin)
+//   hr       HR or an Admin (leave:approve)
+// Never on your own request, only while pending. Approving at the manager stage
+// moves the request to HR; approving at HR is final. Rejecting at either stage
+// ends it and needs a note.
 export function decideLeave(requestId, deciderUserId, deciderRole, decision, note = "") {
   const request = leave.get(requestId);
   if (!request) return fail(`No leave request ${requestId}.`);
-  if (!canDecide(deciderRole)) return fail("Only HR or an Admin can decide leave requests.");
   const decider = getUser(deciderUserId);
-  if (!decider || decider.status === "inactive" || decider.role !== deciderRole) {
-    return fail("Only HR or an Admin can decide leave requests.");
-  }
+  if (!decider || decider.status === "inactive" || decider.role !== deciderRole) return fail("You can't decide leave requests.");
   if (deciderUserId === request.userId) return fail("You can't decide your own leave request.");
   if (request.status !== "pending") return fail(`This request is already ${request.status}.`);
+  if (!chain.holds(request, request.stage, decider)) return fail(chain.refusal(request));
   if (decision !== "approve" && decision !== "reject") return fail('Decision must be "approve" or "reject".');
   const text = String(note ?? "").trim();
   if (decision === "reject" && !text) return fail("Add a note saying why the request is rejected.", "note");
 
-  const outcome = decision === "approve" ? "approved" : "rejected";
-  const entry = { stage: request.stage, byUserId: deciderUserId, decision: outcome, at: new Date().toISOString(), note: text };
-  return leave.update(requestId, { status: outcome, stage: "done", history: [...request.history, entry] });
+  const now = new Date().toISOString();
+  const entry = { stage: request.stage, byUserId: deciderUserId, decision: decision === "approve" ? "approved" : "rejected", at: now, note: text };
+  if (decision === "reject") return leave.update(requestId, { status: "rejected", stage: "done", history: [...request.history, entry] });
+  const next = chain.nextStage(request, request.stage);
+  return leave.update(requestId, {
+    status: next.stage ? "pending" : "approved",
+    stage: next.stage ?? "done",
+    history: [...request.history, entry, ...next.skipped.map((s) => skippedEntry(s, now))],
+  });
 }
 
 // Only the person who asked, only while it's pending.
@@ -266,11 +278,13 @@ export function requestsFor(userId) {
   return leave.getAll().filter((r) => r.userId === userId);
 }
 
-// Everything still pending that this person may decide: none for roles
-// without leave:approve, and never their own.
+// Everything still pending at a stage this person may decide: as the
+// requester's manager, or as HR / an Admin. Never their own. [] for an unknown
+// or inactive person, or a roleKey that isn't theirs.
 export function pendingFor(deciderUserId, roleKey) {
-  if (!canDecide(roleKey)) return [];
-  return leave.getAll().filter((r) => r.status === "pending" && r.userId !== deciderUserId);
+  const decider = getUser(deciderUserId);
+  if (!decider || decider.status === "inactive" || decider.role !== roleKey) return [];
+  return leave.getAll().filter((r) => r.status === "pending" && chain.holds(r, r.stage, decider));
 }
 
 // Other people's pending or approved requests in the same department whose
@@ -294,14 +308,27 @@ export function managerFor(userId) {
 }
 
 // Who a pending request is waiting on, for display: the manager's current
-// name, or "HR" (also when the manager has since left the list). "" once decided.
+// name, or "HR" (also when the manager can no longer decide it: HR or an
+// Admin decides that stage instead). "" once decided.
 export function currentApproverName(request) {
   if (!request || request.status !== "pending") return "";
-  if (request.stage === "manager" && request.managerId) {
-    return getUser(request.managerId)?.name ?? "HR";
-  }
+  if (request.stage === "manager" && chain.managerCanDecide(request)) return getUser(request.managerId).name;
   return "HR";
 }
+
+// Who a new leave request or attendance correction from this person goes to,
+// in words, as the profile pages show it: "Approved automatically (Admin)",
+// "<manager>, then HR or an Admin", or "HR or an Admin" (no manager on file).
+export function approvalChainText(userId) {
+  const user = getUser(userId);
+  if (!user) return "—";
+  if (user.role === "admin") return "Approved automatically (Admin)";
+  const managerId = resolveManager(user);
+  return managerId ? `${getUser(managerId).name}, then HR or an Admin` : "HR or an Admin";
+}
+
+// Did this person approve or reject this request at some stage?
+export const decidedBy = (request, userId) => request.history.some((h) => h.byUserId === userId && (h.decision === "approved" || h.decision === "rejected"));
 
 // ---------- safety net ----------
 
