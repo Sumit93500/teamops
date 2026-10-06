@@ -7,12 +7,20 @@
 // user list, so adding a holiday or approving leave changes a day without
 // rewriting any record.
 //
+// The sample data is stored once, for the days before it was made (the seed
+// anchor, below). From that day on, every working day is worked out on each read
+// for the sample people, the way data/payroll-store.js works out a run: an
+// ordinary day unless something real (a punch, a correction, the seed's own
+// check-ins that day) was stored for it. So the data never goes stale, however
+// long a browser keeps it.
+//
 // Dates are local calendar dates ("2026-09-28") and times are local "HH:MM",
 // the same way the leave module treats "today".
 //
 // The older data/attendance.js (fixed demo constants) is not used by this file.
 
 import { createCollection, fail } from "./collection.js";
+import { save, load, remove as removeKey } from "../core/storage.js";
 import { getUser, getAllUsers } from "./store.js";
 import { dayNumber, isoFromDayNumber, isValidDate, isWeekend, getAllHolidays, dayOffChecker } from "./holidays.js";
 import { allRequests, managerFor } from "./leave-store.js";
@@ -66,7 +74,7 @@ const canDecide = (roleKey) => Boolean(ROLES[roleKey]?.permissions.includes("att
 const isTracked = (user) => Boolean(user) && user.status !== "inactive";   // "on-leave" is a profile label, not a leave
 const byName = (a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id);
 
-// ---------- seed (generated around the day it's first read) ----------
+// ---------- seed (generated around the seed anchor: the first time it's read) ----------
 
 // The nine active demo employees (Divya, EMP-1061, is inactive and gets nothing).
 const SEED_USERS = ["EMP-1001", "EMP-1003", "EMP-1008", "EMP-1017", "EMP-1023", "EMP-1029", "EMP-1042", "EMP-1088", "EMP-1105"];
@@ -127,7 +135,8 @@ const SPECIAL = {
   "EMP-1008": { 7: { in: "09:15", out: "18:20", mode: "wfh" } },             // Kabir: worked from home (free choice)
 };
 // Today's check-ins for the people who don't sign in to the demo; only the ones
-// already past when the data is first created.
+// already past when the data is first created. Their check-outs are added once
+// they've passed (completedSeedDay(), below).
 const TODAY_IN = { "EMP-1042": "09:12", "EMP-1017": "09:31", "EMP-1029": "09:20", "EMP-1088": "10:24" };
 
 // The seeded corrections, one per SPECIAL day that has one.
@@ -146,9 +155,8 @@ const SEED_REQUESTS = [
 ];
 const HR_DECIDER = "EMP-1003";   // Priya Nair
 
-function generateSeed() {
-  const today = todayIso();
-  const now = nowMinutes();
+// anchor: { date, minutes }, the local day and time the sample data is made for.
+function generateSeed({ date: today, minutes: now }) {
   const days = seedDays(today);
   const approved = allRequests().filter((r) => r.status === "approved");
   const people = SEED_USERS.map((id) => getUser(id)).filter(isTracked);
@@ -207,8 +215,65 @@ function generateSeed() {
   return { records, requests };
 }
 
-const attendance = createCollection({ key: "attendance", version: 1, seed: () => generateSeed().records, idPrefix: "AT-" });
-const regularizations = createCollection({ key: "regularizations", version: 1, seed: () => generateSeed().requests, idPrefix: "RG-" });
+// When the sample data was made: { date, minutes } (local). Saved the first time
+// either collection seeds and read by both, so the records and the correction
+// requests always describe the same days, whichever is read first (an approver's
+// sidebar count reads only the requests). Data seeded before the anchor existed
+// gets one from its own last seeded date, as if made at the end of that day.
+const ANCHOR_KEY = "attendance-seed";
+function seedAnchor() {
+  const saved = load(ANCHOR_KEY);
+  if (saved && isValidDate(saved.date) && Number.isInteger(saved.minutes)) return saved;
+  const seeded = (load("attendance")?.records ?? []).filter((r) => r.source === "seed").map((r) => r.date).sort();
+  const anchor = seeded.length ? { date: seeded.at(-1), minutes: 24 * 60 - 1 } : { date: todayIso(), minutes: nowMinutes() };
+  save(ANCHOR_KEY, anchor);
+  return anchor;
+}
+
+const attendance = createCollection({ key: "attendance", version: 1, seed: () => generateSeed(seedAnchor()).records, idPrefix: "AT-" });
+const regularizations = createCollection({ key: "regularizations", version: 1, seed: () => generateSeed(seedAnchor()).requests, idPrefix: "RG-" });
+
+// ---------- the seed day on (worked out on every read, never stored) ----------
+
+// The day the seed would have stored for a sample person on a working day from
+// the seed day to today, when nothing is stored for it: in 09:05-09:30 and out
+// 18:00-18:45 (the seed's own times, so a day always reads the same), at home on
+// an approved work-from-home day, nothing on a full day of approved leave. Today
+// only for the people who don't sign in (the others check in themselves), and
+// only times already past; once a day is over, everyone's. While the seed day is
+// still today, the seed itself says who is in (TODAY_IN), so nothing is added.
+// null when none applies.
+function generatedRecord(ctx, user, date) {
+  if (!SEED_USERS.includes(user.id) || date < ctx.anchor.date || date > ctx.today || ctx.isOff(date)) return null;
+  if (date === ctx.today && (SIGN_IN_IDS.includes(user.id) || date === ctx.anchor.date)) return null;
+  const leaveDay = seedLeaveOn(ctx.approvedLeave, user.id, date);
+  if (leaveDay.full) return null;
+  const checkIn = fromMinutes(9 * 60 + 5 + vary(`${user.id}|${date}|in`, 26));
+  const checkOut = fromMinutes(18 * 60 + vary(`${user.id}|${date}|out`, 46));
+  if (date === ctx.today && toMinutes(checkIn) > ctx.now) return null;
+  return {
+    id: null, userId: user.id, date, checkIn, checkOut: date < ctx.today || toMinutes(checkOut) <= ctx.now ? checkOut : null,
+    mode: leaveDay.wfh ? "wfh" : "office", source: "generated", originalCheckIn: null, originalCheckOut: null, history: [],
+  };
+}
+
+// The seed day's "checked in today" records (TODAY_IN) were stored before anyone
+// left: each gets its check-out once that has passed. It's the seed's out time,
+// but never less than a full day after the check-in, so completing a day never
+// changes what it was (Vikram's 10:24 stays a late mark, not a half day). Any
+// other record is returned as it is.
+function completedSeedDay(ctx, record) {
+  if (record.source !== "seed" || record.checkOut || record.date !== ctx.anchor.date || !(record.userId in TODAY_IN)) return record;
+  const checkOut = fromMinutes(Math.max(18 * 60 + vary(`${record.userId}|${record.date}|out`, 46), toMinutes(record.checkIn) + ATTENDANCE_RULES.fullDayMinutes));
+  return record.date < ctx.today || toMinutes(checkOut) <= ctx.now ? { ...record, checkOut } : record;
+}
+
+// The record a person's day is worked out from: the stored one, else one
+// generated for the seed day or later, else null.
+function recordOn(ctx, user, date) {
+  const stored = ctx.records.find((r) => r.userId === user.id && r.date === date);
+  return stored ? completedSeedDay(ctx, stored) : generatedRecord(ctx, user, date);
+}
 
 // ---------- deriving a day ----------
 
@@ -216,6 +281,7 @@ const regularizations = createCollection({ key: "regularizations", version: 1, s
 function context() {
   const records = attendance.getAll();
   return {
+    anchor: seedAnchor(),
     records,
     requests: regularizations.getAll(),
     approvedLeave: allRequests().filter((r) => r.status === "approved"),
@@ -253,7 +319,7 @@ function requestOn(requests, userId, date) {
 
 function deriveDay(ctx, user, date) {
   const R = ATTENDANCE_RULES;
-  const record = ctx.records.find((r) => r.userId === user.id && r.date === date) ?? null;
+  const record = recordOn(ctx, user, date);
   const holiday = ctx.holidays.get(date) ?? null;
   const cover = leaveCover(ctx.approvedLeave, user.id, date);
 
@@ -595,7 +661,7 @@ export function requestRegularization(userId, fields = {}) {
   const day = deriveDay(ctx, user, date);
   if (!day.checkIn && (day.status === "holiday" || day.status === "weekend")) return fail("No attendance is needed on that day.", "date");
   if (!day.checkIn && day.status === "on-leave") return fail("You were on approved leave that day.", "date");
-  const record = ctx.records.find((r) => r.userId === user.id && r.date === date) ?? null;
+  const record = recordOn(ctx, user, date);
   const problem = checkAgainstRecord(record, issue, time, ctx.today, date);
   if (problem) return problem;
   if (issue === "late-arrival" && day.minutesLate === 0) return fail("You weren't marked late that day.", "issue");
@@ -662,9 +728,10 @@ export function cancelRegularization(requestId, userId) {
 
 // ---------- safety net ----------
 
-// Throws away every attendance record and correction in this browser; the next
-// read generates fresh sample data around that day.
+// Throws away every attendance record and correction in this browser, and the
+// seed anchor; the next read generates fresh sample data around that moment.
 export function resetAttendanceData() {
+  removeKey(ANCHOR_KEY);
   attendance.reset();
   regularizations.reset();
 }
