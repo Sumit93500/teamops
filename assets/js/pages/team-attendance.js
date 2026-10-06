@@ -67,6 +67,7 @@ const WEEK = {
   weekend: ["nd", "W", "weekend"],
   "not-yet": ["ny", "NY", "not in yet"],
   "no-data": ["nd", "ND", "no data"],
+  "not-joined": ["nd", "NJ", "before joining"],
 };
 const weekPart = (day) => WEEK[day.status] ?? ["nd", "?", day.status];
 

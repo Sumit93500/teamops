@@ -5,7 +5,7 @@
 // Auth pages (login, forgot-password, etc.) are not listed — they need no sign-in at all.
 
 export const ROUTES = {
-  "dashboard/admin.html":    "attendance:view-all",
+  "dashboard/admin.html":    "attendance:view-all",   // deliberate (193e5c0): gated by the data it shows, as hr.html is by leave:approve; HR can open it by URL but sees nothing it can't see elsewhere
   "dashboard/hr.html":       "leave:approve",
   "dashboard/finance.html":  "dashboard:view",
   "dashboard/employee.html": "dashboard:view",

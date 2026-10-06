@@ -212,7 +212,14 @@ function attendanceCheck(run, label, done) {
     const who = uncounted.map((r) => `${nameOf(r.userId)} (${plural(r.attendance.uncountedAbsences, "absence", "absences")})`).join(", ");
     parts.push(`Not counted, with no readable joining date on file: ${who}.`);
   }
-  const badge = noData || uncounted.length ? ["badge badge--warning", "Review"] : notYet || open.length ? ["badge badge--info", "In progress"] : done;
+  // Someone who joined during the month: their days before joining aren't
+  // absences, and nothing prorates the month's salary for them.
+  const joiners = run.rows.filter((r) => r.attendance.beforeJoining > 0);
+  if (joiners.length) {
+    const who = joiners.map((r) => `${nameOf(r.userId)} (joined ${formatDay(r.attendance.joined)}, ${workingDays(r.attendance.beforeJoining)} before)`).join(", ");
+    parts.push(`Joined during ${label}: ${who}. Days before joining aren't counted as absences, and the month's salary isn't prorated for them.`);
+  }
+  const badge = noData || uncounted.length || joiners.length ? ["badge badge--warning", "Review"] : notYet || open.length ? ["badge badge--info", "In progress"] : done;
   return checkItem("Attendance recorded", parts.join(" ") || `Every working day of ${label} is recorded`, ...badge, "computed");
 }
 

@@ -28,7 +28,7 @@ export const PERMISSIONS = {
   requests:      ["view-own", "cancel"],
   workflows:     ["view", "manage"],
   delegation:    ["create"],
-  shifts:        ["manage"],
+  shifts:        ["manage"],   // manage: define and assign shifts and their rules; reserved, shifts.html is a sample and its buttons are placeholders
   reports:       ["view", "create", "export"],
   audit:         ["view", "export"],
   settings:      ["edit"],

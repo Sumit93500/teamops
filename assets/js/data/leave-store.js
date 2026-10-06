@@ -21,13 +21,18 @@ export const LEAVE_POLICY = {
 export const LEAVE_TYPES = Object.keys(LEAVE_POLICY);
 export const DURATIONS = ["full", "first-half", "second-half"];
 
+// How far back a past day can still be explained: by a leave request (applyLeave, below) or an attendance
+// correction (attendance-store.js's requestWindowDays is this same number). Payroll deducts an unexplained absence
+// once this window has closed (payroll-store.js), so after it a past day is final.
+export const PAST_DAY_WINDOW = 7;
+
 const CAPPED_TYPES = ["casual", "sick", "earned"];   // going over the allowance is refused
 const COUNTED = ["pending", "approved"];              // statuses that use up balance and can clash
 
 // ---------- seed ----------
 
 // Real users only. Weekday dates; `days` matches workingDays() for each.
-// Each request is attributed to the year (month, for wfh) of its first day.
+// A request's days count against the period (year; month, for wfh) each day falls in (periodsOf, below).
 const at = (date, time = "10:00") => `${date}T${time}:00.000Z`;
 const applied = (stage, userId, date) => ({ stage, byUserId: userId, decision: "applied", at: at(date, "09:30"), note: "" });
 // A decision: by Priya Nair (HR) at the HR stage unless another decider is named (the requester's manager at the
@@ -84,12 +89,24 @@ function todayIso() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-const sum = (requests) => requests.reduce((total, r) => total + (Number(r.days) || 0), 0);
 
-// Does this request fall in the given year (and month, for per-month types)?
-function inPeriod(request, per, year, month) {
-  const [y, m] = request.from.split("-").map(Number);
-  return y === Number(year) && (per !== "month" || m === Number(month));
+// The first and last day of a period: the year, or the month for per-month types.
+function periodBounds(per, year, month) {
+  const y = Number(year);
+  if (per !== "month") return [`${y}-01-01`, `${y}-12-31`];
+  const m = Number(month);
+  const next = m === 12 ? `${y + 1}-01-01` : `${y}-${pad(m + 1)}-01`;
+  return [`${y}-${pad(m)}-01`, isoFromDayNumber(dayNumber(next) - 1)];
+}
+
+// The days of a request that fall in a period. A request wholly inside it counts
+// its stored days; one that crosses into another period counts the working days
+// of its part here (a half day is one date, so it never crosses).
+function daysIn(request, per, year, month) {
+  const [start, end] = periodBounds(per, year, month);
+  if (request.to < start || request.from > end) return 0;
+  if (request.from >= start && request.to <= end) return Number(request.days) || 0;
+  return workingDays(request.from > start ? request.from : start, request.to < end ? request.to : end, request.duration);
 }
 
 // Two requests clash if their dates overlap. The one exception: a first-half
@@ -131,9 +148,27 @@ export function workingDays(from, to, duration = "full") {
   return days;
 }
 
+// Every period a request's days fall in, oldest first: [{ year, month (null for
+// a yearly type), days }], only periods with working days. [] for bad dates.
+export function periodsOf(request, type) {
+  const per = LEAVE_POLICY[type]?.per;
+  if (!per || dayNumber(request.from) === null || dayNumber(request.to) === null || request.to < request.from) return [];
+  const whole = { ...request, days: workingDays(request.from, request.to, request.duration) };
+  const [fy, fm] = request.from.split("-").map(Number);
+  const [ty, tm] = request.to.split("-").map(Number);
+  const key = (y, m) => (per === "month" ? y * 12 + m : y);
+  const out = [];
+  for (let [y, m] = [fy, fm]; key(y, m) <= key(ty, tm); [y, m] = per !== "month" ? [y + 1, m] : m === 12 ? [y + 1, 1] : [y, m + 1]) {
+    const days = daysIn(whole, per, y, m);
+    if (days > 0) out.push({ year: y, month: per === "month" ? m : null, days });
+  }
+  return out;
+}
+
 // Per type: { allowance, approved, pending, left }. left = allowance - approved
 // (pending is shown separately, as on my-leave.html); null when there's no limit.
-// year and month (1-12) default to today; month only matters for wfh.
+// year and month (1-12) default to today; month only matters for wfh. Only the
+// days of each request that fall in the period count.
 export function balanceFor(userId, year, month) {
   const today = todayIso();
   const y = year ?? Number(today.slice(0, 4));
@@ -141,9 +176,9 @@ export function balanceFor(userId, year, month) {
   const mine = leave.getAll().filter((r) => r.userId === userId && COUNTED.includes(r.status));
   const out = {};
   for (const [type, policy] of Object.entries(LEAVE_POLICY)) {
-    const inThis = mine.filter((r) => r.type === type && inPeriod(r, policy.per, y, m));
-    const approved = sum(inThis.filter((r) => r.status === "approved"));
-    const pending = sum(inThis.filter((r) => r.status === "pending"));
+    const inThis = (status) => mine.filter((r) => r.type === type && r.status === status).reduce((t, r) => t + daysIn(r, policy.per, y, m), 0);
+    const approved = inThis("approved");
+    const pending = inThis("pending");
     out[type] = { allowance: policy.allowance, approved, pending, left: policy.allowance === null ? null : policy.allowance - approved };
   }
   return out;
@@ -171,6 +206,9 @@ export function applyLeave(userId, fields = {}) {
   if (dayNumber(from) === null) return fail("Pick a valid start date.", "from");
   if (dayNumber(to) === null) return fail("Pick a valid end date.", "to");
   if (to < from) return fail("The end date can't be before the start date.", "to");
+  // Checked when the request is sent, never when it's decided: a request sent in time can be decided any time later.
+  const earliest = isoFromDayNumber(dayNumber(todayIso()) - PAST_DAY_WINDOW);
+  if (from < earliest) return fail(`Leave can be dated at most ${PAST_DAY_WINDOW} days back, so the earliest start date today is ${earliest}.`, "from");
   // One request must end before the same date next year ("2026-11-02" -> before "2027-11-02").
   if (to >= `${Number(from.slice(0, 4)) + 1}${from.slice(4)}`) return fail("One request can't be a year or longer.", "to");
   if (!DURATIONS.includes(duration)) return fail("Choose full day, first half or second half.", "duration");
@@ -185,13 +223,19 @@ export function applyLeave(userId, fields = {}) {
   const overlap = mine.find((r) => clash(r, request));
   if (overlap) return fail(`These dates overlap your ${overlap.status} request ${overlap.id} (${overlap.from} to ${overlap.to}).`, "from");
 
-  const [y, m] = from.split("-").map(Number);
-  const balance = balanceFor(userId, y, m)[type];
-  const periodLabel = policy.per === "month" ? `${MONTHS[m - 1]} ${y}` : String(y);
-  if (CAPPED_TYPES.includes(type) && balance.approved + balance.pending + days > policy.allowance) {
+  // Each period the request touches is checked against its own balance.
+  const periods = periodsOf(request, type).map((p) => ({
+    ...p,
+    label: p.month ? `${MONTHS[p.month - 1]} ${p.year}` : String(p.year),
+    balance: balanceFor(userId, p.year, p.month ?? 1)[type],
+  }));
+  const over = periods.filter((p) => policy.allowance !== null && p.balance.approved + p.balance.pending + p.days > policy.allowance);
+  if (CAPPED_TYPES.includes(type) && over.length) {
+    const { label, balance, days: here } = over[0];
     const free = policy.allowance - balance.approved - balance.pending;
-    return fail(`Not enough ${policy.label.toLowerCase()}: ${free} of ${policy.allowance} days free in ${periodLabel} `
-      + `(${balance.approved} approved, ${balance.pending} pending), and this request is ${days}.`, "type");
+    const share = periods.length > 1 ? `${here} of this request's ${days} days fall in ${label}` : `this request is ${days}`;
+    return fail(`Not enough ${policy.label.toLowerCase()}: ${free} of ${policy.allowance} days free in ${label} `
+      + `(${balance.approved} approved, ${balance.pending} pending), and ${share}.`, "type");
   }
 
   const advisories = [];
@@ -199,11 +243,11 @@ export function applyLeave(userId, fields = {}) {
     advisories.push({ code: "certificate", message: "A medical certificate is needed for sick leave over 2 days." });
   }
   const today = todayIso();
-  if (days >= 3 && dayNumber(from) - dayNumber(today) < 7) {
+  if (days >= 3 && from >= today && dayNumber(from) - dayNumber(today) < 7) {
     advisories.push({ code: "short-notice", message: "Requests for 3 or more days should be sent at least 7 days ahead, so your team can plan." });
   }
-  if (type === "wfh" && balance.approved + balance.pending + days > policy.allowance) {
-    advisories.push({ code: "wfh-limit", message: `This goes over the ${policy.allowance} work-from-home days allowed in ${periodLabel}.` });
+  if (type === "wfh" && over.length) {
+    advisories.push({ code: "wfh-limit", message: `This goes over the ${policy.allowance} work-from-home days allowed in ${over.map((p) => p.label).join(" and ")}.` });
   }
 
   const managerId = resolveManager(user);

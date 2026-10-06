@@ -16,6 +16,7 @@
 
 import { save, load, remove } from "../core/storage.js";
 import { USERS, DEPARTMENTS, PROFILE_DETAILS, MANAGER_OF } from "./users.js";
+import { isValidDate } from "./holidays.js";
 
 // The four demo sign-in identities (Admin, HR, Finance, Employee). Deactivating
 // or deleting one would break signing in as that role, so it is refused.
@@ -95,6 +96,22 @@ function commit(key, box, record) {
 function emailTaken(records, email, exceptId) {
   const wanted = String(email).trim().toLowerCase();
   return records.some((u) => u.id !== exceptId && String(u.email).trim().toLowerCase() === wanted);
+}
+
+// ---------- the joining date ----------
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// A user's stored dateOfJoining, as profiles show it ("12 Jan 2023") or as
+// "2023-01-12", -> "2023-01-12". null when there's none or it can't be read.
+// Attendance reads days before it as "not-joined"; payroll counts absences only
+// from it.
+export function joiningDate(text) {
+  const s = String(text ?? "").trim();
+  const m = /^(\d{1,2}) ([A-Za-z]{3}) (\d{4})$/.exec(s);
+  const month = m ? MONTHS.indexOf(m[2]) : -1;
+  const iso = month === -1 ? s : `${m[3]}-${String(month + 1).padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  return isValidDate(iso) ? iso : null;
 }
 
 // ---------- reads (always deep copies) ----------

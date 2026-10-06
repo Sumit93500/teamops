@@ -21,9 +21,9 @@
 
 import { createCollection, fail } from "./collection.js";
 import { save, load, remove as removeKey } from "../core/storage.js";
-import { getUser, getAllUsers } from "./store.js";
+import { getUser, getAllUsers, joiningDate } from "./store.js";
 import { dayNumber, isoFromDayNumber, isValidDate, isWeekend, getAllHolidays, dayOffChecker } from "./holidays.js";
-import { allRequests, managerFor } from "./leave-store.js";
+import { allRequests, managerFor, PAST_DAY_WINDOW } from "./leave-store.js";
 import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
 
 // The General shift, the only one for now.
@@ -35,12 +35,12 @@ export const ATTENDANCE_RULES = {
   fullDayMinutes: 8 * 60,
   halfDayMinutes: 4 * 60,     // under this = absent for the day
   penaltyEvery: 3,            // every 3rd late mark in a month = a half-day penalty, deducted from pay (data/payroll-store.js)
-  requestWindowDays: 7,
+  requestWindowDays: PAST_DAY_WINDOW,   // the same window leave requests have (leave-store.js)
 };
 
 export const MODES = ["office", "wfh"];
 export const ISSUES = ["late-arrival", "missed-check-in", "missed-check-out"];
-export const STATUSES = ["present", "late", "half-day", "absent", "on-leave", "holiday", "weekend", "not-yet", "no-data"];
+export const STATUSES = ["present", "late", "half-day", "absent", "on-leave", "holiday", "weekend", "not-yet", "no-data", "not-joined"];
 
 // ---------- small helpers ----------
 
@@ -323,6 +323,7 @@ function requestOn(requests, userId, date) {
 function deriveDay(ctx, user, date) {
   const R = ATTENDANCE_RULES;
   const record = recordOn(ctx, user, date);
+  const joined = joiningDate(user.dateOfJoining);
   const holiday = ctx.holidays.get(date) ?? null;
   const cover = leaveCover(ctx.approvedLeave, user.id, date);
 
@@ -386,6 +387,8 @@ function deriveDay(ctx, user, date) {
     day.status = "weekend";
   } else if (cover.full) {
     day.status = "on-leave";
+  } else if (joined && date < joined) {
+    day.status = "not-joined";    // a working day before they joined (no joining date that can be read: not checked)
   } else if (date < ctx.trackingStart) {
     day.status = "no-data";       // before attendance was recorded at all
   } else {
@@ -425,6 +428,7 @@ export function monthFor(userId, year, month) {
   const counts = {
     present: count("present"), late: count("late"), halfDay: count("half-day"), absent: count("absent"),
     onLeave: count("on-leave"), holiday: count("holiday"), weekend: count("weekend"), notYet: count("not-yet"), noData: count("no-data"),
+    notJoined: count("not-joined"),
   };
   const finished = days.filter((d) => d.checkOut && d.minutesWorked !== null);
   const lateMarks = counts.late;
@@ -603,6 +607,16 @@ export function checkOut(userId) {
 
 // ---------- regularization ----------
 
+// Is the day itself still one a correction can be for? Checked when the request
+// is sent and again when it's finally approved: a holiday or approved leave may
+// have been added in between. null if yes, else "off" (a holiday or weekend with
+// no check-in: no attendance needed) or "leave" (approved leave covers it).
+function dayRefusal(day) {
+  if (!day.checkIn && (day.status === "holiday" || day.status === "weekend")) return "off";
+  if (!day.checkIn && day.status === "on-leave") return "leave";
+  return null;
+}
+
 // Is this correction still possible for the record as it is now? null if yes, else a fail().
 function checkAgainstRecord(record, issue, time, today, date) {
   const t = toMinutes(time);
@@ -626,6 +640,10 @@ function checkAgainstRecord(record, issue, time, today, date) {
 // Writes an approved correction into the attendance record (creating one for a
 // missed check-in) and notes it in the record's history.
 function applyCorrection(request, byUserId) {
+  const user = getUser(request.userId);
+  const refusal = user ? dayRefusal(deriveDay(context(), user, request.date)) : null;
+  if (refusal === "off") return fail("This request no longer matches the attendance record: no attendance is needed that day (a holiday or weekend).");
+  if (refusal === "leave") return fail("This request no longer matches the attendance record: approved leave now covers that day.");
   const record = attendance.getAll().find((r) => r.userId === request.userId && r.date === request.date) ?? null;
   const problem = checkAgainstRecord(record, request.issue, request.time, todayIso(), request.date);
   if (problem) return fail(`This request no longer matches the attendance record: ${problem.error}`);
@@ -664,8 +682,9 @@ export function requestRegularization(userId, fields = {}) {
   if (!reason) return fail("Reason is required.", "reason");
 
   const day = deriveDay(ctx, user, date);
-  if (!day.checkIn && (day.status === "holiday" || day.status === "weekend")) return fail("No attendance is needed on that day.", "date");
-  if (!day.checkIn && day.status === "on-leave") return fail("You were on approved leave that day.", "date");
+  const refusal = dayRefusal(day);
+  if (refusal === "off") return fail("No attendance is needed on that day.", "date");
+  if (refusal === "leave") return fail("You were on approved leave that day.", "date");
   const record = recordOn(ctx, user, date);
   const problem = checkAgainstRecord(record, issue, time, ctx.today, date);
   if (problem) return problem;
@@ -700,8 +719,9 @@ export function requestRegularization(userId, fields = {}) {
 // request, only while pending. Rejecting at either stage needs a note.
 // Approving at the manager stage moves it to HR and changes no attendance.
 // The final approval writes the corrected time into the attendance record
-// first; if the record has changed so the correction no longer fits, nothing
-// is decided.
+// first; if the record or the day has changed so the correction no longer fits
+// (a holiday or approved leave added since it was sent), nothing is decided: it
+// stays pending until the approver rejects it.
 export function decideRegularization(requestId, deciderUserId, deciderRole, decision, note = "") {
   const request = regularizations.get(requestId);
   if (!request) return fail(`No correction request ${requestId}.`);

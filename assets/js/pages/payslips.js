@@ -6,14 +6,16 @@
 // payroll run, not from here.
 //
 // How far back: payslipsFor() starts at this month and goes back to the first
-// month with attendance records; before that, loss of pay can't be checked,
-// so there's no payslip. No payroll run is stored or approved yet, so every
+// month with attendance records, or the month the person joined; before that,
+// loss of pay can't be checked, so there's no payslip. When the list stops at
+// the joining month, the history says so rather than just ending. No payroll run is stored or approved yet, so every
 // payslip is a Draft (or On hold) and none has a pay date.
 
 import { payslipsFor, payslipTotals } from "../data/payroll-store.js";
+import { getUser, joiningDate } from "../data/store.js";
 import { isSignedIn, getCurrentUserId } from "../core/auth.js";
 import { applyPermissions } from "../core/rbac.js";
-import { el, todayIso, monthName, monthShort, formatRange, plural } from "../ui/leave-view.js";
+import { el, todayIso, monthName, monthShort, formatRange, formatDay, plural } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { rupees } from "../ui/money.js";
@@ -124,9 +126,23 @@ function messageRow(text) {
   return tr;
 }
 
-function renderHistory(slips, fy) {
+// The line that ends the history when payslips start because the person joined
+// then (or haven't joined yet), else null.
+function joinedNote(all, slips, joined, today) {
+  if (!joined) return null;
+  if (!all.length && joined > today) return `No payslips yet: you join on ${formatDay(joined, true)}.`;
+  const first = all.at(-1);
+  if (first && slips.includes(first) && joined.slice(0, 7) === first.month) {
+    return `No payslips before ${label(first)}: you joined on ${formatDay(joined, true)}.`;
+  }
+  return null;
+}
+
+function renderHistory(slips, fy, note) {
   const tbody = $("payslip-rows");
-  tbody.replaceChildren(...(slips.length ? slips.map(buildRow) : [messageRow("No payslips for this financial year.")]));
+  const rows = slips.length ? slips.map(buildRow) : [messageRow("No payslips for this financial year.")];
+  if (note) rows.push(messageRow(note));
+  tbody.replaceChildren(...rows);
   applyPermissions(tbody);
   initPlaceholders(tbody);
   $("payslip-history-meta").textContent = `Financial year ${yearLabel(fy)}`;
@@ -139,11 +155,11 @@ function renderYearToDate(slips, totals) {
 
 // ---------- start ----------
 
-function renderYear(all, fy) {
+function renderYear(all, fy, joined, today) {
   const slips = all.filter((s) => financialYear(s) === fy);
   const totals = payslipTotals(slips);
   renderYearStats(slips, totals);
-  renderHistory(slips, fy);
+  renderHistory(slips, fy, joinedNote(all, slips, joined, today));
   renderYearToDate(slips, totals);
 }
 
@@ -178,8 +194,9 @@ function start() {
   if (!years.length) years.push(Number(thisMonth.slice(5, 7)) >= 4 ? Number(today.slice(0, 4)) : Number(today.slice(0, 4)) - 1);
   const select = $("payslip-year");
   select.replaceChildren(...years.map((fy) => Object.assign(el("option", "", `Financial year ${yearLabel(fy)}`), { value: String(fy) })));
-  select.addEventListener("change", () => renderYear(all, Number(select.value)));
-  renderYear(all, years[0]);
+  const joined = joiningDate(getUser(me)?.dateOfJoining);
+  select.addEventListener("change", () => renderYear(all, Number(select.value), joined, today));
+  renderYear(all, years[0], joined, today);
 }
 
 // The guard sends anyone not signed in to the login page; this stops anything

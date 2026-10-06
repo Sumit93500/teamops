@@ -56,7 +56,7 @@ const ordinal = (n) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" :
 
 // Working days of the month up to today that have data: not weekends or
 // holidays, not before attendance was recorded, not today while nothing's in yet.
-const isOffOrEmpty = (day) => ["weekend", "holiday", "no-data"].includes(day.status);
+const isOffOrEmpty = (day) => ["weekend", "holiday", "no-data", "not-joined"].includes(day.status);
 const soFar = (days, today) => days.filter((d) => d.date <= today && !isOffOrEmpty(d) && d.status !== "not-yet");
 
 // ---------- stat strip ----------
@@ -111,6 +111,7 @@ function cellLook(day, today) {
     case "holiday": return ["holiday", day.holiday?.name ?? "Holiday"];
     case "weekend": return ["weekend", ""];
     case "no-data": return ["future", "No data"];
+    case "not-joined": return ["future", "Before joining"];
     default: return ["future", day.date === today ? "Not in yet" : ""];   // not-yet
   }
 }

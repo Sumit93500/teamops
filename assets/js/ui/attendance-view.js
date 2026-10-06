@@ -31,6 +31,7 @@ const BADGE = {
   holiday: ["badge badge--dot", "Holiday"],
   weekend: ["badge badge--dot", "Weekend"],
   "no-data": ["badge badge--dot", "No data"],
+  "not-joined": ["badge badge--dot", "Before joining"],
   "not-yet": ["badge badge--dot badge--not-yet", "Not in yet"],
 };
 

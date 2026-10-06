@@ -7,8 +7,8 @@
 import { getCurrentUserId } from "../core/auth.js";
 import { resolvePageLink } from "../core/paths.js";
 import { getUser } from "../data/store.js";
-import { LEAVE_POLICY, LEAVE_TYPES, balanceFor, workingDays, applyLeave, managerFor } from "../data/leave-store.js";
-import { dayNumber } from "../data/holidays.js";
+import { LEAVE_POLICY, LEAVE_TYPES, PAST_DAY_WINDOW, balanceFor, workingDays, applyLeave, managerFor, periodsOf } from "../data/leave-store.js";
+import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
 import { showToast } from "../ui/toast.js";
 import { el, escapeHtml, formatDays, typeLabel, monthName, step, todayIso } from "../ui/leave-view.js";
 
@@ -113,6 +113,25 @@ function renderBalanceAfter(days) {
     return;
   }
 
+  // A request across two periods (New Year; a month end, for work from home):
+  // each period's own balance and the part of the request that falls in it.
+  const periods = days === null ? [] : periodsOf({ from: fromInput.value, to: toInput.value, duration: durationSelect.value }, type);
+  if (periods.length > 1) {
+    const rows = [];
+    for (const p of periods) {
+      const pb = balanceFor(user.id, p.year, p.month ?? 1)[type];
+      const name = p.month ? `${monthName(p.month)} ${p.year}` : String(p.year);
+      const after = pb.left - pb.pending - p.days;
+      const tone = after >= 0 ? "badge--success" : policy.per === "month" ? "badge--warning" : "badge--danger";
+      rows.push(kvRow(`${typeLabel(type)} left in ${name}`, formatDays(pb.left)));
+      if (pb.pending) rows.push(kvRow(`Already pending in ${name}`, formatDays(pb.pending)));
+      rows.push(kvRow(`This request in ${name}`, formatDays(p.days)));
+      rows.push(kvRow(`Balance after, ${name}`, el("span", `badge ${tone}`, formatDays(after))));
+    }
+    balanceList.replaceChildren(...rows);
+    return;
+  }
+
   const periodLabel = policy.per === "month" ? `left in ${monthName(m)}` : "now";
   const rows = [kvRow(`${typeLabel(type)} ${periodLabel}`, formatDays(b.left))];
   if (b.pending) rows.push(kvRow("Already pending", formatDays(b.pending)));
@@ -198,6 +217,8 @@ function submit(e) {
 // ---------- start ----------
 
 if (user && form && typeGrid && balanceList && chainList) {
+  // The earliest start date the store accepts today (PAST_DAY_WINDOW days back).
+  fromInput.min = isoFromDayNumber(dayNumber(todayIso()) - PAST_DAY_WINDOW);
   renderTypes();
   renderChain();
   update();

@@ -178,7 +178,7 @@ function recentDays(today) {
   const days = [];
   for (let n = dayNumber(today); days.length < RECENT_DAYS && n > dayNumber(today) - 31; n--) {
     const day = dayFor(userId, isoFromDayNumber(n));
-    if (!day || day.status === "no-data") break;
+    if (!day || day.status === "no-data" || day.status === "not-joined") break;
     if (day.status === "weekend" || day.status === "holiday") continue;
     days.push(day);
   }

@@ -14,8 +14,8 @@
 // Reset demo data button (users-list.js) calls resetPayrollData().
 
 import { createCollection } from "./collection.js";
-import { getUser, getAllUsers } from "./store.js";
-import { dayNumber, isoFromDayNumber, isValidDate, dayOffChecker } from "./holidays.js";
+import { getUser, getAllUsers, joiningDate } from "./store.js";
+import { dayNumber, isoFromDayNumber, dayOffChecker } from "./holidays.js";
 import { allRequests } from "./leave-store.js";
 import { monthFor, ATTENDANCE_RULES } from "./attendance-store.js";
 import { computePay } from "./payroll.js";
@@ -94,17 +94,8 @@ export function unpaidLeaveDays(userId, year, month) {
 
 // ---------- unexplained absences ----------
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-// The stored joining date, as profiles show it ("12 Jan 2023") or as
-// "2023-01-12", -> "2023-01-12". null when there's none or it can't be read.
-export function joiningDate(text) {
-  const s = String(text ?? "").trim();
-  const m = /^(\d{1,2}) ([A-Za-z]{3}) (\d{4})$/.exec(s);
-  const month = m ? MONTHS.indexOf(m[2]) : -1;
-  const iso = month === -1 ? s : `${m[3]}-${pad(month + 1)}-${pad(Number(m[1]))}`;
-  return isValidDate(iso) ? iso : null;
-}
+// The joining-date parser lives in store.js, beside the user records (attendance reads it too); re-exported here.
+export { joiningDate };
 
 function todayIso() {
   const d = new Date();
@@ -163,6 +154,9 @@ function absencesIn(user, attendance, today) {
 //                       until (the last day to ask for a correction), waiting
 //                       (a correction or leave request is pending) }]
 //   uncountedAbsences   settled absences not deducted: no readable joining date
+//   beforeJoining, joined   working days before the joining date (not-joined:
+//                       not absences, and the month isn't prorated for them)
+//                       and that date (null if none can be read)
 export function payrollRunFor(userId, year, month) {
   const y = Number(year);
   const m = Number(month);
@@ -192,6 +186,8 @@ export function payrollRunFor(userId, year, month) {
       notYet: attendance.counts.notYet,
       openAbsences: absences.open,
       uncountedAbsences: absences.uncounted,
+      beforeJoining: attendance.counts.notJoined,
+      joined: joiningDate(user.dateOfJoining),
     },
   };
 }
@@ -238,7 +234,9 @@ export const canApprove = (run, userId) => Boolean(userId) && userId !== run.pre
 
 // Day statuses that mean attendance was being recorded for the person (or will
 // be, later this month). A month with none of them is from before records
-// began, so its loss of pay can't be checked: it has no payslip.
+// began, or before the person joined ("not-joined" isn't one), so its loss of
+// pay can't be checked: it has no payslip. The pages say which (the payslip's
+// attendance.joined).
 const RECORDED = ["present", "late", "half-day", "absent", "not-yet"];
 
 // Every payslip this person has, newest first: the month `today`

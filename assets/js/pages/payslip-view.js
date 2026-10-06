@@ -16,7 +16,7 @@
 
 import { payslipsFor } from "../data/payroll-store.js";
 import { ATTENDANCE_RULES } from "../data/attendance-store.js";
-import { getUser } from "../data/store.js";
+import { getUser, joiningDate } from "../data/store.js";
 import { can } from "../core/rbac.js";
 import { isSignedIn, getCurrentUserId } from "../core/auth.js";
 import { resolvePageLink } from "../core/paths.js";
@@ -61,10 +61,17 @@ function scopeOf(me, employee) {
   return can("payslips:view") ? "other" : "forbidden";
 }
 
-// Why the asked-for month has no payslip, given the ones that exist (newest first).
-function missingMonthText(month, slips) {
+// Why the asked-for month has no payslip, given the ones that exist (newest
+// first): it hasn't started, it's before the person joined, or it's before
+// attendance records began.
+function missingMonthText(month, slips, user, own) {
   if (month > slips[0].month) return `${monthLabel(month)} hasn't started yet. The newest payslip is for ${monthLabel(slips[0].month)}.`;
-  return `Payslips start in ${monthLabel(slips.at(-1).month)}, the first month with attendance records. Before that, loss of pay can't be checked.`;
+  const first = slips.at(-1).month;
+  const joined = joiningDate(user.dateOfJoining);
+  if (joined && joined.slice(0, 7) === first) {
+    return `Payslips start in ${monthLabel(first)}, the month ${own ? "you" : user.name} joined (${formatDay(joined, true)}). There's no payslip before that.`;
+  }
+  return `Payslips start in ${monthLabel(first)}, the first month with attendance records. Before that, loss of pay can't be checked.`;
 }
 
 // ---------- drawing ----------
@@ -184,6 +191,10 @@ function renderNotes(slip) {
     notes.push(`${plural(uncounted, "day", "days")} with no check-in ${uncounted === 1 ? "isn't" : "aren't"} counted as an absence: `
       + "there's no readable joining date on file to count from.");
   }
+  if (slip.attendance.beforeJoining > 0) {
+    notes.push(`${plural(slip.attendance.beforeJoining, "working day", "working days")} of ${label} came before the joining date `
+      + `(${formatDay(slip.attendance.joined, true)}); they aren't counted as absences, and the month's salary isn't prorated for them.`);
+  }
   if (slip.attendance.noData > 0) {
     notes.push(`${plural(slip.attendance.noData, "working day", "working days")} of ${label} came before attendance records began; `
       + "they're paid in full, without a loss-of-pay check.");
@@ -234,7 +245,7 @@ function start() {
     }
     slip = slips.find((s) => s.month === asked.month);
     if (!slip) {
-      showMessage(`No payslip for ${monthLabel(asked.month)}`, missingMonthText(asked.month, slips));
+      showMessage(`No payslip for ${monthLabel(asked.month)}`, missingMonthText(asked.month, slips, user, own));
       return;
     }
   }

@@ -78,7 +78,7 @@ function renderPresent(summary) {
     setStat("present", "–", "Attendance isn't tracked");
     return;
   }
-  const soFar = summary.days.filter((d) => d.date <= today && !isOff(d) && d.status !== "no-data" && d.status !== "not-yet");
+  const soFar = summary.days.filter((d) => d.date <= today && !isOff(d) && d.status !== "no-data" && d.status !== "not-joined" && d.status !== "not-yet");
   const late = summary.lateMarks;
   setStat("present", soFar.length ? `${summary.daysWorked} / ${soFar.length}` : "–",
     late ? plural(late, "late mark", "late marks") : "No late marks", late ? "down" : "");
@@ -127,6 +127,7 @@ function barLook(day) {
   const look = (modifier, height, what) => ({ modifier, height, what });
   if (isOff(day)) return look("chart__bar--muted", 0, day.holiday && day.status === "holiday" ? `${day.holiday.name}, day off` : "day off");
   if (day.status === "no-data") return look("chart__bar--muted", 0, "no data");
+  if (day.status === "not-joined") return look("chart__bar--muted", 0, "before joining");
   if (day.status === "on-leave") return look("chart__bar--leave", MARKER, "on leave");
   if (day.minutesWorked !== null) {
     const hours = (day.minutesWorked / 60).toFixed(1);
@@ -174,7 +175,7 @@ function recentRow(day) {
 function renderRecent(days) {
   const recent = [];
   for (const day of [...days].reverse()) {
-    if (recent.length === RECENT_DAYS || day.status === "no-data") break;
+    if (recent.length === RECENT_DAYS || day.status === "no-data" || day.status === "not-joined") break;
     if (!isOff(day)) recent.push(day);
   }
   if (recent.length) {
