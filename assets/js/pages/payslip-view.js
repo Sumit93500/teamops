@@ -15,11 +15,12 @@
 // store's reason.
 
 import { payslipsFor } from "../data/payroll-store.js";
+import { ATTENDANCE_RULES } from "../data/attendance-store.js";
 import { getUser } from "../data/store.js";
 import { can } from "../core/rbac.js";
 import { isSignedIn, getCurrentUserId } from "../core/auth.js";
 import { resolvePageLink } from "../core/paths.js";
-import { el, todayIso, monthName, formatRange, departmentName, plural, formatDays } from "../ui/leave-view.js";
+import { el, todayIso, monthName, formatRange, departmentName, plural, formatDays, formatDay } from "../ui/leave-view.js";
 import { rupees, rupeesInWords } from "../ui/money.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
 
@@ -39,6 +40,14 @@ const monthLabel = (month) => `${monthName(Number(month.slice(5, 7)))} ${month.s
 
 // "Draft: not approved or paid yet" / "On hold: No bank account on file"
 const statusLine = (slip) => (slip.status === "on-hold" ? `On hold: ${slip.holdReason}` : "Draft: not approved or paid yet");
+
+// ["a"] -> "a", ["a", "b"] -> "a and b", ["a", "b", "c"] -> "a, b and c"
+const listed = (items) => (items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items.at(-1)}` : items[0] ?? "");
+
+// An absence not deducted yet: "30 Oct (can still be corrected until 6 Nov)".
+const openAbsence = (a) => `${formatDay(a.date)}${a.days === 0.5 ? ", half a day" : ""} (${a.waiting
+  ? "a correction or leave request is waiting for a decision"
+  : `can still be corrected until ${formatDay(a.until)}`})`;
 
 // ---------- which payslip ----------
 
@@ -145,7 +154,8 @@ function renderAmounts(slip) {
 }
 
 // The lines under the figures: why it's on hold, the loss of pay worked out,
-// and how much of the month attendance covers.
+// absences not deducted yet (or not counted), and how much of the month
+// attendance covers.
 function renderNotes(slip) {
   const label = monthLabel(slip.month);
   const notes = [];
@@ -155,12 +165,24 @@ function renderNotes(slip) {
     notes.push(`On hold: ${slip.holdReason}. The pay above is worked out, but it can't be paid until a bank account is added.`);
   }
   if (slip.lop.days > 0) {
-    const why = [
+    const why = listed([
       slip.lop.penaltyHalfDays ? plural(slip.lop.penaltyHalfDays, "late-mark half day", "late-mark half days") : "",
       slip.lop.unpaidLeaveDays ? `${formatDays(slip.lop.unpaidLeaveDays)} of unpaid leave` : "",
-    ].filter(Boolean).join(" and ");
+      slip.lop.absenceDays ? `${formatDays(slip.lop.absenceDays)} of unexplained absence` : "",
+    ].filter(Boolean));
     notes.push(`Loss of pay: ${rupees(slip.lop.amount)} for ${formatDays(slip.lop.days)} (${why}), out of ${slip.workingDays} working days, `
       + `taken off the monthly salary of ${rupees(slip.monthlyGross)}. The earnings above are on the ${rupees(slip.gross)} left.`);
+  }
+  const open = slip.attendance.openAbsences;
+  if (open.length) {
+    notes.push(`Not deducted yet: ${plural(open.length, "absence", "absences")} with no check-in, on ${listed(open.map(openAbsence))}. `
+      + `Each costs a day's pay (half with half-day leave) once its ${ATTENDANCE_RULES.requestWindowDays}-day correction window has closed `
+      + "and nothing for it is waiting for a decision.");
+  }
+  const uncounted = slip.attendance.uncountedAbsences;
+  if (uncounted > 0) {
+    notes.push(`${plural(uncounted, "day", "days")} with no check-in ${uncounted === 1 ? "isn't" : "aren't"} counted as an absence: `
+      + "there's no readable joining date on file to count from.");
   }
   if (slip.attendance.noData > 0) {
     notes.push(`${plural(slip.attendance.noData, "working day", "working days")} of ${label} came before attendance records began; `
@@ -168,7 +190,7 @@ function renderNotes(slip) {
   }
   if (slip.attendance.notYet > 0) {
     notes.push(`${label} isn't over: ${plural(slip.attendance.notYet, "working day hasn't", "working days haven't")} been recorded yet, `
-      + "so late marks and unpaid leave can still change this payslip.");
+      + "so late marks, unpaid leave and absences can still change this payslip.");
   }
   $("payslip-notes").replaceChildren(...notes.map((text) => el("p", "payslip__words", text)));
   $("payslip-notes").hidden = notes.length === 0;

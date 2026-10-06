@@ -123,9 +123,11 @@ export function filingDates(year, month) {
 // ---------- loss of pay ----------
 
 // Loss-of-pay days for a month: each late-mark penalty half day is 0.5, each
-// unpaid leave day 1 (a half day 0.5), never more than the month's working days.
-export function lossOfPayDays({ penaltyHalfDays = 0, unpaidLeaveDays = 0, workingDays = 0 } = {}) {
-  return Math.min(workingDays, penaltyHalfDays * 0.5 + unpaidLeaveDays);
+// unpaid leave day 1 (a half day 0.5), each settled unexplained absence 1 (0.5
+// when half-day leave covers the other half), never more than the month's
+// working days. data/payroll-store.js decides which absences are settled.
+export function lossOfPayDays({ penaltyHalfDays = 0, unpaidLeaveDays = 0, absenceDays = 0, workingDays = 0 } = {}) {
+  return Math.min(workingDays, penaltyHalfDays * 0.5 + unpaidLeaveDays + absenceDays);
 }
 
 // The rupees a month's gross loses: gross / working days for each LOP day.
@@ -139,8 +141,8 @@ export function lossOfPayAmount(monthlyGross, lopDays, workingDays) {
 // Everything a payslip needs from a monthly gross and that month's LOP inputs.
 // The earnings and PF are worked out on the gross actually paid (after LOP);
 // TDS on the full monthly gross, capped so net pay never goes below zero.
-export function computePay(monthlyGross, { penaltyHalfDays = 0, unpaidLeaveDays = 0, workingDays = 0 } = {}) {
-  const lopDays = lossOfPayDays({ penaltyHalfDays, unpaidLeaveDays, workingDays });
+export function computePay(monthlyGross, { penaltyHalfDays = 0, unpaidLeaveDays = 0, absenceDays = 0, workingDays = 0 } = {}) {
+  const lopDays = lossOfPayDays({ penaltyHalfDays, unpaidLeaveDays, absenceDays, workingDays });
   const lopAmount = lossOfPayAmount(monthlyGross, lopDays, workingDays);
   const gross = monthlyGross - lopAmount;
   const earnings = splitGross(gross);
@@ -151,7 +153,7 @@ export function computePay(monthlyGross, { penaltyHalfDays = 0, unpaidLeaveDays 
   return {
     monthlyGross,
     workingDays,
-    lop: { penaltyHalfDays, unpaidLeaveDays, days: lopDays, amount: lopAmount },
+    lop: { penaltyHalfDays, unpaidLeaveDays, absenceDays, days: lopDays, amount: lopAmount },
     gross,
     earnings,
     deductionLines: { pf, pt, tds },

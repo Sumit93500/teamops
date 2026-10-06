@@ -13,11 +13,12 @@
 // the bank file aren't built; the page says so where they'd appear.
 
 import { payrollRun, canApprove, runTotals, runMonth } from "../data/payroll-store.js";
+import { ATTENDANCE_RULES } from "../data/attendance-store.js";
 import { getUser, getAllUsers } from "../data/store.js";
 import { ROLES } from "../config/roles.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { getCurrentUserId } from "../core/auth.js";
-import { el, nameOf, plural, departmentName, personCell, step, todayIso, monthName, formatRange } from "../ui/leave-view.js";
+import { el, nameOf, plural, departmentName, personCell, step, todayIso, monthName, formatRange, formatDay } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
@@ -174,19 +175,44 @@ function checkItem(title, sub, badgeClass, badgeText, kind) {
   return item;
 }
 
+// The run's absences that aren't deducted yet (the store's openAbsences, every
+// row's together): "2 absences aren't deducted yet: they can still be
+// corrected until 6 Nov." Each is either inside its correction window or
+// waiting for a decision on a correction or leave request.
+function openAbsencesText(open) {
+  const waiting = open.filter((a) => a.waiting).length;
+  const correctable = open.filter((a) => !a.waiting);
+  const until = correctable.map((a) => a.until).sort().at(-1);
+  const which = (n) => (n < open.length ? String(n) : n === 1 ? "it" : "they");
+  const why = [
+    correctable.length ? `${which(correctable.length)} can still be corrected until ${formatDay(until)}` : "",
+    waiting ? `${which(waiting)} ${waiting === 1 ? "has" : "have"} a correction or leave request waiting for a decision` : "",
+  ].filter(Boolean).join("; ");
+  return `${plural(open.length, "absence isn't", "absences aren't")} deducted yet: ${why}.`;
+}
+
 // How much of the month attendance covers, the most for anyone in the run.
 // Days before records began are paid in full with no loss-of-pay check; the
 // current month never has any (attendance is seeded back to its 1st), but the
 // page says so rather than show those figures as checked. Days not recorded
-// yet mean the month is still in progress.
+// yet, or absences that can still be explained, mean the month is still in
+// progress. Absences that can't be counted (no readable joining date) need
+// someone to look.
 function attendanceCheck(run, label, done) {
   const most = (key) => Math.max(0, ...run.rows.map((r) => r.attendance[key]));
   const noData = most("noData");
   const notYet = most("notYet");
+  const open = run.rows.flatMap((r) => r.attendance.openAbsences);
+  const uncounted = run.rows.filter((r) => r.attendance.uncountedAbsences > 0);
   const parts = [];
   if (noData) parts.push(`${workingDays(noData)} of ${label} came before attendance records began; they're paid in full, without a loss-of-pay check.`);
-  if (notYet) parts.push(`${label} isn't over: ${plural(notYet, "working day hasn't", "working days haven't")} been recorded yet, so late marks and unpaid leave can still change these figures.`);
-  const badge = noData ? ["badge badge--warning", "Review"] : notYet ? ["badge badge--info", "In progress"] : done;
+  if (notYet) parts.push(`${label} isn't over: ${plural(notYet, "working day hasn't", "working days haven't")} been recorded yet, so late marks, unpaid leave and absences can still change these figures.`);
+  if (open.length) parts.push(openAbsencesText(open));
+  if (uncounted.length) {
+    const who = uncounted.map((r) => `${nameOf(r.userId)} (${plural(r.attendance.uncountedAbsences, "absence", "absences")})`).join(", ");
+    parts.push(`Not counted, with no readable joining date on file: ${who}.`);
+  }
+  const badge = noData || uncounted.length ? ["badge badge--warning", "Review"] : notYet || open.length ? ["badge badge--info", "In progress"] : done;
   return checkItem("Attendance recorded", parts.join(" ") || `Every working day of ${label} is recorded`, ...badge, "computed");
 }
 
@@ -215,6 +241,10 @@ function renderChecks(run) {
       ...(lopRows.length ? ["badge badge--info", "Review"] : done), "computed"),
     checkItem("Approved leave included",
       "Approved unpaid leave is deducted; pending requests aren't counted",
+      ...done, "rule"),
+    checkItem("Unexplained absences",
+      `A working day with no check-in and no approved leave costs a day's pay once its ${ATTENDANCE_RULES.requestWindowDays}-day correction window has closed `
+        + "and no correction or leave request for it is waiting; days before someone's joining date aren't counted",
       ...done, "rule"),
   ];
   $("run-checks").replaceChildren(...items);

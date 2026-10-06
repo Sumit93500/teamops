@@ -2,8 +2,9 @@
 // Salaries, kept in localStorage through data/collection.js, and a month's pay
 // worked out from them. Nothing about a month's pay is stored: payrollRunFor()
 // reads the salary in effect, the month's attendance (late-mark penalties,
-// working days) and approved unpaid leave, and runs data/payroll.js's rules,
-// so a payslip can't disagree with the data it came from.
+// working days, unexplained absences) and approved unpaid leave, and runs
+// data/payroll.js's rules, so a payslip can't disagree with the data it came
+// from.
 //
 // A salary record: { id, userId, gross (monthly, rupees), effectiveFrom
 // ("YYYY-MM-DD"), regime: "new" }. A revision is a new record with a later
@@ -14,9 +15,9 @@
 
 import { createCollection } from "./collection.js";
 import { getUser, getAllUsers } from "./store.js";
-import { dayNumber, isoFromDayNumber, dayOffChecker } from "./holidays.js";
+import { dayNumber, isoFromDayNumber, isValidDate, dayOffChecker } from "./holidays.js";
 import { allRequests } from "./leave-store.js";
-import { monthFor } from "./attendance-store.js";
+import { monthFor, ATTENDANCE_RULES } from "./attendance-store.js";
 import { computePay } from "./payroll.js";
 
 // ---------- seed ----------
@@ -91,13 +92,77 @@ export function unpaidLeaveDays(userId, year, month) {
   return days;
 }
 
+// ---------- unexplained absences ----------
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// The stored joining date, as profiles show it ("12 Jan 2023") or as
+// "2023-01-12", -> "2023-01-12". null when there's none or it can't be read.
+export function joiningDate(text) {
+  const s = String(text ?? "").trim();
+  const m = /^(\d{1,2}) ([A-Za-z]{3}) (\d{4})$/.exec(s);
+  const month = m ? MONTHS.indexOf(m[2]) : -1;
+  const iso = month === -1 ? s : `${m[3]}-${pad(month + 1)}-${pad(Number(m[1]))}`;
+  return isValidDate(iso) ? iso : null;
+}
+
+function todayIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// The last day a correction for the date can be asked for (requestWindowDays later).
+export const correctableUntil = (date) => isoFromDayNumber(dayNumber(date) + ATTENDANCE_RULES.requestWindowDays);
+
+// A month's unexplained absences: working days marked absent with no check-in
+// at all, on or after the person's joining date. A short day (checked in and
+// out, under 4 hours) is marked absent too but isn't one: the person was there.
+// Each costs a day's pay, half when approved half-day leave covers the other
+// half (that half is leave: unpaidLeaveDays counts it if it's unpaid).
+//
+// An absence is deducted only once it's settled: its correction window has
+// closed and no correction or leave request for that date is waiting for a
+// decision. Until then it's open: listed, not deducted. A pending
+// work-from-home request doesn't pause it; approving one wouldn't explain a
+// day with no check-in.
+//
+// No readable joining date: nothing is counted or listed as open, and
+// uncounted says how many settled absences (ones that would be deducted now)
+// that leaves out. Days before the joining date aren't counted; the
+// attendance pages still show them absent (a known display issue, not handled
+// here).
+// -> { days (settled, deducted), open: [{ date, days, until, waiting }], uncounted }
+function absencesIn(user, attendance, today) {
+  const joined = joiningDate(user.dateOfJoining);
+  const pendingLeave = allRequests().filter((r) => r.userId === user.id && r.status === "pending" && r.type !== "wfh");
+  let days = 0;
+  let uncounted = 0;
+  const open = [];
+  for (const d of attendance.days) {
+    if (d.status !== "absent" || d.checkIn || (joined && d.date < joined)) continue;
+    const share = d.halfDayLeave ? 0.5 : 1;
+    const until = correctableUntil(d.date);
+    const waiting = d.regularization?.status === "pending" || pendingLeave.some((r) => r.from <= d.date && d.date <= r.to);
+    const settled = today > until && !waiting;
+    if (!joined) uncounted += settled ? 1 : 0;
+    else if (settled) days += share;
+    else open.push({ date: d.date, days: share, until, waiting });
+  }
+  return { days, open, uncounted };
+}
+
 // One person's pay for a month, or null for an unknown or inactive person or a
 // bad month. A row is "on-hold" (with holdReason) when there's no salary for
 // the month (all amounts 0) or no bank account to pay into; otherwise "draft".
 // It also carries period { from, to } (the month's first and last day) and
-// attendance { noData, notYet }: how many of its working days came before
-// records began (paid in full, with no loss-of-pay check) and how many haven't
-// been recorded yet.
+// attendance:
+//   noData, notYet      how many of its working days came before records began
+//                       (paid in full, with no loss-of-pay check) and how many
+//                       haven't been recorded yet
+//   openAbsences        absences not deducted yet: [{ date, days (1 or 0.5),
+//                       until (the last day to ask for a correction), waiting
+//                       (a correction or leave request is pending) }]
+//   uncountedAbsences   settled absences not deducted: no readable joining date
 export function payrollRunFor(userId, year, month) {
   const y = Number(year);
   const m = Number(month);
@@ -105,9 +170,11 @@ export function payrollRunFor(userId, year, month) {
   const attendance = validMonth(y, m) ? monthFor(userId, y, m) : null;
   if (!user || !attendance) return null;
   const salary = salaryFor(userId, y, m);
+  const absences = absencesIn(user, attendance, todayIso());
   const pay = computePay(salary?.gross ?? 0, {
     penaltyHalfDays: attendance.penaltyHalfDays,
     unpaidLeaveDays: unpaidLeaveDays(userId, y, m),
+    absenceDays: absences.days,
     workingDays: attendance.workingDays,
   });
   const holdReason = !salary ? "No salary on file for this month" : !user.bankAccount ? "No bank account on file" : null;
@@ -120,7 +187,12 @@ export function payrollRunFor(userId, year, month) {
     status: holdReason ? "on-hold" : "draft",
     holdReason,
     period: { from: attendance.days[0].date, to: attendance.days.at(-1).date },
-    attendance: { noData: attendance.counts.noData, notYet: attendance.counts.notYet },
+    attendance: {
+      noData: attendance.counts.noData,
+      notYet: attendance.counts.notYet,
+      openAbsences: absences.open,
+      uncountedAbsences: absences.uncounted,
+    },
   };
 }
 
