@@ -58,7 +58,7 @@ export const ROLES = {
     permissions: [
       ...SELF_SERVICE,
       "approvals:view", "approvals:decide",
-      "pii:view",
+      // no pii:view: nothing Finance does needs a full bank account or PAN yet (Round 7C)
       "payroll:view", "payroll:create", "payroll:export",   // note: no payroll:approve
       "payslips:view",
       "salary:view", "salary:edit",

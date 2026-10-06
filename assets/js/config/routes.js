@@ -38,7 +38,7 @@ export const ROUTES = {
 
   "payroll/payroll-run.html":      "payroll:view",
   "payroll/salary-structure.html": "salary:view",
-  "payroll/payslips.html":         null,   // page shows different data by scope, not by a single permission
+  "payroll/payslips.html":         null,   // your own payslips only; anyone else's open from the payroll run (payslips:view, payslip-view.js)
   "payroll/payslip-view.html":     null,
 
   "finance/expenses.html":       "expenses:view",

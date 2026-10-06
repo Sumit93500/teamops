@@ -14,7 +14,7 @@ export const PERMISSIONS = {
   attendance:    ["view-all", "view-own", "mark", "regularize", "approve"],
   leave:         ["view-own", "create", "cancel", "approve"],
   holidays:      ["manage"],
-  payroll:       ["view", "create", "approve", "export"],
+  payroll:       ["view", "create", "approve", "export"],   // create: prepare a run; reserved, nothing checks it until runs are stored
   payslips:      ["view"],                       // all employees' payslips
   payslip:       ["view-own", "download"],       // my own payslip
   salary:        ["view", "edit"],

@@ -51,7 +51,6 @@ export const NAV = [
     group: "Finance & operations",
     items: [
       { label: "Payroll run",        icon: "cash",  href: "payroll/payroll-run.html",        permission: "payroll:view" },
-      { label: "Payslips",           icon: "doc",   href: "payroll/payslips.html",           permission: "payslips:view" },
       { label: "Salary structure",   icon: "bars",  href: "payroll/salary-structure.html",   permission: "salary:view" },
       { label: "Expenses",           icon: "wallet", href: "finance/expenses.html",          permission: "expenses:view" },
       { label: "Tax & deductions",   icon: "percent", href: "finance/tax-deductions.html",   permission: "tax:view" },
