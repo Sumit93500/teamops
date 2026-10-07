@@ -85,7 +85,8 @@ function renderYearStats(slips, totals) {
   setStatValue(stat("ytd-net"), rupees(totals.net));
   setStatNote(stat("ytd-net"), slips.length ? `${span(slips)}, ${plural(slips.length, "payslip", "payslips")}` : "No payslips");
   setStatValue(stat("ytd-tds"), rupees(totals.tds));
-  setStatNote(stat("ytd-tds"), slips.length ? `TDS, ${span(slips)}` : "TDS, no payslips");
+  // TDS is worked out on data/payroll.js's TAX_SAMPLE, so the note says so (as the Finance dashboard's does).
+  setStatNote(stat("ytd-tds"), slips.length ? `TDS on sample tax rates, ${span(slips)}` : "TDS, no payslips");
 }
 
 // ---------- history and year to date ----------

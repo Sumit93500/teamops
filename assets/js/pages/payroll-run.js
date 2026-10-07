@@ -88,7 +88,7 @@ function renderStats(run) {
   setStatValue(stat("gross"), rupees(totals.gross));
   setStatNote(stat("gross"), totals.lossOfPay > 0 ? `After ${rupees(totals.lossOfPay)} loss of pay` : "No loss of pay");
   setStatValue(stat("deductions"), rupees(totals.deductions));
-  setStatNote(stat("deductions"), "PF, PT and TDS");
+  setStatNote(stat("deductions"), "PF, PT and TDS (sample tax rates)");   // TDS is worked out on data/payroll.js's TAX_SAMPLE
   setStatValue(stat("net"), rupees(totals.net));
   setStatNote(stat("net"), "Draft, not paid yet");
 }

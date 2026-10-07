@@ -28,7 +28,7 @@ export const SALARY_COMPONENTS = [
   { key: "special",    name: "Special allowance",    type: "earning",   formula: "remainder of gross",                              taxable: true },
   { key: "pf",         name: "Provident fund",       type: "deduction", formula: `${pct(PAY_RULES.pfShareOfBasic)} of basic`,       taxable: null },
   { key: "pt",         name: "Professional tax",     type: "deduction", formula: `fixed ${PAY_RULES.professionalTax}`,               taxable: null },
-  { key: "tds",        name: "Income tax (TDS)",     type: "deduction", formula: "slab-based",                                      taxable: null },
+  { key: "tds",        name: "Income tax (TDS)",     type: "deduction", formula: "slab-based, sample tax rates",                    taxable: null },   // TAX_SAMPLE, below
 ];
 
 // gross -> { basic, hra, conveyance, special }, whole rupees that always add up
