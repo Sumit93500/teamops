@@ -211,7 +211,8 @@ function renderHeadcount() {
 // changes and backups aren't here: OfficeOS keeps no audit log yet.
 const SHOWN_ACTIVITY = 5;
 
-const STEP_DOT = { applied: "warning", approved: "success", rejected: "danger", cancelled: "primary", paid: "success", fulfilled: "success", closed: "primary" };
+// A cancellation is neutral grey (muted), as on the Finance dashboard's feed.
+const STEP_DOT = { applied: "warning", approved: "success", rejected: "danger", cancelled: "muted", paid: "success", fulfilled: "success", closed: "primary" };
 const MOVEMENT_DOT = { in: "success", return: "success", out: "primary", adjustment: "warning" };
 
 // A chain's steps: "sent" reads as the request itself, every other step as

@@ -144,14 +144,16 @@ function renderPendingApprovals(card) {
 }
 
 // What happened to claims lately: sent, approved, rejected, paid, cancelled
-// (each read as the Admin dashboard's activity feed reads it). Skipped stages
-// and an Admin's own automatic approvals aren't events anyone did.
+// (each read as the Admin dashboard's activity feed reads it, dot included).
+// A cancellation's dot is the neutral grey (muted), not the role's accent: the
+// Finance accent is all but the warning colour a sent claim uses. Skipped
+// stages and an Admin's own automatic approvals aren't events anyone did.
 const EVENT = {
   applied:  { dot: "warning", text: (c) => `Expense claim from ${nameOf(c.userId)}, ${rupees(c.amount)}` },
   approved: { dot: "success", text: (c, h) => `${claimText(c)} approved by ${nameOf(h.byUserId)}` },
   rejected: { dot: "danger",  text: (c, h) => `${claimText(c)} rejected by ${nameOf(h.byUserId)}` },
   paid:     { dot: "success", text: (c, h) => `${claimText(c)} paid by ${nameOf(h.byUserId)}` },
-  cancelled: { dot: "primary", text: (c, h) => `${claimText(c)} cancelled by ${nameOf(h.byUserId)}` },
+  cancelled: { dot: "muted",   text: (c, h) => `${claimText(c)} cancelled by ${nameOf(h.byUserId)}` },
 };
 const ACTIVITY_SHOWN = 5;
 
