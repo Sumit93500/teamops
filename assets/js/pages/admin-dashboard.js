@@ -89,8 +89,9 @@ function renderPayroll() {
 
 // ---------- low stock ----------
 
-// The items at or below their reorder level, the list items.html's reorder
-// card shows (reorderAlerts()). Inventory is Admin-only (inventory:view) and HR
+// The items to reorder: below their reorder level or out of stock (exactly
+// at it is still in stock, data/inventory.js), the list items.html's "Reorder
+// alerts" card shows (reorderAlerts()). Inventory is Admin-only (inventory:view) and HR
 // can open this page by URL, so it's drawn only with that permission; the HTML
 // hides the stat too and holds "—", so a stats export without the permission
 // carries no figure (a hidden stat exports as an empty row).

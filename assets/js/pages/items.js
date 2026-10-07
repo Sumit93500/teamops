@@ -3,7 +3,10 @@
 // data/inventory-store.js with its stock worked out from the ledger: category
 // tabs, a stock-status filter, search by name or SKU, pagination; the stat
 // strip, reorder alerts and stock value by category, all from the same items.
-// Stock value is quantity x current unit price (no costing method).
+// Stock value is quantity x current unit price (no costing method). A tagged
+// item's row also says how much of its stock is ready to assign (its tagged,
+// available assets) when that's less than all of it: ui/inventory-view.js's
+// readyToAssign().
 //
 // Nothing here changes an item: "Add item" and each row's Edit stay
 // placeholders (no item writes exist yet). Stock changes on
@@ -11,8 +14,8 @@
 
 import { can, applyPermissions } from "../core/rbac.js";
 import { CATEGORY_KEYS, STOCK_STATUS_KEYS, LOCATIONS, stockBarPercent } from "../data/inventory.js";
-import { allItems, inventoryTotals, reorderAlerts } from "../data/inventory-store.js";
-import { categoryLabel, assetTypeLabel, stockStatusLabel, stockLook, stockBadge } from "../ui/inventory-view.js";
+import { allItems, allAssets, inventoryTotals, reorderAlerts } from "../data/inventory-store.js";
+import { categoryLabel, assetTypeLabel, stockStatusLabel, stockLook, stockBadge, readyToAssign, READY_SHORT, UNTAGGED_TIP } from "../ui/inventory-view.js";
 import { el, plural } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
@@ -76,10 +79,19 @@ function itemCell(item) {
   return td;
 }
 
-// The category, and for a tagged item what it's tagged as.
-function categoryCell(item) {
+// The category; for a tagged item what it's tagged as, and under it how much
+// of its stock can be assigned when that isn't all of it ("1 of 6 ready to
+// assign"; the tooltip says why). Here, not in the stock cell, so the
+// exported In stock column stays a plain number.
+function categoryCell(item, assets) {
   const td = el("td", "", categoryLabel(item.category));
   if (item.assetType) td.append(el("div", "text-sm text-muted", `Tagged: ${assetTypeLabel(item.assetType)}`));
+  const ready = readyToAssign(item, assets);
+  if (ready !== null) {
+    const note = el("div", "text-sm text-muted", `${ready} of ${item.stock} ${READY_SHORT}`);
+    note.title = UNTAGGED_TIP;
+    td.append(note);
+  }
   return td;
 }
 
@@ -97,7 +109,7 @@ function stockCell(item) {
   return td;
 }
 
-function row(item) {
+function row(item, assets) {
   const statusCell = el("td");
   statusCell.append(stockBadge(item.status));
   const actions = el("td", "table__actions");
@@ -110,7 +122,7 @@ function row(item) {
   tr.dataset.sku = item.sku;
   tr.append(
     itemCell(item),
-    categoryCell(item),
+    categoryCell(item, assets),
     stockCell(item),
     el("td", "table__num", String(item.reorderLevel)),
     el("td", "table__num", rupees(item.unitPrice)),
@@ -128,7 +140,8 @@ function renderTable(items) {
   const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   if (pageRows.length) {
-    tbody.replaceChildren(...pageRows.map(row));
+    const assets = allAssets();
+    tbody.replaceChildren(...pageRows.map((item) => row(item, assets)));
   } else {
     const td = el("td", "text-muted", items.length ? "No items match these filters." : "No items yet.");
     td.colSpan = COLUMNS;

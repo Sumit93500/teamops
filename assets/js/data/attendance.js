@@ -1,7 +1,7 @@
 // data/attendance.js
-// Attendance records. Each entry is one person's punch for one day.
-// Everything the dashboards show (present/late/absent counts, "19/22 days")
-// should be calculated from this list, not hardcoded per page.
+// Not used: nothing imports this file. These are early fixed demo punches
+// (14 to 18 Sep 2026), kept only as a record. Every attendance figure the
+// pages and dashboards show is worked out by data/attendance-store.js.
 
 export const ATTENDANCE = [
   // EMP-1105, Arjun Kapoor — the sample "logged-in employee" used across the mockups

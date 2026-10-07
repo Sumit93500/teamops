@@ -59,6 +59,23 @@ export function stockBadge(status) {
   return el("span", stockLook(status).badge, stockStatusLabel(status));
 }
 
+// A tagged item's stock counts every unit, but only its tagged assets that are
+// available can be handed out (asset-assignment.html); the rest are untagged
+// units, which nothing can assign yet (no tagging: round 6E). How many can be
+// assigned, or null when that's every unit in stock (or the item isn't
+// tagged, or there's none in stock). assets: allAssets().
+export function readyToAssign(item, assets) {
+  if (!item.assetType || item.stock <= 0) return null;
+  const ready = assets.filter((a) => a.sku === item.sku && a.status === "available").length;
+  return ready < item.stock ? ready : null;
+}
+// The words for it: "tagged and ready to assign" where nothing beside it says
+// the item is tagged (stock-movements.html's list and toast); "ready to
+// assign" in items.html's category cell, right under its "Tagged: Laptop".
+export const READY_WORDS = "tagged and ready to assign";
+export const READY_SHORT = "ready to assign";
+export const UNTAGGED_TIP = "Untagged units are counted in stock but can't be assigned until they're tagged.";
+
 // The colours stock-movements.html has always used for each type.
 const MOVEMENT_BADGE = {
   in: "badge badge--success badge--square",

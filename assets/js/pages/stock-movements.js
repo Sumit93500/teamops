@@ -10,14 +10,16 @@
 // the apply-leave.js / claim-expense.js pattern). Movements are never edited
 // or deleted; a mistake is put right with an adjustment, which may be below 0.
 // Tagged items (laptops, monitors, access cards) go out and come back on the
-// asset register, so Stock out and Return aren't offered for them here.
+// asset register, so Stock out and Return aren't offered for them here; their
+// stock figures say how much is tagged and ready to assign when that isn't all
+// of it (ui/inventory-view.js's readyToAssign()).
 
 import { getCurrentUserId } from "../core/auth.js";
 import { can } from "../core/rbac.js";
 import { getAllDepartments } from "../data/store.js";
 import { CATEGORY_KEYS, MOVEMENT_TYPE_KEYS } from "../data/inventory.js";
-import { allItems, allMovements, recordMovement } from "../data/inventory-store.js";
-import { movementTypeLabel, movementBadge, signedQty, officeTime } from "../ui/inventory-view.js";
+import { allItems, allAssets, allMovements, recordMovement } from "../data/inventory-store.js";
+import { movementTypeLabel, movementBadge, signedQty, officeTime, readyToAssign, READY_WORDS } from "../ui/inventory-view.js";
 import { el, escapeHtml, nameOf, departmentName } from "../ui/leave-view.js";
 import { renderPagination } from "../ui/pagination.js";
 import { showToast } from "../ui/toast.js";
@@ -55,6 +57,13 @@ let currentPage = 1;
 // ---------- data ----------
 
 const itemsBySku = () => new Map(allItems().map((i) => [i.sku, i]));
+
+// "6 in stock", or for a tagged item not all of whose stock can be assigned
+// "6 in stock, 1 tagged and ready to assign"; when: "now" after recording.
+function stockText(item, assets, when = "") {
+  const ready = readyToAssign(item, assets);
+  return `${item.stock} in stock${when ? ` ${when}` : ""}${ready === null ? "" : `, ${ready} ${READY_WORDS}`}`;
+}
 
 // What the Reference column says. A tagged asset's movement names the person
 // from the user list (never a stored copy of the name): handed to someone,
@@ -161,8 +170,9 @@ function fillItems() {
   choose.value = "";
   const items = allItems().sort((a, b) => CATEGORY_KEYS.indexOf(a.category) - CATEGORY_KEYS.indexOf(b.category)
     || a.sku.localeCompare(b.sku, "en", { numeric: true }));
+  const assets = allAssets();
   itemSelect.replaceChildren(choose, ...items.map((item) => {
-    const option = el("option", "", `${item.name} (${item.sku}), ${item.stock} in stock`);
+    const option = el("option", "", `${item.name} (${item.sku}), ${stockText(item, assets)}`);
     option.value = item.sku;
     option.dataset.tagged = String(Boolean(item.assetType));
     return option;
@@ -229,7 +239,7 @@ function submit(e) {
 
   const item = allItems().find((i) => i.sku === result.record.sku);
   const change = result.record.change > 0 ? `+${result.record.change}` : String(result.record.change);
-  showToast(escapeHtml(`Recorded: ${movementTypeLabel(result.record.type)}, ${change} ${item?.name ?? result.record.sku}. ${item?.stock ?? ""} in stock now.`), "success");
+  showToast(escapeHtml(`Recorded: ${movementTypeLabel(result.record.type)}, ${change} ${item?.name ?? result.record.sku}. ${item ? stockText(item, allAssets(), "now") : ""}.`), "success");
   form.reset();
   fillItems();   // the stock counts in the item list
   updateForm();
