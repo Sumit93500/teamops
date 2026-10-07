@@ -13,7 +13,8 @@ import { applyPermissions, can } from "../core/rbac.js";
 import { el, formatDay, plural, todayIso } from "../ui/leave-view.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
 import { salaryFor } from "../data/payroll-store.js";
-import { approvalChainText } from "../data/leave-store.js";
+import { approvalChainText, LEAVE_TYPES, balanceFor } from "../data/leave-store.js";
+import { barRow } from "../ui/chart.js";
 import { rupees } from "../ui/money.js";
 import { allItems, assetsFor } from "../data/inventory-store.js";
 import { conditionBadge } from "../ui/inventory-view.js";
@@ -217,6 +218,28 @@ function renderAssets() {
   if (meta) meta.textContent = String(mine.length);
 }
 
+// Their leave left, from data/leave-store.js's balanceFor(), as the employee
+// dashboard's Leave balance card shows it: each type with an allowance (this
+// year; work from home this month), and how much of it is left.
+const LEAVE_SHORT = { casual: "Casual", sick: "Sick", earned: "Earned", wfh: "WFH" };
+function renderLeave() {
+  const card = cardTitled("Leave balance");
+  if (!card) return;
+  const balance = balanceFor(user.id);
+  const rows = LEAVE_TYPES.filter((type) => balance[type].allowance !== null);
+  const body = el("div", "card__body");
+  body.append(...rows.map((type) => {
+    const b = balance[type];
+    const share = Math.min(100, Math.max(0, Math.round((b.left / b.allowance) * 100)));
+    return barRow(LEAVE_SHORT[type] ?? type, String(b.left), share);
+  }));
+  body.append(el("p", "text-xs text-muted mt-4", "Days left this year; work from home, this month."));
+  Array.from(card.children).filter((c) => !c.classList.contains("card__header")).forEach((c) => c.remove());
+  card.append(body);
+  const meta = card.querySelector(".card__meta");
+  if (meta) meta.textContent = todayIso().slice(0, 4);
+}
+
 function renderOverrides() {
   const card = cardTitled("Permission overrides");
   if (!card) return;
@@ -305,8 +328,8 @@ function render() {
 
   renderOverrides();
   renderAssets();
-  // No data source exists for these yet, so say so instead of showing Rohan's sample content.
-  emptyCard("Leave balance", "No leave data available yet");
+  renderLeave();
+  // No data source exists for this yet (no activity log), so say so instead of showing Rohan's sample content.
   emptyCard("Recent activity", "No recent activity");
 
   applyPermissions(main);   // e.g. hides Reveal for roles without pii:view

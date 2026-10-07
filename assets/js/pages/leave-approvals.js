@@ -153,8 +153,10 @@ function setStat(label, value, note) {
 
 function renderStats() {
   const today = todayIso();
+  // Every request still waiting, at either stage (the Pending tab's list), not
+  // only what this person may decide: hr.html's "Leave for you to decide" is that.
   const pending = tabRequests("pending");
-  setStat("Pending", String(pending.length), oldestPendingNote(pending, today));
+  setStat("Waiting, all stages", String(pending.length), oldestPendingNote(pending, today));
 
   const decided = allRequests().filter((r) => r.status === "approved" || r.status === "rejected");
   const thisMonth = (r) => decisionOf(r) && localDateOf(decisionOf(r).at).slice(0, 7) === today.slice(0, 7);
@@ -179,8 +181,9 @@ function renderOutNextWeek() {
   const meta = outCard.querySelector(".card__meta");
   if (meta) meta.textContent = formatRange(start, end);
   const list = outCard.querySelector(".list");
+  // Leave only: a work-from-home day is a working day (as on team-attendance.html).
   const out = allRequests()
-    .filter((r) => (r.status === "pending" || r.status === "approved") && r.from <= end && r.to >= start)
+    .filter((r) => (r.status === "pending" || r.status === "approved") && r.type !== "wfh" && r.from <= end && r.to >= start)
     .sort((a, b) => a.from.localeCompare(b.from) || nameOf(a.userId).localeCompare(nameOf(b.userId)));
   if (!out.length) {
     const item = el("div", "list__item");

@@ -90,9 +90,12 @@ function limitedBalance() {
   return LEAVE_TYPES.filter((type) => balance[type].allowance !== null).map((type) => ({ type, ...balance[type] }));
 }
 
+// Leave days only: work from home is a working day (its allowance stays on the
+// Leave balance card), so it isn't added to the total.
 function renderBalanceStat(rows) {
-  const total = rows.reduce((sum, r) => sum + r.left, 0);
-  const most = [...rows].sort((a, b) => b.left - a.left);   // stable: ties keep policy order
+  const leave = rows.filter((r) => r.type !== "wfh");
+  const total = leave.reduce((sum, r) => sum + r.left, 0);
+  const most = [...leave].sort((a, b) => b.left - a.left);   // stable: ties keep policy order
   setStat("balance", `${total} ${total === 1 ? "day" : "days"}`, most.map((r) => `${SHORT[r.type]} ${r.left}`).join(", "));
 }
 

@@ -1,5 +1,7 @@
 // data/leave.js
-// Leave types, balances and requests.
+// Not used: nothing imports this file. These are early fixed demo leave
+// constants, kept only as a record; they no longer match the requests in
+// data/leave-store.js, which every leave page and dashboard reads.
 
 export const LEAVE_TYPES = ["casual", "sick", "earned", "wfh", "unpaid"];
 

@@ -332,15 +332,17 @@ export function pendingFor(deciderUserId, roleKey) {
 }
 
 // Other people's pending or approved requests in the same department whose
-// dates overlap this one, e.g. to check team cover before approving.
+// dates overlap this one, e.g. to check team cover before approving. Leave
+// only: a work-from-home day is a working day, so it neither needs cover nor
+// takes anyone away.
 export function overlaps(requestId) {
   const request = leave.get(requestId);
-  if (!request) return [];
+  if (!request || request.type === "wfh") return [];
   const department = getUser(request.userId)?.department;
   if (!department) return [];
   const sameTeam = new Set(getAllUsers().filter((u) => u.department === department).map((u) => u.id));
   return leave.getAll().filter((r) => r.id !== request.id && r.userId !== request.userId
-    && sameTeam.has(r.userId) && COUNTED.includes(r.status) && clash(r, request));
+    && sameTeam.has(r.userId) && r.type !== "wfh" && COUNTED.includes(r.status) && clash(r, request));
 }
 
 // The id of the manager a new request from this person would go to first, or

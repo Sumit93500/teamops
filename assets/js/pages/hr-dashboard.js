@@ -74,7 +74,10 @@ function setStat(key, value, note, tone = "") {
   setStatNote(stat, note, tone);
 }
 
-// What this person may decide, as on leave-approvals.html and regularization.html.
+// What this person may decide now (the Approve / Reject buttons on
+// leave-approvals.html and regularization.html). leave-approvals.html's
+// "Waiting, all stages" counts more: every request still waiting, at either
+// stage, so the two figures can differ, and each stat's label says which it is.
 const pendingLeave = () => pendingFor(userId, role);
 const pendingCorrections = () => (showCorrections ? pendingRegularizations(userId, role) : []);
 
@@ -86,7 +89,8 @@ function renderStats() {
     ? `${percent(summary.onLeave, summary.total)} of ${summary.total} active, ${summary.expected} expected at work`
     : "No active employees");
 
-  // The same wording as leave-approvals.html's Pending stat.
+  // "Leave for you to decide": what this person may decide now, with the
+  // oldest one's age (worded as on leave-approvals.html).
   const pending = pendingLeave();
   setStat("pending", String(pending.length), oldestPendingNote(pending, today) || "Nothing waiting", pending.length ? "down" : "");
   renderJoiners();
