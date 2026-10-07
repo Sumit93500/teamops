@@ -3,9 +3,10 @@
 // data/payroll-store.js: the payroll, TDS and net pay stats, gross pay by
 // department, and every employee in the run. It is the same run that
 // payroll-run.html shows (this month's, runMonth()), so the two pages agree,
-// and the month's name in the labels comes from it. The TDS deposit date is
-// data/payroll.js's sample filing rule for that month. Nothing here works out
-// pay; the store does.
+// and the month's name in the labels comes from it. TDS is worked out on
+// data/payroll.js's sample tax rates and its deposit date is the sample filing
+// rule for that month, so its note says so, as tax-deductions.html's "Sample
+// rules" does. Nothing here works out pay; the store does.
 //
 // The page is open to anyone with dashboard:view, and these are everyone's
 // salaries, so nothing is drawn without payroll:view (the HTML also hides
@@ -16,9 +17,11 @@
 //     expenses.html calls Approved) and the recent expense activity: every
 //     claim, so drawn only with expenses:view (the HTML hides both without it,
 //     and a stats export then says "—").
-//   - Pending approvals: only the claims waiting for the signed-in person's own
-//     decision (pendingFor(), the approvals inbox's rule), each linking to the
-//     inbox, where it's decided. Nobody sees a claim they couldn't decide.
+//   - Pending expense approvals: only the claims waiting for the signed-in
+//     person's own decision (pendingFor(), the approvals inbox's rule), each
+//     linking to the inbox, where it's decided. Nobody sees a claim they
+//     couldn't decide. Expense claims only, as its title says: the inbox and
+//     the sidebar's count also hold leave, corrections and asset requests.
 
 import { runMonth, payrollRun, runTotals, payslipTotals } from "../data/payroll-store.js";
 import { filingDates } from "../data/payroll.js";
@@ -54,7 +57,7 @@ function renderStats(run, year, month) {
   setStatValue(stat("payroll"), rupees(totals.gross));
   setStatNote(stat("payroll"), `Gross for ${people(run.rows.length)}, draft`);
   setStatValue(stat("tds"), rupees(payslipTotals(run.rows).tds));
-  setStatNote(stat("tds"), `Deposit by ${formatDay(filingDates(year, month).tds)}`);
+  setStatNote(stat("tds"), `Sample tax rates; deposit by ${formatDay(filingDates(year, month).tds)}`);
   stat("net").querySelector(".stat__label").textContent = `Net pay, ${short(run)}`;
   setStatValue(stat("net"), rupees(totals.net));
   setStatNote(stat("net"), "Draft, not paid yet");
@@ -140,13 +143,15 @@ function renderPendingApprovals(card) {
   }));
 }
 
-// What happened to claims lately: sent, approved, rejected, paid. Skipped
-// stages and an Admin's own automatic approvals aren't events anyone did.
+// What happened to claims lately: sent, approved, rejected, paid, cancelled
+// (each read as the Admin dashboard's activity feed reads it). Skipped stages
+// and an Admin's own automatic approvals aren't events anyone did.
 const EVENT = {
   applied:  { dot: "warning", text: (c) => `Expense claim from ${nameOf(c.userId)}, ${rupees(c.amount)}` },
   approved: { dot: "success", text: (c, h) => `${claimText(c)} approved by ${nameOf(h.byUserId)}` },
   rejected: { dot: "danger",  text: (c, h) => `${claimText(c)} rejected by ${nameOf(h.byUserId)}` },
   paid:     { dot: "success", text: (c, h) => `${claimText(c)} paid by ${nameOf(h.byUserId)}` },
+  cancelled: { dot: "primary", text: (c, h) => `${claimText(c)} cancelled by ${nameOf(h.byUserId)}` },
 };
 const ACTIVITY_SHOWN = 5;
 
