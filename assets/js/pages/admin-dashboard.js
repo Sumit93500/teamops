@@ -6,23 +6,34 @@
 // search, a department filter and Previous / Next, and headcount by
 // department; the total employees stat (the sidebar's count); and, for roles
 // with payroll:view, the payroll stat (the gross of the run payroll-run.html
-// shows). The low-stock stat, the pending approvals card and the activity feed
-// are static samples and stay as they are. A session without an employee id
-// (an old sign-in) leaves the static page as it is.
+// shows). Also from the real stores: the low-stock stat (with inventory:view),
+// the pending approvals card and the activity feed, each described where it's
+// drawn below. A session without an employee id (an old sign-in) leaves the
+// static page as it is.
 
-import { getCurrentUserId } from "../core/auth.js";
+import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { can } from "../core/rbac.js";
+import { resolvePageLink } from "../core/paths.js";
 import { getUser, getAllUsers, getAllDepartments, headcountByDepartment, activeHeadcount } from "../data/store.js";
 import { runMonth, payrollRun, runTotals } from "../data/payroll-store.js";
 import { addDays } from "../data/holidays.js";
-import { ATTENDANCE_RULES, teamFor, summaryRange, toMinutes, nowMinutes } from "../data/attendance-store.js";
+import { ATTENDANCE_RULES, teamFor, summaryRange, toMinutes, nowMinutes, allRegularizations } from "../data/attendance-store.js";
+import { allRequests } from "../data/leave-store.js";
+import { allExpenses } from "../data/expenses-store.js";
+import { allAssetRequests } from "../data/asset-requests-store.js";
+import { reorderAlerts, allMovements, getItem } from "../data/inventory-store.js";
 import {
-  el, todayIso, formatRange, monthName, departmentName, fillDepartmentSelect, personCell, plural,
+  el, todayIso, formatRange, monthName, departmentName, fillDepartmentSelect, personCell, plural, nameOf, typeLabel,
+  requestDates, formatDays, formatDay, initials, avatarClass, localDateOf,
 } from "../ui/leave-view.js";
-import { dayBadge, presentNote, checkInCell, hoursCell } from "../ui/attendance-view.js";
+import { dayBadge, presentNote, checkInCell, hoursCell, correctionDetails } from "../ui/attendance-view.js";
+import { STAGE_NAME as EXPENSE_STAGE, categoryLabel } from "../ui/expense-view.js";
+import { STAGE_NAME as ASSET_STAGE, requestTitle as assetRequestTitle } from "../ui/asset-request-view.js";
+import { assetTypeLabel, movementTypeLabel, officeDate } from "../ui/inventory-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns, barRow } from "../ui/chart.js";
 import { rupees } from "../ui/money.js";
+import { waitingFor } from "../ui/waiting.js";
 
 const CHART_DAYS = 14;
 const PAGE_SIZE = 10;
@@ -35,8 +46,11 @@ const stats = document.getElementById("dash-stats");
 const rateRange = document.getElementById("rate-range");
 const chart = document.getElementById("rate-chart");
 const rateNote = document.getElementById("rate-note");
+const approvalsCard = document.getElementById("admin-approvals");
 const headcountMeta = document.getElementById("headcount-meta");
 const headcountBars = document.getElementById("headcount-bars");
+const activity = document.getElementById("admin-activity");
+const activityMeta = document.getElementById("admin-activity-meta");
 const searchInput = document.getElementById("admin-search");
 const deptSelect = document.getElementById("admin-dept");
 const tbody = document.getElementById("admin-rows");
@@ -48,11 +62,11 @@ let page = 1;
 
 // ---------- helpers ----------
 
-function setStat(key, value, note) {
+function setStat(key, value, note, tone = "") {
   const stat = stats.querySelector(`[data-stat="${key}"]`);
   if (!stat) return;
   setStatValue(stat, value);
-  setStatNote(stat, note);
+  setStatNote(stat, note, tone);
 }
 
 // ---------- total employees and payroll ----------
@@ -71,6 +85,23 @@ function renderPayroll() {
   const label = stats.querySelector('[data-stat="payroll"] .stat__label');
   if (label) label.textContent = `Payroll, ${monthName(month).slice(0, 3)}`;
   setStat("payroll", rupees(runTotals(run).gross), `Gross for ${plural(run.rows.length, "employee", "employees")}, draft`);
+}
+
+// ---------- low stock ----------
+
+// The items at or below their reorder level, the list items.html's reorder
+// card shows (reorderAlerts()). Inventory is Admin-only (inventory:view) and HR
+// can open this page by URL, so it's drawn only with that permission; the HTML
+// hides the stat too and holds "—", so a stats export without the permission
+// carries no figure (a hidden stat exports as an empty row).
+function renderStock() {
+  const alerts = reorderAlerts();
+  const out = alerts.filter((item) => item.status === "out").length;
+  const low = alerts.length - out;
+  const note = alerts.length
+    ? [out ? `${out} out of stock` : "", low ? `${low} low` : ""].filter(Boolean).join(", ")
+    : "Nothing below its reorder level";
+  setStat("stock", String(alerts.length), note, alerts.length ? "down" : "");
 }
 
 // ---------- present today ----------
@@ -107,6 +138,47 @@ function renderChart(range) {
     : "Present out of expected. Weekends and holidays are shown lighter.";
 }
 
+// ---------- pending approvals ----------
+
+// What waits for the signed-in person's own decision: ui/waiting.js's
+// waitingFor(), the rows the approvals inbox's Pending tab lists and the
+// sidebar's Approvals count counts, so the three agree. Each person sees only
+// what they could decide (HR opening this page sees its own). The newest few,
+// each linking to the inbox, where it's decided; nothing is decided here.
+const SHOWN_APPROVALS = 4;
+
+const APPROVAL_TEXT = {
+  leave: (r) => [`${nameOf(r.userId)}, ${typeLabel(r.type).toLowerCase()}`, `${requestDates(r)}, ${formatDays(r.days)}`],
+  corrections: (r) => [`Regularization: ${nameOf(r.userId)}`, `${formatDay(r.date)}: ${correctionDetails(r)}`],
+  expenses: (c) => [`Expense claim: ${nameOf(c.userId)}`, `${rupees(c.amount)}, ${categoryLabel(c.category)}, ${EXPENSE_STAGE[c.stage]} stage`],
+  assets: (r) => [`Asset request: ${nameOf(r.userId)}`, `${assetRequestTitle(r)}, ${ASSET_STAGE[r.stage]} stage`],
+};
+
+function renderApprovals() {
+  if (!approvalsCard) return;
+  const waiting = Object.entries(waitingFor(user.id, getCurrentRole()?.key))
+    .flatMap(([kind, list]) => list.map((request) => ({ kind, request })))
+    .sort((a, b) => b.request.appliedOn.localeCompare(a.request.appliedOn) || b.request.id.localeCompare(a.request.id, "en", { numeric: true }));
+  const shown = waiting.slice(0, SHOWN_APPROVALS);
+  approvalsCard.querySelector(".card__meta").textContent = waiting.length ? `${shown.length} of ${waiting.length} shown` : "None";
+  const list = approvalsCard.querySelector(".list");
+  if (!shown.length) {
+    list.replaceChildren(el("p", "card__body text-sm text-muted", "Nothing is waiting for you."));
+    return;
+  }
+  list.replaceChildren(...shown.map(({ kind, request }) => {
+    const [title, sub] = APPROVAL_TEXT[kind](request);
+    const item = el("div", "list__item");
+    item.dataset.requestId = request.id;
+    const content = el("div", "list__content");
+    content.append(el("span", "list__title", title), el("span", "list__sub", sub));
+    const open = el("a", "btn btn--sm", "Review");
+    open.href = resolvePageLink("requests/approvals-inbox.html");
+    item.append(el("div", avatarClass(request.userId), initials(nameOf(request.userId))), content, open);
+    return item;
+  }));
+}
+
 // ---------- headcount ----------
 
 function renderHeadcount() {
@@ -118,6 +190,84 @@ function renderHeadcount() {
   headcountBars.replaceChildren(...departments.map((d) => {
     const count = counts[d.code] ?? 0;
     return barRow(d.name, String(count), Math.round((count / top) * 100));
+  }));
+}
+
+// ---------- recent activity ----------
+
+// What people did lately, from the records themselves: each step of the four
+// approval chains (sent, approved, rejected, cancelled; paid, for expense
+// claims; fulfilled or closed, for asset requests) and each stock movement.
+// Every source is drawn only with the permission that shows it elsewhere, the
+// way finance-dashboard.js draws its expense activity only with expenses:view:
+//   leave requests           leave:approve       (leave-approvals.html, hr.html)
+//   attendance corrections   attendance:approve  (regularization.html)
+//   expense claims           expenses:view       (expenses.html, finance.html)
+//   asset requests           assets:view         (asset-assignment.html)
+//   stock movements          inventory:view      (stock-movements.html)
+// So HR, who can open this page by URL, sees leave and corrections only, as on
+// its own dashboard. Skipped stages and an Admin's own automatic approvals
+// aren't events anyone did (finance-dashboard.js's rule). Sign-ins, access
+// changes and backups aren't here: OfficeOS keeps no audit log yet.
+const SHOWN_ACTIVITY = 5;
+
+const STEP_DOT = { applied: "warning", approved: "success", rejected: "danger", cancelled: "primary", paid: "success", fulfilled: "success", closed: "primary" };
+const MOVEMENT_DOT = { in: "success", return: "success", out: "primary", adjustment: "warning" };
+
+// A chain's steps: "sent" reads as the request itself, every other step as
+// "<what> <step> by <who>". Dated in the browser's own time zone, as the
+// Finance and HR dashboards date theirs.
+const chainEvents = (records, sent, what) => records.flatMap((r) => r.history
+  .filter((h) => STEP_DOT[h.decision])
+  .map((h) => ({ at: h.at, date: localDateOf(h.at), dot: STEP_DOT[h.decision], text: h.decision === "applied" ? sent(r) : `${what(r)} ${h.decision} by ${nameOf(h.byUserId)}` })));
+
+const leaveWhat = (r) => `${typeLabel(r.type).toLowerCase()} for ${requestDates(r)}`;
+const assetWhat = (r) => assetTypeLabel(r.assetType).toLowerCase();
+
+// "Stock in: +12 Coffee beans, 1 kg, by Aarav Mehta". Dated in office time, as
+// stock-movements.html shows it.
+function movementEvent(m) {
+  const change = m.change > 0 ? `+${m.change}` : String(m.change);
+  const tag = m.assetTag ? ` (${m.assetTag})` : "";
+  return { at: m.at, date: officeDate(m.at), dot: MOVEMENT_DOT[m.type] ?? "primary", text: `${movementTypeLabel(m.type)}: ${change} ${getItem(m.sku)?.name ?? m.sku}${tag}, by ${nameOf(m.recordedBy)}` };
+}
+
+const ACTIVITY_SOURCES = [
+  { permission: "leave:approve", name: "leave",
+    events: () => chainEvents(allRequests(), (r) => `Leave request from ${nameOf(r.userId)}: ${leaveWhat(r)}`, (r) => `${nameOf(r.userId)}'s ${leaveWhat(r)}`) },
+  { permission: "attendance:approve", name: "corrections",
+    events: () => chainEvents(allRegularizations(), (r) => `Regularization request from ${nameOf(r.userId)} for ${formatDay(r.date)}`, (r) => `${nameOf(r.userId)}'s regularization for ${formatDay(r.date)}`) },
+  { permission: "expenses:view", name: "expenses",
+    events: () => chainEvents(allExpenses(), (c) => `Expense claim from ${nameOf(c.userId)}, ${rupees(c.amount)}`, (c) => `${rupees(c.amount)} claim from ${nameOf(c.userId)}`) },
+  { permission: "assets:view", name: "asset requests",
+    events: () => chainEvents(allAssetRequests(), (r) => `Asset request from ${nameOf(r.userId)}: ${assetWhat(r)}`, (r) => `${nameOf(r.userId)}'s ${assetWhat(r)} request`) },
+  { permission: "inventory:view", name: "stock",
+    events: () => allMovements().map(movementEvent) },
+];
+
+// "Leave, corrections and stock"
+const listText = (names) => {
+  const text = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names.join("");
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
+
+function renderActivity() {
+  if (!activity) return;
+  const sources = ACTIVITY_SOURCES.filter((source) => can(source.permission));
+  if (activityMeta) activityMeta.textContent = listText(sources.map((source) => source.name));
+  const events = sources.flatMap((source) => source.events())
+    .sort((a, b) => b.at.localeCompare(a.at))
+    .slice(0, SHOWN_ACTIVITY);
+  if (!events.length) {
+    activity.replaceChildren(el("p", "card__body text-sm text-muted", sources.length ? "No activity yet." : "Nothing here you have access to."));
+    return;
+  }
+  activity.replaceChildren(...events.map((event) => {
+    const item = el("div", "activity__item");
+    const text = el("div", "activity__text", event.text);
+    text.append(el("span", "activity__time", formatDay(event.date)));
+    item.append(el("span", `activity__dot activity__dot--${event.dot}`), text);
+    return item;
   }));
 }
 
@@ -189,8 +339,12 @@ if (user && can("attendance:view-all") && stats && chart && headcountBars && tbo
   const range = summaryRange(addDays(today, -(CHART_DAYS - 1)), today);   // one storage read; today is the last day
   renderPresent(range[range.length - 1], days);
   renderChart(range);
+  renderApprovals();
   renderHeadcount();
+  renderActivity();
   renderTotal();
   // HR may open this page too; it holds no payroll permission.
   if (can("payroll:view")) renderPayroll();
+  // Nor any inventory permission: it sees no stock figures here either.
+  if (can("inventory:view")) renderStock();
 }

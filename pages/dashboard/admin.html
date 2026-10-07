@@ -187,14 +187,14 @@
             </div>
           </div>
 
-          <div class="stat" data-stat="stock">
+          <div class="stat" data-stat="stock" data-permission="inventory:view">
             <div class="stat__icon stat__icon--4">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
             </div>
             <div>
               <span class="stat__label">Low-stock items</span>
-              <strong class="stat__value">7</strong>
-              <span class="stat__delta stat__delta--down">3 awaiting approval</span>
+              <strong class="stat__value">—</strong>
+              <span class="stat__delta"></span>
             </div>
           </div>
         </section>
@@ -230,47 +230,12 @@
             </div>
           </section>
 
-          <section class="card">
+          <section class="card" id="admin-approvals">
             <div class="card__header">
               <h3 class="card__title">Pending approvals</h3>
-              <span class="card__meta">Sample, not built yet</span>
+              <span class="card__meta"></span>
             </div>
-            <div class="card__body"><p class="form-hint">Role changes, purchase orders and backup restores can't be requested yet. These three show how they would look here; their buttons don't save anything.</p></div>
-            <div class="list">
-              <div class="list__item">
-                <div class="avatar avatar--1">SR</div>
-                <div class="list__content">
-                  <span class="list__title">Role change: Sneha Rao</span>
-                  <span class="list__sub">Requested by Priya Nair (HR)</span>
-                </div>
-                <div class="btn-group">
-                  <button class="btn btn--sm" type="button" data-not-implemented="Reject">Reject</button>
-                  <button class="btn btn--primary btn--sm" type="button" data-not-implemented="Approve">Approve</button>
-                </div>
-              </div>
-              <div class="list__item">
-                <div class="avatar avatar--3">PO</div>
-                <div class="list__content">
-                  <span class="list__title">Purchase order PO-2291</span>
-                  <span class="list__sub">Requested by Store Manager</span>
-                </div>
-                <div class="btn-group">
-                  <button class="btn btn--sm" type="button" data-not-implemented="Reject">Reject</button>
-                  <button class="btn btn--primary btn--sm" type="button" data-not-implemented="Approve">Approve</button>
-                </div>
-              </div>
-              <div class="list__item">
-                <div class="avatar avatar--4">BR</div>
-                <div class="list__content">
-                  <span class="list__title">Backup restore request</span>
-                  <span class="list__sub">Requested by IT Support</span>
-                </div>
-                <div class="btn-group">
-                  <button class="btn btn--sm" type="button" data-not-implemented="Reject">Reject</button>
-                  <button class="btn btn--primary btn--sm" type="button" data-not-implemented="Approve">Approve</button>
-                </div>
-              </div>
-            </div>
+            <div class="list"></div>
           </section>
         </div>
         <!-- END 3 -->
@@ -296,22 +261,9 @@
           <section class="card">
             <div class="card__header">
               <h3 class="card__title">Recent activity</h3>
-              <a class="link text-sm" href="../system/audit-log.html">View audit log</a>
+              <span class="card__meta" id="admin-activity-meta"></span>
             </div>
-            <div class="activity">
-              <div class="activity__item">
-                <span class="activity__dot activity__dot--primary"></span>
-                <div class="activity__text">Priya Nair (HR) gave Team Lead access to Sneha Rao<span class="activity__time">5 min ago</span></div>
-              </div>
-              <div class="activity__item">
-                <span class="activity__dot activity__dot--warning"></span>
-                <div class="activity__text">Backup completed, 1.2 GB<span class="activity__time">Today, 02:00</span></div>
-              </div>
-              <div class="activity__item">
-                <span class="activity__dot activity__dot--danger"></span>
-                <div class="activity__text">3 failed logins from a new device<span class="activity__time">Yesterday</span></div>
-              </div>
-            </div>
+            <div class="activity" id="admin-activity"></div>
           </section>
         </div>
         <!-- END 4 -->

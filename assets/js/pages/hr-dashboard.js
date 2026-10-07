@@ -8,12 +8,16 @@
 // search. Approve / Reject go through the same flows as leave-approvals.html
 // and regularization.html (ui/leave-decision.js), so a decision here is the
 // same store write as there. The recruitment widgets and the interview line
-// are static samples (data-static) and stay as they are. A session without an
+// (data-static) are samples, labelled "Sample, not built yet" in the HTML
+// (recruitment isn't built), and stay as they are. A session without an
 // employee id (an old sign-in) leaves the static page as it is.
+//
+// New joiners: this calendar month's, by the joining date on each person's
+// record (renderJoiners()).
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
-import { getUser } from "../data/store.js";
+import { getUser, getAllUsers, joiningDate } from "../data/store.js";
 import { addDays, dayOffChecker } from "../data/holidays.js";
 import { allRequests, pendingFor } from "../data/leave-store.js";
 import { summaryFor, allRegularizations, pendingRegularizations } from "../data/attendance-store.js";
@@ -21,7 +25,7 @@ import { approveLeave, openRejectModal, approveCorrection, openRejectCorrectionM
 import {
   el, todayIso, formatDay, formatDays, formatRange, monthName, requestDates,
   typeLabel, statusBadge, initials, avatarClass, decisionOf, localDateOf, nameOf, oldestPendingNote,
-  whenText, plural, percent,
+  whenText, plural, percent, monthShort,
 } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns } from "../ui/chart.js";
@@ -85,6 +89,28 @@ function renderStats() {
   // The same wording as leave-approvals.html's Pending stat.
   const pending = pendingLeave();
   setStat("pending", String(pending.length), oldestPendingNote(pending, today) || "Nothing waiting", pending.length ? "down" : "");
+  renderJoiners();
+}
+
+// New joiners this calendar month: everyone not inactive (the headcount's
+// rule) whose joining date (store.js's joiningDate(), the date payroll reads)
+// falls in it, including dates later this month. Not everyone has a joining
+// date on file, so the note says how many don't rather than leaving them out
+// silently (an unreadable date counts as none, as payroll treats it).
+function renderJoiners() {
+  const month = today.slice(0, 7);
+  const people = getAllUsers().filter((u) => u.status !== "inactive");
+  const dates = people.map((u) => joiningDate(u.dateOfJoining));
+  const joiners = dates.filter((date) => date?.startsWith(month));
+  const toJoin = joiners.filter((date) => date > today).length;
+  const missing = dates.filter((date) => !date).length;
+  const label = stats.querySelector('[data-stat="joiners"] .stat__label');
+  if (label) label.textContent = `New joiners, ${monthShort(`${month}-01`)}`;
+  const notes = [!joiners.length ? "No one joins this month"
+    : toJoin ? `${toJoin} still to join`
+    : joiners.length === 1 ? "Already started" : "All already started"];
+  if (missing) notes.push(`no joining date on file for ${missing} of ${people.length}`);
+  setStat("joiners", String(joiners.length), notes.join("; "));
 }
 
 // ---------- leave requests chart ----------
