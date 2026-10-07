@@ -1,6 +1,7 @@
 // pages/holidays.js
 // Runs on holidays.html (any signed-in person). The year select filters the
-// month calendar, the year's list and the summary. People with
+// month calendar, the year's list and the summary, and the page subtitle names
+// that year. People with
 // holidays:manage can add holidays (modal) and remove them; everyone else
 // just sees the calendar.
 
@@ -14,6 +15,7 @@ const MODAL_ID = "holiday-modal";
 const pad = (n) => String(n).padStart(2, "0");
 
 const yearSelect = document.querySelector('.page-header__actions select[aria-label="Choose year"]');
+const subtitle = document.querySelector(".page-header__subtitle");
 const addBtn = document.querySelector('.page-header__actions button[data-permission="holidays:manage"]');
 const calendarCard = document.getElementById("holiday-calendar");
 const listCard = document.getElementById("holiday-list");
@@ -144,6 +146,7 @@ function fillYears() {
 
 function render() {
   fillYears();
+  if (subtitle) subtitle.textContent = `Company holiday calendar for ${year}`;
   renderCalendar();
   renderList();
   renderSummary();

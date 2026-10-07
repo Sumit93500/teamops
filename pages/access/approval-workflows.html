@@ -331,7 +331,7 @@
       </aside>
     </div>
 
-    <section class="card">
+    <section class="card" id="expense-example">
       <div class="card__header">
         <h3 class="card__title">Example: an expense claim of ₹62,000</h3>
         <span class="badge badge--warning badge--dot">Needs 3 approvals</span>
@@ -342,15 +342,15 @@
             <span class="stepper__dot"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
             <div class="stepper__text"><strong>Employee sends</strong><small class="text-muted">Bill attached</small></div>
           </li>
-          <li class="stepper__step is-current">
-            <span class="stepper__dot">2</span>
+          <li class="stepper__step is-done" data-stage="manager">
+            <span class="stepper__dot"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
             <div class="stepper__text"><strong>Manager</strong><small class="text-muted">The person they report to confirms the trip happened</small></div>
           </li>
-          <li class="stepper__step">
-            <span class="stepper__dot">3</span>
+          <li class="stepper__step is-done" data-stage="finance">
+            <span class="stepper__dot"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
             <div class="stepper__text"><strong>Finance</strong><small class="text-muted">Checks the bill and budget</small></div>
           </li>
-          <li class="stepper__step">
+          <li class="stepper__step is-current" data-stage="admin">
             <span class="stepper__dot">4</span>
             <div class="stepper__text"><strong>Admin</strong><small class="text-muted">Needed because it is above ₹50,000</small></div>
           </li>
