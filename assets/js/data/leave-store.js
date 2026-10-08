@@ -120,13 +120,11 @@ function clash(a, b) {
 // Who may decide which stage: the two-step chain shared with attendance corrections (data/approval-chain.js).
 const chain = createChain("leave:approve");
 
-// The requester's reportingManager is a name. It counts only if exactly one
-// active user has that exact name (and it isn't the requester).
+// The requester's manager is kept by id (reportingManagerId, store.js). It counts
+// only if that person is active (not on leave or inactive) and isn't the requester.
 function resolveManager(user) {
-  const name = user.reportingManager;
-  if (!name) return null;
-  const matches = getAllUsers().filter((u) => u.status === "active" && u.name === name && u.id !== user.id);
-  return matches.length === 1 ? matches[0].id : null;
+  const manager = user.reportingManagerId ? getUser(user.reportingManagerId) : null;
+  return manager && manager.status === "active" && manager.id !== user.id ? manager.id : null;
 }
 
 // ---------- calculations ----------

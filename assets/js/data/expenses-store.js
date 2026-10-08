@@ -24,6 +24,12 @@
 // Nobody decides their own claim. A stage nobody else holds (no manager on
 // file; the claimant is the only Finance Manager) is skipped. An Admin's own
 // claim is approved at every stage straight away, as an Admin's leave is.
+// Someone who holds two stages of a claim decides both: a known, accepted
+// limitation, with no skip rule (round-5b-notes.md decision 3, kept in 5E).
+// In the seed: Aarav for Kabir (manager, then Admin above ₹50,000) and Kabir
+// for Meera (manager, then Finance). The same holds for anyone made the
+// manager of someone whose claims they also decide at a later stage
+// (round-9v-notes.md).
 // Paying is a separate step (expenses:pay), never by the claimant, and not by
 // whoever gave the final approval unless nobody else can pay (a deliberate
 // fallback, like sending an all-skipped claim to the Admin stage; see

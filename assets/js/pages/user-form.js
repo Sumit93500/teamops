@@ -99,10 +99,11 @@ fillSelect(designationSelect, "Select designation",
   DESIGNATIONS.filter((d) => d.defaultRole !== "admin" || byRole === "admin")
     .map((d) => ({ value: d.title, label: d.title, role: d.defaultRole })));
 
+// Valued by id, so two people with the same name are two choices, and a rename doesn't lose anyone.
 fillSelect(field("manager"), "No reporting manager",
   getAllUsers()
     .filter((u) => u.status === "active" && u.id !== editId)
-    .map((u) => ({ value: u.name, label: u.name })));
+    .map((u) => ({ value: u.id, label: u.name })));
 
 function updateDefaultRole() {
   renderEffectivePermissions();
@@ -173,8 +174,11 @@ if (editId && !editing) {
   field("department").value = editing.department ?? "";
   ensureOption(designationSelect, editing.designation, editing.designation, DESIGNATIONS.find((d) => d.title === editing.designation)?.defaultRole);
   designationSelect.value = editing.designation ?? "";
-  ensureOption(field("manager"), editing.reportingManager);
-  field("manager").value = editing.reportingManager ?? "";
+  // The saved manager by id; one who isn't offered (inactive) or isn't on record at all (e.g. a department head, kept
+  // by name) stays selectable, so saving doesn't drop them.
+  const managerKey = editing.reportingManagerId ?? (editing.reportingManager ? `name:${editing.reportingManager}` : "");
+  ensureOption(field("manager"), managerKey, getUser(editing.reportingManagerId)?.name ?? editing.reportingManager);
+  field("manager").value = managerKey;
   field("joining").value = toInputDate(editing.dateOfJoining);
   if (editing.employmentType) { ensureOption(field("emp-type"), editing.employmentType); field("emp-type").value = editing.employmentType; }
   if (editing.location) { ensureOption(field("location"), editing.location); field("location").value = editing.location; }
@@ -207,6 +211,13 @@ function sensitiveFields() {
   return out;
 }
 
+// The manager to save: by id, or (a manager kept by name, not on record) by that name, or none.
+function managerChoice(select) {
+  const value = select?.value ?? "";
+  if (value.startsWith("name:")) return { reportingManager: value.slice(5) };
+  return { reportingManagerId: value || null, reportingManager: value ? select.selectedOptions[0].textContent : "" };
+}
+
 function buildRecord() {
   const designation = designationSelect.value;
   const managerSelect = field("manager");
@@ -229,7 +240,7 @@ function buildRecord() {
     dateOfJoining: toDisplayDate(field("joining").value),
     employmentType: field("emp-type").value,
     location: field("location").value,
-    reportingManager: managerSelect.value ? managerSelect.selectedOptions[0].textContent : "",
+    ...managerChoice(managerSelect),
     extraRoles: checkedValues("extraRole"),
     grantPermissions: checkedValues("grant"),
     denyPermissions: checkedValues("deny"),

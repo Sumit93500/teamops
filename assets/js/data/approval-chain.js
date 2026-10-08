@@ -14,7 +14,8 @@
 // decide the manager stage instead, so a request is never stuck.
 // Someone who is both the manager and an HR-stage holder decides both stages
 // (Aarav for Priya and for Kabir): the same accepted limitation as on expense
-// claims and asset requests (round-5b-notes.md).
+// claims (Aarav for Kabir; Kabir for Meera, as manager and Finance) and asset
+// requests (round-5b-notes.md, round-9v-notes.md).
 // Expense claims and asset requests keep their own chain (data/expenses.js).
 
 import { getUser, getAllUsers } from "./store.js";

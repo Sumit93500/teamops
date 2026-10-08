@@ -64,6 +64,7 @@ function seedUsers() {
     ...copy(PROFILE_DETAILS[user.id] ?? {}),
     ...(DEMO_PII[user.id] ?? { bankAccount: null, bankAccountLast4: null, pan: null }),
   }));
+  records.forEach((user) => { user.reportingManagerId = user.reportingManager ? managerIdByName(records, user.id, user.reportingManager) : null; });
   const nextIdNum = Math.max(...records.map((u) => idNum(u.id))) + 1;
   const box = { version: VERSION, nextIdNum, records };
   save(USERS_KEY, box);
@@ -85,7 +86,12 @@ function isValidBox(box) {
 
 function loadUsers() {
   const box = load(USERS_KEY);
-  return isValidBox(box) && Number.isInteger(box.nextIdNum) ? box : seedUsers();
+  if (!(isValidBox(box) && Number.isInteger(box.nextIdNum))) return seedUsers();
+  // Saved before managers were kept by id (round 9V): match each one's manager by name once, as it was then.
+  const unkeyed = box.records.filter((u) => !("reportingManagerId" in u));
+  unkeyed.forEach((user) => { user.reportingManagerId = user.reportingManager ? managerIdByName(box.records, user.id, user.reportingManager) : null; });
+  if (unkeyed.length) save(USERS_KEY, box);
+  return box;
 }
 
 function loadDepartments() {
@@ -102,6 +108,34 @@ function commit(key, box, record) {
 // Is this person the only one on record with the Admin role? (updateUser / deleteUser keep at least one.)
 const isLastAdmin = (records, id) => !records.some((u) => u.id !== id && u.role === "admin");
 const LAST_ADMIN = "There must always be an Admin: make someone else an Admin first.";
+
+// The reporting manager is kept by id (reportingManagerId), with their name beside it (reportingManager), for display
+// and for a manager who isn't on record (a department head). A name given without an id is matched once, when it's
+// saved: the one active person with that exact name, else the one person with it at all; none, or two or more, is no
+// manager. A namesake added or a rename later doesn't change who it is (round-9v-notes.md).
+function managerIdByName(records, selfId, name) {
+  const named = records.filter((u) => u.id !== selfId && u.name === name);
+  const active = named.filter((u) => u.status === "active");
+  return active.length === 1 ? active[0].id : named.length === 1 ? named[0].id : null;
+}
+
+// The manager fields to save for `fields` (selfId: the record's own id, null when adding): { reportingManagerId,
+// reportingManager }, { error }, or null when `fields` names no manager.
+function managerFields(records, selfId, fields) {
+  if ("reportingManagerId" in fields) {
+    const id = fields.reportingManagerId || null;
+    if (!id) return { reportingManagerId: null, reportingManager: "" };
+    const manager = records.find((u) => u.id === id);
+    if (!manager) return { error: `No employee with id ${id}.` };
+    if (id === selfId) return { error: "Someone can't be their own reporting manager." };
+    return { reportingManagerId: id, reportingManager: manager.name };
+  }
+  if ("reportingManager" in fields) {
+    const name = fields.reportingManager;
+    return { reportingManagerId: name ? managerIdByName(records, selfId, name) : null, reportingManager: name };
+  }
+  return null;
+}
 
 function emailTaken(records, email, exceptId) {
   const wanted = String(email).trim().toLowerCase();
@@ -160,6 +194,13 @@ export function headcountByDepartment() {
   return counts;
 }
 
+// The reporting manager's name as pages show it: the current name of the person on record (a rename shows at once),
+// else the name saved with the record (a manager who isn't on record, e.g. a department head). "" for none.
+export function reportingManagerName(user) {
+  const manager = user?.reportingManagerId ? loadUsers().records.find((u) => u.id === user.reportingManagerId) : null;
+  return manager?.name ?? user?.reportingManager ?? "";
+}
+
 // How many employees aren't inactive (people on leave count): the sidebar's
 // "N active employees" and the Admin dashboard's total.
 export function activeHeadcount() {
@@ -178,6 +219,8 @@ export function addUser(fields = {}, { byRole } = {}) {
   if (rest.department && !loadDepartments().records.some((d) => d.code === rest.department)) {
     return fail(`Unknown department "${rest.department}".`);
   }
+  const manager = managerFields(box.records, null, rest) ?? { reportingManagerId: null };
+  if (manager.error) return fail(manager.error, "manager");
 
   const record = {
     role: "emp",
@@ -186,6 +229,7 @@ export function addUser(fields = {}, { byRole } = {}) {
     bankAccountLast4: null,
     pan: null,
     ...copy(rest),
+    ...manager,
     id: formatId(box.nextIdNum),
   };
   box.records.push(record);
@@ -214,9 +258,11 @@ export function updateUser(id, changes = {}, { byRole } = {}) {
   if (changes.department && !loadDepartments().records.some((d) => d.code === changes.department)) {
     return fail(`Unknown department "${changes.department}".`);
   }
+  const manager = managerFields(box.records, id, changes);
+  if (manager?.error) return fail(manager.error, "manager");
 
   const { id: _ignored, ...rest } = changes;
-  Object.assign(record, copy(rest));
+  Object.assign(record, copy(rest), manager ?? {});
   return commit(USERS_KEY, box, record);
 }
 

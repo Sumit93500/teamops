@@ -3,7 +3,7 @@
 // EMP-1042, when there's no id) and wires Reveal, Deactivate/Reactivate and
 // Reset password. Cards with no data behind them yet stay as static HTML.
 
-import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser } from "../data/store.js";
+import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser, reportingManagerName } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { ROLES } from "../config/roles.js";
 import { showToast } from "../ui/toast.js";
@@ -295,7 +295,7 @@ function render() {
   setKv("Location", orDash(user.location));
   setKv("Employment type", orDash(user.employmentType));
   setKv("Department", orDash(dept));
-  setKv("Reporting manager", orDash(user.reportingManager));
+  setKv("Reporting manager", orDash(reportingManagerName(user)));
   setKv("Date of joining", orDash(user.dateOfJoining));
   const tenure = tenureText(user.dateOfJoining);
   if (tenure) setKv("Tenure", tenure);

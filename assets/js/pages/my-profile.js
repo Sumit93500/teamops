@@ -4,7 +4,7 @@
 // session saved before employee ids were stored), the HTML is left as-is.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
-import { getUser, getAllDepartments } from "../data/store.js";
+import { getUser, getAllDepartments, reportingManagerName } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
 import { approvalChainText } from "../data/leave-store.js";
@@ -91,7 +91,7 @@ if (user && role) {
   setKv("Employee ID", user.id);
   setKv("Designation", orDash(user.designation));
   setKv("Department", orDash(dept));
-  setKv("Reporting manager", orDash(user.reportingManager));
+  setKv("Reporting manager", orDash(reportingManagerName(user)));
   setKv("Date of joining", orDash(user.dateOfJoining));
   setKv("Location", orDash(user.location));
   setKv("Employment type", orDash(user.employmentType));
