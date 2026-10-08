@@ -8,6 +8,7 @@ import { ROLES } from "../config/roles.js";
 import { ALL_PERMISSIONS } from "../config/permissions.js";
 import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
+import { getCurrentRole } from "../core/auth.js";
 
 const form = document.querySelector("form");
 const field = (id) => document.getElementById(id);
@@ -17,6 +18,8 @@ const submitBtn = form?.querySelector('[type="submit"]');
 
 const editId = new URLSearchParams(window.location.search).get("id");
 const editing = editId ? getUser(editId) : null;
+// Who is saving: only an Admin may give someone the Admin role (designations.html: "Admin roles need an Admin").
+const byRole = getCurrentRole()?.key;
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -79,19 +82,22 @@ function fillSelect(select, placeholder, options) {
 
 // Keeps a saved value selectable even if it's no longer in the list
 // (e.g. a manager who isn't an active user), so editing never loses it.
-function ensureOption(select, value, label = value) {
+function ensureOption(select, value, label = value, role = null) {
   if (!select || !value || Array.from(select.options).some((o) => o.value === value)) return;
   const option = document.createElement("option");
   option.value = value;
   option.textContent = label;
+  if (role) option.dataset.role = role;
   select.append(option);
 }
 
 fillSelect(field("department"), "Select department",
   getAllDepartments().map((d) => ({ value: d.code, label: d.name })));
 
+// A designation that carries the Admin role is offered only to an Admin.
 fillSelect(designationSelect, "Select designation",
-  DESIGNATIONS.map((d) => ({ value: d.title, label: d.title, role: d.defaultRole })));
+  DESIGNATIONS.filter((d) => d.defaultRole !== "admin" || byRole === "admin")
+    .map((d) => ({ value: d.title, label: d.title, role: d.defaultRole })));
 
 fillSelect(field("manager"), "No reporting manager",
   getAllUsers()
@@ -165,7 +171,7 @@ if (editId && !editing) {
 
   ensureOption(field("department"), editing.department);
   field("department").value = editing.department ?? "";
-  ensureOption(designationSelect, editing.designation);
+  ensureOption(designationSelect, editing.designation, editing.designation, DESIGNATIONS.find((d) => d.title === editing.designation)?.defaultRole);
   designationSelect.value = editing.designation ?? "";
   ensureOption(field("manager"), editing.reportingManager);
   field("manager").value = editing.reportingManager ?? "";
@@ -239,7 +245,7 @@ if (form && !(editId && !editing)) {
     clearError();
 
     const record = buildRecord();
-    const result = editing ? updateUser(editing.id, record) : addUser(record);
+    const result = editing ? updateUser(editing.id, record, { byRole }) : addUser(record, { byRole });
 
     if (!result.ok) {
       if (result.field === "email") showError(field("work-email"), result.error);

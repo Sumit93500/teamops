@@ -15,7 +15,7 @@
 //     it was given changes nothing until it calls a write function.
 
 import { save, load, remove } from "../core/storage.js";
-import { USERS, DEPARTMENTS, PROFILE_DETAILS, MANAGER_OF } from "./users.js";
+import { USERS, DEPARTMENTS, DESIGNATIONS, PROFILE_DETAILS, MANAGER_OF } from "./users.js";
 import { isValidDate } from "./holidays.js";
 
 // The four demo sign-in identities (Admin, HR, Finance, Employee). Deactivating
@@ -47,6 +47,12 @@ const idNum = (id) => Number(String(id).replace(/^EMP-/, ""));
 const formatId = (num) => `EMP-${num}`;
 // `field` (optional) names the form field the error is about, so a page can show it there.
 const fail = (error, field) => (field ? { ok: false, error, field } : { ok: false, error });
+
+// Only an Admin may give someone the Admin role, directly or through a designation that carries it. A write that says
+// who is saving ({ byRole }: the signed-in role's key) is held to that; one that doesn't (the seed, scripts) isn't.
+const carriesAdmin = (fields) => fields.role === "admin" || DESIGNATIONS.find((d) => d.title === fields.designation)?.defaultRole === "admin";
+const adminOnly = (byRole, fields) => byRole !== undefined && byRole !== "admin" && carriesAdmin(fields);
+const ADMIN_ONLY = "Only an Admin can give someone the Admin role or save an Admin's details.";
 
 // ---------- seeding and loading ----------
 
@@ -92,6 +98,10 @@ function commit(key, box, record) {
     ? { ok: true, record: copy(record) }
     : fail("Couldn't save. Browser storage may be full or disabled.");
 }
+
+// Is this person the only one on record with the Admin role? (updateUser / deleteUser keep at least one.)
+const isLastAdmin = (records, id) => !records.some((u) => u.id !== id && u.role === "admin");
+const LAST_ADMIN = "There must always be an Admin: make someone else an Admin first.";
 
 function emailTaken(records, email, exceptId) {
   const wanted = String(email).trim().toLowerCase();
@@ -158,9 +168,10 @@ export function activeHeadcount() {
 
 // ---------- user writes ----------
 
-export function addUser(fields = {}) {
+export function addUser(fields = {}, { byRole } = {}) {
   const box = loadUsers();
   const { id: _ignored, ...rest } = fields;   // ids are always generated here
+  if (adminOnly(byRole, rest)) return fail(ADMIN_ONLY);
   if (!String(rest.name ?? "").trim()) return fail("Name is required.");
   if (!String(rest.email ?? "").trim()) return fail("Work email is required.");
   if (emailTaken(box.records, rest.email, null)) return fail(`${rest.email} is already used by another employee.`, "email");
@@ -182,14 +193,20 @@ export function addUser(fields = {}) {
   return commit(USERS_KEY, box, record);
 }
 
-export function updateUser(id, changes = {}) {
+export function updateUser(id, changes = {}, { byRole } = {}) {
   const box = loadUsers();
   const record = box.records.find((u) => u.id === id);
   if (!record) return fail(`No employee with id ${id}.`);
+  if (adminOnly(byRole, changes)) return fail(ADMIN_ONLY);
   if ("id" in changes && changes.id !== id) return fail("An employee's id can't be changed.");
   // Same rule as deactivateUser(), so an edit form can't get round it.
   if (PROTECTED_IDS.includes(id) && changes.status === "inactive" && record.status !== "inactive") {
     return fail(`${id} is a demo sign-in identity and can't be deactivated.`);
+  }
+  // Same idea for the role: the last Admin can't stop being one, whoever asks (themselves included). With no Admin,
+  // every approval's Admin stage would be skipped as a stage nobody holds.
+  if (record.role === "admin" && "role" in changes && changes.role !== "admin" && isLastAdmin(box.records, id)) {
+    return fail(LAST_ADMIN);
   }
   if ("email" in changes && emailTaken(box.records, changes.email, id)) {
     return fail(`${changes.email} is already used by another employee.`, "email");
@@ -221,6 +238,7 @@ export function deleteUser(id) {
   const box = loadUsers();
   const index = box.records.findIndex((u) => u.id === id);
   if (index === -1) return fail(`No employee with id ${id}.`);
+  if (box.records[index].role === "admin" && isLastAdmin(box.records, id)) return fail(LAST_ADMIN);
   const [removed] = box.records.splice(index, 1);
   return commit(USERS_KEY, box, removed);
 }
