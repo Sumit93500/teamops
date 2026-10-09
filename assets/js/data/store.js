@@ -53,6 +53,10 @@ const fail = (error, field) => (field ? { ok: false, error, field } : { ok: fals
 const carriesAdmin = (fields) => fields.role === "admin" || DESIGNATIONS.find((d) => d.title === fields.designation)?.defaultRole === "admin";
 const adminOnly = (byRole, fields) => byRole !== undefined && byRole !== "admin" && carriesAdmin(fields);
 const ADMIN_ONLY = "Only an Admin can give someone the Admin role or save an Admin's details.";
+// …and only an Admin may take it away: demote someone who holds it, or delete them (round 9W). The same opt-in: a write
+// that says who is saving ({ byRole }) is held to it; one that doesn't isn't.
+const byNonAdmin = (byRole) => byRole !== undefined && byRole !== "admin";
+const ADMIN_ONLY_REMOVE = "Only an Admin can take the Admin role away from someone or delete an Admin.";
 
 // ---------- seeding and loading ----------
 
@@ -252,6 +256,8 @@ export function updateUser(id, changes = {}, { byRole } = {}) {
   if (record.role === "admin" && "role" in changes && changes.role !== "admin" && isLastAdmin(box.records, id)) {
     return fail(LAST_ADMIN);
   }
+  // Only an Admin may take the Admin role away from someone, however many Admins there are (round 9W).
+  if (byNonAdmin(byRole) && record.role === "admin" && "role" in changes && changes.role !== "admin") return fail(ADMIN_ONLY_REMOVE);
   if ("email" in changes && emailTaken(box.records, changes.email, id)) {
     return fail(`${changes.email} is already used by another employee.`, "email");
   }
@@ -277,7 +283,7 @@ export function reactivateUser(id) {
   return updateUser(id, { status: "active" });
 }
 
-export function deleteUser(id) {
+export function deleteUser(id, { byRole } = {}) {
   if (PROTECTED_IDS.includes(id)) {
     return fail(`${id} is a demo sign-in identity and can't be deleted.`);
   }
@@ -285,6 +291,7 @@ export function deleteUser(id) {
   const index = box.records.findIndex((u) => u.id === id);
   if (index === -1) return fail(`No employee with id ${id}.`);
   if (box.records[index].role === "admin" && isLastAdmin(box.records, id)) return fail(LAST_ADMIN);
+  if (byNonAdmin(byRole) && box.records[index].role === "admin") return fail(ADMIN_ONLY_REMOVE);   // as in updateUser
   const [removed] = box.records.splice(index, 1);
   return commit(USERS_KEY, box, removed);
 }
