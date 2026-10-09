@@ -43,7 +43,7 @@ import { dayNumber } from "../data/holidays.js";
 import { ASSET_TYPE_KEYS, CONDITION_KEYS, LOCATION_KEYS } from "../data/inventory.js";
 import {
   allAssets, allItems, assetTypeOf, assetTotals, assetsHeldByInactive, assignAsset, returnAsset, sendForRepair, returnFromRepair,
-  openReportOf, assetsWithOpenReports, closeReport,
+  openReportOf, assetsWithOpenReports, closeReport, earliestHandOver,
 } from "../data/inventory-store.js";
 import { allAssetRequests, pendingFor, waitingOn, fulfilAssetRequest } from "../data/asset-requests-store.js";
 import {
@@ -342,7 +342,7 @@ function fillAssignForm() {
   }
 
   condSelect.replaceChildren(...CONDITION_KEYS.map((k) => option(k, conditionLabel(k))));
-  syncCondition();
+  syncToAsset();
   renderFulfilNote();
 }
 
@@ -366,10 +366,14 @@ function renderFulfilNote() {
   note.replaceChildren(`For ${nameOf(fulfilling.userId)}'s ${assetTypeLabel(fulfilling.assetType).toLowerCase()} request (${fulfilling.id}).${replaces} `, stop);
 }
 
-// The condition starts as the chosen asset's own.
-function syncCondition() {
+// The condition starts as the chosen asset's own, and the date can't be picked before the day it came back to the
+// store (round 10F: the store's floor, beside max = today).
+function syncToAsset() {
   const asset = allAssets().find((a) => a.id === assetSelect.value);
   if (asset) condSelect.value = asset.condition;
+  const floor = earliestHandOver(asset);
+  if (floor) dateInput.min = floor;
+  else dateInput.removeAttribute("min");
 }
 
 const ASSIGN_FIELD = { holderId: personSelect, date: dateInput, condition: condSelect, tag: assetSelect };
@@ -414,7 +418,7 @@ function startAssign(tag) {
   fulfilling = null;
   fillAssignForm();
   assetSelect.value = tag;
-  syncCondition();
+  syncToAsset();
   clearError();
   form.scrollIntoView?.({ block: "nearest" });
   personSelect.focus();
@@ -550,7 +554,7 @@ if (can("assets:view") && tbody) {
   if (can("assets:assign") && form && assetSelect && personSelect && dateInput && condSelect) {
     dateInput.max = todayIso();
     Object.values({ assetSelect, ...ASSIGN_FIELD }).forEach((input) => input.addEventListener("input", () => clearError(input)));
-    assetSelect.addEventListener("change", () => { clearError(assetSelect); syncCondition(); });
+    assetSelect.addEventListener("change", () => { clearError(assetSelect); syncToAsset(); });
     personSelect.addEventListener("change", () => clearError(personSelect));
     form.addEventListener("submit", submitAssign);
   }

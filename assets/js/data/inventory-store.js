@@ -138,6 +138,12 @@ function todayIso() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+// The local calendar day of an instant (an ISO string), the calendar todayIso() uses.
+function dayOf(at) {
+  const d = new Date(at);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 const roleCan = (roleKey, permission) => Boolean(ROLES[roleKey]?.permissions.includes(permission));
 const isActive = (user) => Boolean(user) && user.status !== "inactive";
 
@@ -245,6 +251,8 @@ export function assignAsset(actorUserId, tag, fields = {}) {
   const date = String(fields.date ?? "").trim() || todayIso();
   if (dayNumber(date) === null) return fail("Pick a valid date.", "date");
   if (dayNumber(date) > dayNumber(todayIso())) return fail("The date can't be in the future.", "date");
+  const floor = earliestHandOver(asset);
+  if (floor && dayNumber(date) < dayNumber(floor)) return fail(`The date can't be before ${floor}, when ${tag} came back to the store.`, "date");
   const condition = fields.condition === undefined ? asset.condition : String(fields.condition);
   if (!listed(CONDITIONS, condition)) return fail("Choose a condition.", "condition");
   const item = itemBySku(asset.sku);
@@ -406,6 +414,14 @@ export function getAsset(tag) {
 // The assets assigned to this person now.
 export function assetsFor(userId) {
   return assets.getAll().filter((a) => a.status === "assigned" && a.holderId === userId);
+}
+
+// The earliest day an asset can be recorded as handed over: the day of its last history entry (it came back to the
+// store then), so a new holder's `since` can't reach back into an earlier holder's time or the store's (round 10F).
+// null if it has no history (assets assigned before the register was kept).
+export function earliestHandOver(asset) {
+  const last = asset?.history?.at(-1);
+  return last ? dayOf(last.at) : null;
 }
 
 // The asset's type (a key of ASSET_TYPES), from its item; null if the item is gone.
