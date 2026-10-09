@@ -8,7 +8,7 @@ import { DEPARTMENTS } from "../data/users.js";
 import { ROLES } from "../config/roles.js";
 import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
-import { getCurrentUserId } from "../core/auth.js";
+import { getCurrentRole, getCurrentUserId } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { el, formatDay, plural, todayIso } from "../ui/leave-view.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
@@ -348,7 +348,8 @@ statusBtn?.addEventListener("click", () => {
     : `Reactivate ${user.name}?`;
   if (!window.confirm(question)) return;
 
-  const result = deactivating ? deactivateUser(user.id) : reactivateUser(user.id);
+  // Who is deactivating, so the store can hold a non-Admin to its rule (round 9Y, as user-form.js does).
+  const result = deactivating ? deactivateUser(user.id, { byRole: getCurrentRole()?.key }) : reactivateUser(user.id);
   if (!result.ok) {
     showToast(result.error, "danger");
     return;

@@ -57,6 +57,7 @@ const ADMIN_ONLY = "Only an Admin can give someone the Admin role or save an Adm
 // that says who is saving ({ byRole }) is held to it; one that doesn't isn't.
 const byNonAdmin = (byRole) => byRole !== undefined && byRole !== "admin";
 const ADMIN_ONLY_REMOVE = "Only an Admin can take the Admin role away from someone or delete an Admin.";
+const ADMIN_ONLY_DEACTIVATE = "Only an Admin can deactivate another Admin.";   // the same opt-in (round 9Y)
 
 // ---------- seeding and loading ----------
 
@@ -109,9 +110,11 @@ function commit(key, box, record) {
     : fail("Couldn't save. Browser storage may be full or disabled.");
 }
 
-// Is this person the only one on record with the Admin role? (updateUser / deleteUser keep at least one.)
-const isLastAdmin = (records, id) => !records.some((u) => u.id !== id && u.role === "admin");
+// Is this person the only active Admin? An inactive Admin doesn't count: every approval stage passes over inactive
+// people, so they can't decide anything (round 9Y; 9U counted everyone on record). updateUser / deleteUser keep one.
+const isLastAdmin = (records, id) => !records.some((u) => u.id !== id && u.role === "admin" && u.status !== "inactive");
 const LAST_ADMIN = "There must always be an Admin: make someone else an Admin first.";
+const LAST_ACTIVE_ADMIN = "There must always be an active Admin: make someone else an Admin, or reactivate one, first.";
 
 // The reporting manager is kept by id (reportingManagerId), with their name beside it (reportingManager), for display
 // and for a manager who isn't on record (a department head). A name given without an id is matched once, when it's
@@ -251,6 +254,12 @@ export function updateUser(id, changes = {}, { byRole } = {}) {
   if (PROTECTED_IDS.includes(id) && changes.status === "inactive" && record.status !== "inactive") {
     return fail(`${id} is a demo sign-in identity and can't be deactivated.`);
   }
+  // Deactivating an Admin (round 9Y): only an Admin may, and never the last active one, whoever asks (themselves
+  // included). Here rather than in deactivateUser(), so the form's "account active" box can't get round it.
+  if (record.role === "admin" && changes.status === "inactive" && record.status !== "inactive") {
+    if (isLastAdmin(box.records, id)) return fail(LAST_ACTIVE_ADMIN);
+    if (byNonAdmin(byRole)) return fail(ADMIN_ONLY_DEACTIVATE);
+  }
   // Same idea for the role: the last Admin can't stop being one, whoever asks (themselves included). With no Admin,
   // every approval's Admin stage would be skipped as a stage nobody holds.
   if (record.role === "admin" && "role" in changes && changes.role !== "admin" && isLastAdmin(box.records, id)) {
@@ -272,11 +281,11 @@ export function updateUser(id, changes = {}, { byRole } = {}) {
   return commit(USERS_KEY, box, record);
 }
 
-export function deactivateUser(id) {
+export function deactivateUser(id, { byRole } = {}) {
   if (PROTECTED_IDS.includes(id)) {
     return fail(`${id} is a demo sign-in identity and can't be deactivated.`);
   }
-  return updateUser(id, { status: "inactive" });
+  return updateUser(id, { status: "inactive" }, { byRole });
 }
 
 export function reactivateUser(id) {
