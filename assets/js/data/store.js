@@ -307,12 +307,16 @@ export function deleteUser(id, { byRole } = {}) {
 
 // ---------- department writes ----------
 
+// A department needs a name, and spaces alone aren't one: checked on add and on edit (round 10J).
+const NAME_REQUIRED = "Department name is required.";
+const hasName = (name) => String(name ?? "").trim() !== "";
+
 export function addDepartment(fields = {}) {
   const box = loadDepartments();
   const code = String(fields.code ?? "").trim();
   if (!/^[A-Z]{2,4}$/.test(code)) return fail("Department code must be 2 to 4 capital letters, e.g. MKT.", "code");
   if (box.records.some((d) => d.code === code)) return fail(`Department code ${code} is already in use.`, "code");
-  if (!String(fields.name ?? "").trim()) return fail("Department name is required.", "name");
+  if (!hasName(fields.name)) return fail(NAME_REQUIRED, "name");
 
   const record = { head: "", active: true, ...copy(fields), code };
   box.records.push(record);
@@ -326,6 +330,7 @@ export function updateDepartment(code, changes = {}) {
   if ("code" in changes && changes.code !== code) {
     return fail("A department's code can't be changed, because employees are linked to it.");
   }
+  if ("name" in changes && !hasName(changes.name)) return fail(NAME_REQUIRED, "name");
 
   const { code: _ignored, ...rest } = changes;
   Object.assign(record, copy(rest));
