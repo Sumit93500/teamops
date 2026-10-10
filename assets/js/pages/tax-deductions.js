@@ -8,7 +8,7 @@
 // The tax slab table stays static.
 
 import { runMonth, payrollRun, payslipTotals } from "../data/payroll-store.js";
-import { PAY_RULES, filingDates, tdsReturn } from "../data/payroll.js";
+import { PAY_RULES, TAX_SAMPLE, annualTax, filingDates, tdsReturn } from "../data/payroll.js";
 import { dayNumber } from "../data/holidays.js";
 import { can } from "../core/rbac.js";
 import { el, plural, todayIso, monthName, monthShort, formatDay } from "../ui/leave-view.js";
@@ -64,6 +64,21 @@ function render(run, year, month) {
   );
 }
 
+// The line after the slab card: what comes off before the slabs, from the same
+// constants monthlyTds() uses, and what the card's highlighted example really
+// pays, so the words can't drift from the arithmetic (round 10R).
+const SLAB_EXAMPLE = 900000;   // the card's highlighted annual income (its meta line)
+
+function renderSlabNote() {
+  const card = document.querySelector('table[data-export-name="tax-slabs"]')?.closest("section");
+  if (!card) return;
+  const tax = Math.round(annualTax(Math.max(0, SLAB_EXAMPLE - TAX_SAMPLE.standardDeduction)));
+  const note = el("p", "form-hint", `These rates apply only after a ${rupees(TAX_SAMPLE.standardDeduction)} standard deduction, and if what's left is `
+    + `${rupees(TAX_SAMPLE.rebateLimit)} or less there's no tax at all, so the highlighted ${rupees(SLAB_EXAMPLE)} pays ${tax ? `${rupees(tax)} a year` : "nothing"}.`);
+  note.id = "slab-note";
+  card.after(note);
+}
+
 // ---------- filing calendar ----------
 
 // The TDS return still to file: the last quarter's while its due date hasn't
@@ -107,4 +122,5 @@ if (can("tax:view")) {
   const { year, month } = runMonth(today);
   render(payrollRun(year, month), year, month);
   renderCalendar(year, month, today);
+  renderSlabNote();
 }
