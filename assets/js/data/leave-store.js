@@ -99,13 +99,13 @@ function periodBounds(per, year, month) {
   return [`${y}-${pad(m)}-01`, isoFromDayNumber(dayNumber(next) - 1)];
 }
 
-// The days of a request that fall in a period. A request wholly inside it counts
-// its stored days; one that crosses into another period counts the working days
-// of its part here (a half day is one date, so it never crosses).
+// The days of a request that fall in a period: the working days of its part
+// here, counted now, so a holiday added or removed since it was sent counts the
+// same as everywhere else (round 10O; a half day is one date, so it never
+// crosses). The stored `days` is what was asked for, and only shown.
 function daysIn(request, per, year, month) {
   const [start, end] = periodBounds(per, year, month);
   if (request.to < start || request.from > end) return 0;
-  if (request.from >= start && request.to <= end) return Number(request.days) || 0;
   return workingDays(request.from > start ? request.from : start, request.to < end ? request.to : end, request.duration);
 }
 

@@ -55,6 +55,13 @@ export function isWeekend(iso) {
 
 const byDate = (a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
 
+// Today on the local calendar: the day attendance and leave call today (the one
+// date here that isn't UTC maths).
+function todayIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function getAllHolidays() {
   return holidays.getAll().sort(byDate);
 }
@@ -90,7 +97,12 @@ export function addHoliday(fields = {}) {
   return holidays.add({ date, name, kind });
 }
 
+// A holiday already past can't be removed: its day would become an absence for
+// everyone who didn't punch in, perhaps after the time to ask for a correction
+// has gone (round 10O). Today's and later ones can; adding a past one is fine.
 export function removeHoliday(id) {
+  const holiday = holidays.get(id);
+  if (holiday && holiday.date < todayIso()) return fail(`Can't remove a past holiday (${holiday.date}).`);
   return holidays.remove(id);
 }
 
