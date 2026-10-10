@@ -112,6 +112,9 @@ function renderStatus(day, user) {
   } else if (day.status === "holiday") {
     badge = ["badge badge--dot", `Holiday: ${day.holiday.name}`];
     why = "No attendance is needed on holidays.";
+  } else if (day.status === "not-joined") {
+    badge = ["badge badge--dot", "Not joined yet"];
+    why = `Attendance starts on your joining date, ${user.dateOfJoining}.`;
   } else if (day.status === "absent") {
     badge = ["badge badge--danger badge--dot", "Not checked in, the shift has ended"];
     canIn = true;

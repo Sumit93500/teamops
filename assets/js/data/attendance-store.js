@@ -575,6 +575,8 @@ export function checkIn(userId, mode) {
   const chosen = mode ?? day.suggestedMode;
   if (!MODES.includes(chosen)) return fail("Choose Office or Work from home.", "mode");
   if (day.checkIn) return fail(`You already checked in today at ${day.checkIn}.`);
+  const joined = joiningDate(user.dateOfJoining);
+  if (joined && ctx.today < joined) return fail(`You can't check in before your joining date (${joined}).`);
   if (day.status === "holiday") return fail("Today is a holiday, so no attendance is needed.");
   if (day.status === "weekend") return fail("Today is a weekend, so no attendance is needed.");
   if (day.status === "on-leave") return fail("You're on approved leave today, so check-in is closed.");
@@ -678,6 +680,8 @@ export function requestRegularization(userId, fields = {}) {
   const age = dayNumber(ctx.today) - dayNumber(date);
   if (age < 0) return fail("You can't ask to correct a day that hasn't happened yet.", "date");
   if (age > ATTENDANCE_RULES.requestWindowDays) return fail(`Corrections must be asked for within ${ATTENDANCE_RULES.requestWindowDays} days of the date.`, "date");
+  const joined = joiningDate(user.dateOfJoining);
+  if (joined && date < joined) return fail(`You can't ask to correct a day before your joining date (${joined}).`, "date");
   if (!isValidTime(time)) return fail("Enter the correct time as HH:MM.", "time");
   if (!reason) return fail("Reason is required.", "reason");
 
