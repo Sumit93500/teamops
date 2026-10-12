@@ -8,6 +8,7 @@ import { openModal, closeModal } from "../ui/modal.js";
 import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
 import { applyPermissions } from "../core/rbac.js";
+import { getCurrentUserId } from "../core/auth.js";
 import { plural } from "../ui/leave-view.js";
 import { setStatValue, setOptionalStatNote } from "../ui/stats.js";
 
@@ -204,7 +205,7 @@ function save() {
     normaliseCode();   // Enter can submit without the field ever losing focus
   }
 
-  const result = editingCode ? updateDepartment(editingCode, record) : addDepartment({ ...record, code: codeInput.value });
+  const result = editingCode ? updateDepartment(getCurrentUserId(), editingCode, record) : addDepartment(getCurrentUserId(), { ...record, code: codeInput.value });
   if (!result.ok) {
     const input = { code: codeInput, name: nameInput }[result.field];
     if (input) showError(input, result.error);

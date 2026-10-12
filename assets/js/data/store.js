@@ -17,6 +17,7 @@
 import { save, load, remove } from "../core/storage.js";
 import { USERS, DEPARTMENTS, DESIGNATIONS, PROFILE_DETAILS, MANAGER_OF } from "./users.js";
 import { isValidDate } from "./holidays.js";
+import { ROLES } from "../config/roles.js";
 
 // The four demo sign-in identities (Admin, HR, Finance, Employee). Deactivating
 // or deleting one would break signing in as that role, so it is refused.
@@ -311,7 +312,16 @@ export function deleteUser(id, { byRole } = {}) {
 const NAME_REQUIRED = "Department name is required.";
 const hasName = (name) => String(name ?? "").trim() !== "";
 
-export function addDepartment(fields = {}) {
+// The acting person, if they are active and their role on record holds the
+// permission; else null. Their stored record decides, not the session
+// (holidays.js's holidayManager(), round 10W; departments, round 10X).
+function departmentActor(userId, permission) {
+  const user = userId ? getUser(userId) : null;
+  return user && user.status !== "inactive" && ROLES[user.role]?.permissions.includes(permission) ? user : null;
+}
+
+export function addDepartment(actorUserId, fields = {}) {
+  if (!departmentActor(actorUserId, "departments:create")) return fail("You can't add departments.");
   const box = loadDepartments();
   const code = String(fields.code ?? "").trim();
   if (!/^[A-Z]{2,4}$/.test(code)) return fail("Department code must be 2 to 4 capital letters, e.g. MKT.", "code");
@@ -323,7 +333,8 @@ export function addDepartment(fields = {}) {
   return commit(DEPARTMENTS_KEY, box, record);
 }
 
-export function updateDepartment(code, changes = {}) {
+export function updateDepartment(actorUserId, code, changes = {}) {
+  if (!departmentActor(actorUserId, "departments:edit")) return fail("You can't edit departments.");
   const box = loadDepartments();
   const record = box.records.find((d) => d.code === code);
   if (!record) return fail(`No department with code ${code}.`);
