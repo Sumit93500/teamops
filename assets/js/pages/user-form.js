@@ -8,7 +8,7 @@ import { ROLES } from "../config/roles.js";
 import { ALL_PERMISSIONS } from "../config/permissions.js";
 import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
-import { getCurrentRole } from "../core/auth.js";
+import { getCurrentRole, getCurrentUserId } from "../core/auth.js";
 
 const form = document.querySelector("form");
 const field = (id) => document.getElementById(id);
@@ -256,7 +256,7 @@ if (form && !(editId && !editing)) {
     clearError();
 
     const record = buildRecord();
-    const result = editing ? updateUser(editing.id, record, { byRole }) : addUser(record, { byRole });
+    const result = editing ? updateUser(getCurrentUserId(), editing.id, record) : addUser(getCurrentUserId(), record);
 
     if (!result.ok) {
       if (result.field === "email") showError(field("work-email"), result.error);

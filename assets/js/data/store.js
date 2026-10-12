@@ -49,13 +49,13 @@ const formatId = (num) => `EMP-${num}`;
 // `field` (optional) names the form field the error is about, so a page can show it there.
 const fail = (error, field) => (field ? { ok: false, error, field } : { ok: false, error });
 
-// Only an Admin may give someone the Admin role, directly or through a designation that carries it. A write that says
-// who is saving ({ byRole }: the signed-in role's key) is held to that; one that doesn't (the seed, scripts) isn't.
+// Only an Admin may give someone the Admin role, directly or through a designation that carries it. byRole is the
+// acting person's role on record: every user write passes it since round 10Y (it was optional, the signed-in role's key).
 const carriesAdmin = (fields) => fields.role === "admin" || DESIGNATIONS.find((d) => d.title === fields.designation)?.defaultRole === "admin";
 const adminOnly = (byRole, fields) => byRole !== undefined && byRole !== "admin" && carriesAdmin(fields);
 const ADMIN_ONLY = "Only an Admin can give someone the Admin role or save an Admin's details.";
 // …and only an Admin may take it away: demote someone who holds it, or delete them (round 9W). The same opt-in: a write
-// that says who is saving ({ byRole }) is held to it; one that doesn't isn't.
+// that says who is saving ({ byRole }) is held to it; every user write does since round 10Y.
 const byNonAdmin = (byRole) => byRole !== undefined && byRole !== "admin";
 const ADMIN_ONLY_REMOVE = "Only an Admin can take the Admin role away from someone or delete an Admin.";
 const ADMIN_ONLY_DEACTIVATE = "Only an Admin can deactivate another Admin.";   // the same opt-in (round 9Y)
@@ -217,7 +217,14 @@ export function activeHeadcount() {
 
 // ---------- user writes ----------
 
-export function addUser(fields = {}, { byRole } = {}) {
+// ---- who may write: each user write takes the acting person's id first and needs a permission on their record
+// (actorWith(), below; round 10Y): add users:create, edit users:edit, deactivate / reactivate / delete
+// users:deactivate (there's no users:delete).
+
+export function addUser(actorUserId, fields = {}) {
+  const actor = actorWith(actorUserId, "users:create");
+  if (!actor) return fail("You can't add employees.");
+  const byRole = actor.role;
   const box = loadUsers();
   const { id: _ignored, ...rest } = fields;   // ids are always generated here
   if (adminOnly(byRole, rest)) return fail(ADMIN_ONLY);
@@ -245,7 +252,16 @@ export function addUser(fields = {}, { byRole } = {}) {
   return commit(USERS_KEY, box, record);
 }
 
-export function updateUser(id, changes = {}, { byRole } = {}) {
+export function updateUser(actorUserId, id, changes = {}) {
+  const actor = actorWith(actorUserId, "users:edit");
+  if (!actor) return fail("You can't edit employees.");
+  return changeUser(actor, id, changes);
+}
+
+// updateUser()'s checks and save, for an acting person already checked
+// (deactivateUser() and reactivateUser() come through here too).
+function changeUser(actor, id, changes = {}) {
+  const byRole = actor.role;
   const box = loadUsers();
   const record = box.records.find((u) => u.id === id);
   if (!record) return fail(`No employee with id ${id}.`);
@@ -266,6 +282,8 @@ export function updateUser(id, changes = {}, { byRole } = {}) {
   if (record.role === "admin" && "role" in changes && changes.role !== "admin" && isLastAdmin(box.records, id)) {
     return fail(LAST_ADMIN);
   }
+  // Nobody deactivates their own account (the profile page's rule, held here too: round 10Y).
+  if (changes.status === "inactive" && record.status !== "inactive" && actor.id === id) return fail("You can't deactivate your own account.");
   // Only an Admin may take the Admin role away from someone, however many Admins there are (round 9W).
   if (byNonAdmin(byRole) && record.role === "admin" && "role" in changes && changes.role !== "admin") return fail(ADMIN_ONLY_REMOVE);
   if ("email" in changes && emailTaken(box.records, changes.email, id)) {
@@ -282,18 +300,25 @@ export function updateUser(id, changes = {}, { byRole } = {}) {
   return commit(USERS_KEY, box, record);
 }
 
-export function deactivateUser(id, { byRole } = {}) {
+export function deactivateUser(actorUserId, id) {
+  const actor = actorWith(actorUserId, "users:deactivate");
+  if (!actor) return fail("You can't deactivate employees.");
   if (PROTECTED_IDS.includes(id)) {
     return fail(`${id} is a demo sign-in identity and can't be deactivated.`);
   }
-  return updateUser(id, { status: "inactive" }, { byRole });
+  return changeUser(actor, id, { status: "inactive" });
 }
 
-export function reactivateUser(id) {
-  return updateUser(id, { status: "active" });
+export function reactivateUser(actorUserId, id) {
+  const actor = actorWith(actorUserId, "users:deactivate");
+  if (!actor) return fail("You can't reactivate employees.");
+  return changeUser(actor, id, { status: "active" });
 }
 
-export function deleteUser(id, { byRole } = {}) {
+export function deleteUser(actorUserId, id) {
+  const actor = actorWith(actorUserId, "users:deactivate");
+  if (!actor) return fail("You can't delete employees.");
+  const byRole = actor.role;
   if (PROTECTED_IDS.includes(id)) {
     return fail(`${id} is a demo sign-in identity and can't be deleted.`);
   }
@@ -314,14 +339,15 @@ const hasName = (name) => String(name ?? "").trim() !== "";
 
 // The acting person, if they are active and their role on record holds the
 // permission; else null. Their stored record decides, not the session
-// (holidays.js's holidayManager(), round 10W; departments, round 10X).
-function departmentActor(userId, permission) {
+// (holidays.js's holidayManager(), round 10W; departments, round 10X; the user
+// writes above, round 10Y).
+function actorWith(userId, permission) {
   const user = userId ? getUser(userId) : null;
   return user && user.status !== "inactive" && ROLES[user.role]?.permissions.includes(permission) ? user : null;
 }
 
 export function addDepartment(actorUserId, fields = {}) {
-  if (!departmentActor(actorUserId, "departments:create")) return fail("You can't add departments.");
+  if (!actorWith(actorUserId, "departments:create")) return fail("You can't add departments.");
   const box = loadDepartments();
   const code = String(fields.code ?? "").trim();
   if (!/^[A-Z]{2,4}$/.test(code)) return fail("Department code must be 2 to 4 capital letters, e.g. MKT.", "code");
@@ -334,7 +360,7 @@ export function addDepartment(actorUserId, fields = {}) {
 }
 
 export function updateDepartment(actorUserId, code, changes = {}) {
-  if (!departmentActor(actorUserId, "departments:edit")) return fail("You can't edit departments.");
+  if (!actorWith(actorUserId, "departments:edit")) return fail("You can't edit departments.");
   const box = loadDepartments();
   const record = box.records.find((d) => d.code === code);
   if (!record) return fail(`No department with code ${code}.`);
