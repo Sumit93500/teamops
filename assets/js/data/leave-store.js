@@ -6,6 +6,7 @@
 // The older data/leave.js (fixed demo constants) is not used by this file.
 
 import { createCollection, fail } from "./collection.js";
+import { load } from "../core/storage.js";
 import { getUser, getAllUsers } from "./store.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker, resetHolidays } from "./holidays.js";
 import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
@@ -108,6 +109,23 @@ function daysIn(request, per, year, month) {
   if (request.to < start || request.from > end) return 0;
   return workingDays(request.from > start ? request.from : start, request.to < end ? request.to : end, request.duration);
 }
+
+// The working days from `from` to `to` the person already checked in on,
+// oldest first. Leave can't cover them: it would charge a day worked to the
+// balance, and to pay if it's unpaid (round 10V). Read from the stored
+// attendance records ("attendance", kept by data/attendance-store.js, which
+// imports this file, so it can't be imported back): a punch, a correction or the
+// sample data's own. The ordinary days attendance works out for the sample
+// people aren't stored, and approved leave replaces them, so they never clash.
+function checkedInDays(userId, from, to) {
+  const records = load("attendance")?.records;
+  if (!Array.isArray(records)) return [];
+  const isOff = dayOffChecker();
+  const dates = records.filter((r) => r.userId === userId && r.checkIn && from <= r.date && r.date <= to && !isOff(r.date)).map((r) => r.date);
+  return [...new Set(dates)].sort();
+}
+const daysText = (dates) => (dates.length > 1 ? `${dates.slice(0, -1).join(", ")} and ${dates.at(-1)}` : dates[0]);
+const thoseDays = (dates) => (dates.length > 1 ? "those days" : "that day");
 
 // Two requests clash if their dates overlap. The one exception: a first-half
 // and a second-half on the same single day.
@@ -215,6 +233,9 @@ export function applyLeave(userId, fields = {}) {
 
   const days = workingDays(from, to, duration);
   if (days === 0) return fail("Those dates are all weekends or holidays, so there's nothing to take.", "to");
+  // Working from home isn't time off, so a day checked in on can still be one.
+  const worked = type === "wfh" ? [] : checkedInDays(userId, from, to);
+  if (worked.length) return fail(`You checked in on ${daysText(worked)}, so leave can't cover ${thoseDays(worked)}. If the check-in times are wrong, ask for a correction instead.`, "from");
 
   const request = { from, to, duration };
   const mine = leave.getAll().filter((r) => r.userId === userId && COUNTED.includes(r.status));
@@ -289,6 +310,14 @@ export function decideLeave(requestId, deciderUserId, deciderRole, decision, not
   const entry = { stage: request.stage, byUserId: deciderUserId, decision: decision === "approve" ? "approved" : "rejected", at: now, note: text };
   if (decision === "reject") return leave.update(requestId, { status: "rejected", stage: "done", history: [...request.history, entry] });
   const next = chain.nextStage(request, request.stage);
+  // The final approval checks the days again: a check-in may have been recorded
+  // since the request was sent. Nothing is decided; it stays pending until it's
+  // rejected or cancelled (as a correction does when leave lands first).
+  const worked = !next.stage && request.type !== "wfh" ? checkedInDays(request.userId, request.from, request.to) : [];
+  if (worked.length) {
+    const name = getUser(request.userId)?.name ?? request.userId;
+    return fail(`This request no longer matches the attendance record: ${name} checked in on ${daysText(worked)}, so leave can't cover ${thoseDays(worked)}.`);
+  }
   return leave.update(requestId, {
     status: next.stage ? "pending" : "approved",
     stage: next.stage ?? "done",
