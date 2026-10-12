@@ -1,6 +1,7 @@
 // pages/two-factor.js
 // Runs on two-factor.html. Checks that all six code boxes are filled, then
-// signs in and redirects. UI only: the code itself is not verified.
+// signs in and redirects. UI only: the code itself is not verified, so the
+// toast says what really happens (round 11D; it used to say "Verified.").
 
 import { signIn } from "../core/auth.js";
 import { redirectToLanding } from "../core/guard.js";
@@ -35,7 +36,7 @@ if (form) {
     }
 
     clearError();
-    showToast("Verified.", "success");
+    showToast("Codes aren't checked in this demo: signing in as Aarav Mehta (Admin).", "info");
     setTimeout(() => {
       signIn("admin", "Aarav Mehta", "EMP-1001");
       redirectToLanding();

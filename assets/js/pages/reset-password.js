@@ -1,9 +1,11 @@
 // pages/reset-password.js
 // Runs on reset-password.html. Checks that the new password was typed the
-// same twice, then sends the user back to sign in. UI only: no password is changed.
+// same twice, then says plainly that nothing was reset: there are no
+// passwords in OfficeOS yet (sign-in is picking a demo role), so there's
+// nothing to reset (round 11D; it used to say "Password reset." and go to
+// the sign-in page, as change-password said "Password updated." before 11B).
 
 import { showToast } from "../ui/toast.js";
-import { resolvePageLink } from "../core/paths.js";
 
 const form = document.querySelector("form");
 
@@ -34,10 +36,7 @@ if (form) {
     }
 
     clearError();
-    showToast("Password reset. Sign in with your new password.", "success");
-    setTimeout(() => {
-      window.location.href = resolvePageLink("auth/login.html");
-    }, 1200);
+    showToast("Passwords aren't part of OfficeOS yet: nothing was reset.", "info");
   });
 
   form.elements.confirm.addEventListener("input", clearError);
