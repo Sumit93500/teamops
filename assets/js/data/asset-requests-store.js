@@ -89,11 +89,25 @@ const roleCan = (roleKey, permission) => Boolean(ROLES[roleKey]?.permissions.inc
 const isActive = (user) => Boolean(user) && user.status !== "inactive";
 const typeWord = (key) => ASSET_TYPES[key]?.label.toLowerCase() ?? key;
 
+// Can the request's manager still decide it? Active, and not the requester
+// (approval-chain.js's managerCanDecide()).
+function managerCanDecide(request) {
+  const manager = request.managerId ? getUser(request.managerId) : null;
+  return isActive(manager) && manager.id !== request.userId;
+}
+
 // May this user (a stored user record) decide the request at this stage?
-// Never their own; otherwise the stage's rule above.
+// Never their own; otherwise the stage's rule above. If the manager can no
+// longer decide (made inactive or removed after the request reached them),
+// whoever holds the Admin stage may decide the manager stage instead, as on
+// leave, so a request is never stuck there (round 10T). No manager on file is
+// different: that stage was skipped when the request was sent.
 function holdsStage(request, stage, user) {
   if (!isActive(user) || user.id === request.userId) return false;
-  if (stage === "manager") return user.id === request.managerId;
+  if (stage === "manager") {
+    if (!request.managerId) return false;
+    return managerCanDecide(request) ? user.id === request.managerId : holdsStage(request, "admin", user);
+  }
   return stage === "admin" && user.role === "admin" && roleCan(user.role, "assets:approve");
 }
 
@@ -164,6 +178,7 @@ export function decideAssetRequest(requestId, deciderUserId, deciderRole, decisi
   if (deciderUserId === request.userId) return fail("You can't decide your own asset request.");
   if (request.status !== "pending") return fail(`This request is already ${request.status}.`);
   if (!holdsStage(request, request.stage, decider)) {
+    if (request.stage === "manager" && !managerCanDecide(request)) return fail("Only an Admin can decide this request now: its manager can no longer decide it.");
     const who = request.stage === "manager" ? "the requester's manager" : "an Admin";
     return fail(`Only ${who} can decide this request at the ${STAGE_NAME[request.stage]} stage.`);
   }

@@ -105,11 +105,25 @@ export const STAGE_NAME = { manager: "manager", finance: "Finance", admin: "Admi
 const roleCan = (roleKey, permission) => Boolean(ROLES[roleKey]?.permissions.includes(permission));
 const isActive = (user) => Boolean(user) && user.status !== "inactive";
 
+// Can the claim's manager still decide it? Active, and not the claimant
+// (approval-chain.js's managerCanDecide()).
+function managerCanDecide(claim) {
+  const manager = claim.managerId ? getUser(claim.managerId) : null;
+  return isActive(manager) && manager.id !== claim.userId;
+}
+
 // May this user (a stored user record) decide the claim at its current stage?
-// Never their own claim; otherwise the stage's rule above.
+// Never their own claim; otherwise the stage's rule above. If the manager can
+// no longer decide (made inactive or removed after the claim reached them),
+// whoever holds the Finance stage may decide the manager stage instead, as on
+// leave, so a claim is never stuck there (round 10T). No manager on file is
+// different: that stage was skipped when the claim was sent.
 function holdsStage(claim, stage, user) {
   if (!isActive(user) || user.id === claim.userId) return false;
-  if (stage === "manager") return user.id === claim.managerId;
+  if (stage === "manager") {
+    if (!claim.managerId) return false;
+    return managerCanDecide(claim) ? user.id === claim.managerId : holdsStage(claim, "finance", user);
+  }
   return user.role === STAGE_ROLE[stage] && roleCan(user.role, "expenses:approve");
 }
 
@@ -214,6 +228,7 @@ export function decideExpense(claimId, deciderUserId, deciderRole, decision, not
   if (deciderUserId === claim.userId) return fail("You can't decide your own expense claim.");
   if (claim.status !== "pending") return fail(`This claim is already ${claim.status}.`);
   if (!holdsStage(claim, claim.stage, decider)) {
+    if (claim.stage === "manager" && !managerCanDecide(claim)) return fail("Only Finance can decide this claim now: its manager can no longer decide it.");
     const who = { manager: "the claimant's manager", finance: "Finance", admin: "an Admin" }[claim.stage];
     return fail(`Only ${who} can decide this claim at the ${STAGE_NAME[claim.stage]} stage.`);
   }
