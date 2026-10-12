@@ -6,6 +6,7 @@
 // just sees the calendar.
 
 import { applyPermissions } from "../core/rbac.js";
+import { getCurrentUserId } from "../core/auth.js";
 import { getAllHolidays, addHoliday, removeHoliday, isWeekend, dayNumber, isoFromDayNumber } from "../data/holidays.js";
 import { openModal, closeModal } from "../ui/modal.js";
 import { showToast } from "../ui/toast.js";
@@ -85,7 +86,7 @@ function renderCalendar() {
 
 function removeOne(holiday) {
   if (!window.confirm(`Remove ${holiday.name} on ${formatDay(holiday.date, true)}?`)) return;
-  const result = removeHoliday(holiday.id);
+  const result = removeHoliday(getCurrentUserId(), holiday.id);
   if (result.ok) showToast("Holiday removed.", "success");
   else showToast(escapeHtml(result.error), "danger");
   render();
@@ -173,7 +174,7 @@ function showError(input, message) {
 function save(e) {
   e.preventDefault();
   clearError();
-  const result = addHoliday({ date: field(FIELDS.date).value, name: field(FIELDS.name).value, kind: field(FIELDS.kind).value });
+  const result = addHoliday(getCurrentUserId(), { date: field(FIELDS.date).value, name: field(FIELDS.name).value, kind: field(FIELDS.kind).value });
   if (!result.ok) {
     const input = field(FIELDS[result.field]);
     if (input) showError(input, result.error);

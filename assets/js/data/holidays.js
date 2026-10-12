@@ -7,6 +7,8 @@
 // a date by one.
 
 import { createCollection, fail } from "./collection.js";
+import { getUser } from "./store.js";
+import { ROLES } from "../config/roles.js";
 
 export const HOLIDAY_KINDS = ["national", "company", "optional"];
 
@@ -85,7 +87,18 @@ export function dayOffChecker() {
 
 // ---------- writes ----------
 
-export function addHoliday(fields = {}) {
+// The acting person, if they are active and their role on record holds
+// holidays:manage; else null. Their stored record decides, not the session
+// (inventory-store.js's actorWith()): holidays move attendance, leave and pay
+// (round 10W). store.js imports this file too (isValidDate); neither uses the
+// other while loading, so that's safe.
+function holidayManager(userId) {
+  const user = userId ? getUser(userId) : null;
+  return user && user.status !== "inactive" && ROLES[user.role]?.permissions.includes("holidays:manage") ? user : null;
+}
+
+export function addHoliday(actorUserId, fields = {}) {
+  if (!holidayManager(actorUserId)) return fail("You can't add holidays.");
   const date = String(fields.date ?? "").trim();
   const name = String(fields.name ?? "").trim();
   const kind = String(fields.kind ?? "").trim();
@@ -100,7 +113,8 @@ export function addHoliday(fields = {}) {
 // A holiday already past can't be removed: its day would become an absence for
 // everyone who didn't punch in, perhaps after the time to ask for a correction
 // has gone (round 10O). Today's and later ones can; adding a past one is fine.
-export function removeHoliday(id) {
+export function removeHoliday(actorUserId, id) {
+  if (!holidayManager(actorUserId)) return fail("You can't remove holidays.");
   const holiday = holidays.get(id);
   if (holiday && holiday.date < todayIso()) return fail(`Can't remove a past holiday (${holiday.date}).`);
   return holidays.remove(id);
