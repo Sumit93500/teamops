@@ -1,9 +1,10 @@
 // pages/change-password.js
 // Runs on change-password.html. Checks that the new password was typed the
-// same twice, then shows a success message. UI only: no password is changed.
+// same twice, then says plainly that nothing was changed: there are no
+// passwords in OfficeOS yet (sign-in is picking a demo role), so there's
+// nothing to update (round 11B; it used to say "Password updated.").
 
 import { showToast } from "../ui/toast.js";
-import { resolvePageLink } from "../core/paths.js";
 
 const form = document.querySelector("form");
 
@@ -35,10 +36,7 @@ if (form) {
     }
 
     clearError();
-    showToast("Password updated.", "success");
-    setTimeout(() => {
-      window.location.href = resolvePageLink("account/my-profile.html");
-    }, 1200);
+    showToast("Passwords aren't part of OfficeOS yet: nothing was changed.", "info");
   });
 
   form.elements.confirm.addEventListener("input", clearError);
