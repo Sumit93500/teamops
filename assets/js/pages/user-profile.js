@@ -319,12 +319,19 @@ function render() {
     if (salary) kvDd("Salary")?.classList.remove("text-muted");
   }
 
-  // Access. "Two-factor sign-in" and "Last sign-in" stay static; the approval
-  // chain is the one this person's leave and corrections really go through.
+  // Access. "Last sign-in" stays static; the approval chain is the one this
+  // person's leave and corrections really go through. Nothing records or
+  // enforces two-factor sign-in, so that row says so, muted and without the
+  // HTML's "On" badge (round 11F; it showed "On" on every profile).
   setKv("Designation", orDash(user.designation));
   setKv("Default role", role?.label ?? user.role);
   setKv("Data scope", role?.dataScope === "all" ? "All records" : "Own records");
   setKv("Approval chain", approvalChainText(user.id));
+  const twoFactor = kvDd("Two-factor sign-in");
+  if (twoFactor) {
+    twoFactor.textContent = "Not recorded yet";
+    twoFactor.classList.add("text-muted");
+  }
 
   renderOverrides();
   renderAssets();
