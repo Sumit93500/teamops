@@ -261,32 +261,19 @@
             <input class="input" id="default-role" type="text" value="Employee" disabled>
             <span class="form-hint">Comes from the designation. Change the designation to change this.</span>
           </div>
-          <div class="form-field">
-            <span class="form-label">Additional roles</span>
-            <div class="check-list">
-              <label class="check"><input type="checkbox" name="extraRole" value="hr-staff"> HR Staff</label>
-              <label class="check"><input type="checkbox" name="extraRole" value="team-lead"> Team Lead</label>
-              <label class="check"><input type="checkbox" name="extraRole" value="inventory-manager"> Inventory Manager</label>
-            </div>
-            <span class="form-hint">Recorded with the employee. Additional roles don't change what they can do yet.</span>
-          </div>
         </div>
 
         <h4 class="form-subtitle">Permission overrides</h4>
-        <p class="form-hint mb-4">Recorded with the employee. Overrides don't change what they can do yet: access comes from the default role.</p>
+        <p class="form-hint mb-4">Applied on top of the default role, everywhere the app checks: extra permissions are added, denied ones taken away. Only an Admin can change them, and not on their own record. Approvals, dashboards, Admin-only powers, managing people and everyone's own pages stay with the role.</p>
+        <p class="form-hint mb-4" id="overrides-reason" hidden></p>
         <div class="form-grid">
-          <div class="form-field">
+          <div class="form-field form-field--full">
             <span class="form-label">Extra permissions</span>
-            <div class="check-list">
-              <label class="check"><input type="checkbox" name="grant" value="inventory:view"> inventory:view</label>
-              <label class="check"><input type="checkbox" name="grant" value="reports:view"> reports:view</label>
-            </div>
+            <div class="check-list" id="grant-options"></div>
           </div>
-          <div class="form-field">
+          <div class="form-field form-field--full">
             <span class="form-label">Denied permissions</span>
-            <div class="check-list">
-              <label class="check"><input type="checkbox" name="deny" value="payslip:view-own"> payslip:view-own</label>
-            </div>
+            <div class="check-list" id="deny-options"></div>
           </div>
         </div>
 
@@ -326,7 +313,7 @@
         </div>
         <div class="card__body">
           <div class="perm-chips" id="effective-permissions"></div>
-          <p class="form-hint mt-4">The default role's permissions, which is what the app checks. Updates as you change the designation. Additional roles and overrides aren't applied yet.</p>
+          <p class="form-hint mt-4">What the app checks: the default role's permissions, plus the extra ones, minus the denied ones. Updates as you change the designation or the overrides.</p>
         </div>
       </section>
     </aside>

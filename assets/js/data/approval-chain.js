@@ -19,7 +19,7 @@
 // Expense claims and asset requests keep their own chain (data/expenses.js).
 
 import { getUser, getAllUsers } from "./store.js";
-import { ROLES } from "../config/roles.js";
+import { permissionsOf } from "../config/roles.js";
 
 export const CHAIN_STAGES = ["manager", "hr"];
 
@@ -27,7 +27,9 @@ const isActive = (user) => Boolean(user) && user.status !== "inactive";
 
 // permission: the one that holds the HR stage. Returns that kind's rules.
 export function createChain(permission) {
-  const holdsHr = (user) => Boolean(ROLES[user.role]?.permissions.includes(permission));
+  // The person's permissions on record (round 11R). leave:approve and attendance:approve can't be overridden
+  // (round-11r-notes.md R0), so the HR stage's holders are still the role's.
+  const holdsHr = (user) => permissionsOf(user).includes(permission);
 
   // Can the request's manager still decide it? Active, and not the requester.
   function managerCanDecide(request) {

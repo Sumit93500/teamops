@@ -4,7 +4,7 @@
 
 import { getUser, getAllUsers, addUser, updateUser, peekNextId, getAllDepartments } from "../data/store.js";
 import { DESIGNATIONS } from "../data/users.js";
-import { ROLES } from "../config/roles.js";
+import { ROLES, OVERRIDABLE, overridesOf, permissionsOf } from "../config/roles.js";
 import { ALL_PERMISSIONS } from "../config/permissions.js";
 import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
@@ -106,6 +106,7 @@ fillSelect(field("manager"), "No reporting manager",
     .map((u) => ({ value: u.id, label: u.name })));
 
 function updateDefaultRole() {
+  renderOverrideOptions();
   renderEffectivePermissions();
   if (!designationSelect || !defaultRoleInput) return;
   const roleKey = designationSelect.selectedOptions[0]?.dataset.role;
@@ -116,31 +117,85 @@ function updateDefaultRole() {
 // role, else the employee's current one, else Employee.
 const roleOnSave = () => DESIGNATIONS.find((d) => d.title === designationSelect?.value)?.defaultRole ?? editing?.role ?? "emp";
 
-// "Effective permissions": the permissions of that role, which is all can()
-// checks. Additional roles and overrides are saved but not applied, and the
-// card says so.
+// "Effective permissions": what can() will check (round 11R): that role's
+// permissions, plus the ticked extra ones, minus the ticked denied ones
+// (config/roles.js permissionsOf()). A granted one says so on hover.
 function renderEffectivePermissions() {
   const box = field("effective-permissions");
   if (!box) return;
-  const permissions = ROLES[roleOnSave()]?.permissions ?? [];
+  const draft = { role: roleOnSave(), grantPermissions: offeredTicked("grant"), denyPermissions: offeredTicked("deny") };
+  const permissions = permissionsOf(draft);
+  const held = ROLES[draft.role]?.permissions ?? [];
   const count = field("effective-count");
   if (count) count.textContent = String(permissions.length);
   if (permissions.length === ALL_PERMISSIONS.length) {
     box.replaceChildren(Object.assign(document.createElement("span"), { className: "text-sm text-muted", textContent: `Every permission (${permissions.length})` }));
     return;
   }
-  box.replaceChildren(...permissions.map((perm) => Object.assign(document.createElement("span"), { className: "perm-chip", textContent: perm })));
+  box.replaceChildren(...permissions.map((perm) => Object.assign(document.createElement("span"),
+    { className: "perm-chip", textContent: perm }, held.includes(perm) ? {} : { title: "Granted to this person" })));
 }
 
 designationSelect?.addEventListener("change", updateDefaultRole);
 
-// ---------- access checkboxes (saved as-is, no extra behaviour) ----------
+// ---------- permission overrides (round 11R) ----------
 
 const checkedValues = (name) =>
   Array.from(form.querySelectorAll(`input[name="${name}"]`)).filter((c) => c.checked).map((c) => c.value);
 
-function setChecked(name, values = []) {
-  form.querySelectorAll(`input[name="${name}"]`).forEach((c) => { c.checked = values.includes(c.value); });
+// Why this person's overrides can't be changed here, or "" if they can. The
+// store holds the same rules (data/store.js overridesProblem()).
+function overridesLock() {
+  if (byRole !== "admin") return "Only an Admin can change permission overrides.";
+  if (editing && editing.id === getCurrentUserId()) return "You can't change your own permission overrides.";
+  if (roleOnSave() === "admin") return "An Admin holds every permission, so there's nothing to grant or deny.";
+  return "";
+}
+
+// What's ticked, kept across designation changes; it starts as the record's
+// overrides that apply (anything stored outside OVERRIDABLE isn't shown).
+const ticked = { grant: new Set(overridesOf(editing).grants), deny: new Set(overridesOf(editing).denies) };
+
+// Offered for the role saving would store: extra = overridable and not held,
+// denied = overridable and held; nothing for an Admin.
+function offered(name) {
+  const role = roleOnSave();
+  if (role === "admin") return [];
+  const held = ROLES[role]?.permissions ?? [];
+  return OVERRIDABLE.filter((p) => held.includes(p) === (name === "deny"));
+}
+const offeredTicked = (name) => offered(name).filter((p) => ticked[name].has(p));
+
+function renderOverrideOptions() {
+  const lock = overridesLock();
+  const reason = field("overrides-reason");
+  if (reason) { reason.hidden = !lock; reason.textContent = lock; }
+  for (const name of ["grant", "deny"]) {
+    const box = field(`${name}-options`);
+    if (!box) continue;
+    const list = offered(name);
+    box.replaceChildren(...(list.length ? list.map((perm) => {
+      const input = Object.assign(document.createElement("input"), { type: "checkbox", name, value: perm, checked: ticked[name].has(perm), disabled: Boolean(lock) });
+      const label = Object.assign(document.createElement("label"), { className: "check", title: lock });
+      label.append(input, ` ${perm}`);
+      return label;
+    }) : [Object.assign(document.createElement("span"), { className: "text-sm text-muted", textContent: "None" })]));
+  }
+}
+
+for (const name of ["grant", "deny"]) {
+  field(`${name}-options`)?.addEventListener("change", (e) => {
+    if (e.target.checked) ticked[name].add(e.target.value);
+    else ticked[name].delete(e.target.value);
+    renderEffectivePermissions();
+  });
+}
+
+// The two lists to save: what's ticked of what's offered, empty for an Admin;
+// left out when they can't be changed here, so the stored lists stay.
+function overridesToSave() {
+  if (byRole !== "admin" || (editing && editing.id === getCurrentUserId())) return {};
+  return { grantPermissions: offeredTicked("grant"), denyPermissions: offeredTicked("deny") };
 }
 
 // ---------- mode ----------
@@ -183,9 +238,6 @@ if (editId && !editing) {
   if (editing.employmentType) { ensureOption(field("emp-type"), editing.employmentType); field("emp-type").value = editing.employmentType; }
   if (editing.location) { ensureOption(field("location"), editing.location); field("location").value = editing.location; }
 
-  setChecked("extraRole", editing.extraRoles);
-  setChecked("grant", editing.grantPermissions);
-  setChecked("deny", editing.denyPermissions);
   const active = field("account-active");
   if (active) active.checked = editing.status !== "inactive";
 } else {
@@ -241,9 +293,7 @@ function buildRecord() {
     employmentType: field("emp-type").value,
     location: field("location").value,
     ...managerChoice(managerSelect),
-    extraRoles: checkedValues("extraRole"),
-    grantPermissions: checkedValues("grant"),
-    denyPermissions: checkedValues("deny"),
+    ...overridesToSave(),
     ...sensitiveFields(),
   };
 }

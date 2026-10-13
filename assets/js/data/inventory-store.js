@@ -42,7 +42,7 @@
 import { createCollection, fail } from "./collection.js";
 import { getUser, getDepartment } from "./store.js";
 import { dayNumber } from "./holidays.js";
-import { ROLES } from "../config/roles.js";
+import { permissionsOf } from "../config/roles.js";
 import {
   CATEGORY_KEYS, ASSET_TYPE_KEYS, LOCATIONS, CONDITIONS, ASSET_STATUSES, ASSET_STATUS_KEYS, MOVEMENT_TYPES,
   STOCK_STATUS_KEYS, changeFor, stockStatus, stockValue, needsReorder,
@@ -144,13 +144,14 @@ function dayOf(at) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-const roleCan = (roleKey, permission) => Boolean(ROLES[roleKey]?.permissions.includes(permission));
+// Their permissions on record: the role's, with their overrides (round 11R).
+const userCan = (user, permission) => permissionsOf(user).includes(permission);
 const isActive = (user) => Boolean(user) && user.status !== "inactive";
 
-// The acting person, if they are active and their role holds the permission; else null.
+// The acting person, if they are active and hold the permission on record; else null.
 function actorWith(userId, permission) {
   const user = getUser(userId);
-  return isActive(user) && roleCan(user.role, permission) ? user : null;
+  return isActive(user) && userCan(user, permission) ? user : null;
 }
 
 const itemBySku = (sku) => items.getAll().find((i) => i.sku === sku) ?? null;

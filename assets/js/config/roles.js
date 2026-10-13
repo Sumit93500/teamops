@@ -78,3 +78,45 @@ export const ROLES = {
 };
 
 export const ROLE_KEYS = Object.keys(ROLES);   // ["admin", "hr", "fin", "emp"]
+
+// ---------- permission overrides (round 11R) ----------
+// An Admin may grant someone a permission their role lacks, or deny one it
+// holds, on their user record (grantPermissions / denyPermissions). Only these
+// 25 can be (round-11r-notes.md R0). Never a landing page's permission, an
+// approval stage (deciding, fulfilling, paying, preparing, or setting chains
+// up), an Admin-only power, access administration (users, personal details,
+// designations), everyone's own pages, or one kept for a feature not built yet.
+export const OVERRIDABLE = [
+  "departments:create", "departments:edit",
+  "holidays:manage",
+  "payroll:view", "payroll:export", "payslips:view", "salary:view",
+  "expenses:view",
+  "tax:view", "tax:manage",
+  "inventory:view", "inventory:create", "inventory:edit",
+  "assets:view",
+  "vendors:view", "vendors:create", "vendors:edit",
+  "recruitment:view", "recruitment:create", "recruitment:edit",
+  "announcements:create",
+  "reports:view", "reports:create", "reports:export",
+  "audit:view",
+];
+
+// A record's overrides that apply: each list kept to OVERRIDABLE (anything
+// else stored is ignored), and none at all for an Admin, who holds every
+// permission. -> { grants, denies }
+export function overridesOf(user) {
+  if (!user || user.role === "admin") return { grants: [], denies: [] };
+  const valid = (list) => (Array.isArray(list) ? list.filter((p) => OVERRIDABLE.includes(p)) : []);
+  return { grants: valid(user.grantPermissions), denies: valid(user.denyPermissions) };
+}
+
+// Everything this person may do: their role's permissions, plus the ones
+// granted to them, minus the ones denied. Worked out from the record passed in,
+// on every call; nothing is kept. Whether they're active is the caller's check.
+// [] for no record or a role that isn't one.
+export function permissionsOf(user) {
+  const role = user && Object.hasOwn(ROLES, user.role) ? ROLES[user.role] : null;
+  if (!role) return [];
+  const { grants, denies } = overridesOf(user);
+  return [...new Set([...role.permissions, ...grants])].filter((p) => !denies.includes(p));
+}

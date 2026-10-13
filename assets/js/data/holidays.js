@@ -8,7 +8,7 @@
 
 import { createCollection, fail } from "./collection.js";
 import { getUser } from "./store.js";
-import { ROLES } from "../config/roles.js";
+import { permissionsOf } from "../config/roles.js";
 
 export const HOLIDAY_KINDS = ["national", "company", "optional"];
 
@@ -87,14 +87,14 @@ export function dayOffChecker() {
 
 // ---------- writes ----------
 
-// The acting person, if they are active and their role on record holds
-// holidays:manage; else null. Their stored record decides, not the session
+// The acting person, if they are active and hold holidays:manage on record
+// (their role's permissions with their overrides, round 11R); else null. Their stored record decides, not the session
 // (inventory-store.js's actorWith()): holidays move attendance, leave and pay
 // (round 10W). store.js imports this file too (isValidDate); neither uses the
 // other while loading, so that's safe.
 function holidayManager(userId) {
   const user = userId ? getUser(userId) : null;
-  return user && user.status !== "inactive" && ROLES[user.role]?.permissions.includes("holidays:manage") ? user : null;
+  return user && user.status !== "inactive" && permissionsOf(user).includes("holidays:manage") ? user : null;
 }
 
 export function addHoliday(actorUserId, fields = {}) {

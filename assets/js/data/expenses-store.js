@@ -42,7 +42,7 @@ import { getUser, getAllUsers } from "./store.js";
 import { dayNumber } from "./holidays.js";
 import { managerFor } from "./leave-store.js";
 import { EXPENSE_POLICY, CATEGORIES, CATEGORY_KEYS, chainFor, nextStage, firstStage, needsReceipt } from "./expenses.js";
-import { ROLES } from "../config/roles.js";
+import { permissionsOf } from "../config/roles.js";
 
 // ---------- seed ----------
 
@@ -102,7 +102,9 @@ function todayIso() {
 const STAGE_ROLE = { finance: "fin", admin: "admin" };
 // Each stage as words say it ("the Finance stage"); ui/expense-view.js shows the same names.
 export const STAGE_NAME = { manager: "manager", finance: "Finance", admin: "Admin" };
-const roleCan = (roleKey, permission) => Boolean(ROLES[roleKey]?.permissions.includes(permission));
+// Their permissions on record: the role's, with their overrides (round 11R). expenses:approve and expenses:pay
+// can't be overridden (round-11r-notes.md R0), so who holds a stage or pays is still the role's.
+const userCan = (user, permission) => permissionsOf(user).includes(permission);
 const isActive = (user) => Boolean(user) && user.status !== "inactive";
 
 // Can the claim's manager still decide it? Active, and not the claimant
@@ -124,7 +126,7 @@ function holdsStage(claim, stage, user) {
     if (!claim.managerId) return false;
     return managerCanDecide(claim) ? user.id === claim.managerId : holdsStage(claim, "finance", user);
   }
-  return user.role === STAGE_ROLE[stage] && roleCan(user.role, "expenses:approve");
+  return user.role === STAGE_ROLE[stage] && userCan(user, "expenses:approve");
 }
 
 // The ids of everyone who may decide this stage of the claim.
@@ -143,7 +145,7 @@ function finalApprovalOf(claim) {
 const finalApproverOf = (claim) => finalApprovalOf(claim)?.byUserId ?? null;
 
 // Someone active with expenses:pay, never the claimant.
-const mayPay = (claim, user) => isActive(user) && roleCan(user.role, "expenses:pay") && user.id !== claim.userId;
+const mayPay = (claim, user) => isActive(user) && userCan(user, "expenses:pay") && user.id !== claim.userId;
 
 // Approving and paying are kept apart, but when nobody other than the final
 // approver may pay (e.g. Kabir's own claim, approved by Aarav), the approver
@@ -257,7 +259,7 @@ export function payExpense(claimId, payerUserId) {
   const claim = expenses.get(claimId);
   if (!claim) return fail(`No expense claim ${claimId}.`);
   const payer = getUser(payerUserId);
-  if (!isActive(payer) || !roleCan(payer.role, "expenses:pay")) return fail("Only Finance or an Admin can pay expense claims.");
+  if (!isActive(payer) || !userCan(payer, "expenses:pay")) return fail("Only Finance or an Admin can pay expense claims.");
   if (payerUserId === claim.userId) return fail("You can't pay your own expense claim.");
   if (claim.status === "pending") return fail("This claim is still waiting for approval.");
   if (claim.status !== "approved") return fail(`This claim is already ${claim.status}.`);

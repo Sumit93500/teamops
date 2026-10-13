@@ -17,7 +17,8 @@
 import { save, load, remove } from "../core/storage.js";
 import { USERS, DEPARTMENTS, DESIGNATIONS, PROFILE_DETAILS, MANAGER_OF } from "./users.js";
 import { isValidDate } from "./holidays.js";
-import { ROLES } from "../config/roles.js";
+import { ROLES, OVERRIDABLE, permissionsOf } from "../config/roles.js";
+import { ROUTES } from "../config/routes.js";
 
 // The four demo sign-in identities (Admin, HR, Finance, Employee). Deactivating
 // or deleting one would break signing in as that role, so it is refused.
@@ -59,6 +60,42 @@ const ADMIN_ONLY = "Only an Admin can give someone the Admin role or save an Adm
 const byNonAdmin = (byRole) => byRole !== undefined && byRole !== "admin";
 const ADMIN_ONLY_REMOVE = "Only an Admin can take the Admin role away from someone or delete an Admin.";
 const ADMIN_ONLY_DEACTIVATE = "Only an Admin can deactivate another Admin.";   // the same opt-in (round 9Y)
+
+// Permission overrides (round 11R; round-11r-notes.md R0): only an Admin may change someone's grantPermissions /
+// denyPermissions, never their own, and an Admin's record has none (an Admin holds every permission), so promoting
+// someone who has overrides is refused too. Every value must be in OVERRIDABLE, none both granted and denied, and a deny
+// may not take away what opens the role's own landing page. Checked only when a write changes a list (in any order) or
+// promotes to Admin, so a form that re-sends the stored lists, or leaves them out, saves as before.
+const OVERRIDE_FIELDS = ["grantPermissions", "denyPermissions"];
+const OVERRIDES_ADMIN_ONLY = "Only an Admin can change permission overrides.";
+const OVERRIDES_SELF = "You can't change your own permission overrides.";
+const OVERRIDES_ON_ADMIN = "An Admin holds every permission, so an Admin can't have permission overrides.";
+const isList = (list) => Array.isArray(list) && list.every((p) => typeof p === "string");
+const sameList = (a, b) => JSON.stringify([...new Set(a)].sort()) === JSON.stringify([...new Set(b)].sort());
+const storedList = (record, key) => (isList(record?.[key]) ? record[key] : []);
+const overridesChange = (record, fields) =>
+  OVERRIDE_FIELDS.some((k) => k in fields && !(isList(fields[k]) && sameList(fields[k], storedList(record, k))));
+// Lists a write doesn't change aren't written: a re-sent copy (another order, a repeat) leaves the stored ones as they are.
+const withoutUnchanged = (record, fields) =>
+  (overridesChange(record, fields) ? fields : Object.fromEntries(Object.entries(fields).filter(([k]) => !OVERRIDE_FIELDS.includes(k))));
+
+// What's wrong with this write's overrides, in words, or null. record: the stored record (null when adding).
+function overridesProblem(actor, record, fields) {
+  const role = "role" in fields ? fields.role : record?.role ?? "emp";
+  const changed = overridesChange(record, fields);
+  if (!changed && !(role === "admin" && record?.role !== "admin")) return null;
+  if (changed && byNonAdmin(actor.role)) return OVERRIDES_ADMIN_ONLY;
+  if (changed && record && actor.id === record.id) return OVERRIDES_SELF;
+  const [grants, denies] = OVERRIDE_FIELDS.map((k) => (k in fields ? fields[k] : record?.[k] ?? []));
+  if (!isList(grants) || !isList(denies)) return "Permission overrides must be lists of permissions.";
+  if (role === "admin") return grants.length || denies.length ? OVERRIDES_ON_ADMIN : null;
+  const landing = ROUTES[ROLES[role]?.landing];
+  if (landing && denies.includes(landing)) return `${landing} can't be denied: it opens the ${ROLES[role].label} dashboard.`;
+  const fixed = [...grants, ...denies].find((p) => !OVERRIDABLE.includes(p));
+  if (fixed) return `${fixed} can't be granted or denied: it stays with the role.`;
+  const both = grants.find((p) => denies.includes(p));
+  return both ? `${both} can't be both granted and denied.` : null;
+}
 
 // ---------- seeding and loading ----------
 
@@ -226,8 +263,11 @@ export function addUser(actorUserId, fields = {}) {
   if (!actor) return fail("You can't add employees.");
   const byRole = actor.role;
   const box = loadUsers();
-  const { id: _ignored, ...rest } = fields;   // ids are always generated here
+  // ids are always generated here; additional roles were dropped (round 11R) and are never saved
+  const { id: _ignored, extraRoles: _dropped, ...rest } = fields;
   if (adminOnly(byRole, rest)) return fail(ADMIN_ONLY);
+  const overrides = overridesProblem(actor, null, rest);
+  if (overrides) return fail(overrides);
   if (!String(rest.name ?? "").trim()) return fail("Name is required.");
   if (!String(rest.email ?? "").trim()) return fail("Work email is required.");
   if (emailTaken(box.records, rest.email, null)) return fail(`${rest.email} is already used by another employee.`, "email");
@@ -243,7 +283,7 @@ export function addUser(actorUserId, fields = {}) {
     bankAccount: null,
     bankAccountLast4: null,
     pan: null,
-    ...copy(rest),
+    ...copy(withoutUnchanged(null, rest)),
     ...manager,
     id: formatId(box.nextIdNum),
   };
@@ -267,6 +307,8 @@ function changeUser(actor, id, changes = {}) {
   if (!record) return fail(`No employee with id ${id}.`);
   if (adminOnly(byRole, changes)) return fail(ADMIN_ONLY);
   if ("id" in changes && changes.id !== id) return fail("An employee's id can't be changed.");
+  const overrides = overridesProblem(actor, record, changes);
+  if (overrides) return fail(overrides);
   // Same rule as deactivateUser(), so an edit form can't get round it.
   if (PROTECTED_IDS.includes(id) && changes.status === "inactive" && record.status !== "inactive") {
     return fail(`${id} is a demo sign-in identity and can't be deactivated.`);
@@ -295,8 +337,9 @@ function changeUser(actor, id, changes = {}) {
   const manager = managerFields(box.records, id, changes);
   if (manager?.error) return fail(manager.error, "manager");
 
-  const { id: _ignored, ...rest } = changes;
-  Object.assign(record, copy(rest), manager ?? {});
+  const { id: _ignored, extraRoles: _dropped, ...rest } = changes;
+  delete record.extraRoles;   // additional roles were dropped (round 11R): a stored list goes on the next save
+  Object.assign(record, copy(withoutUnchanged(record, rest)), manager ?? {});
   return commit(USERS_KEY, box, record);
 }
 
@@ -340,13 +383,14 @@ export function deleteUser(actorUserId, id) {
 const NAME_REQUIRED = "Department name is required.";
 const hasName = (name) => String(name ?? "").trim() !== "";
 
-// The acting person, if they are active and their role on record holds the
-// permission; else null. Their stored record decides, not the session
+// The acting person, if they are active and hold the permission on record
+// (their role's, with their overrides: round 11R); else null. Their stored
+// record decides, not the session
 // (holidays.js's holidayManager(), round 10W; departments, round 10X; the user
 // writes above, round 10Y).
 function actorWith(userId, permission) {
   const user = userId ? getUser(userId) : null;
-  return user && user.status !== "inactive" && ROLES[user.role]?.permissions.includes(permission) ? user : null;
+  return user && user.status !== "inactive" && permissionsOf(user).includes(permission) ? user : null;
 }
 
 export function addDepartment(actorUserId, fields = {}) {

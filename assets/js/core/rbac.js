@@ -1,18 +1,20 @@
 // core/rbac.js
 // The actual RBAC engine. Two jobs:
-//   1. can(permission) — a pure yes/no check against the signed-in role.
+//   1. can(permission) — a pure yes/no check against the signed-in person's
+//      permissions on record: their role's, with their overrides (round 11R).
 //   2. applyPermissions() — hides any element whose data-permission the role lacks.
 //
 // This is the ONLY file that should read data-permission attributes.
 
-import { getCurrentRole } from "./auth.js";
+import { getCurrentRole, getCurrentUser } from "./auth.js";
+import { permissionsOf } from "../config/roles.js";
 
 // The core check. Everything else in the app should call this instead of
 // looking at roles or permissions directly.
 export function can(permission) {
-  const role = getCurrentRole();
-  if (!role) return false;               // nobody signed in = no permissions at all
-  return role.permissions.includes(permission);
+  const user = getCurrentUser();
+  if (!user) return false;               // nobody signed in = no permissions at all
+  return permissionsOf(user).includes(permission);
 }
 
 // Convenience: true only if the role has EVERY permission in the list.

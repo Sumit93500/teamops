@@ -48,7 +48,7 @@ import { managerFor } from "./leave-store.js";
 import { nextStage, firstStage } from "./expenses.js";
 import { ASSET_TYPES } from "./inventory.js";
 import { getAsset, assetTypeOf, assignAsset } from "./inventory-store.js";
-import { ROLES } from "../config/roles.js";
+import { permissionsOf } from "../config/roles.js";
 
 // ---------- seed ----------
 
@@ -85,7 +85,9 @@ function todayIso() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-const roleCan = (roleKey, permission) => Boolean(ROLES[roleKey]?.permissions.includes(permission));
+// Their permissions on record: the role's, with their overrides (round 11R). assets:approve and assets:assign can't
+// be overridden (round-11r-notes.md R0), so who decides or fulfils a request is still the role's.
+const userCan = (user, permission) => permissionsOf(user).includes(permission);
 const isActive = (user) => Boolean(user) && user.status !== "inactive";
 const typeWord = (key) => ASSET_TYPES[key]?.label.toLowerCase() ?? key;
 
@@ -108,7 +110,7 @@ function holdsStage(request, stage, user) {
     if (!request.managerId) return false;
     return managerCanDecide(request) ? user.id === request.managerId : holdsStage(request, "admin", user);
   }
-  return stage === "admin" && user.role === "admin" && roleCan(user.role, "assets:approve");
+  return stage === "admin" && user.role === "admin" && userCan(user, "assets:approve");
 }
 
 // The ids of everyone who may decide this stage of the request.
@@ -118,8 +120,8 @@ function holdersOf(request, stage) {
 
 const isHeldFor = (request) => (stage) => holdersOf(request, stage).length > 0;
 
-// Someone active whose role may hand over assets (assets:assign).
-const mayAssign = (user) => isActive(user) && roleCan(user.role, "assets:assign");
+// Someone active who may hand over assets (assets:assign on record).
+const mayAssign = (user) => isActive(user) && userCan(user, "assets:assign");
 
 // One "skipped" history entry per stage passed over.
 const skipEntries = (stages, now) => stages.map((stage) => ({

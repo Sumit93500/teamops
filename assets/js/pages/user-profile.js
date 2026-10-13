@@ -6,7 +6,7 @@
 
 import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser, deleteUser, reportingManagerName } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
-import { ROLES } from "../config/roles.js";
+import { ROLES, overridesOf } from "../config/roles.js";
 import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
 import { getCurrentUserId } from "../core/auth.js";
@@ -245,8 +245,8 @@ function renderLeave() {
 function renderOverrides() {
   const card = cardTitled("Permission overrides");
   if (!card) return;
-  const grants = user.grantPermissions ?? [];
-  const denies = user.denyPermissions ?? [];
+  // The overrides that apply (round 11R): anything stored outside the allow-list, or on an Admin, isn't shown.
+  const { grants, denies } = overridesOf(user);
   const meta = card.querySelector(".card__meta");
   if (meta) meta.textContent = String(grants.length + denies.length);
 

@@ -15,7 +15,7 @@ export const DEPARTMENTS = [
 export const DESIGNATIONS = [
   { title: "Software Engineer",          department: "ENG", defaultRole: "emp" },
   { title: "Senior Software Engineer",   department: "ENG", defaultRole: "emp" },
-  { title: "Team Lead",                  department: "ENG", defaultRole: "emp" },   // gets extra approve permissions via override, not a new role
+  { title: "Team Lead",                  department: "ENG", defaultRole: "emp" },   // not a new role: decides their team's requests as its manager; anything more is a permission override (round 11R)
   { title: "Sales Executive",            department: "SAL", defaultRole: "emp" },
   { title: "HR Executive",               department: "HR",  defaultRole: "emp" },
   { title: "HR Manager",                 department: "HR",  defaultRole: "hr" },
