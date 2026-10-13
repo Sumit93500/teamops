@@ -21,7 +21,7 @@
 
     <div class="auth__pitch">
       <h1 class="auth__headline">One more step to keep things safe.</h1>
-      <p class="auth__lead">Payroll, salaries and personal records are protected by a second check, so a stolen password isn't enough to get in.</p>
+      <p class="auth__lead">A preview of a second sign-in check. OfficeOS doesn't ask for one yet.</p>
 
       <ul class="auth__features">
         <li class="auth__feature">
@@ -29,8 +29,8 @@
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>
           </span>
           <div>
-            <strong>Required for sensitive roles</strong>
-            <p>Admin, HR and Finance always use two-factor sign-in.</p>
+            <strong>Two-factor sign-in</strong>
+            <p>Not enforced yet: every role, Admin, HR and Finance included, signs in without a code.</p>
           </div>
         </li>
         <li class="auth__feature">
@@ -51,7 +51,7 @@
   <section class="auth__panel">
     <div class="auth__inner">
       <h2 class="auth__title">Enter your code</h2>
-      <p class="auth__sub">Open your authenticator app and type the 6-digit code for OfficeOS.</p>
+      <p class="auth__sub">Codes aren't checked in this demo: any 6 digits sign you in as Aarav Mehta (Admin).</p>
 
       <form class="form" method="post" novalidate>
 
@@ -65,15 +65,13 @@
             <input class="otp__input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Digit 5 of 6" required>
             <input class="otp__input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Digit 6 of 6" required>
           </div>
-          <span class="form-hint">The code changes every 30 seconds.</span>
+          <span class="form-hint">Nothing generates or sends a code yet.</span>
         </div>
-
-        <label class="check"><input type="checkbox" name="trust"> Trust this device for 30 days</label>
 
         <button class="btn btn--primary btn--lg btn--block" type="submit">Verify and continue</button>
       </form>
 
-      <p class="auth__help">Lost your phone? <a class="link" href="#">Use a backup code</a></p>
+      <p class="auth__help">Lost your phone? <a class="link" href="#" data-not-implemented="Use a backup code">Use a backup code</a></p>
       <p class="auth__help"><a class="link" href="login.html">Back to sign in</a></p>
     </div>
   </section>
