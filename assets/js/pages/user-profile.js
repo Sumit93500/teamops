@@ -319,18 +319,20 @@ function render() {
     if (salary) kvDd("Salary")?.classList.remove("text-muted");
   }
 
-  // Access. "Last sign-in" stays static; the approval chain is the one this
-  // person's leave and corrections really go through. Nothing records or
-  // enforces two-factor sign-in, so that row says so, muted and without the
-  // HTML's "On" badge (round 11F; it showed "On" on every profile).
+  // Access. The approval chain is the one this person's leave and corrections
+  // really go through. Nothing records or enforces two-factor sign-in, and no
+  // sign-ins are logged (the session keeps only when this browser last picked
+  // a demo role), so those two rows say so, muted, in place of the HTML's
+  // static values (round 11F: "On" on every profile; round 11G: "Today, 09:10").
   setKv("Designation", orDash(user.designation));
   setKv("Default role", role?.label ?? user.role);
   setKv("Data scope", role?.dataScope === "all" ? "All records" : "Own records");
   setKv("Approval chain", approvalChainText(user.id));
-  const twoFactor = kvDd("Two-factor sign-in");
-  if (twoFactor) {
-    twoFactor.textContent = "Not recorded yet";
-    twoFactor.classList.add("text-muted");
+  for (const label of ["Two-factor sign-in", "Last sign-in"]) {
+    const dd = kvDd(label);
+    if (!dd) continue;
+    dd.textContent = "Not recorded yet";
+    dd.classList.add("text-muted");
   }
 
   renderOverrides();
