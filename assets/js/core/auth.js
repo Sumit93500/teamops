@@ -5,6 +5,7 @@
 
 import { save, load, remove } from "./storage.js";
 import { ROLES } from "../config/roles.js";
+import { getUser } from "../data/store.js";
 
 const SESSION_KEY = "session";
 
@@ -32,12 +33,24 @@ export function isSignedIn() {
   return getSession() !== null;
 }
 
+// The signed-in person's stored record: the session's employee id, on record
+// and not inactive. null when nobody is signed in, the session has no employee
+// id (an old sign-in), or the person was deleted or deactivated since. Read on
+// every call, never kept here (round 11P): the record decides, not the role
+// picked at sign-in.
+export function getCurrentUser() {
+  const id = getCurrentUserId();
+  const user = id ? getUser(id) : null;
+  return user && user.status !== "inactive" ? user : null;
+}
+
 // Returns the full role object (label, permissions, dataScope, landing page)
-// for whoever is signed in, or null.
+// of the signed-in person's role on record (getCurrentUser()), or null. The
+// role picked at sign-in isn't read, so a promotion or demotion shows at the
+// next page load (round 11P).
 export function getCurrentRole() {
-  const session = getSession();
-  if (!session) return null;
-  return ROLES[session.roleKey] ?? null;
+  const user = getCurrentUser();
+  return user ? ROLES[user.role] ?? null : null;
 }
 
 export function getCurrentUserLabel() {

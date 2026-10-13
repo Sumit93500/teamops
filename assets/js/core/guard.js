@@ -1,9 +1,10 @@
 // core/guard.js
 // Runs at the top of every protected page. Sends people to the login page
-// if nobody is signed in, or to the 403 page if their role can't open this page.
+// if nobody is signed in (or whoever is can't be found on record), or to the
+// 403 page if their role on record can't open this page.
 // Skips the check entirely on pages that don't need sign-in (login, 403, etc.)
 
-import { isSignedIn, getCurrentRole } from "./auth.js";
+import { isSignedIn, getCurrentRole, getCurrentUser, signOut } from "./auth.js";
 import { ROUTES } from "../config/routes.js";
 import { can } from "./rbac.js";
 import { resolvePageLink } from "./paths.js";
@@ -34,6 +35,15 @@ export function guardPage() {
   }
 
   if (!isSignedIn()) {
+    window.location.href = resolvePageLink("auth/login.html");
+    return false;
+  }
+
+  // Signed in, but not on record: deleted or deactivated since, or an old
+  // session with no employee id. Signed out and sent to sign in again (round
+  // 11P), not to the 403 page: no role is missing a permission here.
+  if (!getCurrentUser()) {
+    signOut();
     window.location.href = resolvePageLink("auth/login.html");
     return false;
   }
