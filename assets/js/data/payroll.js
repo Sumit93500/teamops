@@ -140,14 +140,16 @@ export function lossOfPayAmount(monthlyGross, lopDays, workingDays) {
 
 // Everything a payslip needs from a monthly gross and that month's LOP inputs.
 // The earnings and PF are worked out on the gross actually paid (after LOP);
-// TDS on the full monthly gross, capped so net pay never goes below zero.
+// TDS on the full monthly gross. Professional tax and TDS are both capped so
+// net pay never goes below zero (PT's cap since round 11N: a paid gross under
+// about ₹214 used to leave net negative, 10U U4a).
 export function computePay(monthlyGross, { penaltyHalfDays = 0, unpaidLeaveDays = 0, absenceDays = 0, workingDays = 0 } = {}) {
   const lopDays = lossOfPayDays({ penaltyHalfDays, unpaidLeaveDays, absenceDays, workingDays });
   const lopAmount = lossOfPayAmount(monthlyGross, lopDays, workingDays);
   const gross = monthlyGross - lopAmount;
   const earnings = splitGross(gross);
   const pf = providentFund(earnings.basic);
-  const pt = professionalTax(gross);
+  const pt = Math.min(professionalTax(gross), gross - pf);
   const tds = Math.min(monthlyTds(monthlyGross), Math.max(0, gross - pf - pt));
   const deductions = pf + pt + tds;
   return {

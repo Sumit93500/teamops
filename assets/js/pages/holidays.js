@@ -8,6 +8,8 @@
 import { applyPermissions } from "../core/rbac.js";
 import { getCurrentUserId } from "../core/auth.js";
 import { getAllHolidays, addHoliday, removeHoliday, isWeekend, dayNumber, isoFromDayNumber } from "../data/holidays.js";
+import { LEAVE_POLICY, overAllowanceIfWorking } from "../data/leave-store.js";
+import { getUser } from "../data/store.js";
 import { openModal, closeModal } from "../ui/modal.js";
 import { showToast } from "../ui/toast.js";
 import { el, escapeHtml, todayIso, formatDay, monthName, monthShort, dayOfMonth, weekdayName } from "../ui/leave-view.js";
@@ -84,8 +86,19 @@ function renderCalendar() {
 
 // ---------- list and summary ----------
 
+// Approved leave covering the day counts it again once it's a working day,
+// which can take someone over an allowance (round 11N; 10O O10.3). The confirm
+// says who, and by how much; removing is still allowed.
+function overWarning(holiday) {
+  const over = overAllowanceIfWorking(holiday.date);
+  if (!over.length) return "";
+  const lines = over.map((o) => `${getUser(o.userId)?.name ?? o.userId}: ${LEAVE_POLICY[o.type].label.toLowerCase()} ${o.period}, ${o.after} of ${o.allowance} days`);
+  return `\n\nApproved leave covers this day, so it would count against that leave again. `
+    + `${over.length === 1 ? "This person would go" : "These people would go"} over their allowance:\n${lines.join("\n")}`;
+}
+
 function removeOne(holiday) {
-  if (!window.confirm(`Remove ${holiday.name} on ${formatDay(holiday.date, true)}?`)) return;
+  if (!window.confirm(`Remove ${holiday.name} on ${formatDay(holiday.date, true)}?${overWarning(holiday)}`)) return;
   const result = removeHoliday(getCurrentUserId(), holiday.id);
   if (result.ok) showToast("Holiday removed.", "success");
   else showToast(escapeHtml(result.error), "danger");

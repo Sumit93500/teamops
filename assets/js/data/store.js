@@ -218,8 +218,8 @@ export function activeHeadcount() {
 // ---------- user writes ----------
 
 // ---- who may write: each user write takes the acting person's id first and needs a permission on their record
-// (actorWith(), below; round 10Y): add users:create, edit users:edit, deactivate / reactivate / delete
-// users:deactivate (there's no users:delete).
+// (actorWith(), below; round 10Y): add users:create, edit users:edit, deactivate / reactivate users:deactivate,
+// delete users:delete (round 11N; Admin only: it used users:deactivate before there was one).
 
 export function addUser(actorUserId, fields = {}) {
   const actor = actorWith(actorUserId, "users:create");
@@ -316,7 +316,7 @@ export function reactivateUser(actorUserId, id) {
 }
 
 export function deleteUser(actorUserId, id) {
-  const actor = actorWith(actorUserId, "users:deactivate");
+  const actor = actorWith(actorUserId, "users:delete");
   if (!actor) return fail("You can't delete employees.");
   const byRole = actor.role;
   if (PROTECTED_IDS.includes(id)) {
@@ -327,6 +327,9 @@ export function deleteUser(actorUserId, id) {
   if (index === -1) return fail(`No employee with id ${id}.`);
   if (box.records[index].role === "admin" && isLastAdmin(box.records, id)) return fail(LAST_ADMIN);
   if (byNonAdmin(byRole) && box.records[index].role === "admin") return fail(ADMIN_ONLY_REMOVE);   // as in updateUser
+  // Nobody deletes their own account (round 11N): updateUser's self-deactivation rule, in the same place after the
+  // demo-identity and Admin rules.
+  if (actor.id === id) return fail("You can't delete your own account.");
   const [removed] = box.records.splice(index, 1);
   return commit(USERS_KEY, box, removed);
 }

@@ -10,10 +10,11 @@
 // ("YYYY-MM-DD"), regime: "new" }. A revision is a new record with a later
 // effectiveFrom; a month uses the record in effect on its first day.
 //
-// Nothing writes salaries yet (salary-structure.html only shows them). The
-// Reset demo data button (users-list.js) calls resetPayrollData().
+// Nothing writes salaries yet (salary-structure.html only shows them). A
+// future writer must pass checkSalary() first (below). The Reset demo data
+// button (users-list.js) calls resetPayrollData().
 
-import { createCollection } from "./collection.js";
+import { createCollection, fail } from "./collection.js";
 import { getUser, getAllUsers, joiningDate } from "./store.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker } from "./holidays.js";
 import { allRequests } from "./leave-store.js";
@@ -268,6 +269,20 @@ export const payslipTotals = (slips) => slips.reduce((t, s) => ({
   deductions: t.deductions + s.deductions,
   net: t.net + s.net,
 }), { gross: 0, pf: 0, pt: 0, tds: 0, deductions: 0, net: 0 });
+
+// ---------- writes ----------
+
+// The checks any salary write must pass before it stores a record (round 11N,
+// 10U U4b). Nothing writes salaries yet, so nothing calls this; a salary
+// editor must. A gross that isn't a whole number of rupees would break
+// payroll.js's whole-rupee chain (splitGross rounds its own copy, computePay
+// keeps the original): ₹92,000.50 gave earnings of ₹92,001 and a net of
+// ₹87,384.50. -> { ok: true } or a fail() naming the field "gross".
+export function checkSalary(fields = {}) {
+  const gross = fields.gross;
+  if (!Number.isSafeInteger(gross) || gross <= 0) return fail("Enter the monthly gross in whole rupees, more than ₹0.", "gross");
+  return { ok: true };
+}
 
 // ---------- reset ----------
 

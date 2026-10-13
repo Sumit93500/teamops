@@ -6,7 +6,7 @@
 export const PERMISSIONS = {
   dashboard:     ["view"],
   approvals:     ["view", "decide"],
-  users:         ["view", "create", "edit", "reset-password", "deactivate"],
+  users:         ["view", "create", "edit", "reset-password", "deactivate", "delete"],   // delete: Admin only (round 11N)
   pii:           ["view"],                       // bank account, PAN (personal identity data)
   departments:   ["create", "edit"],
   roles:         ["manage"],

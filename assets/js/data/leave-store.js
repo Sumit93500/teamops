@@ -8,7 +8,7 @@
 import { createCollection, fail } from "./collection.js";
 import { load } from "../core/storage.js";
 import { getUser, getAllUsers } from "./store.js";
-import { dayNumber, isoFromDayNumber, dayOffChecker, resetHolidays } from "./holidays.js";
+import { dayNumber, isoFromDayNumber, dayOffChecker, isWeekend, resetHolidays } from "./holidays.js";
 import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
 
 // allowance: days per period; null = no limit.
@@ -200,6 +200,28 @@ export function balanceFor(userId, year, month) {
   return out;
 }
 
+// Who'd go over an allowance if `date` stopped being a day off (its holiday
+// removed): approved leave covering it would count that day again, since a
+// request's days are counted live (round 10O). Only the capped types, whose
+// allowance applyLeave enforces. Removing the holiday stays allowed; the
+// holidays page names these people in its confirm first (round 11N; 10O O10.3).
+// [] when the date isn't a closed working day now (a weekend, an optional
+// holiday or no holiday) or no approved leave covers it.
+// -> [{ userId, type, period ("2026"), approved, after, allowance }]
+export function overAllowanceIfWorking(date) {
+  if (dayNumber(date) === null || isWeekend(date) || !dayOffChecker()(date)) return [];
+  const [y, m] = date.split("-").map(Number);
+  const out = [];
+  for (const r of leave.getAll()) {
+    if (r.status !== "approved" || !CAPPED_TYPES.includes(r.type) || date < r.from || date > r.to) continue;
+    const policy = LEAVE_POLICY[r.type];
+    const approved = balanceFor(r.userId, y, m)[r.type].approved;
+    const after = approved + (r.duration === "full" ? 1 : 0.5);
+    if (after > policy.allowance) out.push({ userId: r.userId, type: r.type, period: policy.per === "month" ? `${MONTHS[m - 1]} ${y}` : String(y), approved, after, allowance: policy.allowance });
+  }
+  return out;
+}
+
 // ---------- writes ----------
 
 // fields: { type, from, to, duration, reason, contactPhone }. Anything else is ignored.
@@ -253,7 +275,9 @@ export function applyLeave(userId, fields = {}) {
     const { label, balance, days: here } = over[0];
     const free = policy.allowance - balance.approved - balance.pending;
     const share = periods.length > 1 ? `${here} of this request's ${days} days fall in ${label}` : `this request is ${days}`;
-    return fail(`Not enough ${policy.label.toLowerCase()}: ${free} of ${policy.allowance} days free in ${label} `
+    // Already over (a holiday inside approved leave was removed: round 11N, 10O O10.3): "none free, N over", not "-N free".
+    const freeText = free < 0 ? `none of ${policy.allowance} days free in ${label}, ${-free} over` : `${free} of ${policy.allowance} days free in ${label}`;
+    return fail(`Not enough ${policy.label.toLowerCase()}: ${freeText} `
       + `(${balance.approved} approved, ${balance.pending} pending), and ${share}.`, "type");
   }
 

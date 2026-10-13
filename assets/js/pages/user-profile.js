@@ -1,9 +1,10 @@
 // pages/user-profile.js
 // Runs on user-profile.html. Shows the employee from ?id=EMP-xxxx (Rohan,
-// EMP-1042, when there's no id) and wires Reveal, Deactivate/Reactivate and
-// Reset password. Cards with no data behind them yet stay as static HTML.
+// EMP-1042, when there's no id) and wires Reveal, Deactivate/Reactivate,
+// Delete and Reset password. Cards with no data behind them yet stay as static
+// HTML.
 
-import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser, reportingManagerName } from "../data/store.js";
+import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser, deleteUser, reportingManagerName } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { ROLES } from "../config/roles.js";
 import { showToast } from "../ui/toast.js";
@@ -34,6 +35,7 @@ const actions = document.querySelector(".page-header__actions");
 const actionButton = (text) => Array.from(actions?.querySelectorAll("button") ?? []).find((b) => b.textContent.trim() === text);
 const resetBtn = actionButton("Reset password");
 const statusBtn = actionButton("Deactivate");
+const deleteBtn = actionButton("Delete");
 
 // ---------- helpers ----------
 
@@ -366,6 +368,27 @@ statusBtn?.addEventListener("click", () => {
   user = result.record;
   renderStatus();
   showToast(`${user.name} ${deactivating ? "deactivated" : "reactivated"}.`, "success");
+});
+
+// Delete (round 11N; users:delete, Admin only). The store refuses your own
+// account, the demo sign-in identities and the last Admin. A deleted person's
+// salary, requests and assets stay, as a deactivated person's do; with nobody
+// left to show, the page goes back to the list.
+deleteBtn?.addEventListener("click", () => {
+  if (user.id === getCurrentUserId()) {
+    showToast("You can't delete your own account.", "danger");
+    return;
+  }
+  if (!window.confirm(`Delete ${user.name}? They'll be removed from the employee list. Only Reset demo data brings them back.`)) return;
+  const result = deleteUser(getCurrentUserId(), user.id);
+  if (!result.ok) {
+    showToast(result.error, "danger");
+    return;
+  }
+  showToast(`${user.name} deleted.`, "success");
+  setTimeout(() => {
+    window.location.href = resolvePageLink("users/users-list.html");
+  }, 1200);
 });
 
 // Demo only: nothing is sent or saved, the note is just on screen, and the
