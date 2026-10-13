@@ -368,10 +368,12 @@ statusBtn?.addEventListener("click", () => {
   showToast(`${user.name} ${deactivating ? "deactivated" : "reactivated"}.`, "success");
 });
 
-// Demo only: nothing is sent or saved, the note is just on screen.
+// Demo only: nothing is sent or saved, the note is just on screen, and the
+// toast says so (round 11L; it said "Reset link sent to … (demo)." while
+// Forgot password and Reset password say no reset link is sent).
 resetBtn?.addEventListener("click", () => {
   if (!window.confirm(`Send a password reset to ${user.email}?`)) return;
-  showToast(`Reset link sent to ${user.email} (demo).`, "info");
+  showToast(`Passwords aren't part of OfficeOS yet: no reset link was sent to ${user.email}.`, "info");
 
   let note = actions.querySelector(".reset-note");
   if (!note) {
