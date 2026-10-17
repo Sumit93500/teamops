@@ -10,9 +10,10 @@
 // A month with no payslip (before attendance records began, not started yet,
 // or a link that doesn't name a month) shows a message instead of figures.
 //
-// No payroll run is stored or approved yet (see payroll-run.js), so a payslip
-// is never "Paid" and has no pay date: it's a Draft, or On hold with the
-// store's reason.
+// A month whose payroll run is approved (see payroll-run.js) shows the figures
+// that run fixed, marked Approved (round 11T); any other month is a Draft,
+// worked out live. Paying isn't built, so a payslip is never "Paid" and has no
+// pay date; one on hold says so, with the store's reason.
 
 import { payslipsFor } from "../data/payroll-store.js";
 import { ATTENDANCE_RULES } from "../data/attendance-store.js";
@@ -25,8 +26,9 @@ import { rupees, rupeesInWords } from "../ui/money.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
 
 const STATUS = {
-  "draft":   { label: "Draft",   badge: "badge badge--warning badge--dot" },
-  "on-hold": { label: "On hold", badge: "badge badge--danger badge--dot" },
+  "draft":    { label: "Draft",    badge: "badge badge--warning badge--dot" },
+  "on-hold":  { label: "On hold",  badge: "badge badge--danger badge--dot" },
+  "approved": { label: "Approved", badge: "badge badge--success badge--dot" },
 };
 const NO_SALARY = "No salary on file for this month";
 const REGIME = { new: "New regime" };
@@ -38,8 +40,12 @@ const orDash = (value) => (value ? String(value) : "—");
 // "2026-09" -> "September 2026"
 const monthLabel = (month) => `${monthName(Number(month.slice(5, 7)))} ${month.slice(0, 4)}`;
 
-// "Draft: not approved or paid yet" / "On hold: No bank account on file"
-const statusLine = (slip) => (slip.status === "on-hold" ? `On hold: ${slip.holdReason}` : "Draft: not approved or paid yet");
+// "Draft: not approved or paid yet" / "Approved: not paid yet" / "On hold: No
+// bank account on file" ("Approved, on hold: ..." in an approved month).
+const approved = (slip) => slip.runStatus === "approved";
+const statusLine = (slip) => (slip.status === "on-hold"
+  ? `${approved(slip) ? "Approved, on hold" : "On hold"}: ${slip.holdReason}`
+  : approved(slip) ? "Approved: not paid yet" : "Draft: not approved or paid yet");
 
 // ["a"] -> "a", ["a", "b"] -> "a and b", ["a", "b", "c"] -> "a, b and c"
 const listed = (items) => (items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items.at(-1)}` : items[0] ?? "");
@@ -153,7 +159,7 @@ function renderAmounts(slip) {
   setText(field("deductions"), rupees(slip.deductions));
   setText(field("net"), noSalary ? "—" : rupees(slip.net));
   setText($("payslip-words"), `Amount in words: ${rupeesInWords(slip.net)}`);
-  const status = STATUS[slip.status];
+  const status = STATUS[approved(slip) && slip.status === "draft" ? "approved" : slip.status];
   const badge = $("payslip-status");
   badge.className = status?.badge ?? "badge";
   badge.textContent = status?.label ?? slip.status;

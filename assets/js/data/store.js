@@ -154,6 +154,21 @@ const isLastAdmin = (records, id) => !records.some((u) => u.id !== id && u.role 
 const LAST_ADMIN = "There must always be an Admin: make someone else an Admin first.";
 const LAST_ACTIVE_ADMIN = "There must always be an active Admin: make someone else an Admin, or reactivate one, first.";
 
+// A prepared payroll run needs someone active, other than its preparer, whose record holds payroll:approve (in practice
+// an Admin: it can't be overridden). A demotion, deactivation or deletion that would take the last one away is refused
+// (round 11T, round-11s-notes.md S4 / S-D7). payroll-store.js imports this file, so the runs are read from storage
+// here, as it saves them; an approved run needs no one. before / after: every user record, before and after the write.
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const approvesRun = (u, run) => u.status !== "inactive" && u.id !== run.preparedBy && permissionsOf(u).includes("payroll:approve");
+function lastApproverProblem(before, after, record) {
+  const box = load("payroll-runs");
+  const prepared = box && box.version === 1 && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records.filter((r) => r.status === "prepared") : [];
+  const run = prepared.find((r) => before.some((u) => approvesRun(u, r)) && !after.some((u) => approvesRun(u, r)));
+  if (!run) return null;
+  const preparer = before.find((u) => u.id === run.preparedBy)?.name ?? run.preparedBy;
+  return `${record.name} is the only Admin who can approve ${MONTH_NAMES[Number(run.month.slice(5, 7)) - 1]} ${run.month.slice(0, 4)}'s payroll run (${preparer} prepared it): make someone else an Admin first.`;
+}
+
 // The reporting manager is kept by id (reportingManagerId), with their name beside it (reportingManager), for display
 // and for a manager who isn't on record (a department head). A name given without an id is matched once, when it's
 // saved: the one active person with that exact name, else the one person with it at all; none, or two or more, is no
@@ -328,6 +343,11 @@ function changeUser(actor, id, changes = {}) {
   if (changes.status === "inactive" && record.status !== "inactive" && actor.id === id) return fail("You can't deactivate your own account.");
   // Only an Admin may take the Admin role away from someone, however many Admins there are (round 9W).
   if (byNonAdmin(byRole) && record.role === "admin" && "role" in changes && changes.role !== "admin") return fail(ADMIN_ONLY_REMOVE);
+  // A prepared payroll run's last approver (round 11T): only a role or status change can take them away.
+  if ("role" in changes || "status" in changes) {
+    const lastApprover = lastApproverProblem(box.records, box.records.map((u) => (u.id === id ? { ...u, ...changes } : u)), record);
+    if (lastApprover) return fail(lastApprover);
+  }
   if ("email" in changes && emailTaken(box.records, changes.email, id)) {
     return fail(`${changes.email} is already used by another employee.`, "email");
   }
@@ -373,6 +393,8 @@ export function deleteUser(actorUserId, id) {
   // Nobody deletes their own account (round 11N): updateUser's self-deactivation rule, in the same place after the
   // demo-identity and Admin rules.
   if (actor.id === id) return fail("You can't delete your own account.");
+  const lastApprover = lastApproverProblem(box.records, box.records.filter((u) => u.id !== id), box.records[index]);   // as in changeUser (round 11T)
+  if (lastApprover) return fail(lastApprover);
   const [removed] = box.records.splice(index, 1);
   return commit(USERS_KEY, box, removed);
 }

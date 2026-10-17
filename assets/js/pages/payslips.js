@@ -8,8 +8,9 @@
 // How far back: payslipsFor() starts at this month and goes back to the first
 // month with attendance records, or the month the person joined; before that,
 // loss of pay can't be checked, so there's no payslip. When the list stops at
-// the joining month, the history says so rather than just ending. No payroll run is stored or approved yet, so every
-// payslip is a Draft (or On hold) and none has a pay date.
+// the joining month, the history says so rather than just ending. A month whose payroll run is approved shows the
+// figures that run fixed, marked Approved (round 11T); any other month is a Draft (or On hold), worked out live. None
+// has a pay date: paying isn't built.
 
 import { payslipsFor, payslipTotals } from "../data/payroll-store.js";
 import { getUser, joiningDate } from "../data/store.js";
@@ -21,8 +22,9 @@ import { initPlaceholders } from "../ui/placeholder.js";
 import { rupees } from "../ui/money.js";
 
 const STATUS = {
-  "draft":   { label: "Draft",   badge: "badge badge--warning badge--dot" },
-  "on-hold": { label: "On hold", badge: "badge badge--danger badge--dot" },
+  "draft":    { label: "Draft",    badge: "badge badge--warning badge--dot" },
+  "on-hold":  { label: "On hold",  badge: "badge badge--danger badge--dot" },
+  "approved": { label: "Approved", badge: "badge badge--success badge--dot" },
 };
 const NO_SALARY = "No salary on file for this month";
 
@@ -53,7 +55,12 @@ function spanWithYear(slips) {
 // A no-salary payslip has nothing worked out, so its amounts show as a dash, not ₹0.
 const amount = (slip, n) => (slip.holdReason === NO_SALARY ? "—" : rupees(n));
 
-const statusNote = (slip) => (slip.status === "on-hold" ? `On hold: ${slip.holdReason}` : "Draft, not paid yet");
+// An approved month's payslip (round 11T) is still not paid; an on-hold one in it is held.
+const approved = (slip) => slip.runStatus === "approved";
+const statusKey = (slip) => (approved(slip) && slip.status === "draft" ? "approved" : slip.status);
+const statusNote = (slip) => (slip.status === "on-hold"
+  ? `${approved(slip) ? "Approved, on hold" : "On hold"}: ${slip.holdReason}`
+  : approved(slip) ? "Approved, not paid yet" : "Draft, not paid yet");
 
 // ---------- stat cards ----------
 
@@ -72,8 +79,8 @@ function renderLatest(slips, thisMonth) {
   setStatNote(card, statusNote(slip));
 }
 
-// The payslip for the month in progress. There's no pay date to show: no run
-// is stored or approved, and there's no payroll calendar.
+// The payslip for the month in progress. There's no pay date to show: paying
+// isn't built, and there's no payroll calendar.
 function renderNext(slips, thisMonth) {
   const card = stat("next");
   const slip = slips.find((s) => s.month === thisMonth);
@@ -98,7 +105,7 @@ function buildRow(slip) {
   month.append(el("span", "table__user-name", label(slip)));
 
   const statusCell = el("td");
-  const badge = el("span", STATUS[slip.status]?.badge ?? "badge", STATUS[slip.status]?.label ?? slip.status);
+  const badge = el("span", STATUS[statusKey(slip)]?.badge ?? "badge", STATUS[statusKey(slip)]?.label ?? slip.status);
   if (slip.holdReason) badge.title = slip.holdReason;
   statusCell.append(badge);
 

@@ -1,10 +1,11 @@
 // data/payroll-store.js
-// Salaries, kept in localStorage through data/collection.js, and a month's pay
-// worked out from them. Nothing about a month's pay is stored: payrollRunFor()
-// reads the salary in effect, the month's attendance (late-mark penalties,
-// working days, unexplained absences) and approved unpaid leave, and runs
-// data/payroll.js's rules, so a payslip can't disagree with the data it came
-// from.
+// Salaries, kept in localStorage through data/collection.js, a month's pay
+// worked out from them, and the payroll runs prepared and approved from that
+// (round 11T). payrollRunFor() reads the salary in effect, the month's
+// attendance (late-mark penalties, working days, unexplained absences) and
+// approved unpaid leave, and runs data/payroll.js's rules, so a live payslip
+// can't disagree with the data it came from. Once a month's run is approved,
+// its payslips are the figures it fixed (see "stored runs" below).
 //
 // A salary record: { id, userId, gross (monthly, rupees), effectiveFrom
 // ("YYYY-MM-DD"), regime: "new" }. A revision is a new record with a later
@@ -15,10 +16,12 @@
 // button (users-list.js) calls resetPayrollData().
 
 import { createCollection, fail } from "./collection.js";
+import { load } from "../core/storage.js";
 import { getUser, getAllUsers, joiningDate } from "./store.js";
+import { permissionsOf } from "../config/roles.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker } from "./holidays.js";
 import { allRequests } from "./leave-store.js";
-import { monthFor, ATTENDANCE_RULES } from "./attendance-store.js";
+import { monthFor, allRegularizations, ATTENDANCE_RULES } from "./attendance-store.js";
 import { computePay } from "./payroll.js";
 
 // ---------- seed ----------
@@ -48,6 +51,7 @@ const salaries = createCollection({ key: "salaries", version: 2, seed: () => SEE
 // ---------- reads ----------
 
 const pad = (n) => String(n).padStart(2, "0");
+const monthKey = (year, month) => `${year}-${pad(month)}`;   // 2026, 10 -> "2026-10"
 const validMonth = (year, month) => Number.isInteger(year) && Number.isInteger(month) && month >= 1 && month <= 12;
 const byName = (a, b) => a.name.localeCompare(b.name, "en") || a.id.localeCompare(b.id, "en", { numeric: true });
 const newestFirst = (a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom) || b.id.localeCompare(a.id, "en", { numeric: true });
@@ -193,10 +197,10 @@ export function payrollRunFor(userId, year, month) {
   };
 }
 
-// The month the payroll run page, the Finance and Admin dashboards and the tax
-// page show: the one `today` ("YYYY-MM-DD") falls in, the same month
-// payslipsFor() starts from. Runs aren't stored yet, so there is no "latest
-// run" to look up. It's the current month because attendance is seeded back
+// The month the payroll run page opens on (it shows another with ?month=), and
+// the one the Finance and Admin dashboards and the tax page show: the one
+// `today` ("YYYY-MM-DD") falls in, the same month payslipsFor() starts from.
+// It's the current month because attendance is seeded back
 // to the 1st of the month it's first created in: an earlier month can have
 // days from before records began, the current month never does. null for a
 // bad date.
@@ -205,9 +209,10 @@ export function runMonth(today) {
   return { year: Number(today.slice(0, 4)), month: Number(today.slice(5, 7)) };
 }
 
-// The month's run for everyone tracked, by name. preparedBy is whoever creates
-// the run; approvedBy stays null (runs aren't stored, so nothing is approved).
-// The person who prepared a run may not approve it: see canApprove().
+// The month's run for everyone tracked, by name, worked out live: always a
+// draft, approvedBy null, preparedBy as given (null for a preview nobody has
+// prepared). A prepared or approved run is stored: see storedRun(). The person
+// who prepared a run may not approve it: see canApprove().
 export function payrollRun(year, month, { preparedBy = null } = {}) {
   const y = Number(year);
   const m = Number(month);
@@ -228,8 +233,23 @@ export const runTotals = (run) => run.rows.reduce((t, r) => ({
   lossOfPay: t.lossOfPay + r.lop.amount,
 }), { gross: 0, deductions: 0, net: 0, lossOfPay: 0 });
 
-// Separation of duties: someone must approve, and not the person who prepared it.
-export const canApprove = (run, userId) => Boolean(userId) && userId !== run.preparedBy;
+// Who may approve a run (10C C7.1, round 11T): someone active whose record
+// holds payroll:approve (their role's, with their overrides: round 11R; it
+// can't be overridden, so in practice an active Admin), and not the person who
+// prepared it. The record decides, not the session.
+const approves = (user, run) => user.status !== "inactive" && user.id !== run.preparedBy && permissionsOf(user).includes("payroll:approve");
+
+// Separation of duties: someone must approve, and not the person who prepared
+// it. userId's record is looked up: an unknown id, or none, can't approve.
+export function canApprove(run, userId) {
+  const user = userId ? getUser(userId) : null;
+  return Boolean(user) && approves(user, run);
+}
+
+// Everyone who can approve the run, by name (user records).
+export function approversFor(run) {
+  return getAllUsers().filter((u) => approves(u, run)).sort(byName);
+}
 
 // ---------- payslips ----------
 
@@ -243,17 +263,22 @@ const RECORDED = ["present", "late", "half-day", "absent", "not-yet"];
 // Every payslip this person has, newest first: the month `today`
 // ("YYYY-MM-DD") falls in, then each month before it, back to the last one in
 // a row with attendance recorded. Each is payrollRunFor()'s row (with its
-// period and attendance counts). [] for an unknown or inactive person or a bad
-// date.
+// period and attendance counts), or, for a month whose run is approved, their
+// row in that run: the figures it fixed, with runStatus "approved" (round 11T,
+// S-D1). [] for an unknown or inactive person or a bad date. Which months
+// there are still follows attendance, so someone who has left has none yet
+// (R8 part iii).
 export function payslipsFor(userId, today) {
   if (dayNumber(today) === null) return [];
   let y = Number(today.slice(0, 4));
   let m = Number(today.slice(5, 7));
+  const approved = new Map(storedRuns().filter((r) => r.status === "approved").map((r) => [r.month, r]));
   const slips = [];
   for (let n = 0; n < 120; n++) {   // ten years at most
     const attendance = monthFor(userId, y, m);
     if (!attendance?.days.some((d) => RECORDED.includes(d.status))) break;
-    slips.push(payrollRunFor(userId, y, m));
+    const fixed = approved.get(monthKey(y, m))?.rows.find((r) => r.userId === userId);
+    slips.push(fixed ? { ...fixed, runStatus: "approved" } : payrollRunFor(userId, y, m));
     [y, m] = m === 1 ? [y - 1, 12] : [y, m - 1];
   }
   return slips;
@@ -269,6 +294,183 @@ export const payslipTotals = (slips) => slips.reduce((t, s) => ({
   deductions: t.deductions + s.deductions,
   net: t.net + s.net,
 }), { gross: 0, pf: 0, pt: 0, tds: 0, deductions: 0, net: 0 });
+
+// ---------- stored runs (round 11T) ----------
+
+// A month's payroll run, prepared and then approved (11M's R8 part i, as
+// scoped in round-11s-notes.md S9, with S-D1 to S-D12 decided). A stored run:
+//   { id: "PR-1", month: "2026-10", status: "prepared" | "approved",
+//     preparedBy, preparedAt, approvedBy, approvedAt,   // user ids; "YYYY-MM-DDTHH:MM", local time
+//     rows,      // payrollRunFor()'s rows when it was prepared, each with
+//                // the person's name and department then
+//     totals,    // runTotals() of those rows
+//     history: [{ byUserId, decision: "prepared" | "approved", at, note }] }
+// - One per month. Preparing fixes the month's figures as they are; preparing
+//   it again replaces them, and preparedBy, until it's approved.
+// - Approving approves exactly the figures prepared: it's refused if the live
+//   ones have moved since. An approved run never changes (S-D6).
+// - A month can be prepared or approved only once it has ended and settled
+//   (runProblems()), so nothing still waiting for a decision is frozen in.
+// - On-hold rows are kept, as held: their pay isn't released (S-D5).
+// - Stored rows are never filtered by anyone's status now: someone
+//   deactivated or deleted later keeps their row and name (S-D10).
+// A month nobody has prepared stays live: payrollRun() and payrollRunFor()
+// are unchanged (S-D9). store.js refuses to take away a prepared run's last
+// approver; it reads the runs itself, since it can't import this file.
+const RUNS_KEY = "payroll-runs";
+const RUNS_VERSION = 1;
+const runs = createCollection({ key: RUNS_KEY, version: RUNS_VERSION, seed: () => [], idPrefix: "PR-" });
+
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const monthLabel = (year, month) => `${MONTH_NAMES[month - 1]} ${year}`;   // 2026, 10 -> "October 2026"
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+// "YYYY-MM-DDTHH:MM", local time.
+function nowStamp() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// The stored runs, read without writing anything, so a page that only shows
+// pay doesn't add the key (the first Prepare does). A saved copy that isn't
+// intact counts as none, as the collection itself treats it.
+function storedRuns() {
+  const box = load(RUNS_KEY);
+  return box && box.version === RUNS_VERSION && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records : [];
+}
+
+// A month's stored run, or null: never prepared, or not a month.
+export function storedRun(year, month) {
+  const y = Number(year);
+  const m = Number(month);
+  if (!validMonth(y, m)) return null;
+  return storedRuns().find((r) => r.month === monthKey(y, m)) ?? null;
+}
+
+// Why a month can't be prepared or approved yet, as phrases ([] when it can):
+// it must have ended, with nothing in it still open (S-D3). Every one that
+// applies is listed, naming who where it's someone's to sort out:
+//   - the month hasn't ended;
+//   - nobody is in its run;
+//   - working days from before attendance records began, or not recorded yet;
+//   - absences not settled (still correctable, or with a request waiting);
+//   - absences that can't be counted (no readable joining date);
+//   - leave requests (not work from home) or attendance corrections dated in
+//     the month that are waiting for a decision. A pending late-arrival
+//     correction is one, so a late-mark penalty it may undo is never frozen.
+// Someone who joined during the month doesn't stop it: the month's salary
+// isn't prorated for them, a documented rule.
+export function runProblems(year, month) {
+  const y = Number(year);
+  const m = Number(month);
+  if (!validMonth(y, m)) return ["it isn't a month"];
+  const first = `${monthKey(y, m)}-01`;
+  const last = isoFromDayNumber((m === 12 ? dayNumber(`${y + 1}-01-01`) : dayNumber(`${y}-${pad(m + 1)}-01`)) - 1);
+  const { rows } = payrollRun(y, m);
+  const names = new Map(getAllUsers().map((u) => [u.id, u.name]));
+  const who = (list) => [...new Set(list.map((r) => names.get(r.userId) ?? r.userId))].sort((a, b) => a.localeCompare(b, "en")).join(", ");
+  const inRun = new Set(rows.map((r) => r.userId));
+  const most = (key) => Math.max(0, ...rows.map((r) => r.attendance[key]));
+  const sum = (list, count) => list.reduce((n, r) => n + count(r), 0);
+  const open = rows.filter((r) => r.attendance.openAbsences.length > 0);
+  const uncounted = rows.filter((r) => r.attendance.uncountedAbsences > 0);
+  const leave = allRequests().filter((r) => r.status === "pending" && r.type !== "wfh" && inRun.has(r.userId) && r.from <= last && r.to >= first);
+  const corrections = allRegularizations().filter((r) => r.status === "pending" && inRun.has(r.userId) && r.date >= first && r.date <= last);
+  const problems = [];
+  if (todayIso() <= last) problems.push("it hasn't ended yet");
+  if (!rows.length) problems.push("nobody is in its run");
+  if (most("noData")) problems.push(`${plural(most("noData"), "working day", "working days")} came before attendance records began`);
+  if (most("notYet")) problems.push(`${plural(most("notYet"), "working day hasn't", "working days haven't")} been recorded yet`);
+  if (open.length) problems.push(`${plural(sum(open, (r) => r.attendance.openAbsences.length), "absence isn't", "absences aren't")} settled yet (${who(open)})`);
+  if (uncounted.length) problems.push(`${plural(sum(uncounted, (r) => r.attendance.uncountedAbsences), "absence", "absences")} can't be counted, with no readable joining date on file (${who(uncounted)})`);
+  if (leave.length) problems.push(`${plural(leave.length, "leave request is", "leave requests are")} waiting for a decision (${who(leave)})`);
+  if (corrections.length) problems.push(`${plural(corrections.length, "attendance correction is", "attendance corrections are")} waiting for a decision (${who(corrections)})`);
+  return problems;
+}
+
+// The acting person, if they are active and hold the permission on record
+// (their role's, with their overrides), else null: store.js's actorWith().
+function actorWith(userId, permission) {
+  const user = userId ? getUser(userId) : null;
+  return user && user.status !== "inactive" && permissionsOf(user).includes(permission) ? user : null;
+}
+
+// A run's figures, to compare: its rows as payrollRunFor() gives them, without
+// the name and department a stored row keeps beside them.
+const figures = (rows) => JSON.stringify(rows.map(({ name: _name, department: _department, ...row }) => row));
+
+// Why actorUserId can't prepare the month's run, in words, or null if they can.
+// It needs payroll:create on their record (Finance, Admin), a month that has
+// ended and settled, a run that isn't approved, and someone else who could
+// approve it: an Admin preparing while they're the only active Admin would
+// leave the run stuck (S4, S-D7).
+export function prepareProblem(actorUserId, year, month) {
+  if (!actorWith(actorUserId, "payroll:create")) return "You can't prepare payroll runs.";
+  const y = Number(year);
+  const m = Number(month);
+  if (!validMonth(y, m)) return "That isn't a month.";
+  const label = monthLabel(y, m);
+  if (storedRun(y, m)?.status === "approved") return `${label}'s run is approved, so it can't be prepared again.`;
+  const problems = runProblems(y, m);
+  if (problems.length) return `${label} can't be prepared yet: ${problems.join("; ")}.`;
+  if (!approversFor({ preparedBy: actorUserId }).length) return `No one else could approve ${label}'s run: make someone else an Admin first.`;
+  return null;
+}
+
+// Prepares the month's run: stores its figures as payrollRunFor() works them
+// out now, for everyone in it, with their names and departments (S-D2).
+// Preparing it again replaces them. -> { ok: true, record } or a fail() with
+// prepareProblem()'s reason.
+export function prepareRun(actorUserId, year, month) {
+  const problem = prepareProblem(actorUserId, year, month);
+  if (problem) return fail(problem);
+  const y = Number(year);
+  const m = Number(month);
+  const people = new Map(getAllUsers().map((u) => [u.id, u]));
+  const rows = payrollRun(y, m).rows.map((r) => ({ ...r, name: people.get(r.userId).name, department: people.get(r.userId).department ?? null }));
+  const at = nowStamp();
+  const before = storedRun(y, m);
+  const fields = {
+    month: monthKey(y, m), status: "prepared", preparedBy: actorUserId, preparedAt: at, approvedBy: null, approvedAt: null,
+    rows, totals: runTotals({ rows }),
+    history: [...(before?.history ?? []), { byUserId: actorUserId, decision: "prepared", at, note: "" }],
+  };
+  return before ? runs.update(before.id, fields) : runs.add(fields);
+}
+
+// Why actorUserId can't approve the month's run, in words, or null if they
+// can. It needs payroll:approve on their record and not being its preparer
+// (canApprove()), a prepared run, the month still ended and settled, and the
+// live figures still the ones prepared: if anything has moved them since, it
+// has to be prepared again, so nobody approves figures nobody prepared.
+export function approveProblem(actorUserId, year, month) {
+  if (!actorWith(actorUserId, "payroll:approve")) return "You can't approve payroll runs.";
+  const y = Number(year);
+  const m = Number(month);
+  if (!validMonth(y, m)) return "That isn't a month.";
+  const label = monthLabel(y, m);
+  const run = storedRun(y, m);
+  if (!run) return `${label}'s run hasn't been prepared yet.`;
+  if (run.status === "approved") return `${label}'s run is already approved.`;
+  if (!canApprove(run, actorUserId)) return "You prepared this run, so someone else has to approve it.";
+  const problems = runProblems(y, m);
+  if (problems.length) return `${label} can't be approved yet: ${problems.join("; ")}.`;
+  if (figures(run.rows) !== figures(payrollRun(y, m).rows)) return "The figures have changed since this run was prepared: prepare it again.";
+  return null;
+}
+
+// Approves the month's prepared run; nothing about it changes after this.
+// -> { ok: true, record } or a fail() with approveProblem()'s reason.
+export function approveRun(actorUserId, year, month) {
+  const problem = approveProblem(actorUserId, year, month);
+  if (problem) return fail(problem);
+  const run = storedRun(year, month);
+  const at = nowStamp();
+  return runs.update(run.id, {
+    status: "approved", approvedBy: actorUserId, approvedAt: at,
+    history: [...run.history, { byUserId: actorUserId, decision: "approved", at, note: "" }],
+  });
+}
 
 // ---------- writes ----------
 
@@ -286,6 +488,8 @@ export function checkSalary(fields = {}) {
 
 // ---------- reset ----------
 
+// Salaries and payroll runs (round 11T).
 export function resetPayrollData() {
   salaries.reset();
+  runs.reset();
 }

@@ -290,7 +290,7 @@ if (["admin", "hr"].includes(getCurrentRole()?.key) && exportBtn) {
   const resetBtn = el("button", "btn btn--ghost", "Reset demo data");
   resetBtn.type = "button";
   resetBtn.addEventListener("click", () => {
-    if (!window.confirm("This discards every change made to users, departments, leave, holidays, attendance, salaries, expense claims, inventory and asset requests in this browser. Continue?")) return;
+    if (!window.confirm("This discards every change made to users, departments, leave, holidays, attendance, salaries, payroll runs, expense claims, inventory and asset requests in this browser. Continue?")) return;
     resetDemoData();
     resetLeaveData();
     resetAttendanceData();

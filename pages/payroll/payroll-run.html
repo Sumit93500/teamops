@@ -111,9 +111,11 @@
     <div>
       <h1 id="run-title">Payroll run</h1>
       <p class="page-header__subtitle" id="run-subtitle"></p>
+      <p class="page-header__subtitle" id="run-months"></p>
     </div>
     <div class="page-header__actions">
       <button class="btn" type="button" data-permission="payroll:export" data-not-implemented="Export bank file">Export bank file</button>
+      <button class="btn" type="button" id="prepare-run" data-permission="payroll:create" disabled>Prepare run</button>
       <button class="btn btn--primary" type="button" id="approve-run" data-permission="payroll:approve" disabled>Approve run</button>
     </div>
   </div>
@@ -172,11 +174,11 @@
         <ol class="stepper" id="run-steps">
           <li class="stepper__step is-done">
             <span class="stepper__dot"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
-            <div class="stepper__text"><strong>Draft created</strong><small class="text-muted">Worked out when the page opens</small></div>
+            <div class="stepper__text"><strong>Draft</strong><small class="text-muted">Worked out from the live records</small></div>
           </li>
           <li class="stepper__step is-current">
             <span class="stepper__dot">2</span>
-            <div class="stepper__text"><strong>Review</strong><small class="text-muted">Finance checks the figures</small></div>
+            <div class="stepper__text"><strong>Prepared</strong><small class="text-muted">Finance or an Admin fixes the figures</small></div>
           </li>
           <li class="stepper__step">
             <span class="stepper__dot">3</span>
@@ -242,14 +244,14 @@
             <dl class="kv">
               <div class="kv__row"><dt>Prepared by</dt><dd id="run-prepared-by">—</dd></div>
               <div class="kv__row"><dt>Approver</dt><dd id="run-approver">—</dd></div>
-              <div class="kv__row"><dt>Attendance locked on</dt><dd class="text-muted">Not built yet</dd></div>
+              <div class="kv__row"><dt>Figures fixed on</dt><dd class="text-muted" id="run-fixed-on">—</dd></div>
               <div class="kv__row"><dt>Pay date</dt><dd class="text-muted">Not set</dd></div>
               <div class="kv__row"><dt>Bank file</dt><dd class="text-muted">Not built yet</dd></div>
             </dl>
           </div>
         </section>
 
-        <div class="alert alert--warning" id="run-alert">Payroll runs aren't stored yet, so these figures are worked out from the live attendance and leave records each time the page opens.</div>
+        <div class="alert alert--warning" id="run-alert">Until a month's run is prepared, its figures are worked out from the live attendance and leave records each time the page opens.</div>
       </aside>
 
     </div>

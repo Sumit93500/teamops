@@ -1,38 +1,43 @@
 // pages/payroll-run.js
-// Runs on payroll-run.html. Draws this month's run (runMonth()) from
-// data/payroll-store.js: the stat cards, the run's progress, every employee in
-// it (with search and a status filter), the checks before approval and who
-// prepared it. Nothing here works out pay; the store does.
+// Runs on payroll-run.html. Draws one month's run from data/payroll-store.js:
+// the stat cards, the run's progress, every employee in it (with search and a
+// status filter), the checks before approval and who prepared and approved it.
+// Nothing here works out pay; the store does.
 //
-// The run isn't stored yet: payrollRun() works it out from salaries,
-// attendance and leave each time the page opens, so it is always a draft, and
-// the month is still in progress. "Approve run" is guarded the way approving
-// will be (payroll:approve, and not the person who prepared it, through
-// canApprove()), but approving can't be saved until a stored run record
-// exists; clicking it says so. Paying, the pay date, locking attendance and
-// the bank file aren't built; the page says so where they'd appear.
+// The month is ?month=YYYY-MM, else this month (runMonth()). A month nobody
+// has prepared is a live draft: payrollRun() works it out from salaries,
+// attendance and leave each time the page opens. Prepare (payroll:create)
+// stores the month's figures as they are; Approve (payroll:approve, and not
+// the person who prepared it) approves exactly those, and they don't change
+// after that. Both are the store's writes, checked there on the acting
+// person's record (round 11T), and each button shows the store's reason when
+// it would refuse. A month can be prepared once it has ended and nothing in it
+// is still open, so this month never can; the page links to the month before.
+// Paying, the pay date and the bank file aren't built; the page says so where
+// they'd appear.
 
-import { payrollRun, canApprove, runTotals, runMonth } from "../data/payroll-store.js";
+import { payrollRun, storedRun, approversFor, canApprove, runProblems, prepareProblem, approveProblem, prepareRun, approveRun, runTotals, runMonth } from "../data/payroll-store.js";
 import { ATTENDANCE_RULES } from "../data/attendance-store.js";
-import { getUser, getAllUsers } from "../data/store.js";
+import { getUser } from "../data/store.js";
 import { ROLES } from "../config/roles.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { getCurrentUserId } from "../core/auth.js";
-import { el, nameOf, plural, departmentName, personCell, step, todayIso, monthName, formatRange, formatDay } from "../ui/leave-view.js";
+import { el, escapeHtml, nameOf, plural, departmentName, personCell, step, todayIso, monthName, formatRange, formatDay } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
-
-// Kabir Shah (Finance Manager) is shown as the run's preparer, as the page
-// always said; with no stored run there is no one else it could be.
-const PREPARED_BY = "EMP-1008";
 
 const ROW_STATUS = {
   "draft":   { label: "Draft",   badge: "badge badge--warning badge--dot" },
   "on-hold": { label: "On hold", badge: "badge badge--danger badge--dot" },
 };
+// The run's state. done / current: its progress steps (1 Draft, 2 Prepared,
+// 3 Approval, 4 Payment), current 0 for none. A row that isn't on hold shows
+// the run's label.
 const RUN_STATUS = {
-  draft: { label: "Draft", badge: "badge badge--warning badge--dot", currentStep: 2 },
+  draft:    { label: "Draft",    badge: "badge badge--warning badge--dot", done: 1, current: 2, net: "Draft, not paid yet" },
+  prepared: { label: "Prepared", badge: "badge badge--info badge--dot",    done: 2, current: 3, net: "Prepared, not approved yet" },
+  approved: { label: "Approved", badge: "badge badge--success badge--dot", done: 3, current: 0, net: "Approved, not paid yet" },
 };
 const NO_BANK = "No bank account on file";
 const NO_SALARY = "No salary on file for this month";
@@ -45,26 +50,29 @@ const workingDays = (n) => plural(n, "working day", "working days");
 
 // "2026-10" -> "October 2026"
 const monthLabel = (month) => `${monthName(Number(month.slice(5, 7)))} ${month.slice(0, 4)}`;
+// "2026-11-09T10:00" -> "9 Nov 2026"
+const dayOf = (stamp) => formatDay(stamp.slice(0, 10), true);
 
 let searchText = "";
 let statusFilter = "";   // "" = all, or a row status
 
-// ---------- who can approve ----------
+// ---------- which month, and whose rows ----------
 
-// Everyone active whose role holds payroll:approve, except the preparer.
-function approverNames(run) {
-  return getAllUsers()
-    .filter((u) => u.status !== "inactive" && u.id !== run.preparedBy && ROLES[u.role]?.permissions.includes("payroll:approve"))
-    .map((u) => `${u.name}, ${ROLES[u.role].label}`);
+// ?month=YYYY-MM, else this month.
+function viewedMonth() {
+  const asked = (new URLSearchParams(window.location.search).get("month") ?? "").trim();
+  const match = /^(\d{4})-(\d{2})$/.exec(asked);
+  if (match && Number(match[2]) >= 1 && Number(match[2]) <= 12) return { year: Number(match[1]), month: Number(match[2]) };
+  return runMonth(todayIso());
 }
 
-// Why the signed-in person can't approve, or "" if they can.
-function approveBlock(run, me) {
-  if (!can("payroll:approve")) return "Approving a run needs the payroll:approve permission";
-  if (!me) return "This session has no employee ID; sign out and back in to approve";
-  if (!canApprove(run, me)) return "You prepared this run, so someone else has to approve it";
-  return "";
-}
+// A stored row keeps the name and department it was prepared with (the person
+// may have left since); a live row is read from today's record.
+const rowName = (row) => row.name ?? getUser(row.userId)?.name ?? row.userId;
+const rowDepartment = (row) => ("department" in row ? row.department : getUser(row.userId)?.department);
+
+// Who can approve, from the store (approversFor()): "Aarav Mehta, Admin".
+const approverNames = (run) => approversFor(run).map((u) => `${u.name}, ${ROLES[u.role]?.label ?? u.role}`);
 
 // ---------- top of the page ----------
 
@@ -80,8 +88,23 @@ function renderHeader(run) {
     : "No pay date set";
 }
 
+// Links to the month before and, up to this month, the one after. This month
+// can't be prepared until it has ended, so the month before is the latest one
+// that can be.
+function renderMonths(run) {
+  const y = Number(run.month.slice(0, 4));
+  const m = Number(run.month.slice(5, 7));
+  const key = (year, month) => `${year}-${String(month).padStart(2, "0")}`;
+  const link = (month, text) => Object.assign(el("a", "link", text), { href: `payroll-run.html?month=${month}`, title: monthLabel(month) });
+  const before = m === 1 ? key(y - 1, 12) : key(y, m - 1);
+  const after = m === 12 ? key(y + 1, 1) : key(y, m + 1);
+  const links = [link(before, "Previous month")];
+  if (after <= todayIso().slice(0, 7)) links.push(" · ", link(after, "Next month"));
+  $("run-months").replaceChildren(...links);
+}
+
 function renderStats(run) {
-  const totals = runTotals(run);
+  const totals = run.totals ?? runTotals(run);
   const onHold = run.rows.filter((r) => r.status === "on-hold").length;
   setStatValue(stat("employees"), String(run.rows.length));
   setStatNote(stat("employees"), `${onHold} on hold`);
@@ -90,7 +113,7 @@ function renderStats(run) {
   setStatValue(stat("deductions"), rupees(totals.deductions));
   setStatNote(stat("deductions"), "PF, PT and TDS (sample tax rates)");   // TDS is worked out on data/payroll.js's TAX_SAMPLE
   setStatValue(stat("net"), rupees(totals.net));
-  setStatNote(stat("net"), "Draft, not paid yet");
+  setStatNote(stat("net"), RUN_STATUS[run.status].net);
 }
 
 function renderProgress(run, approvers) {
@@ -99,12 +122,12 @@ function renderProgress(run, approvers) {
   badge.className = status.badge;
   badge.textContent = status.label;
   const steps = [
-    ["Draft created", `Prepared by ${nameOf(run.preparedBy)}`],
-    ["Review", "Finance checks the figures"],
-    ["Approval", approvers.join("; ") || "No one can approve it yet"],
+    ["Draft", "Worked out from the live records"],
+    ["Prepared", run.status === "draft" ? "Not prepared yet" : `By ${nameOf(run.preparedBy)} on ${dayOf(run.preparedAt)}`],
+    ["Approval", run.status === "approved" ? `By ${nameOf(run.approvedBy)} on ${dayOf(run.approvedAt)}` : approvers.join("; ") || "No one can approve it yet"],
     ["Payment", "Not built yet"],
   ];
-  const stateOf = (n) => (n < status.currentStep ? "done" : n === status.currentStep ? "current" : "");
+  const stateOf = (n) => (n <= status.done ? "done" : n === status.current ? "current" : "");
   $("run-steps").replaceChildren(...steps.map(([title, detail], i) => step(stateOf(i + 1), i + 1, title, detail)));
 }
 
@@ -114,17 +137,17 @@ function visibleRows(run) {
   const query = searchText.trim().toLowerCase();
   return run.rows.filter((r) =>
     (!statusFilter || r.status === statusFilter)
-    && (!query || (getUser(r.userId)?.name ?? r.userId).toLowerCase().includes(query)));
+    && (!query || rowName(r).toLowerCase().includes(query)));
 }
 
-function buildRow(row) {
-  const user = getUser(row.userId);
-  const sub = [departmentName(user?.department), row.holdReason].filter(Boolean).join(", ");
+function buildRow(run, row) {
+  const sub = [departmentName(rowDepartment(row)), row.holdReason].filter(Boolean).join(", ");
   const tr = el("tr");
   tr.dataset.userId = row.userId;
 
   const statusCell = el("td");
-  const badge = el("span", ROW_STATUS[row.status]?.badge ?? "badge", ROW_STATUS[row.status]?.label ?? row.status);
+  const shown = row.status === "draft" ? RUN_STATUS[run.status] : ROW_STATUS[row.status];
+  const badge = el("span", shown?.badge ?? "badge", shown?.label ?? row.status);
   if (row.holdReason) badge.title = row.holdReason;
   statusCell.append(badge);
 
@@ -137,7 +160,7 @@ function buildRow(row) {
   actions.append(link);
 
   tr.append(
-    personCell(row.userId, user, sub),
+    personCell(row.userId, { name: rowName(row) }, sub),
     el("td", "table__num", rupees(row.gross)),
     el("td", "table__num", rupees(row.deductions)),
     el("td", "table__num", rupees(row.net)),
@@ -151,7 +174,7 @@ function renderRows(run) {
   const tbody = $("run-rows");
   const shown = visibleRows(run);
   if (shown.length) {
-    tbody.replaceChildren(...shown.map(buildRow));
+    tbody.replaceChildren(...shown.map((row) => buildRow(run, row)));
   } else {
     const tr = el("tr");
     const td = el("td", "text-muted", "No employees match these filters.");
@@ -209,14 +232,14 @@ function attendanceCheck(run, label, done) {
   if (notYet) parts.push(`${label} isn't over: ${plural(notYet, "working day hasn't", "working days haven't")} been recorded yet, so late marks, unpaid leave and absences can still change these figures.`);
   if (open.length) parts.push(openAbsencesText(open));
   if (uncounted.length) {
-    const who = uncounted.map((r) => `${nameOf(r.userId)} (${plural(r.attendance.uncountedAbsences, "absence", "absences")})`).join(", ");
+    const who = uncounted.map((r) => `${rowName(r)} (${plural(r.attendance.uncountedAbsences, "absence", "absences")})`).join(", ");
     parts.push(`Not counted, with no readable joining date on file: ${who}.`);
   }
   // Someone who joined during the month: their days before joining aren't
   // absences, and nothing prorates the month's salary for them.
   const joiners = run.rows.filter((r) => r.attendance.beforeJoining > 0);
   if (joiners.length) {
-    const who = joiners.map((r) => `${nameOf(r.userId)} (joined ${formatDay(r.attendance.joined)}, ${workingDays(r.attendance.beforeJoining)} before)`).join(", ");
+    const who = joiners.map((r) => `${rowName(r)} (joined ${formatDay(r.attendance.joined)}, ${workingDays(r.attendance.beforeJoining)} before)`).join(", ");
     parts.push(`Joined during ${label}: ${who}. Days before joining aren't counted as absences, and the month's salary isn't prorated for them.`);
   }
   const badge = noData || uncounted.length || joiners.length ? ["badge badge--warning", "Review"] : notYet || open.length ? ["badge badge--info", "In progress"] : done;
@@ -228,7 +251,7 @@ function renderChecks(run) {
   const noSalary = run.rows.filter((r) => r.holdReason === NO_SALARY).length;
   const lopRows = run.rows.filter((r) => r.lop.days > 0);
   const lopDays = lopRows.reduce((sum, r) => sum + r.lop.days, 0);
-  const lopAmount = runTotals(run).lossOfPay;
+  const lopAmount = (run.totals ?? runTotals(run)).lossOfPay;
   const label = monthLabel(run.month);
   const month = monthName(Number(run.month.slice(5, 7)));
   const done = ["badge badge--success", "Done"];
@@ -258,29 +281,56 @@ function renderChecks(run) {
   $("run-checks-meta").textContent = `${items.length} checks`;
 }
 
-// ---------- run details, the alert and Approve ----------
+// ---------- run details, the alert, Prepare and Approve ----------
+
+// What the alert says about the run: a live draft (and whether it can be
+// prepared yet, in the store's words), a prepared run (who can approve it, and
+// that its figures are the ones fixed), or an approved one.
+function alertText(run, me, approveBlock) {
+  const label = monthLabel(run.month);
+  if (run.status === "approved") {
+    return `${nameOf(run.approvedBy)} approved this run on ${dayOf(run.approvedAt)}. Its figures are final: the payslips for ${label} show them, and they can't be changed. Paying isn't built yet.`;
+  }
+  if (run.status === "prepared") {
+    const preparer = nameOf(run.preparedBy);
+    let lead;
+    if (me && me === run.preparedBy) lead = "You prepared this run, so someone else has to approve it.";
+    else if (!approveBlock) lead = `${preparer} prepared this run. You can approve it.`;
+    else if (canApprove(run, me)) lead = `${preparer} prepared this run. ${approveBlock}`;
+    else lead = `${preparer} prepared this run. An Admin who didn't prepare it has to approve it.`;
+    return `${lead} Its figures were fixed when it was prepared, on ${dayOf(run.preparedAt)}; if attendance or leave changes them before it's approved, it has to be prepared again.`;
+  }
+  const problems = runProblems(Number(run.month.slice(0, 4)), Number(run.month.slice(5, 7)));
+  const gate = problems.length ? `It can't be prepared yet: ${problems.join("; ")}.` : "It can be prepared now, which fixes these figures for approval.";
+  return `This run isn't prepared yet, so these figures are worked out from the live attendance and leave records each time the page opens. ${gate}`;
+}
 
 function renderApproval(run, approvers) {
   const me = getCurrentUserId();
-  const block = approveBlock(run, me);
-  $("run-prepared-by").textContent = nameOf(run.preparedBy);
-  $("run-approver").textContent = approvers.join("; ") || "No one";
+  const year = Number(run.month.slice(0, 4));
+  const month = Number(run.month.slice(5, 7));
+  const label = monthLabel(run.month);
+  const stored = run.status !== "draft";
+  $("run-prepared-by").textContent = stored ? nameOf(run.preparedBy) : "Not prepared yet";
+  $("run-approver").textContent = run.status === "approved"
+    ? `Approved by ${nameOf(run.approvedBy)} on ${dayOf(run.approvedAt)}`
+    : approvers.join("; ") || "No one";
+  const fixed = $("run-fixed-on");
+  fixed.textContent = stored ? dayOf(run.preparedAt) : "Not fixed: worked out live";
+  fixed.className = stored ? "" : "text-muted";
 
-  const button = $("approve-run");
-  button.disabled = Boolean(block);
-  button.title = block || `Approve the ${monthName(Number(run.month.slice(5, 7)))} run`;
-  button.addEventListener("click", () => {
-    if (approveBlock(run, getCurrentUserId())) return;   // checked again, in case the button was re-enabled by hand
-    showToast("Approving isn't saved yet: payroll runs aren't stored in this demo, so this run stays a draft.", "info");
-  });
+  const prepareBlock = prepareProblem(me, year, month);
+  const prepare = $("prepare-run");
+  prepare.textContent = run.status === "prepared" ? "Prepare again" : "Prepare run";
+  prepare.disabled = Boolean(prepareBlock);
+  prepare.title = prepareBlock || (run.status === "prepared" ? `Fix ${label}'s figures again, as they are now` : `Fix ${label}'s figures for approval`);
 
-  const preparer = nameOf(run.preparedBy);
-  const live = "Attendance locking isn't built yet, so these figures are worked out from the live attendance and leave records each time the page opens.";
-  let lead;
-  if (me && me === run.preparedBy) lead = "You prepared this run, so you can't approve it. An Admin has to approve it before payslips are released.";
-  else if (!block) lead = `${preparer} prepared this run. You can approve it, but approving isn't saved yet in this demo, so the run stays a draft.`;
-  else lead = `${preparer} prepared this run. An Admin has to approve it before payslips are released.`;
-  $("run-alert").textContent = `${lead} ${live}`;
+  const approveBlock = approveProblem(me, year, month);
+  const approve = $("approve-run");
+  approve.disabled = Boolean(approveBlock);
+  approve.title = approveBlock || `Approve the ${monthName(month)} run`;
+
+  $("run-alert").textContent = alertText(run, me, approveBlock);
 }
 
 // ---------- start ----------
@@ -288,16 +338,42 @@ function renderApproval(run, approvers) {
 // The guard already sends anyone without payroll:view to the 403 page; this
 // stops the figures being drawn in the moment before that happens.
 if (can("payroll:view")) {
-  const { year, month } = runMonth(todayIso());
-  const run = payrollRun(year, month, { preparedBy: PREPARED_BY });
-  const approvers = approverNames(run);
-  renderHeader(run);
-  renderStats(run);
-  renderProgress(run, approvers);
-  renderRows(run);
-  renderChecks(run);
-  renderApproval(run, approvers);
+  const { year, month } = viewedMonth();
+  let run;
+  const draw = () => {
+    run = storedRun(year, month) ?? payrollRun(year, month);
+    const approvers = run.status === "approved" ? [] : approverNames(run);
+    $("run-status-filter").querySelector('option[value="draft"]').textContent = RUN_STATUS[run.status].label;
+    renderHeader(run);
+    renderMonths(run);
+    renderStats(run);
+    renderProgress(run, approvers);
+    renderRows(run);
+    renderChecks(run);
+    renderApproval(run, approvers);
+  };
+  draw();
 
+  // Each is the store's write, which checks everything again (in case a
+  // button was re-enabled by hand); a refusal is shown in its words.
+  $("prepare-run").addEventListener("click", () => {
+    const result = prepareRun(getCurrentUserId(), year, month);
+    if (!result.ok) {
+      showToast(escapeHtml(result.error), "danger");
+      return;
+    }
+    showToast(`${monthLabel(result.record.month)}'s run is prepared: its figures are fixed for approval.`, "success");
+    draw();
+  });
+  $("approve-run").addEventListener("click", () => {
+    const result = approveRun(getCurrentUserId(), year, month);
+    if (!result.ok) {
+      showToast(escapeHtml(result.error), "danger");
+      return;
+    }
+    showToast(`${monthLabel(result.record.month)}'s run is approved.`, "success");
+    draw();
+  });
   $("run-search").addEventListener("input", (e) => {
     searchText = e.target.value;
     renderRows(run);
