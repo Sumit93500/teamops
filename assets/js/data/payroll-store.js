@@ -20,7 +20,7 @@ import { load } from "../core/storage.js";
 import { getUser, getAllUsers, joiningDate } from "./store.js";
 import { permissionsOf } from "../config/roles.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker } from "./holidays.js";
-import { allRequests } from "./leave-store.js";
+import { allRequests, PAST_DAY_WINDOW } from "./leave-store.js";
 import { monthFor, allRegularizations, ATTENDANCE_RULES } from "./attendance-store.js";
 import { computePay } from "./payroll.js";
 
@@ -351,6 +351,11 @@ export function storedRun(year, month) {
 // it must have ended, with nothing in it still open (S-D3). Every one that
 // applies is listed, naming who where it's someone's to sort out:
 //   - the month hasn't ended;
+//   - it has, but a correction or leave for one of its days can still be
+//     asked for (round 11V, round-11u-notes.md U1 / U-D1): both are accepted
+//     up to 7 days back, so a late mark could otherwise still be corrected
+//     after the month was approved. The window closes on its last day + 7,
+//     so the earliest a month can be prepared is the 8th of the next one;
 //   - nobody is in its run;
 //   - working days from before attendance records began, or not recorded yet;
 //   - absences not settled (still correctable, or with a request waiting);
@@ -377,7 +382,9 @@ export function runProblems(year, month) {
   const leave = allRequests().filter((r) => r.status === "pending" && r.type !== "wfh" && inRun.has(r.userId) && r.from <= last && r.to >= first);
   const corrections = allRegularizations().filter((r) => r.status === "pending" && inRun.has(r.userId) && r.date >= first && r.date <= last);
   const problems = [];
+  const windowShuts = isoFromDayNumber(dayNumber(last) + Math.max(ATTENDANCE_RULES.requestWindowDays, PAST_DAY_WINDOW));
   if (todayIso() <= last) problems.push("it hasn't ended yet");
+  else if (todayIso() <= windowShuts) problems.push(`its request window is still open until ${Number(windowShuts.slice(8))} ${MONTH_NAMES[Number(windowShuts.slice(5, 7)) - 1].slice(0, 3)}`);
   if (!rows.length) problems.push("nobody is in its run");
   if (most("noData")) problems.push(`${plural(most("noData"), "working day", "working days")} came before attendance records began`);
   if (most("notYet")) problems.push(`${plural(most("notYet"), "working day hasn't", "working days haven't")} been recorded yet`);

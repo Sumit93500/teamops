@@ -7,6 +7,7 @@
 // a date by one.
 
 import { createCollection, fail } from "./collection.js";
+import { load } from "../core/storage.js";
 import { getUser } from "./store.js";
 import { permissionsOf } from "../config/roles.js";
 
@@ -97,12 +98,28 @@ function holidayManager(userId) {
   return user && user.status !== "inactive" && permissionsOf(user).includes("holidays:manage") ? user : null;
 }
 
+// A month whose payroll run is approved has a closed calendar (round 11V,
+// round-11u-notes.md U3 / U-D3): a holiday of any kind dated in it is refused.
+// Adding one would change that month's working days, and so the loss of pay
+// of anyone with some, after their pay was approved (removing a past holiday
+// is refused already, below). The runs are read from storage, as
+// payroll-store.js saves them: that file imports this one.
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function payrollApproved(date) {
+  const box = load("payroll-runs");
+  const runs = box && box.version === 1 && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records : [];
+  return runs.some((r) => r.status === "approved" && r.month === date.slice(0, 7));
+}
+
 export function addHoliday(actorUserId, fields = {}) {
   if (!holidayManager(actorUserId)) return fail("You can't add holidays.");
   const date = String(fields.date ?? "").trim();
   const name = String(fields.name ?? "").trim();
   const kind = String(fields.kind ?? "").trim();
   if (!isValidDate(date)) return fail("Pick a valid date.", "date");
+  if (payrollApproved(date)) {
+    return fail(`${MONTH_NAMES[Number(date.slice(5, 7)) - 1]} ${date.slice(0, 4)}'s payroll is approved, so a holiday can't be added to it.`, "date");
+  }
   const clash = holidays.getAll().find((h) => h.date === date);
   if (clash) return fail(`${clash.name} is already on that date.`, "date");
   if (!name) return fail("Holiday name is required.", "name");
@@ -112,7 +129,8 @@ export function addHoliday(actorUserId, fields = {}) {
 
 // A holiday already past can't be removed: its day would become an absence for
 // everyone who didn't punch in, perhaps after the time to ask for a correction
-// has gone (round 10O). Today's and later ones can; adding a past one is fine.
+// has gone (round 10O). Today's and later ones can; adding a past one is fine,
+// unless its month's payroll is approved (addHoliday, round 11V).
 export function removeHoliday(actorUserId, id) {
   if (!holidayManager(actorUserId)) return fail("You can't remove holidays.");
   const holiday = holidays.get(id);

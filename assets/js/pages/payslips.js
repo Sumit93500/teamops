@@ -55,11 +55,12 @@ function spanWithYear(slips) {
 // A no-salary payslip has nothing worked out, so its amounts show as a dash, not ₹0.
 const amount = (slip, n) => (slip.holdReason === NO_SALARY ? "—" : rupees(n));
 
-// An approved month's payslip (round 11T) is still not paid; an on-hold one in it is held.
+// An approved month's payslip (round 11T) is still not paid; an on-hold one in it is held, for the reason it had when
+// the run was approved, which may have been put right since (round 11V, U-D6b).
 const approved = (slip) => slip.runStatus === "approved";
 const statusKey = (slip) => (approved(slip) && slip.status === "draft" ? "approved" : slip.status);
 const statusNote = (slip) => (slip.status === "on-hold"
-  ? `${approved(slip) ? "Approved, on hold" : "On hold"}: ${slip.holdReason}`
+  ? `${approved(slip) ? "On hold when approved" : "On hold"}: ${slip.holdReason}`
   : approved(slip) ? "Approved, not paid yet" : "Draft, not paid yet");
 
 // ---------- stat cards ----------

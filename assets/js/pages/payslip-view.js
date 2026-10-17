@@ -41,10 +41,11 @@ const orDash = (value) => (value ? String(value) : "—");
 const monthLabel = (month) => `${monthName(Number(month.slice(5, 7)))} ${month.slice(0, 4)}`;
 
 // "Draft: not approved or paid yet" / "Approved: not paid yet" / "On hold: No
-// bank account on file" ("Approved, on hold: ..." in an approved month).
+// bank account on file" ("On hold when approved: ..." in an approved month: the
+// reason it had then, which may have been put right since; round 11V).
 const approved = (slip) => slip.runStatus === "approved";
 const statusLine = (slip) => (slip.status === "on-hold"
-  ? `${approved(slip) ? "Approved, on hold" : "On hold"}: ${slip.holdReason}`
+  ? `${approved(slip) ? "On hold when approved" : "On hold"}: ${slip.holdReason}`
   : approved(slip) ? "Approved: not paid yet" : "Draft: not approved or paid yet");
 
 // ["a"] -> "a", ["a", "b"] -> "a and b", ["a", "b", "c"] -> "a, b and c"
