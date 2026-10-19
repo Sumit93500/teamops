@@ -209,9 +209,22 @@ function decidesStage(kind, request, user, users) {
   return kind.holds(kind.fallback, user);
 }
 
+// May this user pay the approved claim, with `users` as the people on record?
+// expenses-store.js canPay() restated (round 12C), for the reason above: someone
+// active with expenses:pay, never the claimant; the final approver only when
+// nobody else may (approving and paying are kept apart unless that would leave
+// the claim stuck). If payExpense's rule changes, this copy must change with it.
+const mayPayClaim = (claim, u) => u.status !== "inactive" && permissionsOf(u).includes("expenses:pay") && u.id !== claim.userId;
+function paysClaim(claim, user, users) {
+  if (!mayPayClaim(claim, user)) return false;
+  const approver = [...claim.history].reverse().find((h) => h.decision === "approved" || h.decision === "auto-approved")?.byUserId ?? null;
+  return user.id !== approver || !users.some((u) => u.id !== approver && mayPayClaim(claim, u));
+}
+
 // Why going from the `before` users to the `after` ones would leave a pending
-// request with nobody to decide it, in words, or null. `record` is the person
-// changed or removed.
+// request with nobody to decide it, or (round 12C) an approved expense claim
+// with nobody but its requester able to pay it, in words, or null. `record` is
+// the person changed or removed.
 function strandedProblem(before, after, record) {
   for (const kind of PENDING_KINDS) {
     const box = load(kind.key);
@@ -221,6 +234,13 @@ function strandedProblem(before, after, record) {
       const requester = before.find((u) => u.id === stuck.userId)?.name ?? stuck.userId;
       return `${record.name} is the last person who can decide ${requester}'s ${kind.word} ${stuck.id}, now at the ${STAGE_WORD[stuck.stage] ?? stuck.stage} stage: decide it first, or make sure someone else can.`;
     }
+  }
+  const box = load("expense-claims");
+  const approved = box && box.version === 1 && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records.filter((c) => c.status === "approved") : [];
+  const unpaid = approved.find((c) => before.some((u) => paysClaim(c, u, before)) && !after.some((u) => paysClaim(c, u, after)));
+  if (unpaid) {
+    const requester = before.find((u) => u.id === unpaid.userId)?.name ?? unpaid.userId;
+    return `${record.name} is the last person who can pay ${requester}'s expense claim ${unpaid.id}: pay it first, or make sure someone else can.`;
   }
   return null;
 }
