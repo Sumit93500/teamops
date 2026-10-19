@@ -169,6 +169,62 @@ function lastApproverProblem(before, after, record) {
   return `${record.name} is the only Admin who can approve ${MONTH_NAMES[Number(run.month.slice(5, 7)) - 1]} ${run.month.slice(0, 4)}'s payroll run (${preparer} prepared it): make someone else an Admin first.`;
 }
 
+// A pending request that nobody but its requester could decide would be stuck
+// for good (round 11Z; 11M R5, 10G G2b): a role change, deactivation or
+// deletion that leaves one so is refused, as lastApproverProblem() refuses
+// leaving a prepared payroll run with no approver. Each kind keeps its chain in
+// its own store (approval-chain.js for leave and corrections, expenses-store.js,
+// asset-requests-store.js), and those import this file, so their rules are
+// restated here over a list of user records, and the requests are read from
+// storage as the stores save them. The approve permissions can't be overridden
+// (round-11r-notes.md R0), so only a role, a status or a removal changes who
+// holds a stage. Only a stage someone held before and nobody holds after is
+// refused: one already without a holder doesn't block unrelated changes.
+//   key       the stored collection;  word  how a refusal names it
+//   fallback  who decides the manager stage when the manager can no longer
+//             (and, for leave and corrections, when there's no manager on file;
+//             an expense claim or asset request with none skipped that stage)
+//   holds     who holds the later stages
+const PENDING_KINDS = [
+  { key: "leave-requests", word: "leave request", fallback: "hr", noManagerFallsBack: true,
+    holds: (stage, u) => stage === "hr" && permissionsOf(u).includes("leave:approve") },
+  { key: "regularizations", word: "attendance correction", fallback: "hr", noManagerFallsBack: true,
+    holds: (stage, u) => stage === "hr" && permissionsOf(u).includes("attendance:approve") },
+  { key: "expense-claims", word: "expense claim", fallback: "finance", noManagerFallsBack: false,
+    holds: (stage, u) => (stage === "finance" ? u.role === "fin" : stage === "admin" && u.role === "admin") && permissionsOf(u).includes("expenses:approve") },
+  { key: "asset-requests", word: "asset request", fallback: "admin", noManagerFallsBack: false,
+    holds: (stage, u) => stage === "admin" && u.role === "admin" && permissionsOf(u).includes("assets:approve") },
+];
+const STAGE_WORD = { manager: "manager", hr: "HR", finance: "Finance", admin: "Admin" };
+
+// May this user decide the request at its current stage, with `users` as the
+// people on record? Never their own; the manager while they're active and not
+// the requester, else the fallback stage's holders.
+function decidesStage(kind, request, user, users) {
+  if (!user || user.status === "inactive" || user.id === request.userId) return false;
+  if (request.stage !== "manager") return kind.holds(request.stage, user);
+  const manager = request.managerId ? users.find((u) => u.id === request.managerId) : null;
+  if (manager && manager.status !== "inactive" && manager.id !== request.userId) return user.id === request.managerId;
+  if (!request.managerId && !kind.noManagerFallsBack) return false;
+  return kind.holds(kind.fallback, user);
+}
+
+// Why going from the `before` users to the `after` ones would leave a pending
+// request with nobody to decide it, in words, or null. `record` is the person
+// changed or removed.
+function strandedProblem(before, after, record) {
+  for (const kind of PENDING_KINDS) {
+    const box = load(kind.key);
+    const pending = box && box.version === 1 && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records.filter((r) => r.status === "pending") : [];
+    const stuck = pending.find((r) => before.some((u) => decidesStage(kind, r, u, before)) && !after.some((u) => decidesStage(kind, r, u, after)));
+    if (stuck) {
+      const requester = before.find((u) => u.id === stuck.userId)?.name ?? stuck.userId;
+      return `${record.name} is the last person who can decide ${requester}'s ${kind.word} ${stuck.id}, now at the ${STAGE_WORD[stuck.stage] ?? stuck.stage} stage: decide it first, or make sure someone else can.`;
+    }
+  }
+  return null;
+}
+
 // The reporting manager is kept by id (reportingManagerId), with their name beside it (reportingManager), for display
 // and for a manager who isn't on record (a department head). A name given without an id is matched once, when it's
 // saved: the one active person with that exact name, else the one person with it at all; none, or two or more, is no
@@ -392,6 +448,9 @@ function changeUser(actor, id, changes = {}) {
   if ("role" in changes || "status" in changes) {
     const lastApprover = lastApproverProblem(box.records, box.records.map((u) => (u.id === id ? { ...u, ...changes } : u)), record);
     if (lastApprover) return fail(lastApprover);
+    // ...and a pending request nobody else could decide (round 11Z)
+    const stranded = strandedProblem(box.records, box.records.map((u) => (u.id === id ? { ...u, ...changes } : u)), record);
+    if (stranded) return fail(stranded);
   }
   // A last working day with every deactivation (round 11Y; R8 part iii): the
   // profile's Deactivate asks for it. The edit form's "account active" box
@@ -454,6 +513,8 @@ export function deleteUser(actorUserId, id) {
   if (actor.id === id) return fail("You can't delete your own account.");
   const lastApprover = lastApproverProblem(box.records, box.records.filter((u) => u.id !== id), box.records[index]);   // as in changeUser (round 11T)
   if (lastApprover) return fail(lastApprover);
+  const stranded = strandedProblem(box.records, box.records.filter((u) => u.id !== id), box.records[index]);   // as in changeUser (round 11Z)
+  if (stranded) return fail(stranded);
   // Someone an approved payroll run pays keeps their record, so their payslips
   // can still be opened (round 11Y; round-11x-notes.md X-D3 (c)).
   const paid = approvedRunMonths(id);
