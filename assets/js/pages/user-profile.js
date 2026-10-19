@@ -66,8 +66,9 @@ function parseDate(text) {
   return month === -1 ? null : { year: Number(m[3]), month, day: Number(m[1]) };
 }
 
-// Whole months from the joining date to today, as "5 years, 6 months",
-// "3 months" or "Less than a month". Null when there's no usable date.
+// Whole months from the joining date to today (or to `today` as given), as
+// "5 years, 6 months", "3 months" or "Less than a month". Null when there's no
+// usable date.
 function tenureText(joined, today = new Date()) {
   const start = parseDate(joined);
   if (!start) return null;
@@ -111,6 +112,17 @@ function renderStatus() {
     statusBtn.classList.toggle("btn--danger", !inactive);
   }
   renderLastDay();
+  renderTenure();
+}
+
+// Tenure runs from the joining date to today, or for a leaver to their last
+// working day (round 12A; 11Y Y9.9): it stops counting when they leave, and
+// follows Deactivate / Reactivate on this page. It keeps its static text when
+// there's no joining date on record.
+function renderTenure() {
+  const last = parseDate(leavingDate(user));
+  const tenure = tenureText(user.dateOfJoining, last ? new Date(last.year, last.month, last.day) : new Date());
+  if (tenure) setKv("Tenure", tenure);
 }
 
 // A leaver's last working day (round 11Y), in a row after "Date of joining";
@@ -396,7 +408,7 @@ function render() {
   const edit = actions?.querySelector('a[href^="user-form.html"]');
   if (edit) edit.href = resolvePageLink(`users/user-form.html?id=${encodeURIComponent(user.id)}`);
 
-  // Details. Tenure keeps its static text when there's no joining date on record.
+  // Details (Tenure is set with the status: renderTenure()).
   setKv("Work email", orDash(user.email));
   setKv("Phone", orDash(user.phone));
   setKv("Location", orDash(user.location));
@@ -404,8 +416,6 @@ function render() {
   setKv("Department", orDash(dept));
   setKv("Reporting manager", orDash(reportingManagerName(user)));
   setKv("Date of joining", orDash(user.dateOfJoining));
-  const tenure = tenureText(user.dateOfJoining);
-  if (tenure) setKv("Tenure", tenure);
 
   // Sensitive details, masked by ui/pii.js (last 4 of the account, last 5 of the PAN)
   setupSensitive("Bank account",

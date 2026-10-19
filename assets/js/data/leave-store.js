@@ -445,7 +445,13 @@ export function currentApproverName(request) {
 // "<manager>, then HR or an Admin", or "HR or an Admin" (no manager on file).
 export function approvalChainText(userId) {
   const user = getUser(userId);
-  if (!user) return "—";
+  return user ? approvalChainFor(user) : "—";
+}
+
+// The same for a record that may not be saved yet (round 12A): user-form's
+// Access summary shows the chain the form would save, from its role and
+// reportingManagerId (and its id when editing: nobody is their own manager).
+export function approvalChainFor(user) {
   if (user.role === "admin") return "Approved automatically (Admin)";
   const managerId = resolveManager(user);
   return managerId ? `${getUser(managerId).name}, then HR or an Admin` : "HR or an Admin";

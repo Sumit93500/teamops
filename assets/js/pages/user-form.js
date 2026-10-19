@@ -6,6 +6,7 @@ import { getUser, getAllUsers, addUser, updateUser, peekNextId, getAllDepartment
 import { DESIGNATIONS } from "../data/users.js";
 import { ROLES, OVERRIDABLE, overridesOf, permissionsOf } from "../config/roles.js";
 import { ALL_PERMISSIONS } from "../config/permissions.js";
+import { approvalChainFor } from "../data/leave-store.js";
 import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
 import { getCurrentRole, getCurrentUserId } from "../core/auth.js";
@@ -108,6 +109,7 @@ fillSelect(field("manager"), "No reporting manager",
 function updateDefaultRole() {
   renderOverrideOptions();
   renderEffectivePermissions();
+  renderAccessSummary();
   if (!designationSelect || !defaultRoleInput) return;
   const roleKey = designationSelect.selectedOptions[0]?.dataset.role;
   defaultRoleInput.value = ROLES[roleKey]?.label ?? "";
@@ -136,7 +138,37 @@ function renderEffectivePermissions() {
     { className: "perm-chip", textContent: perm }, held.includes(perm) ? {} : { title: "Granted to this person" })));
 }
 
+// "Access summary" (round 12A; 11R R9.11): what saving would store, kept up to
+// date like Effective permissions, in place of the HTML's static values: the
+// designation, its role and that role's data scope, and the approval chain for
+// that role and the chosen manager, worded as on the profile pages. Nothing
+// records or enforces two-factor sign-in, so that row says so, muted, as on the
+// profile (round 11F).
+const summaryDd = (label) => Array.from(document.querySelectorAll(".kv__row"))
+  .find((r) => r.querySelector("dt")?.textContent.trim() === label)?.querySelector("dd");
+
+function setSummary(label, text) {
+  const dd = summaryDd(label);
+  if (dd) (dd.querySelector(".badge") ?? dd).textContent = text;
+}
+
+function renderAccessSummary() {
+  const roleKey = roleOnSave();
+  const manager = field("manager")?.value ?? "";
+  setSummary("Designation", designationSelect?.value || "—");
+  setSummary("Default role", ROLES[roleKey]?.label ?? roleKey);
+  setSummary("Data scope", ROLES[roleKey]?.dataScope === "all" ? "All records" : "Own records");
+  // A manager kept by name (not on record) isn't anyone's manager in the chain, as when saved.
+  setSummary("Approval chain", approvalChainFor({ id: editing?.id ?? null, role: roleKey, reportingManagerId: manager.startsWith("name:") ? null : manager || null }));
+  const twoFactor = summaryDd("Two-factor sign-in");
+  if (twoFactor) {
+    twoFactor.textContent = "Not recorded yet";
+    twoFactor.classList.add("text-muted");
+  }
+}
+
 designationSelect?.addEventListener("change", updateDefaultRole);
+field("manager")?.addEventListener("change", renderAccessSummary);
 
 // ---------- permission overrides (round 11R) ----------
 
