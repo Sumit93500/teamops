@@ -310,15 +310,22 @@ function localToday() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-// The months whose payroll run is approved and pays this person, newest first,
-// read from storage as payroll-store.js saves them (it imports this file, so
-// it can't be imported here), with the collection's own validity test.
-function approvedRunMonths(userId) {
+// The approved payroll runs, read from storage as payroll-store.js saves them
+// (it imports this file, so it can't be imported here), with the collection's
+// own validity test.
+function approvedRuns() {
   const box = load("payroll-runs");
   const runs = box && box.version === 1 && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records : [];
-  return runs.filter((r) => r.status === "approved" && Array.isArray(r.rows) && r.rows.some((row) => row.userId === userId))
-    .map((r) => r.month).sort().reverse();
+  return runs.filter((r) => r.status === "approved" && Array.isArray(r.rows));
 }
+
+// The months whose payroll run is approved and pays this person, newest first.
+function approvedRunMonths(userId) {
+  return approvedRuns().filter((r) => r.rows.some((row) => row.userId === userId)).map((r) => r.month).sort().reverse();
+}
+
+// Every month whose payroll run is approved, newest first (round 12E).
+const approvedMonths = () => approvedRuns().map((r) => r.month).sort().reverse();
 
 // Why `text` can't be this person's last working day, or null. It must be a
 // date, no later than today, not before their joining date, and not before the
@@ -336,6 +343,31 @@ function leavingProblem(record, text) {
   if (paid && last < monthEnd(paid)) {
     return `${monthLabel(paid)}'s payroll is approved and pays ${record.name} for all of it, so the last working day can't be before ${showDate(monthEnd(paid))}.`;
   }
+  return null;
+}
+
+// Why this person's joining date can't change to `text`, or null (round 12E;
+// round-12d-notes.md D12). Since 12D the joining date moves pay: a month is
+// paid in full when it's on or before the month's first day, from that day when
+// it's inside the month, and not at all (no row) when it's after it. So, as
+// leavingProblem() holds a last working day:
+//   - a leaver's joining date can't be after their last working day;
+//   - no month whose payroll is approved may read the joining date differently
+//     after the change, in either direction (its figures are fixed). Months
+//     after a leaver's last working day, and anyone inactive with no last
+//     working day on file (in no run since 11Y), aren't affected.
+// Compared as dates, so the form re-sending the same date in another format, or
+// still none, is no change.
+function joiningProblem(record, text) {
+  const before = joiningDate(record.dateOfJoining);
+  const after = joiningDate(text);
+  if (before === after) return null;
+  const left = leavingDate(record);
+  if (after && left && after > left) return `The joining date can't be after the last working day (${showDate(left)}).`;
+  if (record.status === "inactive" && !left) return null;
+  const reads = (month, date) => (!date || date <= `${month}-01` ? "in full" : date > monthEnd(month) ? "no row" : date);
+  const fixed = approvedMonths().find((month) => !(left && `${month}-01` > left) && reads(month, before) !== reads(month, after));
+  if (fixed) return `${monthLabel(fixed)}'s payroll is already approved for ${record.name}; the joining date can't be changed in a way that changes that month.`;
   return null;
 }
 
@@ -482,6 +514,11 @@ function changeUser(actor, id, changes = {}) {
     if (leaving) return fail(leaving, "dateOfLeaving");
   } else if ("dateOfLeaving" in changes) {
     return fail("A last working day is recorded only when someone is deactivated.", "dateOfLeaving");
+  }
+  // ...and the joining date, which moves pay since round 12D (round 12E).
+  if ("dateOfJoining" in changes) {
+    const joining = joiningProblem(record, changes.dateOfJoining);
+    if (joining) return fail(joining, "dateOfJoining");
   }
   if ("email" in changes && emailTaken(box.records, changes.email, id)) {
     return fail(`${changes.email} is already used by another employee.`, "email");
