@@ -312,6 +312,26 @@ export function applyLeave(userId, fields = {}) {
   return result.ok ? { ...result, advisories } : result;
 }
 
+// Why approving this request would take its person over the allowance, in
+// words, or null: the first period where what's approved plus this request's
+// days (counted now) is more than the allowance. Capped types only.
+function overAllowance(request) {
+  const policy = LEAVE_POLICY[request.type];
+  const periods = periodsOf(request, request.type);
+  const total = periods.reduce((sum, p) => sum + p.days, 0);
+  for (const p of periods) {
+    const label = p.month ? `${MONTHS[p.month - 1]} ${p.year}` : String(p.year);
+    const approved = balanceFor(request.userId, p.year, p.month ?? 1)[request.type].approved;
+    if (approved + p.days <= policy.allowance) continue;
+    const name = getUser(request.userId)?.name ?? request.userId;
+    const free = policy.allowance - approved;
+    const freeText = free < 0 ? `none of ${policy.allowance} days free in ${label}, ${-free} over` : `${free} of ${policy.allowance} days free in ${label}`;
+    const share = periods.length > 1 ? `${p.days} of this request's ${total} days fall in ${label}` : `this request is now ${total} ${total === 1 ? "day" : "days"}`;
+    return `This request no longer fits ${name}'s ${policy.label.toLowerCase()}: ${freeText} (${approved} approved), and ${share}.`;
+  }
+  return null;
+}
+
 // decision: "approve" | "reject", for the request's current stage only:
 //   manager  the requester's manager (or, if they can no longer decide, HR or an Admin)
 //   hr       HR or an Admin (leave:approve)
@@ -342,6 +362,13 @@ export function decideLeave(requestId, deciderUserId, deciderRole, decision, not
     const name = getUser(request.userId)?.name ?? request.userId;
     return fail(`This request no longer matches the attendance record: ${name} checked in on ${daysText(worked)}, so leave can't cover ${thoseDays(worked)}.`);
   }
+  // ...and the balance (round 11X; round-11n-notes.md N11): its days are counted
+  // live, so a holiday removed since it was sent can have made it longer than
+  // what's left. Each period is checked: what's approved there plus this
+  // request's own days. Another pending request doesn't count here; it's
+  // checked when it's approved. Nothing is decided, as above.
+  const over = !next.stage && CAPPED_TYPES.includes(request.type) ? overAllowance(request) : null;
+  if (over) return fail(over);
   return leave.update(requestId, {
     status: next.stage ? "pending" : "approved",
     stage: next.stage ?? "done",
