@@ -409,8 +409,15 @@ export function runProblems(year, month) {
   const sum = (list, count) => list.reduce((n, r) => n + count(r), 0);
   const open = rows.filter((r) => r.attendance.openAbsences.length > 0);
   const uncounted = rows.filter((r) => r.attendance.uncountedAbsences > 0);
-  const leave = allRequests().filter((r) => r.status === "pending" && r.type !== "wfh" && inRun.has(r.userId) && r.from <= last && r.to >= first);
-  const corrections = allRegularizations().filter((r) => r.status === "pending" && inRun.has(r.userId) && r.date >= first && r.date <= last);
+  // A leaver's request that covers only days after their last working day can't
+  // change the pay (those days are "left" whatever is decided, and approved
+  // unpaid leave stops at it: round 11Y), so it doesn't hold up the run (round
+  // 12B; 11Y Y9.9). It stays pending, to be decided like any other; one that
+  // covers the last working day or earlier still holds it up.
+  const lastDays = new Map(rows.map((r) => [r.userId, leavingDate(getUser(r.userId))]));
+  const afterLast = (userId, date) => Boolean(lastDays.get(userId)) && date > lastDays.get(userId);
+  const leave = allRequests().filter((r) => r.status === "pending" && r.type !== "wfh" && inRun.has(r.userId) && r.from <= last && r.to >= first && !afterLast(r.userId, r.from));
+  const corrections = allRegularizations().filter((r) => r.status === "pending" && inRun.has(r.userId) && r.date >= first && r.date <= last && !afterLast(r.userId, r.date));
   const problems = [];
   const windowShuts = isoFromDayNumber(dayNumber(last) + Math.max(ATTENDANCE_RULES.requestWindowDays, PAST_DAY_WINDOW));
   if (todayIso() <= last) problems.push("it hasn't ended yet");
