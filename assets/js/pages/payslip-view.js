@@ -193,6 +193,12 @@ function renderNotes(slip) {
       + `Each costs a day's pay (half with half-day leave) once its ${ATTENDANCE_RULES.requestWindowDays}-day correction window has closed `
       + "and nothing for it is waiting for a decision.");
   }
+  // G4 (round 11W): a late mark whose late-arrival correction is waiting isn't counted toward the penalty yet.
+  const paused = slip.attendance.pausedLateMarks ?? 0;
+  if (paused > 0) {
+    notes.push(`Not counted yet: ${plural(paused, "late mark with", "late marks, each with")} a late-arrival correction waiting for a decision. `
+      + `Every ${ATTENDANCE_RULES.penaltyEvery} late marks in a month cost half a day; ${paused === 1 ? "it counts only if the correction is" : "each counts only if its correction is"} rejected.`);
+  }
   const uncounted = slip.attendance.uncountedAbsences;
   if (uncounted > 0) {
     notes.push(`${plural(uncounted, "day", "days")} with no check-in ${uncounted === 1 ? "isn't" : "aren't"} counted as an absence: `

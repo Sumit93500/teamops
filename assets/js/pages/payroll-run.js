@@ -227,10 +227,15 @@ function attendanceCheck(run, label, done) {
   const notYet = most("notYet");
   const open = run.rows.flatMap((r) => r.attendance.openAbsences);
   const uncounted = run.rows.filter((r) => r.attendance.uncountedAbsences > 0);
+  const paused = run.rows.filter((r) => r.attendance.pausedLateMarks > 0);   // G4 (round 11W): not counted while a late-arrival correction waits
   const parts = [];
   if (noData) parts.push(`${workingDays(noData)} of ${label} came before attendance records began; they're paid in full, without a loss-of-pay check.`);
   if (notYet) parts.push(`${label} isn't over: ${plural(notYet, "working day hasn't", "working days haven't")} been recorded yet, so late marks, unpaid leave and absences can still change these figures.`);
   if (open.length) parts.push(openAbsencesText(open));
+  if (paused.length) {
+    const marks = paused.reduce((sum, r) => sum + r.attendance.pausedLateMarks, 0);
+    parts.push(`${plural(marks, "late mark isn't", "late marks aren't")} counted yet: a late-arrival correction for ${marks === 1 ? "it is" : "each is"} waiting for a decision (${paused.map(rowName).join(", ")}).`);
+  }
   if (uncounted.length) {
     const who = uncounted.map((r) => `${rowName(r)} (${plural(r.attendance.uncountedAbsences, "absence", "absences")})`).join(", ");
     parts.push(`Not counted, with no readable joining date on file: ${who}.`);
@@ -242,7 +247,7 @@ function attendanceCheck(run, label, done) {
     const who = joiners.map((r) => `${rowName(r)} (joined ${formatDay(r.attendance.joined)}, ${workingDays(r.attendance.beforeJoining)} before)`).join(", ");
     parts.push(`Joined during ${label}: ${who}. Days before joining aren't counted as absences, and the month's salary isn't prorated for them.`);
   }
-  const badge = noData || uncounted.length || joiners.length ? ["badge badge--warning", "Review"] : notYet || open.length ? ["badge badge--info", "In progress"] : done;
+  const badge = noData || uncounted.length || joiners.length ? ["badge badge--warning", "Review"] : notYet || open.length || paused.length ? ["badge badge--info", "In progress"] : done;
   return checkItem("Attendance recorded", parts.join(" ") || `Every working day of ${label} is recorded`, ...badge, "computed");
 }
 

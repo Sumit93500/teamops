@@ -147,6 +147,19 @@ function absencesIn(user, attendance, today) {
   return { days, open, uncounted };
 }
 
+// A month's late marks left out of the penalty for now (G4, round 11W,
+// round-11u-notes.md U2 / U-D2): a late day whose late-arrival correction is
+// waiting for a decision. It's the absences' rule (absencesIn, above): a draft
+// doesn't deduct what a pending request may undo. Only a late-arrival
+// correction pauses a late mark: G4 is about late arrivals, so a pending
+// missed-check-out or missed-check-in correction on a late day doesn't, even
+// though deciding one could change the day too. attendance-store.js's monthFor
+// keeps counting every late mark (the attendance pages show them all); only
+// pay waits. A stored run never holds one: runProblems() refuses a month with
+// a pending correction, and closes its window first.
+const pausedLateMarks = (attendance) => attendance.days.filter((d) => d.status === "late"
+  && d.regularization?.status === "pending" && d.regularization.issue === "late-arrival").length;
+
 // One person's pay for a month, or null for an unknown or inactive person or a
 // bad month. A row is "on-hold" (with holdReason) when there's no salary for
 // the month (all amounts 0) or no bank account to pay into; otherwise "draft".
@@ -159,6 +172,8 @@ function absencesIn(user, attendance, today) {
 //                       until (the last day to ask for a correction), waiting
 //                       (a correction or leave request is pending) }]
 //   uncountedAbsences   settled absences not deducted: no readable joining date
+//   pausedLateMarks     late marks not counted toward the penalty yet: a
+//                       late-arrival correction for each is pending (G4)
 //   beforeJoining, joined   working days before the joining date (not-joined:
 //                       not absences, and the month isn't prorated for them)
 //                       and that date (null if none can be read)
@@ -170,8 +185,9 @@ export function payrollRunFor(userId, year, month) {
   if (!user || !attendance) return null;
   const salary = salaryFor(userId, y, m);
   const absences = absencesIn(user, attendance, todayIso());
+  const paused = pausedLateMarks(attendance);
   const pay = computePay(salary?.gross ?? 0, {
-    penaltyHalfDays: attendance.penaltyHalfDays,
+    penaltyHalfDays: Math.floor((attendance.lateMarks - paused) / ATTENDANCE_RULES.penaltyEvery),
     unpaidLeaveDays: unpaidLeaveDays(userId, y, m),
     absenceDays: absences.days,
     workingDays: attendance.workingDays,
@@ -191,6 +207,7 @@ export function payrollRunFor(userId, year, month) {
       notYet: attendance.counts.notYet,
       openAbsences: absences.open,
       uncountedAbsences: absences.uncounted,
+      pausedLateMarks: paused,
       beforeJoining: attendance.counts.notJoined,
       joined: joiningDate(user.dateOfJoining),
     },
