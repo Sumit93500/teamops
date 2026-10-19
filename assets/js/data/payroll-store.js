@@ -176,8 +176,11 @@ const pausedLateMarks = (attendance) => attendance.days.filter((d) => d.status =
 //   pausedLateMarks     late marks not counted toward the penalty yet: a
 //                       late-arrival correction for each is pending (G4)
 //   beforeJoining, joined   working days before the joining date (not-joined:
-//                       not absences, and the month isn't prorated for them)
-//                       and that date (null if none can be read)
+//                       not absences; taken off as loss of pay, lop.notJoinedDays,
+//                       so the first month is prorated: round 12D) and that date
+//                       (null if none can be read). There's no row for a month
+//                       before the joining month, as there's none after a
+//                       leaver's final month
 //   lastDay             only in a leaver's final month (round 11Y): their last
 //                       working day; the working days after it are taken off
 //                       as loss of pay (lop.leftDays), so the month is prorated
@@ -187,6 +190,8 @@ export function payrollRunFor(userId, year, month) {
   const user = getUser(userId);
   const attendance = validMonth(y, m) ? monthFor(userId, y, m) : null;
   if (!user || !attendance) return null;
+  const joinedOn = joiningDate(user.dateOfJoining);
+  if (joinedOn && joinedOn.slice(0, 7) > `${y}-${pad(m)}`) return null;   // not joined yet (round 12D)
   const salary = salaryFor(userId, y, m);
   const absences = absencesIn(user, attendance, todayIso());
   const paused = pausedLateMarks(attendance);
@@ -195,6 +200,7 @@ export function payrollRunFor(userId, year, month) {
     unpaidLeaveDays: unpaidLeaveDays(userId, y, m),
     absenceDays: absences.days,
     leftDays: attendance.days.filter((d) => d.status === "left").length,
+    notJoinedDays: attendance.counts.notJoined,   // round 12D: the first month is prorated
     workingDays: attendance.workingDays,
   });
   const left = leavingDate(user);
@@ -393,8 +399,8 @@ export function storedRun(year, month) {
 //   - leave requests (not work from home) or attendance corrections dated in
 //     the month that are waiting for a decision. A pending late-arrival
 //     correction is one, so a late-mark penalty it may undo is never frozen.
-// Someone who joined during the month doesn't stop it: the month's salary
-// isn't prorated for them, a documented rule.
+// Someone who joined during the month doesn't stop it: the days before the
+// joining date are loss of pay (round 12D), a settled figure.
 export function runProblems(year, month) {
   const y = Number(year);
   const m = Number(month);

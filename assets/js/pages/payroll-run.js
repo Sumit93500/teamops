@@ -240,12 +240,12 @@ function attendanceCheck(run, label, done) {
     const who = uncounted.map((r) => `${rowName(r)} (${plural(r.attendance.uncountedAbsences, "absence", "absences")})`).join(", ");
     parts.push(`Not counted, with no readable joining date on file: ${who}.`);
   }
-  // Someone who joined during the month: their days before joining aren't
-  // absences, and nothing prorates the month's salary for them.
+  // Someone who joined during the month (round 12D): paid from the joining
+  // date; the working days before it are loss of pay.
   const joiners = run.rows.filter((r) => r.attendance.beforeJoining > 0);
   if (joiners.length) {
     const who = joiners.map((r) => `${rowName(r)} (joined ${formatDay(r.attendance.joined)}, ${workingDays(r.attendance.beforeJoining)} before)`).join(", ");
-    parts.push(`Joined during ${label}: ${who}. Days before joining aren't counted as absences, and the month's salary isn't prorated for them.`);
+    parts.push(`Joined during ${label}: ${who}. The month is paid from the joining date.`);
   }
   // Someone who left during the month (round 11Y): paid up to their last
   // working day; the days after it are loss of pay.

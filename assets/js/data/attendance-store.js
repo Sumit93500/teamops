@@ -366,6 +366,11 @@ function deriveDay(ctx, user, date) {
     // absence, and not paid, whatever is on record for it (the sample data
     // works out the people who never sign in day by day).
     day.status = "left";
+  } else if (joined && date < joined && !isWeekend(date) && !(holiday && holiday.kind !== "optional")) {
+    // A working day before the joining date (round 12D, the mirror of "left"):
+    // not expected, not an absence, and not paid, whatever is on record for it
+    // (no joining date that can be read: not checked).
+    day.status = "not-joined";
   } else if (record?.checkIn) {
     // A check-in always counts, even on a day that later became a holiday or leave.
     const inAt = toMinutes(record.checkIn);
@@ -393,8 +398,6 @@ function deriveDay(ctx, user, date) {
     day.status = "weekend";
   } else if (cover.full) {
     day.status = "on-leave";
-  } else if (joined && date < joined) {
-    day.status = "not-joined";    // a working day before they joined (no joining date that can be read: not checked)
   } else if (date < ctx.trackingStart) {
     day.status = "no-data";       // before attendance was recorded at all
   } else {

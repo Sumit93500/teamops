@@ -125,11 +125,12 @@ export function filingDates(year, month) {
 // Loss-of-pay days for a month: each late-mark penalty half day is 0.5, each
 // unpaid leave day 1 (a half day 0.5), each settled unexplained absence 1 (0.5
 // when half-day leave covers the other half), each working day after a
-// leaver's last one 1 (round 11Y: the final month is prorated), never more than
-// the month's working days. data/payroll-store.js decides which absences are
-// settled.
-export function lossOfPayDays({ penaltyHalfDays = 0, unpaidLeaveDays = 0, absenceDays = 0, leftDays = 0, workingDays = 0 } = {}) {
-  return Math.min(workingDays, penaltyHalfDays * 0.5 + unpaidLeaveDays + absenceDays + leftDays);
+// leaver's last one 1 (round 11Y: the final month is prorated), each working
+// day before a joiner's joining date 1 (round 12D: so is the first month),
+// never more than the month's working days. data/payroll-store.js decides
+// which absences are settled.
+export function lossOfPayDays({ penaltyHalfDays = 0, unpaidLeaveDays = 0, absenceDays = 0, leftDays = 0, notJoinedDays = 0, workingDays = 0 } = {}) {
+  return Math.min(workingDays, penaltyHalfDays * 0.5 + unpaidLeaveDays + absenceDays + leftDays + notJoinedDays);
 }
 
 // The rupees a month's gross loses: gross / working days for each LOP day.
@@ -145,9 +146,10 @@ export function lossOfPayAmount(monthlyGross, lopDays, workingDays) {
 // TDS on the full monthly gross. Professional tax and TDS are both capped so
 // net pay never goes below zero (PT's cap since round 11N: a paid gross under
 // about ₹214 used to leave net negative, 10U U4a).
-// lop.leftDays is there only for a leaver's final month (round 11Y).
-export function computePay(monthlyGross, { penaltyHalfDays = 0, unpaidLeaveDays = 0, absenceDays = 0, leftDays = 0, workingDays = 0 } = {}) {
-  const lopDays = lossOfPayDays({ penaltyHalfDays, unpaidLeaveDays, absenceDays, leftDays, workingDays });
+// lop.leftDays is there only for a leaver's final month (round 11Y), and
+// lop.notJoinedDays only for a joiner's first (round 12D).
+export function computePay(monthlyGross, { penaltyHalfDays = 0, unpaidLeaveDays = 0, absenceDays = 0, leftDays = 0, notJoinedDays = 0, workingDays = 0 } = {}) {
+  const lopDays = lossOfPayDays({ penaltyHalfDays, unpaidLeaveDays, absenceDays, leftDays, notJoinedDays, workingDays });
   const lopAmount = lossOfPayAmount(monthlyGross, lopDays, workingDays);
   const gross = monthlyGross - lopAmount;
   const earnings = splitGross(gross);
@@ -158,7 +160,7 @@ export function computePay(monthlyGross, { penaltyHalfDays = 0, unpaidLeaveDays 
   return {
     monthlyGross,
     workingDays,
-    lop: { penaltyHalfDays, unpaidLeaveDays, absenceDays, ...(leftDays ? { leftDays } : {}), days: lopDays, amount: lopAmount },
+    lop: { penaltyHalfDays, unpaidLeaveDays, absenceDays, ...(leftDays ? { leftDays } : {}), ...(notJoinedDays ? { notJoinedDays } : {}), days: lopDays, amount: lopAmount },
     gross,
     earnings,
     deductionLines: { pf, pt, tds },

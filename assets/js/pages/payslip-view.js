@@ -184,6 +184,7 @@ function renderNotes(slip) {
       slip.lop.unpaidLeaveDays ? `${formatDays(slip.lop.unpaidLeaveDays)} of unpaid leave` : "",
       slip.lop.absenceDays ? `${formatDays(slip.lop.absenceDays)} of unexplained absence` : "",
       slip.lop.leftDays ? `${formatDays(slip.lop.leftDays)} after the last working day` : "",   // round 11Y
+      slip.lop.notJoinedDays ? `${formatDays(slip.lop.notJoinedDays)} before the joining date` : "",   // round 12D
     ].filter(Boolean));
     notes.push(`Loss of pay: ${rupees(slip.lop.amount)} for ${formatDays(slip.lop.days)} (${why}), out of ${slip.workingDays} working days, `
       + `taken off the monthly salary of ${rupees(slip.monthlyGross)}. The earnings above are on the ${rupees(slip.gross)} left.`);
@@ -205,9 +206,11 @@ function renderNotes(slip) {
     notes.push(`${plural(uncounted, "day", "days")} with no check-in ${uncounted === 1 ? "isn't" : "aren't"} counted as an absence: `
       + "there's no readable joining date on file to count from.");
   }
+  // A joiner's first month (round 12D): paid from the joining date.
   if (slip.attendance.beforeJoining > 0) {
-    notes.push(`${plural(slip.attendance.beforeJoining, "working day", "working days")} of ${label} came before the joining date `
-      + `(${formatDay(slip.attendance.joined, true)}); they aren't counted as absences, and the month's salary isn't prorated for them.`);
+    const before = slip.attendance.beforeJoining;
+    notes.push(`The joining date was ${formatDay(slip.attendance.joined, true)}; `
+      + `${before === 1 ? "the 1 working day" : `the ${before} working days`} of ${label} before it ${before === 1 ? "isn't" : "aren't"} paid.`);
   }
   // A leaver's final month (round 11Y): paid up to the last working day.
   if (slip.attendance.lastDay) {
