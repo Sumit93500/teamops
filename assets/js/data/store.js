@@ -218,6 +218,51 @@ export function joiningDate(text) {
   return isValidDate(iso) ? iso : null;
 }
 
+// A leaver's last working day ("YYYY-MM-DD"), or null: recorded when they're
+// deactivated (deactivateUser), cleared when they're reactivated (round 11Y,
+// R8 part iii; round-11x-notes.md X-D1). Kept like the joining date ("14 Nov
+// 2026"); an inactive person from before 11Y has none, and is gone everywhere
+// as before.
+export const leavingDate = (user) => (user?.status === "inactive" ? joiningDate(user.dateOfLeaving) : null);
+
+const FULL_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const showDate = (iso) => `${Number(iso.slice(8))} ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+const monthLabel = (month) => `${FULL_MONTHS[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
+const monthEnd = (month) => `${month}-${String(new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0)).getUTCDate()).padStart(2, "0")}`;
+function localToday() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// The months whose payroll run is approved and pays this person, newest first,
+// read from storage as payroll-store.js saves them (it imports this file, so
+// it can't be imported here), with the collection's own validity test.
+function approvedRunMonths(userId) {
+  const box = load("payroll-runs");
+  const runs = box && box.version === 1 && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records : [];
+  return runs.filter((r) => r.status === "approved" && Array.isArray(r.rows) && r.rows.some((row) => row.userId === userId))
+    .map((r) => r.month).sort().reverse();
+}
+
+// Why `text` can't be this person's last working day, or null. It must be a
+// date, no later than today, not before their joining date, and not before the
+// end of the newest month an approved run pays them for: that month's figures
+// are fixed, with the whole month paid (as a holiday can't be added to it,
+// round 11V; arrears aren't built, round-11u-notes.md U-D5).
+function leavingProblem(record, text) {
+  const last = joiningDate(text);
+  if (!last) return "Enter their last working day.";
+  const today = localToday();
+  if (last > today) return `The last working day can't be later than today (${showDate(today)}).`;
+  const joined = joiningDate(record.dateOfJoining);
+  if (joined && last < joined) return `The last working day can't be before the joining date (${showDate(joined)}).`;
+  const paid = approvedRunMonths(record.id)[0];
+  if (paid && last < monthEnd(paid)) {
+    return `${monthLabel(paid)}'s payroll is approved and pays ${record.name} for all of it, so the last working day can't be before ${showDate(monthEnd(paid))}.`;
+  }
+  return null;
+}
+
 // ---------- reads (always deep copies) ----------
 
 export function getAllUsers() {
@@ -348,6 +393,17 @@ function changeUser(actor, id, changes = {}) {
     const lastApprover = lastApproverProblem(box.records, box.records.map((u) => (u.id === id ? { ...u, ...changes } : u)), record);
     if (lastApprover) return fail(lastApprover);
   }
+  // A last working day with every deactivation (round 11Y; R8 part iii): the
+  // profile's Deactivate asks for it. The edit form's "account active" box
+  // can't give one, so it can't deactivate; and the date is set only then.
+  const deactivating = changes.status === "inactive" && record.status !== "inactive";
+  if (deactivating && !("dateOfLeaving" in changes)) return fail("Deactivate them from their profile, which asks for their last working day.", "status");
+  if (deactivating) {
+    const leaving = leavingProblem(record, changes.dateOfLeaving);
+    if (leaving) return fail(leaving, "dateOfLeaving");
+  } else if ("dateOfLeaving" in changes) {
+    return fail("A last working day is recorded only when someone is deactivated.", "dateOfLeaving");
+  }
   if ("email" in changes && emailTaken(box.records, changes.email, id)) {
     return fail(`${changes.email} is already used by another employee.`, "email");
   }
@@ -358,18 +414,21 @@ function changeUser(actor, id, changes = {}) {
   if (manager?.error) return fail(manager.error, "manager");
 
   const { id: _ignored, extraRoles: _dropped, ...rest } = changes;
+  if (deactivating) rest.dateOfLeaving = showDate(joiningDate(changes.dateOfLeaving));   // kept like the joining date
   delete record.extraRoles;   // additional roles were dropped (round 11R): a stored list goes on the next save
   Object.assign(record, copy(withoutUnchanged(record, rest)), manager ?? {});
+  if (record.status !== "inactive") delete record.dateOfLeaving;   // reactivated: no longer a leaver (round 11Y)
   return commit(USERS_KEY, box, record);
 }
 
-export function deactivateUser(actorUserId, id) {
+// lastDay: their last working day ("YYYY-MM-DD"), required (round 11Y).
+export function deactivateUser(actorUserId, id, lastDay) {
   const actor = actorWith(actorUserId, "users:deactivate");
   if (!actor) return fail("You can't deactivate employees.");
   if (PROTECTED_IDS.includes(id)) {
     return fail(`${id} is a demo sign-in identity and can't be deactivated.`);
   }
-  return changeUser(actor, id, { status: "inactive" });
+  return changeUser(actor, id, { status: "inactive", dateOfLeaving: lastDay ?? "" });
 }
 
 export function reactivateUser(actorUserId, id) {
@@ -395,6 +454,10 @@ export function deleteUser(actorUserId, id) {
   if (actor.id === id) return fail("You can't delete your own account.");
   const lastApprover = lastApproverProblem(box.records, box.records.filter((u) => u.id !== id), box.records[index]);   // as in changeUser (round 11T)
   if (lastApprover) return fail(lastApprover);
+  // Someone an approved payroll run pays keeps their record, so their payslips
+  // can still be opened (round 11Y; round-11x-notes.md X-D3 (c)).
+  const paid = approvedRunMonths(id);
+  if (paid.length) return fail(`${box.records[index].name} is paid in an approved payroll run (${monthLabel(paid[0])}), so they can't be deleted. Deactivate them instead.`);
   const [removed] = box.records.splice(index, 1);
   return commit(USERS_KEY, box, removed);
 }

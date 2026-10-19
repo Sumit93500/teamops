@@ -183,6 +183,7 @@ function renderNotes(slip) {
       slip.lop.penaltyHalfDays ? plural(slip.lop.penaltyHalfDays, "late-mark half day", "late-mark half days") : "",
       slip.lop.unpaidLeaveDays ? `${formatDays(slip.lop.unpaidLeaveDays)} of unpaid leave` : "",
       slip.lop.absenceDays ? `${formatDays(slip.lop.absenceDays)} of unexplained absence` : "",
+      slip.lop.leftDays ? `${formatDays(slip.lop.leftDays)} after the last working day` : "",   // round 11Y
     ].filter(Boolean));
     notes.push(`Loss of pay: ${rupees(slip.lop.amount)} for ${formatDays(slip.lop.days)} (${why}), out of ${slip.workingDays} working days, `
       + `taken off the monthly salary of ${rupees(slip.monthlyGross)}. The earnings above are on the ${rupees(slip.gross)} left.`);
@@ -207,6 +208,12 @@ function renderNotes(slip) {
   if (slip.attendance.beforeJoining > 0) {
     notes.push(`${plural(slip.attendance.beforeJoining, "working day", "working days")} of ${label} came before the joining date `
       + `(${formatDay(slip.attendance.joined, true)}); they aren't counted as absences, and the month's salary isn't prorated for them.`);
+  }
+  // A leaver's final month (round 11Y): paid up to the last working day.
+  if (slip.attendance.lastDay) {
+    const after = slip.lop.leftDays ?? 0;
+    notes.push(`The last working day was ${formatDay(slip.attendance.lastDay, true)}`
+      + (after ? `; ${after === 1 ? "the 1 working day" : `the ${after} working days`} of ${label} after it ${after === 1 ? "isn't" : "aren't"} paid.` : "."));
   }
   if (slip.attendance.noData > 0) {
     notes.push(`${plural(slip.attendance.noData, "working day", "working days")} of ${label} came before attendance records began; `

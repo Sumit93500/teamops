@@ -21,7 +21,7 @@
 
 import { createCollection, fail } from "./collection.js";
 import { save, load, remove as removeKey } from "../core/storage.js";
-import { getUser, getAllUsers, joiningDate } from "./store.js";
+import { getUser, getAllUsers, joiningDate, leavingDate } from "./store.js";
 import { dayNumber, isoFromDayNumber, isValidDate, isWeekend, getAllHolidays, dayOffChecker } from "./holidays.js";
 import { allRequests, managerFor, PAST_DAY_WINDOW } from "./leave-store.js";
 import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
@@ -40,7 +40,7 @@ export const ATTENDANCE_RULES = {
 
 export const MODES = ["office", "wfh"];
 export const ISSUES = ["late-arrival", "missed-check-in", "missed-check-out"];
-export const STATUSES = ["present", "late", "half-day", "absent", "on-leave", "holiday", "weekend", "not-yet", "no-data", "not-joined"];
+export const STATUSES = ["present", "late", "half-day", "absent", "on-leave", "holiday", "weekend", "not-yet", "no-data", "not-joined", "left"];
 
 // ---------- small helpers ----------
 
@@ -324,6 +324,7 @@ function deriveDay(ctx, user, date) {
   const R = ATTENDANCE_RULES;
   const record = recordOn(ctx, user, date);
   const joined = joiningDate(user.dateOfJoining);
+  const left = leavingDate(user);   // a leaver's last working day (round 11Y)
   const holiday = ctx.holidays.get(date) ?? null;
   const cover = leaveCover(ctx.approvedLeave, user.id, date);
 
@@ -360,7 +361,12 @@ function deriveDay(ctx, user, date) {
     regularization: requestOn(ctx.requests, user.id, date),
   };
 
-  if (record?.checkIn) {
+  if (left && date > left && !isWeekend(date) && !(holiday && holiday.kind !== "optional")) {
+    // A working day after a leaver's last one (round 11Y): not expected, not an
+    // absence, and not paid, whatever is on record for it (the sample data
+    // works out the people who never sign in day by day).
+    day.status = "left";
+  } else if (record?.checkIn) {
     // A check-in always counts, even on a day that later became a holiday or leave.
     const inAt = toMinutes(record.checkIn);
     const late = inAt > start + R.graceMinutes;
@@ -413,11 +419,15 @@ export function dayFor(userId, date) {
 }
 
 // One person's month (month 1-12): every day, counts per status, and the late-mark penalty.
+// A leaver's months are readable up to the one with their last working day
+// (round 11Y), for payroll and payslips; the attendance pages list active
+// people only.
 export function monthFor(userId, year, month) {
   const user = getUser(userId);
   const y = Number(year);
   const m = Number(month);
-  if (!isTracked(user) || !Number.isInteger(y) || !Number.isInteger(m) || m < 1 || m > 12) return null;
+  if (!user || !Number.isInteger(y) || !Number.isInteger(m) || m < 1 || m > 12) return null;
+  if (!isTracked(user) && !(leavingDate(user) >= `${y}-${pad(m)}-01`)) return null;
   const ctx = context();
   const first = dayNumber(`${y}-${pad(m)}-01`);
   const next = m === 12 ? dayNumber(`${y + 1}-01-01`) : dayNumber(`${y}-${pad(m + 1)}-01`);

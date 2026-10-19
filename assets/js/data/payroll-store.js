@@ -17,7 +17,7 @@
 
 import { createCollection, fail } from "./collection.js";
 import { load } from "../core/storage.js";
-import { getUser, getAllUsers, joiningDate } from "./store.js";
+import { getUser, getAllUsers, joiningDate, leavingDate } from "./store.js";
 import { permissionsOf } from "../config/roles.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker } from "./holidays.js";
 import { allRequests, PAST_DAY_WINDOW } from "./leave-store.js";
@@ -83,7 +83,8 @@ export function unpaidLeaveDays(userId, year, month) {
   const m = Number(month);
   if (!validMonth(y, m)) return 0;
   const first = dayNumber(`${y}-${pad(m)}-01`);
-  const last = (m === 12 ? dayNumber(`${y + 1}-01-01`) : dayNumber(`${y}-${pad(m + 1)}-01`)) - 1;
+  const left = leavingDate(getUser(userId));   // a leaver's leave after their last working day isn't counted (round 11Y)
+  const last = Math.min((m === 12 ? dayNumber(`${y + 1}-01-01`) : dayNumber(`${y}-${pad(m + 1)}-01`)) - 1, left ? dayNumber(left) : Infinity);
   const isOff = dayOffChecker();
   let days = 0;
   for (const r of allRequests()) {
@@ -177,6 +178,9 @@ const pausedLateMarks = (attendance) => attendance.days.filter((d) => d.status =
 //   beforeJoining, joined   working days before the joining date (not-joined:
 //                       not absences, and the month isn't prorated for them)
 //                       and that date (null if none can be read)
+//   lastDay             only in a leaver's final month (round 11Y): their last
+//                       working day; the working days after it are taken off
+//                       as loss of pay (lop.leftDays), so the month is prorated
 export function payrollRunFor(userId, year, month) {
   const y = Number(year);
   const m = Number(month);
@@ -190,8 +194,10 @@ export function payrollRunFor(userId, year, month) {
     penaltyHalfDays: Math.floor((attendance.lateMarks - paused) / ATTENDANCE_RULES.penaltyEvery),
     unpaidLeaveDays: unpaidLeaveDays(userId, y, m),
     absenceDays: absences.days,
+    leftDays: attendance.days.filter((d) => d.status === "left").length,
     workingDays: attendance.workingDays,
   });
+  const left = leavingDate(user);
   const holdReason = !salary ? "No salary on file for this month" : !user.bankAccount ? "No bank account on file" : null;
   return {
     userId,
@@ -210,6 +216,7 @@ export function payrollRunFor(userId, year, month) {
       pausedLateMarks: paused,
       beforeJoining: attendance.counts.notJoined,
       joined: joiningDate(user.dateOfJoining),
+      ...(left && left.slice(0, 7) === `${y}-${pad(m)}` ? { lastDay: left } : {}),
     },
   };
 }
@@ -227,6 +234,9 @@ export function runMonth(today) {
 }
 
 // The month's run for everyone tracked, by name, worked out live: always a
+// draft (a leaver is in it up to the month of their last working day, round
+// 11Y: payrollRunFor() is null after that, and for an inactive person with no
+// last working day on file),
 // draft, approvedBy null, preparedBy as given (null for a preview nobody has
 // prepared). A prepared or approved run is stored: see storedRun(). The person
 // who prepared a run may not approve it: see canApprove().
@@ -234,7 +244,7 @@ export function payrollRun(year, month, { preparedBy = null } = {}) {
   const y = Number(year);
   const m = Number(month);
   if (!validMonth(y, m)) return null;
-  const rows = getAllUsers().filter((u) => u.status !== "inactive").sort(byName)
+  const rows = getAllUsers().sort(byName)
     .map((u) => payrollRunFor(u.id, y, m)).filter(Boolean);
   return { month: `${y}-${pad(m)}`, status: "draft", preparedBy, approvedBy: null, rows };
 }
@@ -282,13 +292,16 @@ const RECORDED = ["present", "late", "half-day", "absent", "not-yet"];
 // a row with attendance recorded. Each is payrollRunFor()'s row (with its
 // period and attendance counts), or, for a month whose run is approved, their
 // row in that run: the figures it fixed, with runStatus "approved" (round 11T,
-// S-D1). [] for an unknown or inactive person or a bad date. Which months
-// there are still follows attendance, so someone who has left has none yet
-// (R8 part iii).
+// S-D1). [] for an unknown person or a bad date, or an inactive one with no
+// last working day on file. A leaver's start from the month of their last
+// working day (round 11Y, R8 part iii): the pages show them to whoever may see
+// other people's payslips; the leaver can't sign in.
 export function payslipsFor(userId, today) {
   if (dayNumber(today) === null) return [];
-  let y = Number(today.slice(0, 4));
-  let m = Number(today.slice(5, 7));
+  const left = leavingDate(getUser(userId));
+  const from = left && left < today ? left : today;
+  let y = Number(from.slice(0, 4));
+  let m = Number(from.slice(5, 7));
   const approved = new Map(storedRuns().filter((r) => r.status === "approved").map((r) => [r.month, r]));
   const slips = [];
   for (let n = 0; n < 120; n++) {   // ten years at most

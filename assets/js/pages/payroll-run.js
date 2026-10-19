@@ -247,7 +247,14 @@ function attendanceCheck(run, label, done) {
     const who = joiners.map((r) => `${rowName(r)} (joined ${formatDay(r.attendance.joined)}, ${workingDays(r.attendance.beforeJoining)} before)`).join(", ");
     parts.push(`Joined during ${label}: ${who}. Days before joining aren't counted as absences, and the month's salary isn't prorated for them.`);
   }
-  const badge = noData || uncounted.length || joiners.length ? ["badge badge--warning", "Review"] : notYet || open.length || paused.length ? ["badge badge--info", "In progress"] : done;
+  // Someone who left during the month (round 11Y): paid up to their last
+  // working day; the days after it are loss of pay.
+  const leavers = run.rows.filter((r) => r.attendance.lastDay);
+  if (leavers.length) {
+    const who = leavers.map((r) => `${rowName(r)} (last working day ${formatDay(r.attendance.lastDay)}, ${workingDays(r.lop.leftDays ?? 0)} after)`).join(", ");
+    parts.push(`Left during ${label}: ${who}. The month is paid up to the last working day.`);
+  }
+  const badge = noData || uncounted.length || joiners.length || leavers.length ? ["badge badge--warning", "Review"] : notYet || open.length || paused.length ? ["badge badge--info", "In progress"] : done;
   return checkItem("Attendance recorded", parts.join(" ") || `Every working day of ${label} is recorded`, ...badge, "computed");
 }
 

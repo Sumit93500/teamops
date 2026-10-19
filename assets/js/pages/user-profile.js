@@ -4,10 +4,11 @@
 // Delete and Reset password. Cards with no data behind them yet stay as static
 // HTML.
 
-import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser, deleteUser, reportingManagerName } from "../data/store.js";
+import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser, deleteUser, reportingManagerName, leavingDate } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { ROLES, overridesOf } from "../config/roles.js";
 import { showToast } from "../ui/toast.js";
+import { openModal, closeModal } from "../ui/modal.js";
 import { resolvePageLink } from "../core/paths.js";
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
@@ -109,6 +110,110 @@ function renderStatus() {
     statusBtn.textContent = inactive ? "Reactivate" : "Deactivate";
     statusBtn.classList.toggle("btn--danger", !inactive);
   }
+  renderLastDay();
+}
+
+// A leaver's last working day (round 11Y), in a row after "Date of joining";
+// no row for anyone else.
+function renderLastDay() {
+  const rows = Array.from(document.querySelectorAll(".kv__row"));
+  const joining = rows.find((r) => r.querySelector("dt")?.textContent.trim() === "Date of joining");
+  let row = rows.find((r) => r.querySelector("dt")?.textContent.trim() === "Last working day");
+  const last = leavingDate(user);
+  if (!last) { row?.remove(); return; }
+  if (!row && joining) {
+    row = el("div", "kv__row");
+    row.append(el("dt", null, "Last working day"), el("dd"));
+    joining.after(row);
+  }
+  if (row) row.querySelector("dd").textContent = formatDay(last, true);
+}
+
+// Deactivating asks for the last working day (round 11Y; R8 part iii): the
+// store records it, and refuses one later than today, before the joining date,
+// or before the end of a month an approved payroll run pays them for. It opens
+// on today. Same closing rules as ui/modal.js: the ✕, Cancel, or the backdrop.
+const DEACTIVATE_ID = "deactivate-modal";
+// The modals' ✕, as ui/leave-decision.js draws it.
+function closeIcon() {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("class", "icon");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS(ns, "path");
+  path.setAttribute("d", "M6 6l12 12M18 6 6 18");
+  svg.append(path);
+  return svg;
+}
+function deactivateDialog() {
+  document.getElementById(DEACTIVATE_ID)?.remove();
+  const root = el("div", "modal");
+  root.id = DEACTIVATE_ID;
+  root.setAttribute("role", "dialog");
+  root.setAttribute("aria-modal", "true");
+  root.setAttribute("aria-labelledby", `${DEACTIVATE_ID}-title`);
+  const dialog = el("div", "modal__dialog modal__dialog--sm");
+  const header = el("div", "modal__header");
+  const heading = el("div");
+  const title = el("h3", "modal__title", `Deactivate ${user.name}`);
+  title.id = `${DEACTIVATE_ID}-title`;
+  heading.append(title, el("p", "modal__desc", "They'll no longer show as active. Their pay runs to their last working day."));
+  const close = el("button", "modal__close");
+  close.type = "button";
+  close.append(closeIcon());
+  close.setAttribute("aria-label", "Close");
+  header.append(heading, close);
+  const form = el("form");
+  form.noValidate = true;
+  const body = el("div", "modal__body");
+  const field = el("div", "form-field");
+  const label = el("label", "form-label form-label--required", "Last working day");
+  label.htmlFor = "deactivate-date";
+  const input = el("input", "input");
+  input.type = "date";
+  input.id = "deactivate-date";
+  input.value = todayIso();
+  input.max = todayIso();
+  field.append(label, input);
+  body.append(field);
+  const footer = el("div", "modal__footer");
+  const cancel = el("button", "btn", "Cancel");
+  cancel.type = "button";
+  const submit = el("button", "btn btn--danger", "Deactivate");
+  submit.type = "submit";
+  footer.append(cancel, submit);
+  form.append(body, footer);
+  dialog.append(header, form);
+  root.append(dialog);
+  document.body.append(root);
+  const hide = () => { closeModal(DEACTIVATE_ID); root.remove(); };
+  close.addEventListener("click", hide);
+  cancel.addEventListener("click", hide);
+  root.addEventListener("click", (e) => { if (e.target === root) hide(); });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    field.querySelector(".form-error")?.remove();
+    const result = deactivateUser(getCurrentUserId(), user.id, input.value);
+    if (!result.ok && result.field === "dateOfLeaving") {
+      const error = el("span", "form-error", result.error);
+      error.id = "deactivate-date-error";
+      field.append(error);
+      input.setAttribute("aria-describedby", error.id);
+      input.focus();
+      return;
+    }
+    hide();
+    if (!result.ok) {
+      showToast(result.error, "danger");
+      return;
+    }
+    user = result.record;
+    renderStatus();
+    showToast(`${user.name} deactivated. Last working day: ${formatDay(leavingDate(user), true)}.`, "success");
+  });
+  openModal(DEACTIVATE_ID);
+  input.focus();
 }
 
 // ---------- not found ----------
@@ -354,10 +459,11 @@ statusBtn?.addEventListener("click", () => {
     showToast("You can't deactivate your own account.", "danger");
     return;
   }
-  const question = deactivating
-    ? `Deactivate ${user.name}? They'll no longer show as active.`
-    : `Reactivate ${user.name}?`;
-  if (!window.confirm(question)) return;
+  if (deactivating) {   // asks for the last working day first (round 11Y)
+    deactivateDialog();
+    return;
+  }
+  if (!window.confirm(`Reactivate ${user.name}?`)) return;
 
   // Who is acting: the store checks their record (round 10Y; it held a non-Admin to its rule from round 9Y).
   const result = deactivating ? deactivateUser(getCurrentUserId(), user.id) : reactivateUser(getCurrentUserId(), user.id);
