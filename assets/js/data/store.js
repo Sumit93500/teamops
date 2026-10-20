@@ -371,6 +371,27 @@ function joiningProblem(record, text) {
   return null;
 }
 
+// Why this inactive person can't be reactivated, or null (round 12F;
+// round-12e-notes.md E12). Reactivating clears the last working day (round 11Y),
+// so every month would pay them in full again. As joiningProblem() holds the
+// joining date, no month whose payroll is approved may read them differently:
+//   - the month of their last working day, if it's approved, paid them up to it
+//     (prorated, 11Y);
+//   - an approved month after it, or any for someone inactive from before 11Y
+//     (no last working day on file: in no run), has no row for them.
+// Months before their joining date have no row either way, so they don't count.
+// The month of the last working day is named first; otherwise the newest.
+function reactivationProblem(record) {
+  const left = leavingDate(record);
+  const joined = joiningDate(record.dateOfJoining);
+  const months = approvedMonths().filter((month) => !(joined && joined > monthEnd(month)));
+  const last = left && months.find((month) => left >= `${month}-01` && left < monthEnd(month));
+  if (last) return `${monthLabel(last)}'s payroll is already approved and pays ${record.name} up to the last working day (${showDate(left)}); they can't be reactivated.`;
+  const without = months.find((month) => !left || left < `${month}-01`);
+  if (without) return `${monthLabel(without)}'s payroll is already approved without ${record.name}; they can't be reactivated.`;
+  return null;
+}
+
 // ---------- reads (always deep copies) ----------
 
 export function getAllUsers() {
@@ -514,6 +535,11 @@ function changeUser(actor, id, changes = {}) {
     if (leaving) return fail(leaving, "dateOfLeaving");
   } else if ("dateOfLeaving" in changes) {
     return fail("A last working day is recorded only when someone is deactivated.", "dateOfLeaving");
+  }
+  // Reactivating can't change an approved month either (round 12F).
+  if (record.status === "inactive" && "status" in changes && changes.status !== "inactive") {
+    const back = reactivationProblem(record);
+    if (back) return fail(back, "status");
   }
   // ...and the joining date, which moves pay since round 12D (round 12E).
   if ("dateOfJoining" in changes) {
