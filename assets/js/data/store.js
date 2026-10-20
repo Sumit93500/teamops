@@ -381,6 +381,9 @@ function joiningProblem(record, text) {
 //     (no last working day on file: in no run), has no row for them.
 // Months before their joining date have no row either way, so they don't count.
 // The month of the last working day is named first; otherwise the newest.
+// `record` carries the joining date the save leaves them with (round 12G;
+// round-12f-notes.md F12). For someone with no last working day, joiningProblem()
+// skips the change, so this is what judges every approved month for them.
 function reactivationProblem(record) {
   const left = leavingDate(record);
   const joined = joiningDate(record.dateOfJoining);
@@ -536,9 +539,10 @@ function changeUser(actor, id, changes = {}) {
   } else if ("dateOfLeaving" in changes) {
     return fail("A last working day is recorded only when someone is deactivated.", "dateOfLeaving");
   }
-  // Reactivating can't change an approved month either (round 12F).
+  // Reactivating can't change an approved month either (round 12F), judged with
+  // the joining date this save leaves them with: the edit form sends both (round 12G).
   if (record.status === "inactive" && "status" in changes && changes.status !== "inactive") {
-    const back = reactivationProblem(record);
+    const back = reactivationProblem("dateOfJoining" in changes ? { ...record, dateOfJoining: changes.dateOfJoining } : record);
     if (back) return fail(back, "status");
   }
   // ...and the joining date, which moves pay since round 12D (round 12E).
