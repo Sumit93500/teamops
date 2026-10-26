@@ -68,6 +68,7 @@ const WEEK = {
   "not-yet": ["ny", "NY", "not in yet"],
   "no-data": ["nd", "ND", "no data"],
   "not-joined": ["nd", "NJ", "before joining"],
+  left: ["nd", "AL", "after leaving"],   // round 12K
 };
 const weekPart = (day) => WEEK[day.status] ?? ["nd", "?", day.status];
 

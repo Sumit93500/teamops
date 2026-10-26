@@ -322,9 +322,13 @@ function requestOn(requests, userId, date) {
 
 function deriveDay(ctx, user, date) {
   const R = ATTENDANCE_RULES;
-  const record = recordOn(ctx, user, date);
   const joined = joiningDate(user.dateOfJoining);
   const holiday = ctx.holidays.get(date) ?? null;
+  // A working day away (round 11Y; a past period, round 12H) carries no record
+  // (round 12K; round-12j-notes.md J12): it isn't counted whatever is on record,
+  // so its times (the sample data's, or a stored day's) aren't shown either.
+  const away = awayOn(user, date) && !isWeekend(date) && !(holiday && holiday.kind !== "optional");
+  const record = away ? null : recordOn(ctx, user, date);
   const cover = leaveCover(ctx.approvedLeave, user.id, date);
 
   // The part of the shift they're expected for: all of it, or the half not on leave.
@@ -360,7 +364,7 @@ function deriveDay(ctx, user, date) {
     regularization: requestOn(ctx.requests, user.id, date),
   };
 
-  if (awayOn(user, date) && !isWeekend(date) && !(holiday && holiday.kind !== "optional")) {
+  if (away) {
     // A working day after a leaver's last one (round 11Y), or in a period away
     // before they were reactivated (round 12H): not expected, not an absence,
     // and not paid, whatever is on record for it (the sample data works out the

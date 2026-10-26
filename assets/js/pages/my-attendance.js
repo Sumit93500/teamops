@@ -55,8 +55,9 @@ const pad = (n) => String(n).padStart(2, "0");
 const ordinal = (n) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
 
 // Working days of the month up to today that have data: not weekends or
-// holidays, not before attendance was recorded, not today while nothing's in yet.
-const isOffOrEmpty = (day) => ["weekend", "holiday", "no-data", "not-joined"].includes(day.status);
+// holidays, not before attendance was recorded (or before joining, or away:
+// round 12K), not today while nothing's in yet.
+const isOffOrEmpty = (day) => ["weekend", "holiday", "no-data", "not-joined", "left"].includes(day.status);
 const soFar = (days, today) => days.filter((d) => d.date <= today && !isOffOrEmpty(d) && d.status !== "not-yet");
 
 // ---------- stat strip ----------
@@ -112,6 +113,7 @@ function cellLook(day, today) {
     case "weekend": return ["weekend", ""];
     case "no-data": return ["future", "No data"];
     case "not-joined": return ["future", "Before joining"];
+    case "left": return ["future", "After leaving"];   // round 12K
     default: return ["future", day.date === today ? "Not in yet" : ""];   // not-yet
   }
 }
