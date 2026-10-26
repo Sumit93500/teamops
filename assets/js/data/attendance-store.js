@@ -625,8 +625,11 @@ export function checkOut(userId) {
 // Is the day itself still one a correction can be for? Checked when the request
 // is sent and again when it's finally approved: a holiday or approved leave may
 // have been added in between. null if yes, else "off" (a holiday or weekend with
-// no check-in: no attendance needed) or "leave" (approved leave covers it).
+// no check-in: no attendance needed), "leave" (approved leave covers it) or
+// "left" (a day away, round 12I: whatever the record says; refused when it's
+// sent, the approval acts on the other two only).
 function dayRefusal(day) {
+  if (day.status === "left") return "left";
   if (!day.checkIn && (day.status === "holiday" || day.status === "weekend")) return "off";
   if (!day.checkIn && day.status === "on-leave") return "leave";
   return null;
@@ -702,6 +705,7 @@ export function requestRegularization(userId, fields = {}) {
   const refusal = dayRefusal(day);
   if (refusal === "off") return fail("No attendance is needed on that day.", "date");
   if (refusal === "leave") return fail("You were on approved leave that day.", "date");
+  if (refusal === "left") return fail("You weren't working here that day.", "date");
   const record = recordOn(ctx, user, date);
   const problem = checkAgainstRecord(record, issue, time, ctx.today, date);
   if (problem) return problem;

@@ -7,7 +7,7 @@
 
 import { createCollection, fail } from "./collection.js";
 import { load } from "../core/storage.js";
-import { getUser, getAllUsers } from "./store.js";
+import { getUser, getAllUsers, joiningDate, awayOn } from "./store.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker, isWeekend, resetHolidays } from "./holidays.js";
 import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
 
@@ -123,6 +123,21 @@ function checkedInDays(userId, from, to) {
   const isOff = dayOffChecker();
   const dates = records.filter((r) => r.userId === userId && r.checkIn && from <= r.date && r.date <= to && !isOff(r.date)).map((r) => r.date);
   return [...new Set(dates)].sort();
+}
+// The working days from `from` to `to` that weren't this person's to work,
+// oldest first (round 12I; round-12h-notes.md H12): before their joining date,
+// or away (store.js awayOn(): after a last working day, or in a period before
+// they were reactivated). Attendance reads them as "not-joined" / "left" with
+// these same tests (it can't be imported here: see checkedInDays()).
+function notTheirDays(user, from, to) {
+  const joined = joiningDate(user.dateOfJoining);
+  const isOff = dayOffChecker();
+  const dates = [];
+  for (let n = dayNumber(from); n <= dayNumber(to); n++) {
+    const iso = isoFromDayNumber(n);
+    if (!isOff(iso) && ((joined && iso < joined) || awayOn(user, iso))) dates.push(iso);
+  }
+  return dates;
 }
 const daysText = (dates) => (dates.length > 1 ? `${dates.slice(0, -1).join(", ")} and ${dates.at(-1)}` : dates[0]);
 const thoseDays = (dates) => (dates.length > 1 ? "those days" : "that day");
@@ -255,6 +270,9 @@ export function applyLeave(userId, fields = {}) {
 
   const days = workingDays(from, to, duration);
   if (days === 0) return fail("Those dates are all weekends or holidays, so there's nothing to take.", "to");
+  // A day that wasn't theirs to work (round 12I) can't take any request, working from home included.
+  const notTheirs = notTheirDays(user, from, to);
+  if (notTheirs.length) return fail(`You weren't working here on ${daysText(notTheirs)}, so leave can't cover ${thoseDays(notTheirs)}.`, "from");
   // Working from home isn't time off, so a day checked in on can still be one.
   const worked = type === "wfh" ? [] : checkedInDays(userId, from, to);
   if (worked.length) return fail(`You checked in on ${daysText(worked)}, so leave can't cover ${thoseDays(worked)}. If the check-in times are wrong, ask for a correction instead.`, "from");
