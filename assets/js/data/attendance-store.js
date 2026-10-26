@@ -326,9 +326,12 @@ function deriveDay(ctx, user, date) {
   const holiday = ctx.holidays.get(date) ?? null;
   // A working day away (round 11Y; a past period, round 12H) carries no record
   // (round 12K; round-12j-notes.md J12): it isn't counted whatever is on record,
-  // so its times (the sample data's, or a stored day's) aren't shown either.
+  // so its times (the sample data's, or a stored day's) aren't shown either. Nor
+  // does a working day before the joining date (round 12L; round-12k-notes.md
+  // K7.1), when the date was set after the sample data or a stored day.
   const away = awayOn(user, date) && !isWeekend(date) && !(holiday && holiday.kind !== "optional");
-  const record = away ? null : recordOn(ctx, user, date);
+  const notJoined = Boolean(joined && date < joined) && !isWeekend(date) && !(holiday && holiday.kind !== "optional");
+  const record = away || notJoined ? null : recordOn(ctx, user, date);
   const cover = leaveCover(ctx.approvedLeave, user.id, date);
 
   // The part of the shift they're expected for: all of it, or the half not on leave.
@@ -370,7 +373,7 @@ function deriveDay(ctx, user, date) {
     // and not paid, whatever is on record for it (the sample data works out the
     // people who never sign in day by day).
     day.status = "left";
-  } else if (joined && date < joined && !isWeekend(date) && !(holiday && holiday.kind !== "optional")) {
+  } else if (notJoined) {
     // A working day before the joining date (round 12D, the mirror of "left"):
     // not expected, not an absence, and not paid, whatever is on record for it
     // (no joining date that can be read: not checked).
