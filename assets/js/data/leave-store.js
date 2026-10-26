@@ -372,9 +372,18 @@ export function decideLeave(requestId, deciderUserId, deciderRole, decision, not
   const entry = { stage: request.stage, byUserId: deciderUserId, decision: decision === "approve" ? "approved" : "rejected", at: now, note: text };
   if (decision === "reject") return leave.update(requestId, { status: "rejected", stage: "done", history: [...request.history, entry] });
   const next = chain.nextStage(request, request.stage);
-  // The final approval checks the days again: a check-in may have been recorded
-  // since the request was sent. Nothing is decided; it stays pending until it's
-  // rejected or cancelled (as a correction does when leave lands first).
+  // The final approval checks the days again: they may have stopped being the
+  // person's to work since the request was sent (round 12J; round-12i-notes.md
+  // I12): a period away before a reactivation, after a leaver's last working
+  // day, or before a joining date moved later (applyLeave's test, round 12I).
+  // Nothing is decided; it stays pending until it's rejected or cancelled.
+  const notTheirs = !next.stage ? notTheirDays(getUser(request.userId) ?? {}, request.from, request.to) : [];
+  if (notTheirs.length) {
+    const name = getUser(request.userId)?.name ?? request.userId;
+    return fail(`This request no longer matches the attendance record: ${name} wasn't working here on ${daysText(notTheirs)}, so leave can't cover ${thoseDays(notTheirs)}.`);
+  }
+  // ...and a check-in may have been recorded since it was sent. Nothing is
+  // decided, as above (as a correction does when leave lands first).
   const worked = !next.stage && request.type !== "wfh" ? checkedInDays(request.userId, request.from, request.to) : [];
   if (worked.length) {
     const name = getUser(request.userId)?.name ?? request.userId;
