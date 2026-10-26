@@ -17,7 +17,7 @@
 
 import { createCollection, fail } from "./collection.js";
 import { load } from "../core/storage.js";
-import { getUser, getAllUsers, joiningDate, leavingDate } from "./store.js";
+import { getUser, getAllUsers, joiningDate, leavingDate, awayOn } from "./store.js";
 import { permissionsOf } from "../config/roles.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker } from "./holidays.js";
 import { allRequests, PAST_DAY_WINDOW } from "./leave-store.js";
@@ -83,8 +83,8 @@ export function unpaidLeaveDays(userId, year, month) {
   const m = Number(month);
   if (!validMonth(y, m)) return 0;
   const first = dayNumber(`${y}-${pad(m)}-01`);
-  const left = leavingDate(getUser(userId));   // a leaver's leave after their last working day isn't counted (round 11Y)
-  const last = Math.min((m === 12 ? dayNumber(`${y + 1}-01-01`) : dayNumber(`${y}-${pad(m + 1)}-01`)) - 1, left ? dayNumber(left) : Infinity);
+  const user = getUser(userId);   // a leaver's leave after their last working day isn't counted (round 11Y), nor in a period away (round 12H)
+  const last = (m === 12 ? dayNumber(`${y + 1}-01-01`) : dayNumber(`${y}-${pad(m + 1)}-01`)) - 1;
   const isOff = dayOffChecker();
   let days = 0;
   for (const r of allRequests()) {
@@ -92,10 +92,20 @@ export function unpaidLeaveDays(userId, year, month) {
     const from = Math.max(first, dayNumber(r.from));
     const to = Math.min(last, dayNumber(r.to));
     for (let n = from; n <= to; n++) {
-      if (!isOff(isoFromDayNumber(n))) days += r.duration === "full" ? 1 : 0.5;
+      if (!isOff(isoFromDayNumber(n)) && !awayOn(user, isoFromDayNumber(n))) days += r.duration === "full" ? 1 : 0.5;
     }
   }
   return days;
+}
+
+// Whether every day from `from` to `to` ("YYYY-MM-DD") is one this person was
+// away (store.js awayOn(): after a last working day, live or in a past period;
+// round 12H).
+function awayThrough(user, from, to) {
+  const [a, b] = [dayNumber(from), dayNumber(to)];
+  if (a === null || b === null || a > b) return false;
+  for (let n = a; n <= b; n++) if (!awayOn(user, isoFromDayNumber(n))) return false;
+  return true;
 }
 
 // ---------- unexplained absences ----------
@@ -192,6 +202,7 @@ export function payrollRunFor(userId, year, month) {
   if (!user || !attendance) return null;
   const joinedOn = joiningDate(user.dateOfJoining);
   if (joinedOn && joinedOn.slice(0, 7) > `${y}-${pad(m)}`) return null;   // not joined yet (round 12D)
+  if (awayThrough(user, attendance.days[0].date, attendance.days.at(-1).date)) return null;   // away all month (round 12H)
   const salary = salaryFor(userId, y, m);
   const absences = absencesIn(user, attendance, todayIso());
   const paused = pausedLateMarks(attendance);
@@ -304,7 +315,8 @@ const RECORDED = ["present", "late", "half-day", "absent", "not-yet"];
 // other people's payslips; the leaver can't sign in.
 export function payslipsFor(userId, today) {
   if (dayNumber(today) === null) return [];
-  const left = leavingDate(getUser(userId));
+  const user = getUser(userId);
+  const left = leavingDate(user);
   const from = left && left < today ? left : today;
   let y = Number(from.slice(0, 4));
   let m = Number(from.slice(5, 7));
@@ -312,9 +324,11 @@ export function payslipsFor(userId, today) {
   const slips = [];
   for (let n = 0; n < 120; n++) {   // ten years at most
     const attendance = monthFor(userId, y, m);
-    if (!attendance?.days.some((d) => RECORDED.includes(d.status))) break;
+    // A month away in a past period (round 12H) has no payslip; the earlier ones still count.
+    const away = attendance && awayThrough(user, attendance.days[0].date, attendance.days.at(-1).date);
+    if (!away && !attendance?.days.some((d) => RECORDED.includes(d.status))) break;
     const fixed = approved.get(monthKey(y, m))?.rows.find((r) => r.userId === userId);
-    slips.push(fixed ? { ...fixed, runStatus: "approved" } : payrollRunFor(userId, y, m));
+    if (!away) slips.push(fixed ? { ...fixed, runStatus: "approved" } : payrollRunFor(userId, y, m));
     [y, m] = m === 1 ? [y - 1, 12] : [y, m - 1];
   }
   return slips;
@@ -418,12 +432,13 @@ export function runProblems(year, month) {
   // A leaver's request that covers only days after their last working day can't
   // change the pay (those days are "left" whatever is decided, and approved
   // unpaid leave stops at it: round 11Y), so it doesn't hold up the run (round
-  // 12B; 11Y Y9.9). It stays pending, to be decided like any other; one that
-  // covers the last working day or earlier still holds it up.
-  const lastDays = new Map(rows.map((r) => [r.userId, leavingDate(getUser(r.userId))]));
-  const afterLast = (userId, date) => Boolean(lastDays.get(userId)) && date > lastDays.get(userId);
-  const leave = allRequests().filter((r) => r.status === "pending" && r.type !== "wfh" && inRun.has(r.userId) && r.from <= last && r.to >= first && !afterLast(r.userId, r.from));
-  const corrections = allRegularizations().filter((r) => r.status === "pending" && inRun.has(r.userId) && r.date >= first && r.date <= last && !afterLast(r.userId, r.date));
+  // 12B; 11Y Y9.9); nor one covering only days in a period away before they were
+  // reactivated (round 12H). It stays pending, to be decided like any other; one
+  // that covers the last working day or earlier still holds it up.
+  const people = new Map(rows.map((r) => [r.userId, getUser(r.userId)]));
+  const away = (userId, from, to) => awayThrough(people.get(userId), from, to);
+  const leave = allRequests().filter((r) => r.status === "pending" && r.type !== "wfh" && inRun.has(r.userId) && r.from <= last && r.to >= first && !away(r.userId, r.from, r.to));
+  const corrections = allRegularizations().filter((r) => r.status === "pending" && inRun.has(r.userId) && r.date >= first && r.date <= last && !away(r.userId, r.date, r.date));
   const problems = [];
   const windowShuts = isoFromDayNumber(dayNumber(last) + Math.max(ATTENDANCE_RULES.requestWindowDays, PAST_DAY_WINDOW));
   if (todayIso() <= last) problems.push("it hasn't ended yet");

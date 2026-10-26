@@ -296,10 +296,28 @@ export function joiningDate(text) {
 
 // A leaver's last working day ("YYYY-MM-DD"), or null: recorded when they're
 // deactivated (deactivateUser), cleared when they're reactivated (round 11Y,
-// R8 part iii; round-11x-notes.md X-D1). Kept like the joining date ("14 Nov
-// 2026"); an inactive person from before 11Y has none, and is gone everywhere
-// as before.
+// R8 part iii; round-11x-notes.md X-D1), when it moves to their past periods
+// away (leavingPeriods, below). Kept like the joining date ("14 Nov 2026"); an
+// inactive person from before 11Y has none, and is gone everywhere as before.
 export const leavingDate = (user) => (user?.status === "inactive" ? joiningDate(user.dateOfLeaving) : null);
+
+// A person's past periods away (round 12H; round-12g-notes.md G12): each time a
+// leaver is reactivated, changeUser() adds their last working day and the day
+// they came back to user.leavingPeriods (kept like the joining date), and
+// nothing else writes it. As "YYYY-MM-DD" pairs; one that can't be read is
+// skipped.
+export const leavingPeriods = (user) => (Array.isArray(user?.leavingPeriods) ? user.leavingPeriods : [])
+  .map((p) => ({ lastDay: joiningDate(p?.dateOfLeaving), back: joiningDate(p?.reactivatedOn) }))
+  .filter((p) => p.lastDay && p.back);
+
+// Whether `date` ("YYYY-MM-DD") is a day this person was away: after their last
+// working day, or after one in a past period and before the day they came back.
+// Attendance reads such a working day as "left" (round 11Y) for good, however
+// many times they leave and come back.
+export function awayOn(user, date) {
+  const left = leavingDate(user);
+  return Boolean(left && date > left) || leavingPeriods(user).some((p) => date > p.lastDay && date < p.back);
+}
 
 const FULL_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const showDate = (iso) => `${Number(iso.slice(8))} ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
@@ -455,8 +473,9 @@ export function addUser(actorUserId, fields = {}) {
   if (!actor) return fail("You can't add employees.");
   const byRole = actor.role;
   const box = loadUsers();
-  // ids are always generated here; additional roles were dropped (round 11R) and are never saved
-  const { id: _ignored, extraRoles: _dropped, ...rest } = fields;
+  // ids are always generated here; additional roles were dropped (round 11R) and are never saved; past periods away
+  // are written only by a reactivation (round 12H)
+  const { id: _ignored, extraRoles: _dropped, leavingPeriods: _kept, ...rest } = fields;
   if (adminOnly(byRole, rest)) return fail(ADMIN_ONLY);
   const overrides = overridesProblem(actor, null, rest);
   if (overrides) return fail(overrides);
@@ -541,7 +560,8 @@ function changeUser(actor, id, changes = {}) {
   }
   // Reactivating can't change an approved month either (round 12F), judged with
   // the joining date this save leaves them with: the edit form sends both (round 12G).
-  if (record.status === "inactive" && "status" in changes && changes.status !== "inactive") {
+  const reactivating = record.status === "inactive" && "status" in changes && changes.status !== "inactive";
+  if (reactivating) {
     const back = reactivationProblem("dateOfJoining" in changes ? { ...record, dateOfJoining: changes.dateOfJoining } : record);
     if (back) return fail(back, "status");
   }
@@ -559,8 +579,14 @@ function changeUser(actor, id, changes = {}) {
   const manager = managerFields(box.records, id, changes);
   if (manager?.error) return fail(manager.error, "manager");
 
-  const { id: _ignored, extraRoles: _dropped, ...rest } = changes;
+  const { id: _ignored, extraRoles: _dropped, leavingPeriods: _kept, ...rest } = changes;   // past periods away: below only
   if (deactivating) rest.dateOfLeaving = showDate(joiningDate(changes.dateOfLeaving));   // kept like the joining date
+  // Reactivating a leaver keeps the time away on record (round 12H): the days
+  // between read as "left" for good, not as days worked.
+  if (reactivating && joiningDate(record.dateOfLeaving)) {
+    const away = { dateOfLeaving: record.dateOfLeaving, reactivatedOn: showDate(localToday()) };
+    record.leavingPeriods = [...(Array.isArray(record.leavingPeriods) ? record.leavingPeriods : []), away];
+  }
   delete record.extraRoles;   // additional roles were dropped (round 11R): a stored list goes on the next save
   Object.assign(record, copy(withoutUnchanged(record, rest)), manager ?? {});
   if (record.status !== "inactive") delete record.dateOfLeaving;   // reactivated: no longer a leaver (round 11Y)

@@ -21,7 +21,7 @@
 
 import { createCollection, fail } from "./collection.js";
 import { save, load, remove as removeKey } from "../core/storage.js";
-import { getUser, getAllUsers, joiningDate, leavingDate } from "./store.js";
+import { getUser, getAllUsers, joiningDate, leavingDate, awayOn } from "./store.js";
 import { dayNumber, isoFromDayNumber, isValidDate, isWeekend, getAllHolidays, dayOffChecker } from "./holidays.js";
 import { allRequests, managerFor, PAST_DAY_WINDOW } from "./leave-store.js";
 import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
@@ -324,7 +324,6 @@ function deriveDay(ctx, user, date) {
   const R = ATTENDANCE_RULES;
   const record = recordOn(ctx, user, date);
   const joined = joiningDate(user.dateOfJoining);
-  const left = leavingDate(user);   // a leaver's last working day (round 11Y)
   const holiday = ctx.holidays.get(date) ?? null;
   const cover = leaveCover(ctx.approvedLeave, user.id, date);
 
@@ -361,10 +360,11 @@ function deriveDay(ctx, user, date) {
     regularization: requestOn(ctx.requests, user.id, date),
   };
 
-  if (left && date > left && !isWeekend(date) && !(holiday && holiday.kind !== "optional")) {
-    // A working day after a leaver's last one (round 11Y): not expected, not an
-    // absence, and not paid, whatever is on record for it (the sample data
-    // works out the people who never sign in day by day).
+  if (awayOn(user, date) && !isWeekend(date) && !(holiday && holiday.kind !== "optional")) {
+    // A working day after a leaver's last one (round 11Y), or in a period away
+    // before they were reactivated (round 12H): not expected, not an absence,
+    // and not paid, whatever is on record for it (the sample data works out the
+    // people who never sign in day by day).
     day.status = "left";
   } else if (joined && date < joined && !isWeekend(date) && !(holiday && holiday.kind !== "optional")) {
     // A working day before the joining date (round 12D, the mirror of "left"):
