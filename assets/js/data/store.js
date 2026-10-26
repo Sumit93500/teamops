@@ -346,10 +346,12 @@ function approvedRunMonths(userId) {
 const approvedMonths = () => approvedRuns().map((r) => r.month).sort().reverse();
 
 // Why `text` can't be this person's last working day, or null. It must be a
-// date, no later than today, not before their joining date, and not before the
-// end of the newest month an approved run pays them for: that month's figures
-// are fixed, with the whole month paid (as a holiday can't be added to it,
-// round 11V; arrears aren't built, round-11u-notes.md U-D5).
+// date, no later than today, not before their joining date, not before the day
+// they last came back (a reactivation, round 12M; round-12l-notes.md L12: the
+// days since were theirs, and some were worked), and not before the end of the
+// newest month an approved run pays them for: that month's figures are fixed,
+// with the whole month paid (as a holiday can't be added to it, round 11V;
+// arrears aren't built, round-11u-notes.md U-D5).
 function leavingProblem(record, text) {
   const last = joiningDate(text);
   if (!last) return "Enter their last working day.";
@@ -357,6 +359,8 @@ function leavingProblem(record, text) {
   if (last > today) return `The last working day can't be later than today (${showDate(today)}).`;
   const joined = joiningDate(record.dateOfJoining);
   if (joined && last < joined) return `The last working day can't be before the joining date (${showDate(joined)}).`;
+  const back = leavingPeriods(record).map((p) => p.back).sort().at(-1);
+  if (back && last < back) return `The last working day can't be before ${record.name} came back (${showDate(back)}).`;
   const paid = approvedRunMonths(record.id)[0];
   if (paid && last < monthEnd(paid)) {
     return `${monthLabel(paid)}'s payroll is approved and pays ${record.name} for all of it, so the last working day can't be before ${showDate(monthEnd(paid))}.`;
