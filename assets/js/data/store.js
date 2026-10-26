@@ -373,7 +373,9 @@ function leavingProblem(record, text) {
 // paid in full when it's on or before the month's first day, from that day when
 // it's inside the month, and not at all (no row) when it's after it. So, as
 // leavingProblem() holds a last working day:
-//   - a leaver's joining date can't be after their last working day;
+//   - a leaver's joining date can't be after their last working day, nor
+//     anyone's after the first one in their past periods away (round 12N;
+//     round-12m-notes.md M12: they'd have left before they joined);
 //   - no month whose payroll is approved may read the joining date differently
 //     after the change, in either direction (its figures are fixed). Months
 //     after a leaver's last working day, and anyone inactive with no last
@@ -386,6 +388,8 @@ function joiningProblem(record, text) {
   if (before === after) return null;
   const left = leavingDate(record);
   if (after && left && after > left) return `The joining date can't be after the last working day (${showDate(left)}).`;
+  const first = leavingPeriods(record).map((p) => p.lastDay).sort()[0];
+  if (after && first && after > first) return `The joining date can't be after the last working day (${showDate(first)}).`;
   if (record.status === "inactive" && !left) return null;
   const reads = (month, date) => (!date || date <= `${month}-01` ? "in full" : date > monthEnd(month) ? "no row" : date);
   const fixed = approvedMonths().find((month) => !(left && `${month}-01` > left) && reads(month, before) !== reads(month, after));
