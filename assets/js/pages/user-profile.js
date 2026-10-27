@@ -4,7 +4,7 @@
 // Delete and Reset password. Cards with no data behind them yet stay as static
 // HTML.
 
-import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser, deleteUser, reportingManagerName, leavingDate } from "../data/store.js";
+import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser, deleteUser, reportingManagerName, leavingDate, leavingPeriods } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { ROLES, overridesOf } from "../config/roles.js";
 import { showToast } from "../ui/toast.js";
@@ -115,14 +115,24 @@ function renderStatus() {
   renderTenure();
 }
 
+// Days away in someone's past periods (store.js leavingPeriods(), round 12H):
+// in each, the days after the last working day and before the day they came
+// back, as awayOn() reads them. Whole days, counted in UTC.
+function daysAway(person) {
+  const day = (iso) => { const d = parseDate(iso); return Date.UTC(d.year, d.month, d.day) / 86400000; };
+  return leavingPeriods(person).reduce((sum, p) => sum + Math.max(0, day(p.back) - day(p.lastDay) - 1), 0);
+}
+
 // Tenure runs from the joining date to today, or for a leaver to their last
 // working day (round 12A; 11Y Y9.9): it stops counting when they leave, and
 // follows Deactivate / Reactivate on this page. It keeps its static text when
-// there's no joining date on record.
+// there's no joining date on record. Time away in past periods isn't taken off;
+// it's noted beside it, "(11 days away)" (round 12Q; round-12h-notes.md H10).
 function renderTenure() {
   const last = parseDate(leavingDate(user));
   const tenure = tenureText(user.dateOfJoining, last ? new Date(last.year, last.month, last.day) : new Date());
-  if (tenure) setKv("Tenure", tenure);
+  const away = daysAway(user);
+  if (tenure) setKv("Tenure", away ? `${tenure} (${plural(away, "day", "days")} away)` : tenure);
 }
 
 // A leaver's last working day (round 11Y), in a row after "Date of joining";
