@@ -168,16 +168,24 @@ function closeIcon() {
   svg.append(path);
   return svg;
 }
-// The equipment they still hold, as the Deactivate dialog notes it (round 12S;
-// round-12r-notes.md R11.3): "They still hold AST-0119 (MacBook Pro 14"). Take
-// it back on Asset assignment." Shown, not acted on: taking it back stays on
-// Asset assignment. null when they hold none.
-function heldNote() {
+// The equipment they still hold, in words (round 12S; round-12r-notes.md
+// R11.3): "They still hold AST-0119 (MacBook Pro 14"). Take it back on Asset
+// assignment." Shown, not acted on: taking it back stays on Asset assignment.
+// "" when they hold none. The Deactivate dialog notes it (heldNote()), and the
+// Delete confirmation adds it (round 12T; round-12s-notes.md S9).
+function heldText() {
   const held = assetsFor(user.id).sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true }));
-  if (!held.length) return null;
+  if (!held.length) return "";
   const names = new Map(allItems().map((i) => [i.sku, i.name]));
   const list = held.map((a) => `${a.id} (${names.get(a.sku) ?? a.sku})`).join(", ");
-  const note = el("div", "alert alert--warning mt-4", `They still hold ${list}. Take ${held.length === 1 ? "it" : "them"} back on Asset assignment.`);
+  return `They still hold ${list}. Take ${held.length === 1 ? "it" : "them"} back on Asset assignment.`;
+}
+
+// heldText() as the Deactivate dialog's note (round 12S), or null.
+function heldNote() {
+  const text = heldText();
+  if (!text) return null;
+  const note = el("div", "alert alert--warning mt-4", text);
   note.id = `${DEACTIVATE_ID}-assets`;
   return note;
 }
@@ -521,7 +529,8 @@ deleteBtn?.addEventListener("click", () => {
     showToast("You can't delete your own account.", "danger");
     return;
   }
-  if (!window.confirm(`Delete ${user.name}? They'll be removed from the employee list. Only Reset demo data brings them back.`)) return;
+  const held = heldText();   // round 12T: what they still hold, in the Deactivate dialog's words
+  if (!window.confirm(`Delete ${user.name}? They'll be removed from the employee list. Only Reset demo data brings them back.${held ? `\n\n${held}` : ""}`)) return;
   const result = deleteUser(getCurrentUserId(), user.id);
   if (!result.ok) {
     showToast(result.error, "danger");
