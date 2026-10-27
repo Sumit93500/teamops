@@ -486,7 +486,7 @@ statusBtn?.addEventListener("click", () => {
   if (!window.confirm(`Reactivate ${user.name}?`)) return;
 
   // Who is acting: the store checks their record (round 10Y; it held a non-Admin to its rule from round 9Y).
-  const result = deactivating ? deactivateUser(getCurrentUserId(), user.id) : reactivateUser(getCurrentUserId(), user.id);
+  const result = reactivateUser(getCurrentUserId(), user.id);   // deactivating went to the dialog above (round 12R)
   if (!result.ok) {
     showToast(result.error, "danger");
     return;

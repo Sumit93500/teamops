@@ -24,6 +24,11 @@ import { ROUTES } from "../config/routes.js";
 // or deleting one would break signing in as that role, so it is refused.
 const PROTECTED_IDS = ["EMP-1001", "EMP-1003", "EMP-1008", "EMP-1105"];
 
+// The statuses a person can have (round 12R; round-12p-notes.md P11.1). "on-leave"
+// is a profile label (everything but "inactive" counts as working).
+const USER_STATUSES = ["active", "on-leave", "inactive"];
+const BAD_STATUS = "Status must be active, on-leave or inactive.";
+
 const USERS_KEY = "users";
 const DEPARTMENTS_KEY = "departments";
 const VERSION = 3;   // bump when the saved shape changes; old copies are then re-seeded (2: managers from MANAGER_OF, 3: full bank account)
@@ -487,6 +492,7 @@ export function addUser(actorUserId, fields = {}) {
   if (adminOnly(byRole, rest)) return fail(ADMIN_ONLY);
   const overrides = overridesProblem(actor, null, rest);
   if (overrides) return fail(overrides);
+  if ("status" in rest && !USER_STATUSES.includes(rest.status)) return fail(BAD_STATUS, "status");   // round 12R
   // A new employee starts active (round 12P; round-12o-notes.md O12): they leave
   // only through a deactivation, which records their last working day.
   if (rest.status === "inactive" || "dateOfLeaving" in rest) {
@@ -533,6 +539,7 @@ function changeUser(actor, id, changes = {}) {
   if ("id" in changes && changes.id !== id) return fail("An employee's id can't be changed.");
   const overrides = overridesProblem(actor, record, changes);
   if (overrides) return fail(overrides);
+  if ("status" in changes && !USER_STATUSES.includes(changes.status)) return fail(BAD_STATUS, "status");   // round 12R
   // Same rule as deactivateUser(), so an edit form can't get round it.
   if (PROTECTED_IDS.includes(id) && changes.status === "inactive" && record.status !== "inactive") {
     return fail(`${id} is a demo sign-in identity and can't be deactivated.`);
