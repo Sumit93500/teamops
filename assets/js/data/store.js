@@ -498,6 +498,14 @@ export function addUser(actorUserId, fields = {}) {
   if (rest.status === "inactive" || "dateOfLeaving" in rest) {
     return fail("A last working day is recorded only when someone is deactivated.", "dateOfLeaving" in rest ? "dateOfLeaving" : "status");
   }
+  // ...and joins after the newest approved payroll month (round 12U; 12E E7.5):
+  // one joining on or before its end, or with no joining date (payroll reads none
+  // as a whole month), would get a row there that the approved run lacks.
+  const approved = approvedMonths()[0];
+  const joins = joiningDate(rest.dateOfJoining);
+  if (approved && !(joins && joins > monthEnd(approved))) {
+    return fail(`${monthLabel(approved)}'s payroll is already approved, so a new employee needs a joining date after it.`, "dateOfJoining");
+  }
   if (!String(rest.name ?? "").trim()) return fail("Name is required.");
   if (!String(rest.email ?? "").trim()) return fail("Work email is required.");
   if (emailTaken(box.records, rest.email, null)) return fail(`${rest.email} is already used by another employee.`, "email");
