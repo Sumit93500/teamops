@@ -487,6 +487,11 @@ export function addUser(actorUserId, fields = {}) {
   if (adminOnly(byRole, rest)) return fail(ADMIN_ONLY);
   const overrides = overridesProblem(actor, null, rest);
   if (overrides) return fail(overrides);
+  // A new employee starts active (round 12P; round-12o-notes.md O12): they leave
+  // only through a deactivation, which records their last working day.
+  if (rest.status === "inactive" || "dateOfLeaving" in rest) {
+    return fail("A last working day is recorded only when someone is deactivated.", "dateOfLeaving" in rest ? "dateOfLeaving" : "status");
+  }
   if (!String(rest.name ?? "").trim()) return fail("Name is required.");
   if (!String(rest.email ?? "").trim()) return fail("Work email is required.");
   if (emailTaken(box.records, rest.email, null)) return fail(`${rest.email} is already used by another employee.`, "email");

@@ -274,6 +274,13 @@ if (editId && !editing) {
   if (active) active.checked = editing.status !== "inactive";
 } else {
   field("emp-id").value = peekNextId();
+  // Adding: no "Account active" box (round 12P). A new employee starts active;
+  // deactivating is their profile's, which asks for the last working day.
+  const account = field("account-active")?.closest(".toggle-list");
+  if (account) {
+    account.hidden = true;
+    if (account.previousElementSibling?.matches(".form-subtitle")) account.previousElementSibling.hidden = true;
+  }
 }
 updateDefaultRole();
 
@@ -307,10 +314,11 @@ function buildRecord() {
   const managerSelect = field("manager");
   const active = field("account-active");
 
-  // The checkbox only says active or not. Someone on leave who stays "active"
+  // The checkbox only says active or not, and only when editing: a new employee
+  // is always saved active (round 12P). Someone on leave who stays "active"
   // keeps their on-leave status instead of being flipped to plain active.
   let status = editing?.status ?? "active";
-  if (active) status = active.checked ? (status === "inactive" ? "active" : status) : "inactive";
+  if (active && editing) status = active.checked ? (status === "inactive" ? "active" : status) : "inactive";
 
   return {
     name: `${field("first-name").value.trim()} ${field("last-name").value.trim()}`,
