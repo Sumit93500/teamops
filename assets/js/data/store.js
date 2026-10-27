@@ -560,8 +560,11 @@ function changeUser(actor, id, changes = {}) {
   // can't give one, so it can't deactivate; and the date is set only then.
   const deactivating = changes.status === "inactive" && record.status !== "inactive";
   if (deactivating && !("dateOfLeaving" in changes)) return fail("Deactivate them from their profile, which asks for their last working day.", "status");
+  // One save may set the joining date too (the store API; no page sends both): each
+  // rule reads the record as the whole save leaves it (round 12O; round-12n-notes.md
+  // N12, as 12G for a reactivation).
   if (deactivating) {
-    const leaving = leavingProblem(record, changes.dateOfLeaving);
+    const leaving = leavingProblem("dateOfJoining" in changes ? { ...record, dateOfJoining: changes.dateOfJoining } : record, changes.dateOfLeaving);
     if (leaving) return fail(leaving, "dateOfLeaving");
   } else if ("dateOfLeaving" in changes) {
     return fail("A last working day is recorded only when someone is deactivated.", "dateOfLeaving");
@@ -575,7 +578,7 @@ function changeUser(actor, id, changes = {}) {
   }
   // ...and the joining date, which moves pay since round 12D (round 12E).
   if ("dateOfJoining" in changes) {
-    const joining = joiningProblem(record, changes.dateOfJoining);
+    const joining = joiningProblem(deactivating ? { ...record, status: "inactive", dateOfLeaving: changes.dateOfLeaving } : record, changes.dateOfJoining);
     if (joining) return fail(joining, "dateOfJoining");
   }
   if ("email" in changes && emailTaken(box.records, changes.email, id)) {
