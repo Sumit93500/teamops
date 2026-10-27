@@ -168,6 +168,20 @@ function closeIcon() {
   svg.append(path);
   return svg;
 }
+// The equipment they still hold, as the Deactivate dialog notes it (round 12S;
+// round-12r-notes.md R11.3): "They still hold AST-0119 (MacBook Pro 14"). Take
+// it back on Asset assignment." Shown, not acted on: taking it back stays on
+// Asset assignment. null when they hold none.
+function heldNote() {
+  const held = assetsFor(user.id).sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true }));
+  if (!held.length) return null;
+  const names = new Map(allItems().map((i) => [i.sku, i.name]));
+  const list = held.map((a) => `${a.id} (${names.get(a.sku) ?? a.sku})`).join(", ");
+  const note = el("div", "alert alert--warning mt-4", `They still hold ${list}. Take ${held.length === 1 ? "it" : "them"} back on Asset assignment.`);
+  note.id = `${DEACTIVATE_ID}-assets`;
+  return note;
+}
+
 function deactivateDialog() {
   document.getElementById(DEACTIVATE_ID)?.remove();
   const root = el("div", "modal");
@@ -199,6 +213,8 @@ function deactivateDialog() {
   input.max = todayIso();
   field.append(label, input);
   body.append(field);
+  const held = heldNote();
+  if (held) body.append(held);
   const footer = el("div", "modal__footer");
   const cancel = el("button", "btn", "Cancel");
   cancel.type = "button";
@@ -493,7 +509,7 @@ statusBtn?.addEventListener("click", () => {
   }
   user = result.record;
   renderStatus();
-  showToast(`${user.name} ${deactivating ? "deactivated" : "reactivated"}.`, "success");
+  showToast(`${user.name} reactivated.`, "success");
 });
 
 // Delete (round 11N; users:delete, Admin only). The store refuses your own
