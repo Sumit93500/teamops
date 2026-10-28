@@ -6,16 +6,21 @@
 // button makes that person the example; it starts as the first person in the
 // table. Nothing here works out pay; computePay() does.
 //
-// Salaries can't be changed yet: Edit and Add component stay placeholders
-// (salary:edit) and nothing writes a salary record.
+// A person's Edit (salary:edit) opens a small form and saves a new salary
+// through payroll-store.js setSalary() (round 12W; R9b): a monthly gross from
+// the 1st of a month, with setSalary()'s refusals shown as it words them. A
+// component's Edit and Add component stay placeholders.
 
 import { SALARY_COMPONENTS, computePay } from "../data/payroll.js";
-import { salaryFor, salaryHistory } from "../data/payroll-store.js";
+import { salaryFor, salaryHistory, setSalary } from "../data/payroll-store.js";
 import { getAllUsers } from "../data/store.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { el, todayIso, formatDay, plural, personCell, fillDepartmentSelect } from "../ui/leave-view.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { rupees } from "../ui/money.js";
+import { getCurrentUserId } from "../core/auth.js";
+import { openModal, closeModal } from "../ui/modal.js";
+import { showToast } from "../ui/toast.js";
 
 const TYPE = {
   earning:   { label: "Earning",   badge: "badge badge--success badge--square" },
@@ -34,6 +39,7 @@ const byName = (a, b) => a.name.localeCompare(b.name, "en") || a.id.localeCompar
 let searchText = "";
 let departmentFilter = "";   // "" = all, or a department code
 let exampleId = null;
+let allRows = [];   // salaryRows() for this month; read again after a salary is saved
 
 // ---------- salary components ----------
 
@@ -109,6 +115,136 @@ function visibleRows(rows) {
     && (!query || r.user.name.toLowerCase().includes(query)));
 }
 
+// ---------- changing a salary (round 12W; R9b) ----------
+
+const SALARY_ID = "salary-modal";
+
+// The modals' ✕, as ui/leave-decision.js draws it.
+function closeIcon() {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("class", "icon");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS(ns, "path");
+  path.setAttribute("d", "M6 6l12 12M18 6 6 18");
+  svg.append(path);
+  return svg;
+}
+
+// This month's rows, read again (after a save).
+function currentRows() {
+  const today = todayIso();
+  return salaryRows(Number(today.slice(0, 4)), Number(today.slice(5, 7)));
+}
+
+// A person's Edit, on salary:edit as before. On your own row it's disabled,
+// with setSalary()'s reason on hover, rather than inviting a change it refuses.
+function salaryEditButton(row) {
+  const button = el("button", "btn btn--sm", "Edit");
+  button.type = "button";
+  button.dataset.permission = "salary:edit";
+  if (row.user.id === getCurrentUserId()) {
+    button.disabled = true;
+    button.title = "You can't change your own salary.";
+  } else {
+    button.addEventListener("click", () => salaryDialog(row));
+  }
+  return button;
+}
+
+// The form for one person: the monthly gross (theirs now, to start from) and
+// the month it takes effect, sent to setSalary() as that month's 1st. Its
+// refusals are shown as it words them: under the field it names, else as a
+// toast. Saved, the rows are read again: a record dated in a later month shows
+// as "Revision due" and in the history, and becomes the gross in its month.
+// Same closing rules as ui/modal.js: the ✕, Cancel, or the backdrop.
+function salaryDialog(row) {
+  const { user, current } = row;
+  document.getElementById(SALARY_ID)?.remove();
+  const root = el("div", "modal");
+  root.id = SALARY_ID;
+  root.setAttribute("role", "dialog");
+  root.setAttribute("aria-modal", "true");
+  root.setAttribute("aria-labelledby", `${SALARY_ID}-title`);
+  const dialog = el("div", "modal__dialog modal__dialog--sm");
+  const header = el("div", "modal__header");
+  const heading = el("div");
+  const title = el("h3", "modal__title", `Change ${user.name}'s salary`);
+  title.id = `${SALARY_ID}-title`;
+  heading.append(title, el("p", "modal__desc", "The new monthly gross is used from the 1st of the month you choose."));
+  const close = el("button", "modal__close");
+  close.type = "button";
+  close.append(closeIcon());
+  close.setAttribute("aria-label", "Close");
+  header.append(heading, close);
+  const form = el("form");
+  form.noValidate = true;
+  const body = el("div", "modal__body");
+  const grossField = el("div", "form-field");
+  const grossLabel = el("label", "form-label form-label--required", "Monthly gross (₹)");
+  grossLabel.htmlFor = "salary-gross";
+  const gross = el("input", "input");
+  gross.type = "number";
+  gross.id = "salary-gross";
+  gross.min = "1";
+  gross.step = "1";
+  gross.value = current ? String(current.gross) : "";
+  grossField.append(grossLabel, gross);
+  const monthField = el("div", "form-field mt-4");
+  const monthLabel = el("label", "form-label form-label--required", "Takes effect from");
+  monthLabel.htmlFor = "salary-month";
+  const month = el("input", "input");
+  month.type = "month";
+  month.id = "salary-month";
+  month.value = todayIso().slice(0, 7);
+  monthField.append(monthLabel, month);
+  body.append(grossField, monthField);
+  const footer = el("div", "modal__footer");
+  const cancel = el("button", "btn", "Cancel");
+  cancel.type = "button";
+  const submit = el("button", "btn btn--primary", "Save salary");
+  submit.type = "submit";
+  footer.append(cancel, submit);
+  form.append(body, footer);
+  dialog.append(header, form);
+  root.append(dialog);
+  document.body.append(root);
+  const hide = () => { closeModal(SALARY_ID); root.remove(); };
+  close.addEventListener("click", hide);
+  cancel.addEventListener("click", hide);
+  root.addEventListener("click", (e) => { if (e.target === root) hide(); });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    body.querySelectorAll(".form-error").forEach((x) => x.remove());
+    const amount = gross.value.trim() === "" ? undefined : Number(gross.value);
+    const from = /^\d{4}-\d{2}$/.test(month.value) ? `${month.value}-01` : month.value;
+    const result = setSalary(getCurrentUserId(), user.id, { gross: amount, effectiveFrom: from });
+    const at = { gross: [grossField, gross], effectiveFrom: [monthField, month] }[result.field];
+    if (!result.ok && at) {
+      const [fieldEl, input] = at;
+      const error = el("span", "form-error", result.error);
+      error.id = `${input.id}-error`;
+      fieldEl.append(error);
+      input.setAttribute("aria-describedby", error.id);
+      input.focus();
+      return;
+    }
+    hide();
+    if (!result.ok) {
+      showToast(result.error, "danger");
+      return;
+    }
+    allRows = currentRows();
+    const saved = allRows.find((r) => r.user.id === user.id);
+    if (saved && exampleId === user.id) renderExample(saved);
+    renderRows(allRows);
+    showToast(`${user.name}'s salary is ${rupees(result.record.gross)} a month from ${formatDay(result.record.effectiveFrom, true)}.`, "success");
+  });
+  openModal(SALARY_ID);
+  gross.focus();
+}
+
 function buildRow(row, rows) {
   const { user, current, pay } = row;
   const status = statusOf(row);
@@ -130,7 +266,7 @@ function buildRow(row, rows) {
     renderRows(rows);
   });
   const group = el("div", "btn-group");
-  group.append(show, editButton());
+  group.append(show, salaryEditButton(row));
   const actions = el("td", "table__actions");
   actions.append(group);
 
@@ -204,24 +340,23 @@ function renderExample(row) {
 // The guard already sends anyone without salary:view to the 403 page; this
 // stops the salaries being drawn in the moment before that happens.
 if (can("salary:view")) {
-  const today = todayIso();
-  const rows = salaryRows(Number(today.slice(0, 4)), Number(today.slice(5, 7)));
-  const first = rows.find((r) => r.current) ?? rows[0];
+  allRows = currentRows();
+  const first = allRows.find((r) => r.current) ?? allRows[0];
   renderComponents();
   if (first) {
     exampleId = first.user.id;
     renderExample(first);
   }
-  renderRows(rows);
+  renderRows(allRows);
 
   const select = $("salary-department");
   fillDepartmentSelect(select);
   $("salary-search").addEventListener("input", (e) => {
     searchText = e.target.value;
-    renderRows(rows);
+    renderRows(allRows);
   });
   select.addEventListener("change", (e) => {
     departmentFilter = e.target.value;
-    renderRows(rows);
+    renderRows(allRows);
   });
 }
