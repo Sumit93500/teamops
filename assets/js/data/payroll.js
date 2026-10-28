@@ -49,7 +49,8 @@ export const professionalTax = (gross) => (gross > 0 ? PAY_RULES.professionalTax
 // SAMPLE VALUES, copied from the slab table on finance/tax-deductions.html, which
 // says the same: "sample values for the design. When the real app is built, use
 // the current government rates." Not current tax law. New regime only; no cess,
-// no surcharge, no marginal relief, no old regime.
+// no surcharge, no old regime. Marginal relief above the rebate limit: see
+// annualTax() (round 13B).
 export const TAX_SAMPLE = {
   standardDeduction: 75000,   // annual
   rebateLimit: 1200000,       // taxable income up to this pays no tax at all
@@ -65,7 +66,10 @@ export const TAX_SAMPLE = {
 };
 
 // Annual taxable income (after the standard deduction) -> annual tax, in rupees
-// (may have paise). Zero at or under the rebate limit.
+// (may have paise). Zero at or under the rebate limit. Above it, marginal
+// relief (round 13B; 10U U4c): the tax is never more than the income above the
+// limit, so going ₹1 over it costs ₹1 of tax, not the whole slab tax (₹60,000
+// at ₹12,00,001). From about ₹12,70,588 the slab tax is the smaller, as before.
 export function annualTax(taxable) {
   if (!(taxable > TAX_SAMPLE.rebateLimit)) return 0;
   let tax = 0;
@@ -75,7 +79,7 @@ export function annualTax(taxable) {
     if (taxable > from) tax += (Math.min(taxable, top) - from) * rate;
     from = top;
   }
-  return tax;
+  return Math.min(tax, taxable - TAX_SAMPLE.rebateLimit);
 }
 
 // The monthly TDS for a monthly gross: that gross for 12 months, less the
@@ -143,7 +147,8 @@ export function lossOfPayAmount(monthlyGross, lopDays, workingDays) {
 
 // Everything a payslip needs from a monthly gross and that month's LOP inputs.
 // The earnings and PF are worked out on the gross actually paid (after LOP);
-// TDS on the full monthly gross. Professional tax and TDS are both capped so
+// TDS on the full monthly gross (monthlyTds(), with marginal relief above the
+// rebate limit: round 13B). Professional tax and TDS are both capped so
 // net pay never goes below zero (PT's cap since round 11N: a paid gross under
 // about ₹214 used to leave net negative, 10U U4a).
 // lop.leftDays is there only for a leaver's final month (round 11Y), and
