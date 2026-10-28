@@ -12,9 +12,11 @@
 // effectiveFrom; a month uses the record in effect on its first day.
 //
 // setSalary() (below, round 12V) is the only writer: it adds records, and
-// never edits or deletes one. No page calls it yet (salary-structure.html only
-// shows salaries). The Reset demo data button (users-list.js) calls
-// resetPayrollData().
+// never edits or deletes one. salary-structure.html's Edit calls it directly
+// (round 12W) until R9c-2 moves it to proposeSalary() (round 12X), where a
+// change Finance proposes waits until an Admin approves it, and approving it
+// writes it through setSalary(). The Reset demo data button (users-list.js)
+// calls resetPayrollData().
 
 import { createCollection, fail } from "./collection.js";
 import { load } from "../core/storage.js";
@@ -440,6 +442,12 @@ export function runProblems(year, month) {
   const away = (userId, from, to) => awayThrough(people.get(userId), from, to);
   const leave = allRequests().filter((r) => r.status === "pending" && r.type !== "wfh" && inRun.has(r.userId) && r.from <= last && r.to >= first && !away(r.userId, r.from, r.to));
   const corrections = allRegularizations().filter((r) => r.status === "pending" && inRun.has(r.userId) && r.date >= first && r.date <= last && !away(r.userId, r.date, r.date));
+  // A salary change waiting for a decision that would be the salary in effect
+  // this month if approved (round 12X): dated on or before its 1st, with no
+  // record dated after it and on or before the 1st taking over. Deciding it may
+  // change the figures, so it's decided first, as a pending leave request is.
+  const salaryChanges = storedProposals().filter((p) => p.status === "pending" && inRun.has(p.userId) && p.effectiveFrom <= first
+    && !salaryHistory(p.userId).some((s) => s.effectiveFrom > p.effectiveFrom && s.effectiveFrom <= first));
   const problems = [];
   const windowShuts = isoFromDayNumber(dayNumber(last) + Math.max(ATTENDANCE_RULES.requestWindowDays, PAST_DAY_WINDOW));
   if (todayIso() <= last) problems.push("it hasn't ended yet");
@@ -451,6 +459,7 @@ export function runProblems(year, month) {
   if (uncounted.length) problems.push(`${plural(sum(uncounted, (r) => r.attendance.uncountedAbsences), "absence", "absences")} can't be counted, with no readable joining date on file (${who(uncounted)})`);
   if (leave.length) problems.push(`${plural(leave.length, "leave request is", "leave requests are")} waiting for a decision (${who(leave)})`);
   if (corrections.length) problems.push(`${plural(corrections.length, "attendance correction is", "attendance corrections are")} waiting for a decision (${who(corrections)})`);
+  if (salaryChanges.length) problems.push(`${plural(salaryChanges.length, "salary change is", "salary changes are")} waiting for a decision (${who(salaryChanges)})`);
   return problems;
 }
 
@@ -559,13 +568,27 @@ export function checkSalary(fields = {}) {
 // approvedMonthCovering(), as a new employee's joining date), so no approved
 // month's figures change. Records are only added: a later one takes over from
 // its date on (salaryFor()), and nothing stored is edited or deleted. The
-// regime carries over from their newest record ("new" if none). No page calls
-// this yet. -> { ok, record } or a fail() naming the field.
+// regime carries over from their newest record ("new" if none).
+// salary-structure.html's Edit calls it (round 12W); an approved salary
+// proposal is written through it (round 12X). -> { ok, record } or a fail()
+// naming the field.
 export function setSalary(actorUserId, userId, fields = {}) {
   const actor = actorWith(actorUserId, "salary:edit");
   if (!actor) return fail("You can't change salaries.");
   const person = getUser(String(userId ?? ""));
   if (!person) return fail(`No employee with id ${userId}.`);
+  const problem = salaryProblem(actor, person, fields);
+  if (problem) return problem;
+  const regime = salaryHistory(person.id)[0]?.regime ?? "new";
+  return salaries.add({ userId: person.id, gross: fields.gross, effectiveFrom: String(fields.effectiveFrom), regime });
+}
+
+// Why `fields` can't be a new salary for person, set by actor, as a fail(), or
+// null: their own salary, then checkSalary(), the 1st of a month, a month after
+// the newest approved one, in that order. setSalary() asks it, and so does
+// proposeSalary() (round 12X), so a proposal meets the same rules when it's
+// made as when it's approved.
+function salaryProblem(actor, person, fields) {
   if (person.id === actor.id) return fail("You can't change your own salary.");
   const gross = checkSalary(fields);
   if (!gross.ok) return gross;
@@ -575,14 +598,141 @@ export function setSalary(actorUserId, userId, fields = {}) {
   if (approved) {
     return fail(`${monthLabel(Number(approved.slice(0, 4)), Number(approved.slice(5, 7)))}'s payroll is already approved, so a salary can take effect only after it.`, "effectiveFrom");
   }
-  const regime = salaryHistory(person.id)[0]?.regime ?? "new";
-  return salaries.add({ userId: person.id, gross: fields.gross, effectiveFrom: from, regime });
+  return null;
+}
+
+// ---------- salary changes waiting for an Admin (round 12X; R9c-1) ----------
+
+// A salary change Finance proposes waits here until an Admin approves it (the
+// Finance -> Admin chain, round-12x-scoping.md ruling (b)). Proposals are kept
+// apart from the salaries, so a salary record is still only ever a change in
+// effect: salaryFor(), the runs and the payslips never read a proposal, and
+// approving one adds a salary record through setSalary(), as an Admin's own
+// change does. A proposal: { id ("SP-n"), userId, gross, effectiveFrom,
+// status: "pending" | "approved" | "rejected" | "withdrawn", enteredBy,
+// enteredAt, decidedBy, decidedAt, salaryId (the record approving it added),
+// history: [{ byUserId, decision, at, note }] }, decision "proposed",
+// "approved", "rejected" or "withdrawn". Only the salary:view pages are meant
+// to show them (R9c-2); nothing an employee sees reads them.
+// store.js reads them from storage, as it reads the runs: a role change,
+// deactivation or deletion that leaves a pending one with nobody to decide it
+// is refused, and so is deleting the person a pending one would pay.
+const PROPOSALS_KEY = "salary-proposals";
+const PROPOSALS_VERSION = 1;
+const proposals = createCollection({ key: PROPOSALS_KEY, version: PROPOSALS_VERSION, seed: () => [], idPrefix: "SP-" });
+
+// The stored proposals, read without writing anything (as storedRuns()).
+function storedProposals() {
+  const box = load(PROPOSALS_KEY);
+  return box && box.version === PROPOSALS_VERSION && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records : [];
+}
+
+// Every proposal, newest first; one person's if userId is given.
+export function salaryProposals(userId) {
+  return storedProposals().filter((p) => !userId || p.userId === userId)
+    .sort((a, b) => b.enteredAt.localeCompare(a.enteredAt) || b.id.localeCompare(a.id, "en", { numeric: true }));
+}
+
+// The person's proposal waiting for a decision, or null: there's at most one.
+export function pendingSalaryProposal(userId) {
+  return storedProposals().find((p) => p.userId === userId && p.status === "pending") ?? null;
+}
+
+// Who may decide a proposal: someone active whose record holds payroll:approve
+// (an Admin: it can't be overridden), neither who proposed it nor the person
+// it would pay. The record decides, not the session. store.js restates this in
+// strandedProblem(); if it changes, that copy must change with it.
+const decidesProposal = (user, proposal) => user.status !== "inactive" && user.id !== proposal.enteredBy && user.id !== proposal.userId
+  && permissionsOf(user).includes("payroll:approve");
+
+// Everyone who could decide the proposal, by name (user records).
+export function proposalDecidersFor(proposal) {
+  return getAllUsers().filter((u) => decidesProposal(u, proposal)).sort(byName);
+}
+
+// Proposes a new salary for userId: fields { gross, effectiveFrom }, checked as
+// setSalary() checks them (salary:edit; someone else's salary; a whole-rupee
+// gross; the 1st of a month after the newest approved one), and one waiting
+// proposal per person: another is refused until it's decided or withdrawn.
+// An Admin's own change takes effect at once (theirs is the chain's last
+// stage, as with an Admin's own expense claim): it's written through
+// setSalary() and kept as an approved proposal. Anyone else's waits, pending,
+// for an Admin who didn't propose it and isn't the person it would pay; if
+// nobody could decide it (a change to the only Admin's salary), it's refused,
+// as preparing a run nobody else could approve is.
+// -> { ok, record (the proposal) } or a fail() naming the field.
+export function proposeSalary(actorUserId, userId, fields = {}) {
+  const actor = actorWith(actorUserId, "salary:edit");
+  if (!actor) return fail("You can't change salaries.");
+  const person = getUser(String(userId ?? ""));
+  if (!person) return fail(`No employee with id ${userId}.`);
+  const problem = salaryProblem(actor, person, fields);
+  if (problem) return problem;
+  const waiting = pendingSalaryProposal(person.id);
+  if (waiting) return fail(`${person.name} already has a salary change waiting for a decision (${waiting.id}).`);
+  const at = nowStamp();
+  const proposal = {
+    userId: person.id, gross: fields.gross, effectiveFrom: String(fields.effectiveFrom), status: "pending",
+    enteredBy: actor.id, enteredAt: at, decidedBy: null, decidedAt: null, salaryId: null,
+    history: [{ byUserId: actor.id, decision: "proposed", at, note: "" }],
+  };
+  if (permissionsOf(actor).includes("payroll:approve")) {
+    const saved = setSalary(actor.id, person.id, fields);
+    if (!saved.ok) return saved;
+    return proposals.add({ ...proposal, status: "approved", decidedBy: actor.id, decidedAt: at, salaryId: saved.record.id,
+      history: [...proposal.history, { byUserId: actor.id, decision: "approved", at, note: "" }] });
+  }
+  if (!getAllUsers().some((u) => decidesProposal(u, proposal))) {
+    return fail(`No one else could approve a change to ${person.name}'s salary: make someone else an Admin first.`);
+  }
+  return proposals.add(proposal);
+}
+
+// Approves or rejects a waiting proposal: decision "approve" | "reject"; a
+// rejection needs a note. The actor needs payroll:approve on record and can't
+// be who proposed it or the person it would pay. Approving writes it through
+// setSalary() as the actor, so every rule a salary change meets is checked
+// again now (a month approved since it was proposed is refused in setSalary()'s
+// words), and the proposal stays pending if it's refused: reject or withdraw
+// it then. -> { ok, record (the proposal) } or a fail().
+export function decideSalaryProposal(actorUserId, proposalId, decision, note = "") {
+  const actor = actorWith(actorUserId, "payroll:approve");
+  if (!actor) return fail("You can't decide salary changes.");
+  const proposal = storedProposals().find((p) => p.id === proposalId);
+  if (!proposal) return fail(`No salary change ${proposalId}.`);
+  if (proposal.status !== "pending") return fail(`This salary change is already ${proposal.status}.`);
+  if (actor.id === proposal.enteredBy) return fail("You proposed this salary change, so someone else has to decide it.");
+  if (actor.id === proposal.userId) return fail("You can't decide a change to your own salary.");
+  if (decision !== "approve" && decision !== "reject") return fail('Decision must be "approve" or "reject".');
+  const text = String(note ?? "").trim();
+  if (decision === "reject" && !text) return fail("Add a note saying why the salary change is rejected.", "note");
+  const at = nowStamp();
+  if (decision === "reject") {
+    return proposals.update(proposal.id, { status: "rejected", decidedBy: actor.id, decidedAt: at,
+      history: [...proposal.history, { byUserId: actor.id, decision: "rejected", at, note: text }] });
+  }
+  const saved = setSalary(actor.id, proposal.userId, { gross: proposal.gross, effectiveFrom: proposal.effectiveFrom });
+  if (!saved.ok) return saved;
+  return proposals.update(proposal.id, { status: "approved", decidedBy: actor.id, decidedAt: at, salaryId: saved.record.id,
+    history: [...proposal.history, { byUserId: actor.id, decision: "approved", at, note: text }] });
+}
+
+// Withdraws a waiting proposal: only who proposed it, only while it's pending.
+// -> { ok, record (the proposal) } or a fail().
+export function withdrawSalaryProposal(actorUserId, proposalId) {
+  const proposal = storedProposals().find((p) => p.id === proposalId);
+  if (!proposal) return fail(`No salary change ${proposalId}.`);
+  if (proposal.enteredBy !== actorUserId) return fail("Only the person who proposed this salary change can withdraw it.");
+  if (proposal.status !== "pending") return fail(`This salary change is already ${proposal.status}, so it can't be withdrawn.`);
+  const at = nowStamp();
+  return proposals.update(proposal.id, { status: "withdrawn", history: [...proposal.history, { byUserId: actorUserId, decision: "withdrawn", at, note: "" }] });
 }
 
 // ---------- reset ----------
 
-// Salaries and payroll runs (round 11T).
+// Salaries, payroll runs (round 11T) and salary proposals (round 12X).
 export function resetPayrollData() {
   salaries.reset();
   runs.reset();
+  proposals.reset();
 }

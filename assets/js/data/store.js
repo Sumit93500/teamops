@@ -226,6 +226,13 @@ function paysClaim(claim, user, users) {
   return user.id !== approver || !users.some((u) => u.id !== approver && mayPayClaim(claim, u));
 }
 
+// The salary changes waiting for an Admin (payroll-store.js's proposals, round
+// 12X), read from storage as it saves them.
+function pendingSalaryChanges() {
+  const box = load("salary-proposals");
+  return box && box.version === 1 && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records.filter((p) => p.status === "pending") : [];
+}
+
 // Why going from the `before` users to the `after` ones would leave a pending
 // request with nobody to decide it, or (round 12C) an approved expense claim
 // with nobody but its requester able to pay it, in words, or null. `record` is
@@ -239,6 +246,15 @@ function strandedProblem(before, after, record) {
       const requester = before.find((u) => u.id === stuck.userId)?.name ?? stuck.userId;
       return `${record.name} is the last person who can decide ${requester}'s ${kind.word} ${stuck.id}, now at the ${STAGE_WORD[stuck.stage] ?? stuck.stage} stage: decide it first, or make sure someone else can.`;
     }
+  }
+  // A salary change waiting for an Admin (round 12X): payroll-store.js's
+  // decidesProposal() restated (someone active with payroll:approve, neither
+  // who proposed it nor the person it would pay).
+  const decidesProposal = (proposal, u) => u.status !== "inactive" && u.id !== proposal.enteredBy && u.id !== proposal.userId && permissionsOf(u).includes("payroll:approve");
+  const undecided = pendingSalaryChanges().find((p) => before.some((u) => decidesProposal(p, u)) && !after.some((u) => decidesProposal(p, u)));
+  if (undecided) {
+    const person = before.find((u) => u.id === undecided.userId)?.name ?? undecided.userId;
+    return `${record.name} is the last person who can decide ${person}'s salary change ${undecided.id}: decide it first, or make sure someone else can.`;
   }
   const box = load("expense-claims");
   const approved = box && box.version === 1 && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records.filter((c) => c.status === "approved") : [];
@@ -668,6 +684,10 @@ export function deleteUser(actorUserId, id) {
   if (lastApprover) return fail(lastApprover);
   const stranded = strandedProblem(box.records, box.records.filter((u) => u.id !== id), box.records[index]);   // as in changeUser (round 11Z)
   if (stranded) return fail(stranded);
+  // A salary change waiting for an Admin keeps the person it would pay (round
+  // 12X): approving it would find nobody to pay.
+  const waiting = pendingSalaryChanges().find((p) => p.userId === id);
+  if (waiting) return fail(`${box.records[index].name} has a salary change waiting for a decision (${waiting.id}), so they can't be deleted: decide or withdraw it first.`);
   // Someone an approved payroll run pays keeps their record, so their payslips
   // can still be opened (round 11Y; round-11x-notes.md X-D3 (c)).
   const paid = approvedRunMonths(id);
