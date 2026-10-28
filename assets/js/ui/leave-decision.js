@@ -52,6 +52,8 @@ function closeIcon() {
 //                                                the store's error is shown, escaped
 //           { submit }                           optional text for the modal's button
 //                                                (default "Reject request")
+//           { placeholder }                      optional placeholder for the note
+//                                                (default "The employee sees this note")
 export function createDecisionFlow({ decide, describe, modalId, noteId, labels }) {
   let modal = null;
   let current = null;   // { request, onDone } while the modal is open
@@ -105,7 +107,7 @@ export function createDecisionFlow({ decide, describe, modalId, noteId, labels }
     const note = el("textarea", "textarea");
     note.id = noteId;
     note.required = true;
-    note.placeholder = "The employee sees this note";
+    note.placeholder = labels.placeholder ?? "The employee sees this note";
     field.append(label, note);
     wrap.append(field);
     body.append(wrap);

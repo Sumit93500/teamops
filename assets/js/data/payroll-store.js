@@ -12,11 +12,11 @@
 // effectiveFrom; a month uses the record in effect on its first day.
 //
 // setSalary() (below, round 12V) is the only writer: it adds records, and
-// never edits or deletes one. salary-structure.html's Edit calls it directly
-// (round 12W) until R9c-2 moves it to proposeSalary() (round 12X), where a
-// change Finance proposes waits until an Admin approves it, and approving it
-// writes it through setSalary(). The Reset demo data button (users-list.js)
-// calls resetPayrollData().
+// never edits or deletes one. Only an Admin may call it (round 12Y):
+// salary-structure.html's Edit calls proposeSalary() (round 12X), where a
+// change Finance proposes waits until an Admin approves it, and approving it,
+// or an Admin's own change, writes it through setSalary(). The Reset demo data
+// button (users-list.js) calls resetPayrollData().
 
 import { createCollection, fail } from "./collection.js";
 import { load } from "../core/storage.js";
@@ -561,20 +561,23 @@ export function checkSalary(fields = {}) {
 }
 
 // Adds a salary record for userId (round 12V; R9a): fields { gross,
-// effectiveFrom }. The actor needs salary:edit on record and can't change their
-// own salary; the gross passes checkSalary(); it takes effect on the 1st of a
+// effectiveFrom }. The actor needs salary:edit and payroll:approve on record
+// (an Admin, round 12Y: anyone else's change goes through proposeSalary() and
+// waits for one) and can't change their own salary; the gross passes
+// checkSalary(); it takes effect on the 1st of a
 // month ("YYYY-MM-01": a month uses the record in effect on its first day, and
 // a revision isn't prorated), after the newest approved payroll month (store.js
 // approvedMonthCovering(), as a new employee's joining date), so no approved
 // month's figures change. Records are only added: a later one takes over from
 // its date on (salaryFor()), and nothing stored is edited or deleted. The
 // regime carries over from their newest record ("new" if none).
-// salary-structure.html's Edit calls it (round 12W); an approved salary
-// proposal is written through it (round 12X). -> { ok, record } or a fail()
-// naming the field.
+// proposeSalary() writes an Admin's own change through it, and
+// decideSalaryProposal() an approved one (round 12X); no page calls it (round
+// 12Y). -> { ok, record } or a fail() naming the field.
 export function setSalary(actorUserId, userId, fields = {}) {
   const actor = actorWith(actorUserId, "salary:edit");
   if (!actor) return fail("You can't change salaries.");
+  if (!permissionsOf(actor).includes("payroll:approve")) return fail("Only an Admin can change a salary at once: propose the change instead.");
   const person = getUser(String(userId ?? ""));
   if (!person) return fail(`No employee with id ${userId}.`);
   const problem = salaryProblem(actor, person, fields);
@@ -612,8 +615,9 @@ function salaryProblem(actor, person, fields) {
 // status: "pending" | "approved" | "rejected" | "withdrawn", enteredBy,
 // enteredAt, decidedBy, decidedAt, salaryId (the record approving it added),
 // history: [{ byUserId, decision, at, note }] }, decision "proposed",
-// "approved", "rejected" or "withdrawn". Only the salary:view pages are meant
-// to show them (R9c-2); nothing an employee sees reads them.
+// "approved", "rejected" or "withdrawn". salary-structure.html (salary:view)
+// shows a person's waiting one, with Approve / Reject and Withdraw (round 12Y);
+// nothing an employee sees reads them.
 // store.js reads them from storage, as it reads the runs: a role change,
 // deactivation or deletion that leaves a pending one with nobody to decide it
 // is refused, and so is deleting the person a pending one would pay.

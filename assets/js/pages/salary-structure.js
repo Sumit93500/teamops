@@ -6,21 +6,26 @@
 // button makes that person the example; it starts as the first person in the
 // table. Nothing here works out pay; computePay() does.
 //
-// A person's Edit (salary:edit) opens a small form and saves a new salary
-// through payroll-store.js setSalary() (round 12W; R9b): a monthly gross from
-// the 1st of a month, with setSalary()'s refusals shown as it words them. A
-// component's Edit and Add component stay placeholders.
+// A person's Edit (salary:edit) opens a small form for a new salary (round
+// 12W; R9b): a monthly gross from the 1st of a month, sent to payroll-store.js
+// proposeSalary() (round 12Y; R9c-2), with its refusals shown as it words them.
+// An Admin's change takes effect at once; anyone else's waits for an Admin.
+// A waiting change shows in the person's row, and in place of Edit there are
+// Approve / Reject for those who may decide it and Withdraw for whoever
+// proposed it. A component's Edit and Add component stay placeholders.
 
 import { SALARY_COMPONENTS, computePay } from "../data/payroll.js";
-import { salaryFor, salaryHistory, setSalary } from "../data/payroll-store.js";
-import { getAllUsers } from "../data/store.js";
+import { salaryFor, salaryHistory, proposeSalary, pendingSalaryProposal, proposalDecidersFor, decideSalaryProposal, withdrawSalaryProposal } from "../data/payroll-store.js";
+import { getAllUsers, getUser } from "../data/store.js";
+import { permissionsOf } from "../config/roles.js";
 import { can, applyPermissions } from "../core/rbac.js";
-import { el, todayIso, formatDay, plural, personCell, fillDepartmentSelect } from "../ui/leave-view.js";
+import { el, escapeHtml, todayIso, formatDay, plural, personCell, fillDepartmentSelect, nameOf } from "../ui/leave-view.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { rupees } from "../ui/money.js";
 import { getCurrentUserId } from "../core/auth.js";
 import { openModal, closeModal } from "../ui/modal.js";
 import { showToast } from "../ui/toast.js";
+import { createDecisionFlow, decisionButtons } from "../ui/leave-decision.js";
 
 const TYPE = {
   earning:   { label: "Earning",   badge: "badge badge--success badge--square" },
@@ -30,6 +35,7 @@ const TAXABLE = new Map([[true, "Yes"], ["partly", "Partly"], [false, "No"], [nu
 const ACTIVE = "badge badge--success badge--dot";
 const DUE = "badge badge--warning badge--dot";
 const NONE = "badge badge--danger badge--dot";
+const WAITING = "badge badge--info badge--dot";
 
 const $ = (id) => document.getElementById(id);
 const field = (name) => document.querySelector(`[data-field="${name}"]`);
@@ -39,7 +45,7 @@ const byName = (a, b) => a.name.localeCompare(b.name, "en") || a.id.localeCompar
 let searchText = "";
 let departmentFilter = "";   // "" = all, or a department code
 let exampleId = null;
-let allRows = [];   // salaryRows() for this month; read again after a salary is saved
+let allRows = [];   // salaryRows() for this month; read again after a salary change is saved or decided
 
 // ---------- salary components ----------
 
@@ -87,13 +93,14 @@ function renderComponents() {
 // One row per tracked (not inactive) person, by name: the salary record in
 // effect this month (salaryFor), a month's pay on it with no loss of pay
 // (computePay), every record newest first (salaryHistory), and the ones newer
-// than the one in effect, which payroll hasn't started using yet.
+// than the one in effect, which payroll hasn't started using yet. Also the
+// salary change waiting for a decision, if any (round 12Y).
 function salaryRows(year, month) {
   return getAllUsers().filter((u) => u.status !== "inactive").sort(byName).map((user) => {
     const current = salaryFor(user.id, year, month);
     const history = salaryHistory(user.id);
     const upcoming = current ? history.slice(0, history.findIndex((s) => s.id === current.id)) : history;
-    return { user, current, history, upcoming, pay: current ? computePay(current.gross) : null };
+    return { user, current, history, upcoming, pending: pendingSalaryProposal(user.id), pay: current ? computePay(current.gross) : null };
   });
 }
 
@@ -138,15 +145,42 @@ function currentRows() {
   return salaryRows(Number(today.slice(0, 4)), Number(today.slice(5, 7)));
 }
 
-// A person's Edit, on salary:edit as before. On your own row it's disabled,
-// with setSalary()'s reason on hover, rather than inviting a change it refuses.
+// The rows read again after a salary change is saved or decided: the table,
+// and the example card for whoever it shows.
+function refresh() {
+  allRows = currentRows();
+  const shown = allRows.find((r) => r.user.id === exampleId);
+  if (shown) renderExample(shown);
+  renderRows(allRows);
+}
+
+// Whether the signed-in person's change takes effect at once: an Admin's does
+// (payroll:approve on record, as proposeSalary() decides it, round 12Y).
+const changesAtOnce = () => permissionsOf(getUser(getCurrentUserId())).includes("payroll:approve");
+
+// Why the signed-in person's Edit can't change this row, in proposeSalary()'s
+// words, or "": their own salary; nobody else who could approve it (round
+// 12Y). While a change for them waits, the row has no Edit (changeButtons()).
+function editBlocked(row) {
+  const me = getCurrentUserId();
+  if (row.user.id === me) return "You can't change your own salary.";
+  if (!changesAtOnce() && !proposalDecidersFor({ userId: row.user.id, enteredBy: me }).length) {
+    return `No one else could approve a change to ${row.user.name}'s salary: make someone else an Admin first.`;
+  }
+  return "";
+}
+
+// A person's Edit, on salary:edit as before. Where editBlocked() has a reason
+// it's disabled, with the reason on hover, rather than inviting a change the
+// store refuses.
 function salaryEditButton(row) {
   const button = el("button", "btn btn--sm", "Edit");
   button.type = "button";
   button.dataset.permission = "salary:edit";
-  if (row.user.id === getCurrentUserId()) {
+  const blocked = editBlocked(row);
+  if (blocked) {
     button.disabled = true;
-    button.title = "You can't change your own salary.";
+    button.title = blocked;
   } else {
     button.addEventListener("click", () => salaryDialog(row));
   }
@@ -154,13 +188,15 @@ function salaryEditButton(row) {
 }
 
 // The form for one person: the monthly gross (theirs now, to start from) and
-// the month it takes effect, sent to setSalary() as that month's 1st. Its
+// the month it takes effect, sent to proposeSalary() as that month's 1st. Its
 // refusals are shown as it words them: under the field it names, else as a
-// toast. Saved, the rows are read again: a record dated in a later month shows
-// as "Revision due" and in the history, and becomes the gross in its month.
+// toast. Saved, the rows are read again: an Admin's change is in effect from
+// its month (one dated in a later month shows as "Revision due" and in the
+// history); anyone else's shows as waiting for approval in the row.
 // Same closing rules as ui/modal.js: the ✕, Cancel, or the backdrop.
 function salaryDialog(row) {
   const { user, current } = row;
+  const atOnce = changesAtOnce();
   document.getElementById(SALARY_ID)?.remove();
   const root = el("div", "modal");
   root.id = SALARY_ID;
@@ -172,7 +208,9 @@ function salaryDialog(row) {
   const heading = el("div");
   const title = el("h3", "modal__title", `Change ${user.name}'s salary`);
   title.id = `${SALARY_ID}-title`;
-  heading.append(title, el("p", "modal__desc", "The new monthly gross is used from the 1st of the month you choose."));
+  heading.append(title, el("p", "modal__desc", atOnce
+    ? "The new monthly gross is used from the 1st of the month you choose."
+    : "The new monthly gross is used from the 1st of the month you choose, once an Admin approves it."));
   const close = el("button", "modal__close");
   close.type = "button";
   close.append(closeIcon());
@@ -203,7 +241,7 @@ function salaryDialog(row) {
   const footer = el("div", "modal__footer");
   const cancel = el("button", "btn", "Cancel");
   cancel.type = "button";
-  const submit = el("button", "btn btn--primary", "Save salary");
+  const submit = el("button", "btn btn--primary", atOnce ? "Save salary" : "Send for approval");
   submit.type = "submit";
   footer.append(cancel, submit);
   form.append(body, footer);
@@ -219,7 +257,7 @@ function salaryDialog(row) {
     body.querySelectorAll(".form-error").forEach((x) => x.remove());
     const amount = gross.value.trim() === "" ? undefined : Number(gross.value);
     const from = /^\d{4}-\d{2}$/.test(month.value) ? `${month.value}-01` : month.value;
-    const result = setSalary(getCurrentUserId(), user.id, { gross: amount, effectiveFrom: from });
+    const result = proposeSalary(getCurrentUserId(), user.id, { gross: amount, effectiveFrom: from });
     const at = { gross: [grossField, gross], effectiveFrom: [monthField, month] }[result.field];
     if (!result.ok && at) {
       const [fieldEl, input] = at;
@@ -232,17 +270,74 @@ function salaryDialog(row) {
     }
     hide();
     if (!result.ok) {
-      showToast(result.error, "danger");
+      showToast(escapeHtml(result.error), "danger");
       return;
     }
-    allRows = currentRows();
-    const saved = allRows.find((r) => r.user.id === user.id);
-    if (saved && exampleId === user.id) renderExample(saved);
-    renderRows(allRows);
-    showToast(`${user.name}'s salary is ${rupees(result.record.gross)} a month from ${formatDay(result.record.effectiveFrom, true)}.`, "success");
+    refresh();
+    // toast.js uses innerHTML, so the name is escaped.
+    const change = `${rupees(result.record.gross)} a month from ${formatDay(result.record.effectiveFrom, true)}`;
+    showToast(result.record.status === "approved"
+      ? `${escapeHtml(user.name)}'s salary is ${change}.`
+      : `${escapeHtml(user.name)}'s new salary, ${change}, is waiting for an Admin's approval.`, "success");
   });
   openModal(SALARY_ID);
   gross.focus();
+}
+
+// ---------- a salary change waiting for a decision (round 12Y; R9c-2) ----------
+
+const describeChange = (p) => `${nameOf(p.userId)}: ${rupees(p.gross)} a month from ${formatDay(p.effectiveFrom, true)}, proposed by ${nameOf(p.enteredBy)}`;
+
+// Approve asks with confirm() and Reject needs a note, as for leave and
+// corrections (ui/leave-decision.js); both go through decideSalaryProposal()
+// as the signed-in person, and the store's refusals show escaped.
+const changeFlow = createDecisionFlow({
+  decide: (proposalId, actorUserId, _role, decision, note) => decideSalaryProposal(actorUserId, proposalId, decision, note),
+  describe: describeChange,
+  modalId: "reject-salary-modal",
+  noteId: "reject-salary-note",
+  labels: {
+    title: "Reject salary change",
+    approved: "Salary change approved.",
+    rejected: "Salary change rejected.",
+    submit: "Reject change",
+    placeholder: "Kept with the salary change; the employee doesn't see it",
+  },
+});
+
+function withdrawChange(p) {
+  if (!window.confirm(`Withdraw this salary change?\n${describeChange(p)}`)) return;
+  const result = withdrawSalaryProposal(getCurrentUserId(), p.id);
+  showToast(result.ok ? "Salary change withdrawn." : escapeHtml(result.error), result.ok ? "success" : "danger");
+  refresh();
+}
+
+// A waiting change's buttons, in place of Edit (proposeSalary() would refuse
+// another): Reject + Approve for whoever may decide it (by record,
+// proposalDecidersFor(), as the store decides), Withdraw for whoever proposed
+// it.
+function changeButtons(p) {
+  const me = getCurrentUserId();
+  const buttons = [];
+  if (proposalDecidersFor(p).some((u) => u.id === me)) {
+    buttons.push(decisionButtons(null, () => changeFlow.openReject(p, refresh), () => changeFlow.approve(p, refresh)));
+  }
+  if (p.enteredBy === me) {
+    const withdraw = el("button", "btn btn--sm", "Withdraw");
+    withdraw.type = "button";
+    withdraw.addEventListener("click", () => withdrawChange(p));
+    buttons.push(withdraw);
+  }
+  return buttons;
+}
+
+// Under a row's status while a change waits: a "Waiting" badge and the
+// waiting gross and its month; who proposed it, and when, on hover.
+function waitingNote(p) {
+  const note = el("div", "mt-2");
+  note.title = `Proposed by ${nameOf(p.enteredBy)} on ${formatDay(p.enteredAt.slice(0, 10), true)} (${p.id})`;
+  note.append(el("span", WAITING, "Waiting"), el("div", "text-muted text-xs", `${rupees(p.gross)} from ${formatDay(p.effectiveFrom, true)}`));
+  return note;
 }
 
 function buildRow(row, rows) {
@@ -255,6 +350,7 @@ function buildRow(row, rows) {
   const badge = el("span", status.badge, status.label);
   if (status.title) badge.title = status.title;
   statusCell.append(badge);
+  if (row.pending) statusCell.append(waitingNote(row.pending));
 
   const shown = user.id === exampleId;
   const show = el("button", `btn btn--sm${shown ? " btn--primary" : ""}`, "Breakdown");
@@ -266,9 +362,17 @@ function buildRow(row, rows) {
     renderRows(rows);
   });
   const group = el("div", "btn-group");
-  group.append(show, salaryEditButton(row));
+  // While a change waits, its buttons go on a line of their own in place of
+  // Edit, so the column keeps its width.
+  const waiting = row.pending ? changeButtons(row.pending) : [];
+  group.append(show, ...(row.pending ? [] : [salaryEditButton(row)]));
   const actions = el("td", "table__actions");
   actions.append(group);
+  if (waiting.length) {
+    const line = el("div", "mt-2");
+    line.append(...waiting);
+    actions.append(line);
+  }
 
   tr.append(
     personCell(user.id, user, user.id),
