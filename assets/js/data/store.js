@@ -350,6 +350,16 @@ function approvedRunMonths(userId) {
 // Every month whose payroll run is approved, newest first (round 12E).
 const approvedMonths = () => approvedRuns().map((r) => r.month).sort().reverse();
 
+// The newest approved payroll month ("YYYY-MM") when `date` ("YYYY-MM-DD", or
+// null for none) isn't after its end, else null: a date after it changes no
+// approved month. A new employee's joining date stops there (addUser, round
+// 12U), and so does a salary's effectiveFrom (payroll-store.js setSalary(),
+// round 12V).
+export function approvedMonthCovering(date) {
+  const approved = approvedMonths()[0];
+  return approved && !(date && date > monthEnd(approved)) ? approved : null;
+}
+
 // Why `text` can't be this person's last working day, or null. It must be a
 // date, no later than today, not before their joining date, not before the day
 // they last came back (a reactivation, round 12M; round-12l-notes.md L12: the
@@ -501,9 +511,8 @@ export function addUser(actorUserId, fields = {}) {
   // ...and joins after the newest approved payroll month (round 12U; 12E E7.5):
   // one joining on or before its end, or with no joining date (payroll reads none
   // as a whole month), would get a row there that the approved run lacks.
-  const approved = approvedMonths()[0];
-  const joins = joiningDate(rest.dateOfJoining);
-  if (approved && !(joins && joins > monthEnd(approved))) {
+  const approved = approvedMonthCovering(joiningDate(rest.dateOfJoining));
+  if (approved) {
     return fail(`${monthLabel(approved)}'s payroll is already approved, so a new employee needs a joining date after it.`, "dateOfJoining");
   }
   if (!String(rest.name ?? "").trim()) return fail("Name is required.");

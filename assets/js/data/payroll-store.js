@@ -11,15 +11,16 @@
 // ("YYYY-MM-DD"), regime: "new" }. A revision is a new record with a later
 // effectiveFrom; a month uses the record in effect on its first day.
 //
-// Nothing writes salaries yet (salary-structure.html only shows them). A
-// future writer must pass checkSalary() first (below). The Reset demo data
-// button (users-list.js) calls resetPayrollData().
+// setSalary() (below, round 12V) is the only writer: it adds records, and
+// never edits or deletes one. No page calls it yet (salary-structure.html only
+// shows salaries). The Reset demo data button (users-list.js) calls
+// resetPayrollData().
 
 import { createCollection, fail } from "./collection.js";
 import { load } from "../core/storage.js";
-import { getUser, getAllUsers, joiningDate, leavingDate, awayOn } from "./store.js";
+import { getUser, getAllUsers, joiningDate, leavingDate, awayOn, approvedMonthCovering } from "./store.js";
 import { permissionsOf } from "../config/roles.js";
-import { dayNumber, isoFromDayNumber, dayOffChecker } from "./holidays.js";
+import { dayNumber, isoFromDayNumber, dayOffChecker, isValidDate } from "./holidays.js";
 import { allRequests, PAST_DAY_WINDOW } from "./leave-store.js";
 import { monthFor, allRegularizations, ATTENDANCE_RULES } from "./attendance-store.js";
 import { computePay } from "./payroll.js";
@@ -540,8 +541,7 @@ export function approveRun(actorUserId, year, month) {
 // ---------- writes ----------
 
 // The checks any salary write must pass before it stores a record (round 11N,
-// 10U U4b). Nothing writes salaries yet, so nothing calls this; a salary
-// editor must. A gross that isn't a whole number of rupees would break
+// 10U U4b); setSalary() calls it (round 12V). A gross that isn't a whole number of rupees would break
 // payroll.js's whole-rupee chain (splitGross rounds its own copy, computePay
 // keeps the original): ₹92,000.50 gave earnings of ₹92,001 and a net of
 // ₹87,384.50. -> { ok: true } or a fail() naming the field "gross".
@@ -549,6 +549,34 @@ export function checkSalary(fields = {}) {
   const gross = fields.gross;
   if (!Number.isSafeInteger(gross) || gross <= 0) return fail("Enter the monthly gross in whole rupees, more than ₹0.", "gross");
   return { ok: true };
+}
+
+// Adds a salary record for userId (round 12V; R9a): fields { gross,
+// effectiveFrom }. The actor needs salary:edit on record and can't change their
+// own salary; the gross passes checkSalary(); it takes effect on the 1st of a
+// month ("YYYY-MM-01": a month uses the record in effect on its first day, and
+// a revision isn't prorated), after the newest approved payroll month (store.js
+// approvedMonthCovering(), as a new employee's joining date), so no approved
+// month's figures change. Records are only added: a later one takes over from
+// its date on (salaryFor()), and nothing stored is edited or deleted. The
+// regime carries over from their newest record ("new" if none). No page calls
+// this yet. -> { ok, record } or a fail() naming the field.
+export function setSalary(actorUserId, userId, fields = {}) {
+  const actor = actorWith(actorUserId, "salary:edit");
+  if (!actor) return fail("You can't change salaries.");
+  const person = getUser(String(userId ?? ""));
+  if (!person) return fail(`No employee with id ${userId}.`);
+  if (person.id === actor.id) return fail("You can't change your own salary.");
+  const gross = checkSalary(fields);
+  if (!gross.ok) return gross;
+  const from = String(fields.effectiveFrom ?? "");
+  if (!/^\d{4}-\d{2}-01$/.test(from) || !isValidDate(from)) return fail("A salary takes effect on the 1st of a month.", "effectiveFrom");
+  const approved = approvedMonthCovering(from);
+  if (approved) {
+    return fail(`${monthLabel(Number(approved.slice(0, 4)), Number(approved.slice(5, 7)))}'s payroll is already approved, so a salary can take effect only after it.`, "effectiveFrom");
+  }
+  const regime = salaryHistory(person.id)[0]?.regime ?? "new";
+  return salaries.add({ userId: person.id, gross: fields.gross, effectiveFrom: from, regime });
 }
 
 // ---------- reset ----------
