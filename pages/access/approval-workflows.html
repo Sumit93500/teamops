@@ -155,7 +155,7 @@
         <div>
           <span class="stat__label">Workflows</span>
           <strong class="stat__value">9</strong>
-          <span class="stat__delta">4 active, 5 not built yet</span>
+          <span class="stat__delta">6 active, 3 not built yet</span>
         </div>
       </div>
       <div class="stat" data-stat="requests">
@@ -248,15 +248,15 @@
               <tr>
                 <td><span class="table__user-name">Salary revision</span><span class="table__user-sub">Changes to pay</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">Finance</span><span class="chain__step chain__step--end">Admin</span></div></td>
-                <td>Every change</td>
-                <td><span class="badge badge--dot">Not built</span></td>
+                <td>Every change. An Admin's own takes effect at once</td>
+                <td><span class="badge badge--success badge--dot">Active</span></td>
                 <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
                 <td><span class="table__user-name">Payroll run</span><span class="table__user-sub">Monthly salaries</span></td>
                 <td><div class="chain"><span class="chain__step chain__step--start">Finance</span><span class="chain__step chain__step--end">Admin</span></div></td>
                 <td>The person who prepared it can't approve it</td>
-                <td><span class="badge badge--dot">Not built</span></td>
+                <td><span class="badge badge--success badge--dot">Active</span></td>
                 <td class="table__actions"><button class="btn btn--sm" type="button" data-permission="workflows:manage" data-not-implemented="Edit">Edit</button></td>
               </tr>
               <tr>
@@ -308,7 +308,7 @@
               <label class="switch"><input type="checkbox" checked disabled> Nobody approves their own request</label>
               <label class="switch"><input type="checkbox" checked disabled> A reason is required when rejecting</label>
             </div>
-            <p class="form-hint mt-4">All four active workflows enforce both, and neither can be turned off. An Admin's own requests are approved automatically.</p>
+            <p class="form-hint mt-4">Every active workflow enforces both (a payroll run is never rejected: it's approved, or prepared again), and neither can be turned off. An Admin's own requests and salary changes are approved automatically.</p>
           </div>
         </section>
 
@@ -326,7 +326,7 @@
           </div>
         </section>
 
-        <div class="alert alert--info">The person who prepared a payroll run won't be able to approve it. The run page already checks this, but approving a run isn't built yet.</div>
+        <div class="alert alert--info">The person who prepared a payroll run can't approve it: an Admin who didn't prepare it approves it on the run page.</div>
 
       </aside>
     </div>

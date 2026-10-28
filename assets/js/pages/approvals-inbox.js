@@ -18,9 +18,15 @@
 //   - asset requests: pendingFor() in data/asset-requests-store.js, the same
 //     way: the requester's manager (by relationship), then an Admin (by role +
 //     assets:approve). Approved / Rejected list only this person's decisions.
+//   - salary changes (round 12Z), only with salary:view: Pending lists the ones
+//     this person may decide (ui/waiting.js); Approved / Rejected the ones they
+//     decided, and the ones they proposed that someone else decided, with who
+//     and a rejection's note (the proposer reads why here). An Admin's own
+//     change, final at once, isn't a decision and isn't listed.
 // Approve / Reject use the same flows as leave-approvals.html,
-// regularization.html, finance/expenses.html and asset-assignment.html
-// (ui/leave-decision.js, ui/expense-view.js, ui/asset-request-view.js). A
+// regularization.html, finance/expenses.html, asset-assignment.html and
+// salary-structure.html (ui/leave-decision.js, ui/expense-view.js,
+// ui/asset-request-view.js, ui/salary-change-view.js). A
 // session without an employee id (an old sign-in) leaves the static page as
 // it is with approvals:view, and an empty inbox without it.
 
@@ -37,6 +43,8 @@ import { STAGE_NAME, categoryLabel, chainText, expenseFlow } from "../ui/expense
 import { assetRequestDecisionsBy } from "../data/asset-requests-store.js";
 import { STAGE_NAME as ASSET_STAGE_NAME, requestTitle as assetRequestTitle, assetRequestFlow } from "../ui/asset-request-view.js";
 import { assetTypeLabel } from "../ui/inventory-view.js";
+import { salaryFor, salaryProposals } from "../data/payroll-store.js";
+import { salaryChangeFlow } from "../ui/salary-change-view.js";
 import { rupees } from "../ui/money.js";
 import {
   el, todayIso, formatDay, formatDays, requestDates, typeLabel, statusBadge,
@@ -57,6 +65,8 @@ const user = getUser(userId);
 const allLeave = can("leave:approve");
 const allCorrections = can("attendance:approve");
 const showSamples = can("approvals:view");
+// Salary changes only for salary:view (R9c's ruling: no one else sees one).
+const showSalary = can("salary:view");
 
 const inboxBody = document.querySelector("#inbox-table tbody");
 const waitingHead = document.querySelector("#inbox-table thead th:nth-child(5)");
@@ -123,6 +133,14 @@ const assetsPending = () => waitingFor(userId, role).assets
   .sort((a, b) => a.appliedOn.localeCompare(b.appliedOn) || a.id.localeCompare(b.id, "en", { numeric: true }));
 // [{ request, entry }]: this person's own decision ("approved" or "rejected").
 const assetsDecided = (decision) => (user ? assetRequestDecisionsBy(userId) : []).filter((d) => d.entry.decision === decision);
+const salaryPending = () => waitingFor(userId, role).salary
+  .sort((a, b) => a.enteredAt.localeCompare(b.enteredAt) || a.id.localeCompare(b.id, "en", { numeric: true }));
+// Decided by this person, or proposed by them and decided by someone else; an
+// Admin's own change (entered and decided at once) is neither. Newest first.
+const salaryDecided = (status) => (showSalary && user ? salaryProposals() : [])
+  .filter((p) => p.status === status && p.decidedBy !== p.enteredBy && (p.decidedBy === userId || p.enteredBy === userId))
+  .sort((a, b) => b.decidedAt.localeCompare(a.decidedAt) || b.id.localeCompare(a.id, "en", { numeric: true }));
+const salaryDecidedByMe = (status) => salaryDecided(status).filter((p) => p.decidedBy === userId);
 // Whether expense and asset-request figures belong in the stats: anyone who
 // can decide a stage, has one waiting, or has decided one.
 const showsExpenses = () => Boolean(user) && (can("expenses:approve") || managesAnyone(userId) || expensesPending().length > 0 || expenseDecisionsBy(userId).length > 0);
@@ -130,9 +148,11 @@ const showsAssets = () => Boolean(user) && (can("assets:approve") || managesAnyo
 // The same for leave and corrections: HR / Admin, a manager, or anyone with one waiting or decided.
 const showLeave = Boolean(user) && (allLeave || managesAnyone(userId) || leavePending().length > 0 || allRequests().some((r) => decidedBy(r, userId)));
 const showCorrections = Boolean(user) && (allCorrections || managesAnyone(userId) || correctionsPending().length > 0 || allRegularizations().some((r) => decidedBy(r, userId)));
+const showsSalary = () => salaryPending().length > 0 || salaryDecidedByMe("approved").length > 0 || salaryDecidedByMe("rejected").length > 0;
 
 const expenseTitle = (claim) => `Expense: ${nameOf(claim.userId)}, ${rupees(claim.amount)}`;
 const assetTitle = (request) => `Asset: ${nameOf(request.userId)}, ${assetTypeLabel(request.assetType).toLowerCase()}`;
+const salaryTitle = (p) => `Salary: ${nameOf(p.userId)}, ${rupees(p.gross)}`;
 // When a claim reached the stage this entry decided: the entry just before it.
 const reachedAt = (claim, entry) => claim.history[claim.history.indexOf(entry) - 1]?.at ?? claim.history[0].at;
 
@@ -274,6 +294,48 @@ function assetRow(request, decided = null) {
   return tr;
 }
 
+// A salary change (round 12Z). Requested by: who proposed it. Pending: from
+// when, and the gross in effect that month now; waiting since it was proposed.
+// Decided: who decided it ("you", or the Admin who decided the change you
+// proposed) and a rejection's note, which is where its proposer reads why.
+function salaryRow(p) {
+  const tr = el("tr");
+  tr.dataset.type = "salary";
+  tr.dataset.proposalId = p.id;
+  const titleCell = el("td");
+  const wrap = el("div", "table__user");
+  wrap.append(el("div", avatarClass(p.userId), initials(nameOf(p.userId))), el("span", "table__user-name", salaryTitle(p)));
+  titleCell.append(wrap);
+  const typeCell = el("td");
+  typeCell.append(el("span", "badge badge--square", "Salary"));
+
+  const from = `From ${formatDay(p.effectiveFrom, true)}`;
+  let details;
+  if (p.status === "pending") {
+    const now = salaryFor(p.userId, Number(p.effectiveFrom.slice(0, 4)), Number(p.effectiveFrom.slice(5, 7)));
+    details = `${from}, now ${now ? rupees(now.gross) : "no salary on file"}`;
+  } else {
+    const note = p.status === "rejected" ? p.history.at(-1)?.note ?? "" : "";
+    details = `${from}, ${p.decidedBy === userId ? "you" : nameOf(p.decidedBy)} ${p.status} it${note ? `: ${note}` : ""}`;
+  }
+
+  const actions = el("td", "table__actions");
+  if (p.status === "pending") {
+    // Who may decide it goes by record (proposalDecidersFor()), so no permission gate.
+    actions.append(decisionButtons(null, () => salaryChangeFlow.openReject(p, render), () => salaryChangeFlow.approve(p, render)));
+  }
+
+  tr.append(
+    titleCell,
+    typeCell,
+    el("td", "", nameOf(p.enteredBy)),
+    el("td", "", details),
+    el("td", "", p.status === "pending" ? waitingSince(p.enteredAt) : formatDay(localDateOf(p.decidedAt))),
+    actions,
+  );
+  return tr;
+}
+
 // A static "Recently decided" row shown in the inbox's Approved/Rejected tab:
 // same columns as the inbox, no details, the decision date in place of waiting.
 function decidedClone(tr) {
@@ -288,7 +350,7 @@ function decidedClone(tr) {
   return out;
 }
 
-// Leave, corrections, expense claims and asset requests together: pending by
+// Leave, corrections, expense claims, asset requests and salary changes together: pending by
 // date sent (oldest first), decided by decision (newest first). The sort is
 // stable, so each kind keeps its own order.
 function realRows(which) {
@@ -298,6 +360,7 @@ function realRows(which) {
       ...correctionsPending().map((r) => ({ key: r.appliedOn, node: correctionRow(r) })),
       ...expensesPending().map((c) => ({ key: c.appliedOn, node: expenseRow(c) })),
       ...assetsPending().map((r) => ({ key: r.appliedOn, node: assetRow(r) })),
+      ...salaryPending().map((p) => ({ key: p.enteredAt, node: salaryRow(p) })),
     ].sort((a, b) => a.key.localeCompare(b.key)).map((x) => x.node);
   }
   return [
@@ -305,6 +368,8 @@ function realRows(which) {
     ...correctionsDecided(which).map((r) => ({ key: decisionOf(r).at, node: correctionRow(r) })),
     ...expensesDecided(which).map((d) => ({ key: d.entry.at, node: expenseRow(d.claim, d.entry) })),
     ...assetsDecided(which).map((d) => ({ key: d.entry.at, node: assetRow(d.request, d.entry) })),
+    // decidedAt is a local "YYYY-MM-DDTHH:MM"; the others' times are ISO, so it's turned into one to sort with them
+    ...salaryDecided(which).map((p) => ({ key: new Date(p.decidedAt).toISOString(), node: salaryRow(p) })),
   ].sort((a, b) => b.key.localeCompare(a.key)).map((x) => x.node);
 }
 
@@ -325,10 +390,11 @@ function setStat(label, value) {
 
 // Leave and corrections: every decision on them (as before), sent -> decided.
 // Expense claims and asset requests: this person's own decisions, from the
-// claim or request reaching their stage to their decision.
+// claim or request reaching their stage to their decision. Salary changes:
+// this person's own decisions, from proposed to decided.
 function renderStats(pendingCount) {
   setStat("Waiting for you", String(pendingCount));
-  if (!showLeave && !showCorrections && !showsExpenses() && !showsAssets()) {
+  if (!showLeave && !showCorrections && !showsExpenses() && !showsAssets() && !showsSalary()) {
     ["Approved this week", "Rejected this week", "Average response"].forEach((label) => setStat(label, "—"));
     return;
   }
@@ -339,7 +405,9 @@ function renderStats(pendingCount) {
     .map(({ claim, entry }) => ({ status: entry.decision, date: localDateOf(entry.at), auto: false, days: (Date.parse(entry.at) - Date.parse(reachedAt(claim, entry))) / DAY_MS }));
   const assets = [...assetsDecided("approved"), ...assetsDecided("rejected")]
     .map(({ request, entry }) => ({ status: entry.decision, date: localDateOf(entry.at), auto: false, days: (Date.parse(entry.at) - Date.parse(reachedAt(request, entry))) / DAY_MS }));
-  const decided = [...requests, ...claims, ...assets];
+  const changes = [...salaryDecidedByMe("approved"), ...salaryDecidedByMe("rejected")]
+    .map((p) => ({ status: p.status, date: localDateOf(p.decidedAt), auto: false, days: (Date.parse(p.decidedAt) - Date.parse(p.enteredAt)) / DAY_MS }));
+  const decided = [...requests, ...claims, ...assets, ...changes];
   setStat("Approved this week", String(decided.filter((d) => d.status === "approved" && d.date >= since).length));
   setStat("Rejected this week", String(decided.filter((d) => d.status === "rejected" && d.date >= since).length));
   // Auto-approved Admin requests took no decision, so they'd only pull the average down.
@@ -375,7 +443,11 @@ function renderRecentlyDecided() {
   const assets = [...assetsDecided("approved"), ...assetsDecided("rejected")]
     .map(({ request, entry }) => decidedRow({ ...request, status: entry.decision, decidedOn: localDateOf(entry.at) }, assetTitle(request), "Asset"))
     .filter((tr) => tr.dataset.date >= since);
-  decidedBody.replaceChildren(...[...staticDecided, ...leave, ...fixes, ...claims, ...assets].sort((a, b) => (b.dataset.date ?? "").localeCompare(a.dataset.date ?? "")));
+  // Requested by: who proposed it.
+  const changes = [...salaryDecidedByMe("approved"), ...salaryDecidedByMe("rejected")]
+    .map((p) => decidedRow({ status: p.status, decidedOn: localDateOf(p.decidedAt), userId: p.enteredBy }, salaryTitle(p), "Salary"))
+    .filter((tr) => tr.dataset.date >= since);
+  decidedBody.replaceChildren(...[...staticDecided, ...leave, ...fixes, ...claims, ...assets, ...changes].sort((a, b) => (b.dataset.date ?? "").localeCompare(a.dataset.date ?? "")));
 }
 
 // "Who approves what": the expense lines, from the rules (ui/expense-view.js).

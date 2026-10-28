@@ -16,7 +16,7 @@
 // Paying, the pay date and the bank file aren't built; the page says so where
 // they'd appear.
 
-import { payrollRun, storedRun, approversFor, canApprove, runProblems, prepareProblem, approveProblem, prepareRun, approveRun, runTotals, runMonth } from "../data/payroll-store.js";
+import { payrollRun, storedRun, approversFor, canApprove, runProblems, prepareProblem, approveProblem, prepareRun, approveRun, runTotals, runMonth, waitingSalaryChanges } from "../data/payroll-store.js";
 import { ATTENDANCE_RULES } from "../data/attendance-store.js";
 import { getUser } from "../data/store.js";
 import { ROLES } from "../config/roles.js";
@@ -258,6 +258,17 @@ function attendanceCheck(run, label, done) {
   return checkItem("Attendance recorded", parts.join(" ") || `Every working day of ${label} is recorded`, ...badge, "computed");
 }
 
+// Salary changes waiting for a decision that would change this month's pay
+// (round 12Z; the store's waitingSalaryChanges()): until they're decided the
+// run can't be prepared or approved, and Prepare / Approve say so.
+function salaryCheck(run, label, done) {
+  const waiting = waitingSalaryChanges(Number(run.month.slice(0, 4)), Number(run.month.slice(5, 7)));
+  if (!waiting.length) return checkItem("Salary changes waiting", `No salary change for ${label} is waiting for a decision`, ...done, "computed");
+  const who = [...new Set(waiting.map((p) => nameOf(p.userId)))].sort((a, b) => a.localeCompare(b, "en")).join(", ");
+  return checkItem("Salary changes waiting", `${plural(waiting.length, "salary change is", "salary changes are")} waiting for a decision (${who})`,
+    "badge badge--info", "In progress", "computed");
+}
+
 function renderChecks(run) {
   const noBank = run.rows.filter((r) => r.holdReason === NO_BANK).length;
   const noSalary = run.rows.filter((r) => r.holdReason === NO_SALARY).length;
@@ -275,9 +286,7 @@ function renderChecks(run) {
     checkItem("No salary on file",
       noSalary ? `${people(noSalary)} on hold with no salary for ${month}` : `Everyone in this run has a salary for ${month}`,
       ...(noSalary ? ["badge badge--danger", "Fix"] : done), "computed"),
-    checkItem("Salary edits pending",
-      "Not checked: salary change requests aren't built yet",
-      "badge", "Not tracked", "placeholder"),
+    salaryCheck(run, label, done),
     checkItem("Loss-of-pay days",
       lopRows.length ? `${plural(lopRows.length, "employee has", "employees have")} unpaid days (${plural(lopDays, "day", "days")}, ${rupees(lopAmount)})` : "No one has unpaid days this month",
       ...(lopRows.length ? ["badge badge--info", "Review"] : done), "computed"),

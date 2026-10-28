@@ -15,7 +15,7 @@
 // proposed it. A component's Edit and Add component stay placeholders.
 
 import { SALARY_COMPONENTS, computePay } from "../data/payroll.js";
-import { salaryFor, salaryHistory, proposeSalary, pendingSalaryProposal, proposalDecidersFor, decideSalaryProposal, withdrawSalaryProposal } from "../data/payroll-store.js";
+import { salaryFor, salaryHistory, proposeSalary, pendingSalaryProposal, proposalDecidersFor, withdrawSalaryProposal } from "../data/payroll-store.js";
 import { getAllUsers, getUser } from "../data/store.js";
 import { permissionsOf } from "../config/roles.js";
 import { can, applyPermissions } from "../core/rbac.js";
@@ -25,7 +25,8 @@ import { rupees } from "../ui/money.js";
 import { getCurrentUserId } from "../core/auth.js";
 import { openModal, closeModal } from "../ui/modal.js";
 import { showToast } from "../ui/toast.js";
-import { createDecisionFlow, decisionButtons } from "../ui/leave-decision.js";
+import { decisionButtons } from "../ui/leave-decision.js";
+import { describeChange, salaryChangeFlow } from "../ui/salary-change-view.js";
 
 const TYPE = {
   earning:   { label: "Earning",   badge: "badge badge--success badge--square" },
@@ -286,24 +287,8 @@ function salaryDialog(row) {
 
 // ---------- a salary change waiting for a decision (round 12Y; R9c-2) ----------
 
-const describeChange = (p) => `${nameOf(p.userId)}: ${rupees(p.gross)} a month from ${formatDay(p.effectiveFrom, true)}, proposed by ${nameOf(p.enteredBy)}`;
-
-// Approve asks with confirm() and Reject needs a note, as for leave and
-// corrections (ui/leave-decision.js); both go through decideSalaryProposal()
-// as the signed-in person, and the store's refusals show escaped.
-const changeFlow = createDecisionFlow({
-  decide: (proposalId, actorUserId, _role, decision, note) => decideSalaryProposal(actorUserId, proposalId, decision, note),
-  describe: describeChange,
-  modalId: "reject-salary-modal",
-  noteId: "reject-salary-note",
-  labels: {
-    title: "Reject salary change",
-    approved: "Salary change approved.",
-    rejected: "Salary change rejected.",
-    submit: "Reject change",
-    placeholder: "Kept with the salary change; the employee doesn't see it",
-  },
-});
+// Approve / Reject: ui/salary-change-view.js's flow, which approvals-inbox.html
+// uses too (round 12Z).
 
 function withdrawChange(p) {
   if (!window.confirm(`Withdraw this salary change?\n${describeChange(p)}`)) return;
@@ -320,7 +305,7 @@ function changeButtons(p) {
   const me = getCurrentUserId();
   const buttons = [];
   if (proposalDecidersFor(p).some((u) => u.id === me)) {
-    buttons.push(decisionButtons(null, () => changeFlow.openReject(p, refresh), () => changeFlow.approve(p, refresh)));
+    buttons.push(decisionButtons(null, () => salaryChangeFlow.openReject(p, refresh), () => salaryChangeFlow.approve(p, refresh)));
   }
   if (p.enteredBy === me) {
     const withdraw = el("button", "btn btn--sm", "Withdraw");

@@ -148,18 +148,22 @@ function renderChart(range) {
 // each linking to the inbox, where it's decided; nothing is decided here.
 const SHOWN_APPROVALS = 4;
 
+// A salary change has no appliedOn: it's sorted by the day it was proposed.
+const sentOn = (request) => request.appliedOn ?? request.enteredAt.slice(0, 10);
+
 const APPROVAL_TEXT = {
   leave: (r) => [`${nameOf(r.userId)}, ${typeLabel(r.type).toLowerCase()}`, `${requestDates(r)}, ${formatDays(r.days)}`],
   corrections: (r) => [`Regularization: ${nameOf(r.userId)}`, `${formatDay(r.date)}: ${correctionDetails(r)}`],
   expenses: (c) => [`Expense claim: ${nameOf(c.userId)}`, `${rupees(c.amount)}, ${categoryLabel(c.category)}, ${EXPENSE_STAGE[c.stage]} stage`],
   assets: (r) => [`Asset request: ${nameOf(r.userId)}`, `${assetRequestTitle(r)}, ${ASSET_STAGE[r.stage]} stage`],
+  salary: (p) => [`Salary change: ${nameOf(p.userId)}`, `${rupees(p.gross)} a month from ${formatDay(p.effectiveFrom, true)}, proposed by ${nameOf(p.enteredBy)}`],
 };
 
 function renderApprovals() {
   if (!approvalsCard) return;
   const waiting = Object.entries(waitingFor(user.id, getCurrentRole()?.key))
     .flatMap(([kind, list]) => list.map((request) => ({ kind, request })))
-    .sort((a, b) => b.request.appliedOn.localeCompare(a.request.appliedOn) || b.request.id.localeCompare(a.request.id, "en", { numeric: true }));
+    .sort((a, b) => sentOn(b.request).localeCompare(sentOn(a.request)) || b.request.id.localeCompare(a.request.id, "en", { numeric: true }));
   const shown = waiting.slice(0, SHOWN_APPROVALS);
   approvalsCard.querySelector(".card__meta").textContent = waiting.length ? `${shown.length} of ${waiting.length} shown` : "None";
   const list = approvalsCard.querySelector(".list");

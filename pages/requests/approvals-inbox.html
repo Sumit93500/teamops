@@ -188,7 +188,7 @@
             <button class="tabs__tab" type="button" role="tab">Rejected <span class="badge badge--count">1</span></button>
           </div>
           <select class="select select--sm" aria-label="Filter by type">
-            <option>All types</option><option>Access</option><option>Purchase</option><option>System</option><option>Leave</option><option>Attendance</option><option>Expense</option><option>Asset</option>
+            <option>All types</option><option>Access</option><option>Purchase</option><option>System</option><option>Leave</option><option>Attendance</option><option>Expense</option><option>Asset</option><option>Salary</option>
           </select>
         </div>
 
@@ -205,7 +205,7 @@
               </tr>
             </thead>
             <tbody>
-              <!-- data-static rows are samples (each says "Sample, not built yet" under its name): nothing stores their decisions, and only people with approvals:view see them. Real leave requests, attendance corrections, expense claims and asset requests are added by approvals-inbox.js. -->
+              <!-- data-static rows are samples (each says "Sample, not built yet" under its name): nothing stores their decisions, and only people with approvals:view see them. Real leave requests, attendance corrections, expense claims, asset requests and salary changes are added by approvals-inbox.js. -->
               <tr data-static data-type="access" data-status="pending">
                 <td><div class="table__user"><div class="avatar avatar--1">RC</div><div><span class="table__user-name">Role change: an employee</span><span class="table__user-sub">Sample, not built yet</span></div></div></td>
                 <td><span class="badge badge--square">Access</span></td>
@@ -250,7 +250,7 @@
               <div class="kv__row"><dt>Attendance corrections</dt><dd>Manager, then HR or an Admin</dd></div>
               <div class="kv__row"><dt>Purchase orders</dt><dd>Not built yet</dd></div>
               <div class="kv__row"><dt>Role changes</dt><dd>Not built yet</dd></div>
-              <div class="kv__row"><dt>Salary revisions</dt><dd>Not built yet</dd></div>
+              <div class="kv__row"><dt>Salary revisions</dt><dd>Finance, then an Admin</dd></div>
               <div class="kv__row"><dt>Backup restore</dt><dd>Not built yet</dd></div>
               <div class="kv__row"><dt>Asset requests</dt><dd>Manager, then an Admin</dd></div>
             </dl>

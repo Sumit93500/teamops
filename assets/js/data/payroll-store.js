@@ -442,12 +442,8 @@ export function runProblems(year, month) {
   const away = (userId, from, to) => awayThrough(people.get(userId), from, to);
   const leave = allRequests().filter((r) => r.status === "pending" && r.type !== "wfh" && inRun.has(r.userId) && r.from <= last && r.to >= first && !away(r.userId, r.from, r.to));
   const corrections = allRegularizations().filter((r) => r.status === "pending" && inRun.has(r.userId) && r.date >= first && r.date <= last && !away(r.userId, r.date, r.date));
-  // A salary change waiting for a decision that would be the salary in effect
-  // this month if approved (round 12X): dated on or before its 1st, with no
-  // record dated after it and on or before the 1st taking over. Deciding it may
-  // change the figures, so it's decided first, as a pending leave request is.
-  const salaryChanges = storedProposals().filter((p) => p.status === "pending" && inRun.has(p.userId) && p.effectiveFrom <= first
-    && !salaryHistory(p.userId).some((s) => s.effectiveFrom > p.effectiveFrom && s.effectiveFrom <= first));
+  // A salary change waiting for a decision (round 12X; salaryChangesHolding()).
+  const salaryChanges = salaryChangesHolding(first, inRun);
   const problems = [];
   const windowShuts = isoFromDayNumber(dayNumber(last) + Math.max(ATTENDANCE_RULES.requestWindowDays, PAST_DAY_WINDOW));
   if (todayIso() <= last) problems.push("it hasn't ended yet");
@@ -461,6 +457,26 @@ export function runProblems(year, month) {
   if (corrections.length) problems.push(`${plural(corrections.length, "attendance correction is", "attendance corrections are")} waiting for a decision (${who(corrections)})`);
   if (salaryChanges.length) problems.push(`${plural(salaryChanges.length, "salary change is", "salary changes are")} waiting for a decision (${who(salaryChanges)})`);
   return problems;
+}
+
+// The salary changes waiting for a decision that would be the salary in effect
+// on `first` (a month's 1st) for someone in inRun (round 12X): dated on or
+// before it, with no record dated after the change and on or before it taking
+// over. Deciding one may change the figures, so runProblems() holds the month
+// for it, as for a pending leave request.
+function salaryChangesHolding(first, inRun) {
+  return storedProposals().filter((p) => p.status === "pending" && inRun.has(p.userId) && p.effectiveFrom <= first
+    && !salaryHistory(p.userId).some((s) => s.effectiveFrom > p.effectiveFrom && s.effectiveFrom <= first));
+}
+
+// The salary changes holding up year / month's run (the people it pays), in
+// store order: what runProblems() names; the payroll run page lists them in
+// its checks (round 12Z).
+export function waitingSalaryChanges(year, month) {
+  const y = Number(year);
+  const m = Number(month);
+  if (!validMonth(y, m)) return [];
+  return salaryChangesHolding(`${monthKey(y, m)}-01`, new Set(payrollRun(y, m).rows.map((r) => r.userId)));
 }
 
 // The acting person, if they are active and hold the permission on record
