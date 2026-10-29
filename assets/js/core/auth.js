@@ -9,14 +9,16 @@ import { getUser } from "../data/store.js";
 
 const SESSION_KEY = "session";
 
-// Called from the login page once someone picks a role.
+// Called from the login page once someone picks a role. The role is checked,
+// not kept: can() and getCurrentRole() read the person's record (round 11P),
+// so the session holds who signed in, not what they picked (round 13L).
 export function signIn(roleKey, userLabel, employeeId) {
   const role = ROLES[roleKey];
   if (!role) {
     console.error(`auth: unknown role "${roleKey}"`);
     return false;
   }
-  save(SESSION_KEY, { roleKey, userLabel, employeeId, signedInAt: Date.now() });
+  save(SESSION_KEY, { userLabel, employeeId, signedInAt: Date.now() });
   return true;
 }
 
