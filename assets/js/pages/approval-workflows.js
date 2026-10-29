@@ -1,7 +1,9 @@
 // pages/approval-workflows.js
 // Runs on approval-workflows.html (needs workflows:view: Admin). Fills the
-// stat strip's three request figures from the four workflows that are built:
-// leave, attendance corrections, expense claims and asset requests. The
+// stat strip's three request figures from five kinds of request: leave,
+// attendance corrections, expense claims, asset requests and salary changes
+// (round 13F; those only with salary:view, as ui/waiting.js counts them). A
+// payroll run isn't counted: nobody sends it as a request. The
 // Workflows card and the table are the page's own (static) description. The
 // "₹62,000 example" card follows the real ₹62,000 claim (renderExample).
 //
@@ -10,7 +12,8 @@
 //   Average decision time  from sending to the final decision, over requests
 //                          that got one (approved, rejected, paid, fulfilled
 //                          or closed); auto-approved ones are left out, as on
-//                          leave-approvals
+//                          leave-approvals, and so is an Admin's own salary
+//                          change; a withdrawn or cancelled one has no decision
 //   Waiting over 2 days    still pending, sent more than 2 days ago
 //
 // Nothing escalates and there's no company-wide target, so neither is shown.
@@ -20,6 +23,7 @@ import { allRequests } from "../data/leave-store.js";
 import { allRegularizations } from "../data/attendance-store.js";
 import { allExpenses, getExpense } from "../data/expenses-store.js";
 import { allAssetRequests } from "../data/asset-requests-store.js";
+import { salaryProposals } from "../data/payroll-store.js";
 import { todayIso, monthName, plural } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 
@@ -45,8 +49,18 @@ function decisionDays(request) {
   return (Date.parse(last.at) - Date.parse(request.history[0].at)) / DAY_MS;
 }
 
+// A salary change read as a request: sent on the day it was entered, and an
+// Admin's own change (final at once, decided by who entered it) counted as
+// auto-approved, as an Admin's own leave is.
+function asRequest(change) {
+  const own = Boolean(change.decidedBy) && change.decidedBy === change.enteredBy;
+  return { ...change, appliedOn: change.enteredAt.slice(0, 10),
+    history: own ? change.history.map((h) => (h.decision === "approved" ? { ...h, decision: "auto-approved" } : h)) : change.history };
+}
+
 function render() {
-  const requests = [...allRequests(), ...allRegularizations(), ...allExpenses(), ...allAssetRequests()];
+  const salary = can("salary:view") ? salaryProposals().map(asRequest) : [];
+  const requests = [...allRequests(), ...allRegularizations(), ...allExpenses(), ...allAssetRequests(), ...salary];
 
   const { current, previous, previousMonth } = monthKeys();
   const now = requests.filter((r) => r.appliedOn?.startsWith(current)).length;
