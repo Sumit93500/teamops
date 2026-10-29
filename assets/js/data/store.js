@@ -233,6 +233,37 @@ function pendingSalaryChanges() {
   return box && box.version === 1 && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records.filter((p) => p.status === "pending") : [];
 }
 
+// What a person still has open (round 13H; round-13g-scoping.md G2 / G3 (a)):
+// their pending leave requests, attendance corrections, expense claims and
+// asset requests, an approved claim not yet paid and an approved asset request
+// not yet fulfilled, in PENDING_KINDS' order, each kind as stored. Read from
+// storage as the stores save them, as strandedProblem() reads them (a kind
+// never saved has none). Approved leave, even still to come, and anything
+// decided, cancelled, paid, fulfilled or closed isn't open.
+const OPEN_STATUSES = { "expense-claims": ["pending", "approved"], "asset-requests": ["pending", "approved"] };
+function openRequestsOf(userId) {
+  return PENDING_KINDS.flatMap((kind) => {
+    const box = load(kind.key);
+    const records = box && box.version === 1 && Number.isInteger(box.nextNum) && Array.isArray(box.records) ? box.records : [];
+    const open = OPEN_STATUSES[kind.key] ?? ["pending"];
+    return records.filter((r) => r.userId === userId && open.includes(r.status)).map((request) => ({ kind, request }));
+  });
+}
+
+// Why someone with anything open can't be deleted: the first open item, in
+// words for its state, and how many more there are.
+function openProblem(name, open) {
+  const [{ kind, request }] = open;
+  const ref = `${request.id}${open.length > 1 ? `, and ${open.length - 1} more` : ""}`;
+  if (request.status === "approved" && kind.key === "expense-claims") {
+    return `${name} has an approved expense claim waiting to be paid (${ref}), so they can't be deleted: pay it first, or deactivate them instead.`;
+  }
+  if (request.status === "approved") {
+    return `${name} has an approved asset request waiting to be fulfilled (${ref}), so they can't be deleted: fulfil it first, or deactivate them instead.`;
+  }
+  return `${name} has ${/^[aeiou]/.test(kind.word) ? "an" : "a"} ${kind.word} waiting for a decision (${ref}), so they can't be deleted: decide it first, or deactivate them instead.`;
+}
+
 // Why going from the `before` users to the `after` ones would leave a pending
 // request with nobody to decide it, or (round 12C) an approved expense claim
 // with nobody but its requester able to pay it, in words, or null. `record` is
@@ -692,6 +723,10 @@ export function deleteUser(actorUserId, id) {
   // can still be opened (round 11Y; round-11x-notes.md X-D3 (c)).
   const paid = approvedRunMonths(id);
   if (paid.length) return fail(`${box.records[index].name} is paid in an approved payroll run (${monthLabel(paid[0])}), so they can't be deleted. Deactivate them instead.`);
+  // Nor anyone with a request still open (round 13H): deleted, it could still be
+  // approved or paid, with nobody left to withdraw it.
+  const open = openRequestsOf(id);
+  if (open.length) return fail(openProblem(box.records[index].name, open));
   const [removed] = box.records.splice(index, 1);
   return commit(USERS_KEY, box, removed);
 }
