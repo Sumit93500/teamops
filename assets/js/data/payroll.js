@@ -2,8 +2,8 @@
 // The pay rules, as numbers and pure functions: how a monthly gross splits
 // into earnings, the PF / professional tax / income tax (TDS) deductions, and
 // how loss-of-pay days reduce a month's gross. Nothing here reads storage or
-// the clock; data/payroll-store.js gathers each person's salary, attendance
-// and leave and calls these.
+// the clock; data/payroll-store.js gathers each person's salary, attendance,
+// leave and tax year so far and calls these.
 //
 // All amounts are whole rupees a month unless a name says annual.
 
@@ -89,6 +89,34 @@ export function monthlyTds(monthlyGross) {
   return Math.round(annualTax(taxable) / 12);
 }
 
+// The tax year a month is in, April to March (the financial year payslips.html
+// totals): its twelve months in order, [[year, month], ...]. 2026, 11 -> April
+// 2026 to March 2027 (round 13D).
+export function taxYearMonths(year, month) {
+  const start = month >= 4 ? year : year - 1;
+  return Array.from({ length: 12 }, (_, i) => (i < 9 ? [start, i + 4] : [start + 1, i - 8]));
+}
+
+// A month's TDS from the tax year so far (round 13D; 10U U4d, round-13c-
+// scoping.md C2): the year's tax projected from what was actually paid
+// (incomeSoFar over the months before this one, then this month's paidGross)
+// and each month left after this one at this month's structured monthlyGross,
+// through annualTax(), so with marginal relief. The month takes the year's
+// monthly figure plus whatever was deducted short of it so far, spread over the
+// months left (this one included): a year nothing changes is monthlyTds()
+// every month. The year's last month, or a leaver's (finalMonth: nothing after
+// it is projected), takes what's left of the year's tax, so the year's TDS adds
+// up to the tax on what was paid. Never below zero: tax already deducted over
+// the year's isn't paid back here. Whole rupees.
+export function yearTds({ paidGross, incomeSoFar, tdsSoFar, monthsBefore, monthsLeft, monthlyGross, finalMonth = false }) {
+  const last = finalMonth || monthsLeft <= 1;
+  const projected = incomeSoFar + paidGross + (last ? 0 : (monthsLeft - 1) * monthlyGross);
+  const annual = annualTax(Math.max(0, projected - TAX_SAMPLE.standardDeduction));
+  const base = Math.round(annual / 12);
+  const tds = last ? Math.round(annual - tdsSoFar) : base + Math.round((base * monthsBefore - tdsSoFar) / monthsLeft);
+  return Math.max(0, tds);
+}
+
 // ---------- filing deadlines ----------
 
 // SAMPLE VALUES, like TAX_SAMPLE: the rules behind the dates on
@@ -146,21 +174,24 @@ export function lossOfPayAmount(monthlyGross, lopDays, workingDays) {
 // ---------- one person's month ----------
 
 // Everything a payslip needs from a monthly gross and that month's LOP inputs.
-// The earnings and PF are worked out on the gross actually paid (after LOP);
-// TDS on the full monthly gross (monthlyTds(), with marginal relief above the
-// rebate limit: round 13B). Professional tax and TDS are both capped so
+// The earnings and PF are worked out on the gross actually paid (after LOP).
+// TDS: given `year`, the tax year so far ({ incomeSoFar, tdsSoFar,
+// monthsBefore, monthsLeft, finalMonth }), on what's actually paid (yearTds(),
+// round 13D); without it (the salary page's example), monthlyTds() of the full
+// monthly gross, as before (with marginal relief above the rebate limit: round
+// 13B). Professional tax and TDS are both capped so
 // net pay never goes below zero (PT's cap since round 11N: a paid gross under
 // about ₹214 used to leave net negative, 10U U4a).
 // lop.leftDays is there only for a leaver's final month (round 11Y), and
 // lop.notJoinedDays only for a joiner's first (round 12D).
-export function computePay(monthlyGross, { penaltyHalfDays = 0, unpaidLeaveDays = 0, absenceDays = 0, leftDays = 0, notJoinedDays = 0, workingDays = 0 } = {}) {
+export function computePay(monthlyGross, { penaltyHalfDays = 0, unpaidLeaveDays = 0, absenceDays = 0, leftDays = 0, notJoinedDays = 0, workingDays = 0 } = {}, year = null) {
   const lopDays = lossOfPayDays({ penaltyHalfDays, unpaidLeaveDays, absenceDays, leftDays, notJoinedDays, workingDays });
   const lopAmount = lossOfPayAmount(monthlyGross, lopDays, workingDays);
   const gross = monthlyGross - lopAmount;
   const earnings = splitGross(gross);
   const pf = providentFund(earnings.basic);
   const pt = Math.min(professionalTax(gross), gross - pf);
-  const tds = Math.min(monthlyTds(monthlyGross), Math.max(0, gross - pf - pt));
+  const tds = Math.min(year ? yearTds({ ...year, paidGross: gross, monthlyGross }) : monthlyTds(monthlyGross), Math.max(0, gross - pf - pt));
   const deductions = pf + pt + tds;
   return {
     monthlyGross,

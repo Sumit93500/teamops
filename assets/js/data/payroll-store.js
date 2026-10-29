@@ -2,9 +2,10 @@
 // Salaries, kept in localStorage through data/collection.js, a month's pay
 // worked out from them, and the payroll runs prepared and approved from that
 // (round 11T). payrollRunFor() reads the salary in effect, the month's
-// attendance (late-mark penalties, working days, unexplained absences) and
-// approved unpaid leave, and runs data/payroll.js's rules, so a live payslip
-// can't disagree with the data it came from. Once a month's run is approved,
+// attendance (late-mark penalties, working days, unexplained absences),
+// approved unpaid leave and the tax year so far (round 13D: TDS on what's
+// actually paid), and runs data/payroll.js's rules, so a live payslip can't
+// disagree with the data it came from. Once a month's run is approved,
 // its payslips are the figures it fixed (see "stored runs" below).
 //
 // A salary record: { id, userId, gross (monthly, rupees), effectiveFrom
@@ -25,7 +26,7 @@ import { permissionsOf } from "../config/roles.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker, isValidDate } from "./holidays.js";
 import { allRequests, PAST_DAY_WINDOW } from "./leave-store.js";
 import { monthFor, allRegularizations, ATTENDANCE_RULES } from "./attendance-store.js";
-import { computePay } from "./payroll.js";
+import { computePay, taxYearMonths } from "./payroll.js";
 
 // ---------- seed ----------
 
@@ -197,9 +198,18 @@ const pausedLateMarks = (attendance) => attendance.days.filter((d) => d.status =
 //   lastDay             only in a leaver's final month (round 11Y): their last
 //                       working day; the working days after it are taken off
 //                       as loss of pay (lop.leftDays), so the month is prorated
+// Its TDS is on what's actually paid this tax year (round 13D): yearRows()
+// works out the months before it first.
 export function payrollRunFor(userId, year, month) {
   const y = Number(year);
   const m = Number(month);
+  return validMonth(y, m) ? yearRows(userId, y, m).at(-1) : null;
+}
+
+// payrollRunFor()'s row for y / m (numbers), its TDS worked out from soFar,
+// the tax year before it ({ incomeSoFar, tdsSoFar, monthsBefore, monthsLeft }:
+// yearRows()).
+function rowFor(userId, y, m, soFar) {
   const user = getUser(userId);
   const attendance = validMonth(y, m) ? monthFor(userId, y, m) : null;
   if (!user || !attendance) return null;
@@ -209,6 +219,7 @@ export function payrollRunFor(userId, year, month) {
   const salary = salaryFor(userId, y, m);
   const absences = absencesIn(user, attendance, todayIso());
   const paused = pausedLateMarks(attendance);
+  const left = leavingDate(user);
   const pay = computePay(salary?.gross ?? 0, {
     penaltyHalfDays: Math.floor((attendance.lateMarks - paused) / ATTENDANCE_RULES.penaltyEvery),
     unpaidLeaveDays: unpaidLeaveDays(userId, y, m),
@@ -216,8 +227,7 @@ export function payrollRunFor(userId, year, month) {
     leftDays: attendance.days.filter((d) => d.status === "left").length,
     notJoinedDays: attendance.counts.notJoined,   // round 12D: the first month is prorated
     workingDays: attendance.workingDays,
-  });
-  const left = leavingDate(user);
+  }, { ...soFar, finalMonth: Boolean(left) && left.slice(0, 7) === `${y}-${pad(m)}` });   // a leaver's final month settles the year
   const holdReason = !salary ? "No salary on file for this month" : !user.bankAccount ? "No bank account on file" : null;
   return {
     userId,
@@ -239,6 +249,36 @@ export function payrollRunFor(userId, year, month) {
       ...(left && left.slice(0, 7) === `${y}-${pad(m)}` ? { lastDay: left } : {}),
     },
   };
+}
+
+// ---------- the tax year so far (round 13D) ----------
+
+// One person's months of the tax year (April to March: payroll.js
+// taxYearMonths()) from April up to and including year / month, each its row
+// (null where there's none), so a month's TDS projects the year from what was
+// actually paid (10U U4d; round-13c-scoping.md C1 / C2). Every month but the
+// last counts as its run's stored row if that run is approved (the figures it
+// fixed; null if they aren't in it), else as payrollRunFor() works it out with
+// the year so far up to it; the last is always worked out, as payrollRunFor()
+// promises. Months before attendance records began are paid in full (noData),
+// so they count at the structured gross; before joining, away all month and
+// after a leaver's last month there's no row, so they count 0. Each month is
+// worked out once, carrying the totals forward.
+function yearRows(userId, year, month) {
+  const approved = new Map(storedRuns().filter((r) => r.status === "approved").map((r) => [r.month, r]));
+  const upto = (month + 8) % 12;   // April is 0
+  const rows = [];
+  let incomeSoFar = 0;
+  let tdsSoFar = 0;
+  for (const [i, [y, m]] of taxYearMonths(year, month).slice(0, upto + 1).entries()) {
+    const run = i < upto ? approved.get(monthKey(y, m)) : null;
+    const row = run ? run.rows.find((r) => r.userId === userId) ?? null
+      : rowFor(userId, y, m, { incomeSoFar, tdsSoFar, monthsBefore: i, monthsLeft: 12 - i });
+    rows.push(row);
+    incomeSoFar += row?.gross ?? 0;
+    tdsSoFar += row?.deductionLines.tds ?? 0;
+  }
+  return rows;
 }
 
 // The month the payroll run page opens on (it shows another with ?month=), and
@@ -325,13 +365,21 @@ export function payslipsFor(userId, today) {
   let m = Number(from.slice(5, 7));
   const approved = new Map(storedRuns().filter((r) => r.status === "approved").map((r) => [r.month, r]));
   const slips = [];
+  // Each tax year is walked once (yearRows()), from the latest of its months
+  // here, and the earlier ones taken from that walk (round 13D).
+  const walked = new Map();
+  const live = (y, m) => {
+    const start = monthKey(...taxYearMonths(y, m)[0]);
+    if (!walked.has(start)) walked.set(start, yearRows(userId, y, m));
+    return walked.get(start)[(m + 8) % 12];
+  };
   for (let n = 0; n < 120; n++) {   // ten years at most
     const attendance = monthFor(userId, y, m);
     // A month away in a past period (round 12H) has no payslip; the earlier ones still count.
     const away = attendance && awayThrough(user, attendance.days[0].date, attendance.days.at(-1).date);
     if (!away && !attendance?.days.some((d) => RECORDED.includes(d.status))) break;
     const fixed = approved.get(monthKey(y, m))?.rows.find((r) => r.userId === userId);
-    if (!away) slips.push(fixed ? { ...fixed, runStatus: "approved" } : payrollRunFor(userId, y, m));
+    if (!away) slips.push(fixed ? { ...fixed, runStatus: "approved" } : live(y, m));
     [y, m] = m === 1 ? [y - 1, 12] : [y, m - 1];
   }
   return slips;
