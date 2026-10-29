@@ -20,7 +20,7 @@ import { rupees } from "../ui/money.js";
 import { showToast } from "../ui/toast.js";
 import {
   el, escapeHtml, formatDay, requestDates, requestTitle, typeLabel, statusBadge,
-  rejectionNote, newestPending, pendingSteps,
+  rejectionNote, newestPending, pendingSteps, nameOf,
 } from "../ui/leave-view.js";
 
 const PILL_STATUS = { "All": "all", "Pending": "pending", "Approved": "approved", "Rejected": "rejected" };
@@ -119,7 +119,7 @@ function correctionRow(request) {
 // ---------- expense claim rows ----------
 
 const expenseTitle = (claim) => `${categoryLabel(claim.category)}, ${rupees(claim.amount)}`;
-const names = (ids) => ids.map((id) => getUser(id)?.name ?? id).join(", ");
+const names = (ids) => ids.map(nameOf).join(", ");
 
 // Who it's with: whoever may decide it now, whoever may pay it once approved,
 // then whoever paid or rejected it.

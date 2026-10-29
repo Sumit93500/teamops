@@ -696,6 +696,25 @@ export function reactivateUser(actorUserId, id) {
   return changeUser(actor, id, { status: "active" });
 }
 
+// Deleted people's names (round 13J; round-13i-scoping.md I3 (b)): deleteUser()
+// keeps { id: name } once the delete is saved, so what still names them (their
+// closed requests, the assets they held, decisions they made) reads as a name,
+// not the bare id (ui/leave-view.js nameOf()). Kept until Reset demo data; a
+// delete made before this round kept none. Stored as { version, names }.
+const DELETED_NAMES_KEY = "deleted-names";
+function loadDeletedNames() {
+  const box = load(DELETED_NAMES_KEY);
+  return box && box.version === 1 && box.names && typeof box.names === "object" && !Array.isArray(box.names) ? box.names : {};
+}
+
+// A deleted person's name, or null: never deleted, deleted before round 13J,
+// or Reset demo data since.
+export function deletedName(id) {
+  const names = loadDeletedNames();
+  const name = Object.hasOwn(names, String(id)) ? names[String(id)] : null;
+  return typeof name === "string" && name ? name : null;
+}
+
 export function deleteUser(actorUserId, id) {
   const actor = actorWith(actorUserId, "users:delete");
   if (!actor) return fail("You can't delete employees.");
@@ -728,7 +747,9 @@ export function deleteUser(actorUserId, id) {
   const open = openRequestsOf(id);
   if (open.length) return fail(openProblem(box.records[index].name, open));
   const [removed] = box.records.splice(index, 1);
-  return commit(USERS_KEY, box, removed);
+  const result = commit(USERS_KEY, box, removed);
+  if (result.ok) save(DELETED_NAMES_KEY, { version: 1, names: { ...loadDeletedNames(), [removed.id]: removed.name } });
+  return result;
 }
 
 // ---------- department writes ----------
@@ -777,10 +798,11 @@ export function updateDepartment(actorUserId, code, changes = {}) {
 
 // ---------- safety net ----------
 
-// Throws away every change to users and departments in this browser. The next
-// read re-seeds both from the untouched constants. The sign-in session is a
-// separate key, so it is kept.
+// Throws away every change to users and departments in this browser, and the
+// deleted people's names (round 13J). The next read re-seeds both from the
+// untouched constants. The sign-in session is a separate key, so it is kept.
 export function resetDemoData() {
   remove(USERS_KEY);
   remove(DEPARTMENTS_KEY);
+  remove(DELETED_NAMES_KEY);
 }

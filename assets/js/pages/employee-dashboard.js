@@ -20,7 +20,7 @@ import { assetRequestsFor, waitingOn as assetWaitingOn } from "../data/asset-req
 import { assetTypeLabel } from "../ui/inventory-view.js";
 import {
   el, todayIso, formatDay, formatRange, monthName, typeLabel, requestDates,
-  statusBadge, newestPending, decisionOf, localDateOf, shortDate, whenText, plural, monthShort,
+  statusBadge, newestPending, decisionOf, localDateOf, shortDate, whenText, plural, monthShort, nameOf,
 } from "../ui/leave-view.js";
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
@@ -196,7 +196,7 @@ function renderRecent(days) {
 // ---------- requests, balance, updates ----------
 
 // Who a pending asset request waits on, by name ("" if nobody can decide it).
-const assetApprovers = (r) => assetWaitingOn(r).map((id) => getUser(id)?.name ?? id).join(", ");
+const assetApprovers = (r) => assetWaitingOn(r).map(nameOf).join(", ");
 
 function renderRequestList(leave, corrections, assets) {
   const request = newestPending([...leave, ...corrections, ...assets]);

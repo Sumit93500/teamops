@@ -7,7 +7,7 @@
 
 import { LEAVE_POLICY, currentApproverName } from "../data/leave-store.js";
 import { dayNumber, addDays } from "../data/holidays.js";
-import { getUser, getAllUsers, getAllDepartments } from "../data/store.js";
+import { getUser, getAllUsers, getAllDepartments, deletedName } from "../data/store.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -131,8 +131,9 @@ export const byNewest = (a, b) => b.from.localeCompare(a.from) || b.id.localeCom
 
 // ---------- people and decisions (the approval pages) ----------
 
-// A person's name, or the id itself for an id that isn't in the store.
-export const nameOf = (id) => getUser(id)?.name ?? id;
+// A person's name: from the store, else the name kept when they were deleted
+// (round 13J), else the id itself.
+export const nameOf = (id) => getUser(id)?.name ?? deletedName(id) ?? id;
 
 // Same as initialsFrom() in ui/topbar.js.
 export function initials(name) {
@@ -163,13 +164,15 @@ export function fillDepartmentSelect(select) {
 
 // A table's person cell: avatar, name, and a sub-line the page chooses (their
 // ID, email or department). userId gives the avatar colour and stands in for
-// the name; user is the store's record for them, or undefined if there is none.
+// the name; user is the store's record for them, or undefined if there is none
+// (then the name kept when they were deleted, round 13J).
 export function personCell(userId, user, subLine) {
   const td = el("td");
   const wrap = el("div", "table__user");
   const text = el("div");
-  text.append(el("span", "table__user-name", user?.name ?? userId), el("span", "table__user-sub", subLine));
-  wrap.append(el("div", avatarClass(userId), initials(user?.name)), text);
+  const name = user?.name ?? deletedName(userId);
+  text.append(el("span", "table__user-name", name ?? userId), el("span", "table__user-sub", subLine));
+  wrap.append(el("div", avatarClass(userId), initials(name)), text);
   td.append(wrap);
   return td;
 }

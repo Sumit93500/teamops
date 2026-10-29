@@ -520,9 +520,12 @@ statusBtn?.addEventListener("click", () => {
   showToast(`${user.name} reactivated.`, "success");
 });
 
-// Delete (round 11N; users:delete, Admin only). The store refuses your own
-// account, the demo sign-in identities and the last Admin. A deleted person's
-// salary, requests and assets stay, as a deactivated person's do; with nobody
+// Delete (round 11N; users:delete, Admin only). deleteUser() decides who can't
+// be deleted (your own account, the demo sign-in identities, the last Admin, and
+// anyone something still depends on: an approver, a waiting salary change, an
+// approved payroll run, or a request of their own still open, round 13H) and the
+// toast gives its reason. A deleted person's salary record, closed requests and
+// held assets stay (named from the deleted-names record, round 13I); with nobody
 // left to show, the page goes back to the list.
 deleteBtn?.addEventListener("click", () => {
   if (user.id === getCurrentUserId()) {
