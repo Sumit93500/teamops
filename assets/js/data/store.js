@@ -1,7 +1,8 @@
 // data/store.js
-// The live, editable copy of users and departments, kept in localStorage so
-// changes survive a reload in the same browser. Pages read and write through
-// here, never through the constants in data/users.js.
+// The live, editable copy of users and departments, and the names of the
+// people deleted (round 13J), kept in localStorage so changes survive a reload
+// in the same browser. Pages read and write through here, never through the
+// constants in data/users.js.
 //
 // Why the constants can never be mutated:
 //   - USERS, DEPARTMENTS and PROFILE_DETAILS are only read inside the two seed
@@ -715,37 +716,52 @@ export function deletedName(id) {
   return typeof name === "string" && name ? name : null;
 }
 
-export function deleteUser(actorUserId, id) {
+// Why actorUserId can't delete the person with this id, in words, or null if
+// they can (round 13P; round-13o-scoping.md O2 (b)): deleteUser()'s refusals as
+// a dry run, in its order and words, as payroll-store.js's prepareProblem() is
+// for prepareRun(). The profile page asks it before confirming a delete, so
+// nobody confirms one that would be refused.
+export function deleteProblem(actorUserId, id) {
   const actor = actorWith(actorUserId, "users:delete");
-  if (!actor) return fail("You can't delete employees.");
+  if (!actor) return "You can't delete employees.";
   const byRole = actor.role;
   if (PROTECTED_IDS.includes(id)) {
-    return fail(`${id} is a demo sign-in identity and can't be deleted.`);
+    return `${id} is a demo sign-in identity and can't be deleted.`;
   }
   const box = loadUsers();
   const index = box.records.findIndex((u) => u.id === id);
-  if (index === -1) return fail(`No employee with id ${id}.`);
-  if (box.records[index].role === "admin" && isLastAdmin(box.records, id)) return fail(LAST_ADMIN);
-  if (byNonAdmin(byRole) && box.records[index].role === "admin") return fail(ADMIN_ONLY_REMOVE);   // as in updateUser
+  if (index === -1) return `No employee with id ${id}.`;
+  if (box.records[index].role === "admin" && isLastAdmin(box.records, id)) return LAST_ADMIN;
+  if (byNonAdmin(byRole) && box.records[index].role === "admin") return ADMIN_ONLY_REMOVE;   // as in updateUser
   // Nobody deletes their own account (round 11N): updateUser's self-deactivation rule, in the same place after the
   // demo-identity and Admin rules.
-  if (actor.id === id) return fail("You can't delete your own account.");
+  if (actor.id === id) return "You can't delete your own account.";
   const lastApprover = lastApproverProblem(box.records, box.records.filter((u) => u.id !== id), box.records[index]);   // as in changeUser (round 11T)
-  if (lastApprover) return fail(lastApprover);
+  if (lastApprover) return lastApprover;
   const stranded = strandedProblem(box.records, box.records.filter((u) => u.id !== id), box.records[index]);   // as in changeUser (round 11Z)
-  if (stranded) return fail(stranded);
+  if (stranded) return stranded;
   // A salary change waiting for an Admin keeps the person it would pay (round
   // 12X): approving it would find nobody to pay.
   const waiting = pendingSalaryChanges().find((p) => p.userId === id);
-  if (waiting) return fail(`${box.records[index].name} has a salary change waiting for a decision (${waiting.id}), so they can't be deleted: decide or withdraw it first.`);
+  if (waiting) return `${box.records[index].name} has a salary change waiting for a decision (${waiting.id}), so they can't be deleted: decide or withdraw it first.`;
   // Someone an approved payroll run pays keeps their record, so their payslips
   // can still be opened (round 11Y; round-11x-notes.md X-D3 (c)).
   const paid = approvedRunMonths(id);
-  if (paid.length) return fail(`${box.records[index].name} is paid in an approved payroll run (${monthLabel(paid[0])}), so they can't be deleted. Deactivate them instead.`);
+  if (paid.length) return `${box.records[index].name} is paid in an approved payroll run (${monthLabel(paid[0])}), so they can't be deleted. Deactivate them instead.`;
   // Nor anyone with a request still open (round 13H): deleted, it could still be
   // approved or paid, with nobody left to withdraw it.
   const open = openRequestsOf(id);
-  if (open.length) return fail(openProblem(box.records[index].name, open));
+  if (open.length) return openProblem(box.records[index].name, open);
+  return null;
+}
+
+// Deletes the person, keeping their name (round 13J). -> { ok: true, record }
+// or a fail() with deleteProblem()'s reason.
+export function deleteUser(actorUserId, id) {
+  const problem = deleteProblem(actorUserId, id);
+  if (problem) return fail(problem);
+  const box = loadUsers();
+  const index = box.records.findIndex((u) => u.id === id);
   const [removed] = box.records.splice(index, 1);
   const result = commit(USERS_KEY, box, removed);
   if (result.ok) save(DELETED_NAMES_KEY, { version: 1, names: { ...loadDeletedNames(), [removed.id]: removed.name } });

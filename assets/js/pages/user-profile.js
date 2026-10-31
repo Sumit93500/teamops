@@ -4,7 +4,7 @@
 // Delete and Reset password. Cards with no data behind them yet stay as static
 // HTML.
 
-import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser, deleteUser, reportingManagerName, leavingDate, leavingPeriods } from "../data/store.js";
+import { getUser, getAllUsers, getAllDepartments, deactivateUser, reactivateUser, deleteUser, deleteProblem, reportingManagerName, leavingDate, leavingPeriods } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { ROLES, overridesOf } from "../config/roles.js";
 import { showToast } from "../ui/toast.js";
@@ -524,12 +524,19 @@ statusBtn?.addEventListener("click", () => {
 // be deleted (your own account, the demo sign-in identities, the last Admin, and
 // anyone something still depends on: an approver, a waiting salary change, an
 // approved payroll run, or a request of their own still open, round 13H) and the
-// toast gives its reason. A deleted person's salary record, closed requests and
-// held assets stay (named from the deleted-names record, round 13I); with nobody
-// left to show, the page goes back to the list.
+// toast gives its reason. It's asked first (deleteProblem(), round 13P), so a
+// delete that would be refused is never confirmed: the toast comes at once. A
+// deleted person's salary record, closed requests and held assets stay (named
+// from the deleted-names record, round 13I); with nobody left to show, the page
+// goes back to the list.
 deleteBtn?.addEventListener("click", () => {
   if (user.id === getCurrentUserId()) {
     showToast("You can't delete your own account.", "danger");
+    return;
+  }
+  const problem = deleteProblem(getCurrentUserId(), user.id);   // round 13P: the refusal, before any confirm
+  if (problem) {
+    showToast(problem, "danger");
     return;
   }
   const held = heldText();   // round 12T: what they still hold, in the Deactivate dialog's words
