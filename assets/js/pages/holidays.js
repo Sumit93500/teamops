@@ -118,7 +118,11 @@ function listItem(holiday) {
   remove.dataset.permission = "holidays:manage";
   remove.setAttribute("aria-label", `Remove ${holiday.name}`);
   remove.addEventListener("click", () => removeOne(holiday));
-  item.append(tile, content, badge, remove);
+  // A past holiday can't be removed (data/holidays.js removeHoliday(), round
+  // 10O), and that never relaxes, so its row offers no Remove (round 13R;
+  // round-13q-scoping.md Q3): a disabled button, or a confirm then a refusal,
+  // would only be noise. The "Past" badge says why.
+  item.append(tile, content, badge, ...(past ? [] : [remove]));
   return item;
 }
 

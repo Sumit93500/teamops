@@ -127,6 +127,11 @@ export function addHoliday(actorUserId, fields = {}) {
   return holidays.add({ date, name, kind });
 }
 
+// "26 Jan 2026", as the pages write a day (ui/leave-view.js formatDay()). This
+// file can't import it: data files don't import the ui layer, and leave-view
+// imports this one (store.js keeps its own MONTHS for the same reason).
+const dayLabel = (iso) => `${Number(iso.slice(8, 10))} ${MONTH_NAMES[Number(iso.slice(5, 7)) - 1].slice(0, 3)} ${iso.slice(0, 4)}`;
+
 // A holiday already past can't be removed: its day would become an absence for
 // everyone who didn't punch in, perhaps after the time to ask for a correction
 // has gone (round 10O). Today's and later ones can; adding a past one is fine,
@@ -134,7 +139,7 @@ export function addHoliday(actorUserId, fields = {}) {
 export function removeHoliday(actorUserId, id) {
   if (!holidayManager(actorUserId)) return fail("You can't remove holidays.");
   const holiday = holidays.get(id);
-  if (holiday && holiday.date < todayIso()) return fail(`Can't remove a past holiday (${holiday.date}).`);
+  if (holiday && holiday.date < todayIso()) return fail(`Can't remove a past holiday (${dayLabel(holiday.date)}).`);   // round 13R: the date as the pages write it
   return holidays.remove(id);
 }
 
