@@ -75,6 +75,7 @@
   background: var(--color-primary);
 }
 .bar-row__value { text-align: right; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+#fin-dept-bars .bar-row { grid-template-columns: 96px minmax(0, 1fr) 76px; }   /* values in rupees, as .value-bars */
 
 /* ---------- Activity list ---------- */
 .activity__item {

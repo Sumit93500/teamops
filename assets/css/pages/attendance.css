@@ -35,7 +35,7 @@
    <span class="week"><i class="week__day week__day--p"></i> x5</span>
    p = present, l = late, a = absent, lv = on leave, hd = half day,
    hol = holiday, ny = not in yet (today or later), nd = no data (before records began) */
-.week { display: inline-flex; gap: 4px; }
+.week { position: relative; display: inline-flex; gap: 4px; }   /* keeps its .sr-only codes inside the table's scroll box */
 .week__day {
   width: 16px; height: 16px;
   border-radius: 4px;

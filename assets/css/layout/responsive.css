@@ -32,9 +32,13 @@
     z-index: var(--z-modal);
     width: min(280px, 85vw); height: auto;
     transform: translateX(-100%);
-    transition: transform 200ms ease;
+    visibility: hidden;                         /* closed: its links can't be tabbed to */
+    transition: transform 200ms ease, visibility 0s linear 200ms;   /* hides once it has slid shut */
   }
-  .sidebar.is-open { transform: none; box-shadow: var(--shadow-modal); }   /* JS stage adds .is-open */
+  .sidebar.is-open {                            /* ui/menu-toggle.js adds .is-open */
+    transform: none; visibility: visible; box-shadow: var(--shadow-modal);
+    transition: transform 200ms ease, visibility 0s;   /* shows at once, so focus can move into it */
+  }
 
   .topbar { padding: 0 var(--space-4); }
   .topbar__menu-toggle { display: grid; }
@@ -44,7 +48,6 @@
   .content { padding: var(--space-4); }
 
   .grid-2, .grid-3, .grid-4 { grid-template-columns: minmax(0, 1fr); }
-  .form-grid, .form-grid--3 { grid-template-columns: minmax(0, 1fr); }
 
   .page-header { flex-direction: column; align-items: stretch; }
   .page-header__actions { justify-content: flex-start; }
@@ -57,9 +60,13 @@
 
 /* ---------- Small phone ---------- */
 @media (max-width: 560px) {
+  .form-grid, .form-grid--3 { grid-template-columns: minmax(0, 1fr); }   /* tablets keep two columns */
+
   .stat-strip { grid-template-columns: minmax(0, 1fr); }
   .stat:nth-child(n) { border-right: 0; border-bottom: 1px solid var(--color-border); }
   .stat:last-child { border-bottom: 0; }
+
+  .tabs--pill { flex-wrap: wrap; max-width: 100%; }
 
   .list__item { flex-wrap: wrap; }
   .list__item .btn-group { width: 100%; padding-left: 43px; }   /* buttons drop under the text */

@@ -9,7 +9,9 @@ import { loadTheme } from "./ui/theme.js";
 import { renderSidebar, renderHeadcount } from "./ui/sidebar.js";
 import { renderTopbar } from "./ui/topbar.js";
 import { initDropdowns } from "./ui/dropdown.js";
+import { initMenuToggle } from "./ui/menu-toggle.js";
 import { initModals } from "./ui/modal.js";
+import { initToasts } from "./ui/toast.js";
 import { initTabs } from "./ui/tabs.js";
 import { initTableFilters } from "./ui/table-filter.js";
 import { initPasswordToggles } from "./ui/password-toggle.js";
@@ -36,7 +38,9 @@ if (ok) {
 }
 
 initDropdowns();
+initMenuToggle();
 initModals();
+initToasts();
 initTabs();
 initTableFilters();
 initPasswordToggles();

@@ -11,7 +11,6 @@
 @import url("layout/shell.css");
 @import url("layout/grid.css");
 @import url("layout/auth-layout.css");
-@import url("layout/responsive.css");
 
 /* components */
 @import url("components/button.css");
@@ -43,6 +42,9 @@
 @import url("pages/payroll.css");
 @import url("pages/inventory.css");
 @import url("pages/settings.css");
+
+/* responsive: last, so its small-screen rules win over the components and pages above */
+@import url("layout/responsive.css");
 
 /* print (payslips): only applies when printing */
 @import url("print.css") print;
