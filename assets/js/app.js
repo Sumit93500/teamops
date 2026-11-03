@@ -7,7 +7,8 @@ import { getCurrentRole } from "./core/auth.js";
 import { applyPermissions } from "./core/rbac.js";
 import { loadTheme, renderThemeMenu } from "./ui/theme.js";
 import { renderSidebar, renderHeadcount } from "./ui/sidebar.js";
-import { renderTopbar } from "./ui/topbar.js";
+import { renderTopbar, renderBell } from "./ui/topbar.js";
+import { renderSearch } from "./ui/search.js";
 import { initDropdowns } from "./ui/dropdown.js";
 import { initMenuToggle } from "./ui/menu-toggle.js";
 import { initModals } from "./ui/modal.js";
@@ -34,6 +35,8 @@ if (ok) {
     avatarSelector: ".avatar",
     signOutSelector: "[data-signout]",
   });
+  renderSearch();
+  renderBell();
   renderThemeMenu();
   applyPermissions();
 }

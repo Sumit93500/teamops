@@ -91,14 +91,6 @@ function el(tag, className, text) {
 function buildRow(user, allUsers) {
   const tr = document.createElement("tr");
 
-  const checkCell = el("td", "table__check");
-  const checkLabel = el("label", "check");
-  const checkbox = el("input");
-  checkbox.type = "checkbox";
-  checkbox.setAttribute("aria-label", `Select ${user.name}`);
-  checkLabel.append(checkbox);
-  checkCell.append(checkLabel);
-
   const userCell = el("td");
   const userWrap = el("div", "table__user");
   const nameLink = el("a", "table__user-name", user.name);
@@ -121,7 +113,6 @@ function buildRow(user, allUsers) {
   actionsCell.append(edit);
 
   tr.append(
-    checkCell,
     userCell,
     el("td", "", user.id),
     el("td", "", user.designation ?? ""),
@@ -136,7 +127,7 @@ function buildRow(user, allUsers) {
 function emptyRow() {
   const tr = document.createElement("tr");
   const td = el("td", "text-muted", "No employees match these filters.");
-  td.colSpan = document.querySelectorAll(".table thead th").length || 8;
+  td.colSpan = document.querySelectorAll(".table thead th").length || 7;
   tr.append(td);
   return tr;
 }

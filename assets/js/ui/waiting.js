@@ -1,8 +1,8 @@
 // ui/waiting.js
 // What waits for a person's decision: the real rows of the approvals inbox's
-// Pending tab. The inbox (pages/approvals-inbox.js) lists them and the
-// sidebar's Approvals count (ui/sidebar.js) counts them, so the two can't
-// disagree.
+// Pending tab. The inbox (pages/approvals-inbox.js) lists them; its stat, the
+// sidebar's Approvals count (ui/sidebar.js) and the topbar's bell (ui/topbar.js)
+// count them, so they can't disagree.
 //   - leave requests and attendance corrections: pendingFor() in
 //     data/leave-store.js and pendingRegularizations() in
 //     data/attendance-store.js judge each stage (data/approval-chain.js): the

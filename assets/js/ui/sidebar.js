@@ -15,6 +15,7 @@ import { activeHeadcount } from "../data/store.js";
 import { managesAnyone, pendingFor } from "../data/expenses-store.js";
 import { pendingFor as pendingAssetRequests } from "../data/asset-requests-store.js";
 import { waitingCount } from "./waiting.js";
+import { refreshBell } from "./topbar.js";
 
 function currentPagePath() {
   const path = window.location.pathname;
@@ -24,10 +25,15 @@ function currentPagePath() {
   return path.slice(idx + marker.length);
 }
 
-function buildItem(item, currentPath) {
-  const href = item.href === "@landing"
+// An item's page, relative to the pages folder.
+export function navItemHref(item) {
+  return item.href === "@landing"
     ? getCurrentRole()?.landing ?? "auth/login.html"
     : item.href;
+}
+
+function buildItem(item, currentPath) {
+  const href = navItemHref(item);
 
   const link = resolvePageLink(href);
   const isActive = href === currentPath;
@@ -62,9 +68,10 @@ function setWaitingCount(a) {
 }
 
 // After a decision changes what waits (ui/leave-decision.js calls this), the
-// counts already in the sidebar are brought up to date without redrawing it.
+// counts already in the sidebar, and the topbar's bell, are brought up to date without redrawing them.
 export function refreshWaitingCount(root = document) {
   root.querySelectorAll(".nav__item[data-count-waiting]").forEach(setWaitingCount);
+  refreshBell();
 }
 
 // Has people reporting to them, or an expense claim or asset request waiting
@@ -75,13 +82,18 @@ function isManager() {
   return managesAnyone(id) || pendingFor(id, role).length > 0 || pendingAssetRequests(id, role).length > 0;
 }
 
+// Whether the sidebar lists this item for the signed-in person (ui/search.js asks too).
+export function navItemVisible(item) {
+  return can(item.permission) || (item.alsoForManagers && isManager());
+}
+
 export function renderSidebar(container) {
   if (!container) return;
   container.innerHTML = "";
   const currentPath = currentPagePath();
 
   NAV.forEach((group) => {
-    const visibleItems = group.items.filter((item) => can(item.permission) || (item.alsoForManagers && isManager()));
+    const visibleItems = group.items.filter(navItemVisible);
     if (visibleItems.length === 0) return;
 
     const groupTitle = document.createElement("div");

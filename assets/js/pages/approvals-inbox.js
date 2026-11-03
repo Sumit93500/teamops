@@ -52,7 +52,7 @@ import {
 } from "../ui/leave-view.js";
 import { setStatValue, setOptionalStatNote } from "../ui/stats.js";
 import { correctionDetails } from "../ui/attendance-view.js";
-import { waitingFor } from "../ui/waiting.js";
+import { waitingFor, waitingCount } from "../ui/waiting.js";
 
 const PILL_TAB = { "Pending": "pending", "Approved": "approved", "Rejected": "rejected" };
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -392,8 +392,8 @@ function setStat(label, value) {
 // Expense claims and asset requests: this person's own decisions, from the
 // claim or request reaching their stage to their decision. Salary changes:
 // this person's own decisions, from proposed to decided.
-function renderStats(pendingCount) {
-  setStat("Waiting for you", String(pendingCount));
+function renderStats() {
+  setStat("Waiting for you", String(waitingCount(userId, role)));   // the sidebar's number: samples wait for nobody
   if (!showLeave && !showCorrections && !showsExpenses() && !showsAssets() && !showsSalary()) {
     ["Approved this week", "Rejected this week", "Average response"].forEach((label) => setStat(label, "—"));
     return;
@@ -481,7 +481,7 @@ function render() {
   applyPermissions(inboxBody);
   if (footerMeta) footerMeta.textContent = `Showing ${shown.length} of ${all.length} ${tab} requests`;
 
-  renderStats(counts.pending);
+  renderStats();
   renderRecentlyDecided();
 }
 

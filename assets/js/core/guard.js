@@ -19,6 +19,13 @@ const PUBLIC_PAGES = [
   "errors/500.html",
 ];
 
+// May the signed-in person open this page (relative to the pages folder)? The
+// one rule: guardPage() below enforces it, and whatever offers a link asks it.
+export function canOpenPage(pagePath) {
+  const required = ROUTES[pagePath];
+  return !required || can(required);
+}
+
 function currentPagePath() {
   const path = window.location.pathname;
   const marker = "/pages/";
@@ -48,9 +55,7 @@ export function guardPage() {
     return false;
   }
 
-  const required = pagePath ? ROUTES[pagePath] : undefined;
-
-  if (required && !can(required)) {
+  if (pagePath && !canOpenPage(pagePath)) {
     window.location.href = resolvePageLink("errors/403.html");
     return false;
   }
