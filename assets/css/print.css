@@ -6,10 +6,12 @@
 
 @page { size: A4; margin: 14mm; }
 
-/* Always print in light colors, even if dark mode is on */
+/* Always print in light colors, even if dark mode is on, and in the role's colour, whatever the person's accent */
 :root, [data-theme="dark"] {
   color-scheme: light;
+  --primary-base: var(--role-base);
   --color-primary: var(--primary-base);
+  --role-primary: var(--role-base);
   --color-on-primary: #ffffff;
   --color-bg: #ffffff;
   --color-surface: #ffffff;

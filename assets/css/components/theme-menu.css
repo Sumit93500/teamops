@@ -1,0 +1,33 @@
+/* ==========================================================
+   theme-menu.css: the topbar's Appearance menu (ui/theme.js)
+   A .dropdown, so ui/dropdown.js opens and closes it.
+   ========================================================== */
+
+.theme-menu { width: 248px; padding: var(--space-3); }
+.theme-menu__title { margin: var(--space-3) 0 var(--space-1); font-size: var(--text-xs); color: var(--color-text-muted); }
+.theme-menu__title:first-child { margin-top: 0; }
+.theme-menu__themes { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.theme-menu__theme {
+  padding: 4px var(--space-2);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+}
+.theme-menu__theme[aria-pressed="true"] { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
+.theme-menu__accents { display: flex; flex-wrap: wrap; gap: 6px; }
+.theme-swatch {
+  width: 26px; height: 26px;
+  border: 2px solid var(--color-surface); border-radius: 50%;
+  background: var(--primary-base);          /* each swatch's data-accent sets its own (tokens.css) */
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+/* In dark, as the UI will show it (tokens.css lightens the accent), so a swatch also stands out from the menu */
+[data-theme="dark"] .theme-swatch { background: color-mix(in srgb, var(--primary-base) 62%, var(--color-text)); }
+.theme-swatch.theme-swatch--role { background: var(--role-primary); }
+.theme-swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--color-text); }
+.theme-menu__current { margin-top: var(--space-2); font-size: var(--text-xs); color: var(--color-text-muted); }
+
+/* A phone's topbar leaves too little room to the button's left: hang the menu from the topbar instead */
+@media (max-width: 560px) {
+  .dropdown:has(.theme-menu) { position: static; }
+  .theme-menu { right: var(--space-4); max-width: calc(100vw - 2 * var(--space-4)); }
+}

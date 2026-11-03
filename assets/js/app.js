@@ -5,7 +5,7 @@
 import { guardPage } from "./core/guard.js";
 import { getCurrentRole } from "./core/auth.js";
 import { applyPermissions } from "./core/rbac.js";
-import { loadTheme } from "./ui/theme.js";
+import { loadTheme, renderThemeMenu } from "./ui/theme.js";
 import { renderSidebar, renderHeadcount } from "./ui/sidebar.js";
 import { renderTopbar } from "./ui/topbar.js";
 import { initDropdowns } from "./ui/dropdown.js";
@@ -34,6 +34,7 @@ if (ok) {
     avatarSelector: ".avatar",
     signOutSelector: "[data-signout]",
   });
+  renderThemeMenu();
   applyPermissions();
 }
 

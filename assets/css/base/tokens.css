@@ -8,9 +8,12 @@
   color-scheme: light;
 
   /* ---------- Primary: changes per role (see [data-role] below) ---------- */
-  --primary-base: #4f46e5;
+  --role-base: #4f46e5;
+  --primary-base: var(--role-base);   /* a person's accent overrides this, below */
   --color-primary: var(--primary-base);
   --color-primary-soft: color-mix(in srgb, var(--color-primary) 11%, var(--color-surface));
+  --role-primary: var(--role-base);   /* what an accent doesn't touch: avatars, the menu's role swatch */
+  --role-primary-soft: color-mix(in srgb, var(--role-primary) 11%, var(--color-surface));
   --color-on-primary: #ffffff;
 
   /* ---------- Neutrals ---------- */
@@ -67,15 +70,25 @@
 }
 
 /* ---------- Role accents: set <html data-role="hr"> and the UI recolors ---------- */
-[data-role="admin"] { --primary-base: #4f46e5; }   /* indigo */
-[data-role="hr"]    { --primary-base: #0f766e; }   /* teal */
-[data-role="fin"]   { --primary-base: #b45309; }   /* amber-brown */
-[data-role="emp"]   { --primary-base: #2563eb; }   /* blue */
+[data-role="admin"] { --role-base: #4f46e5; }   /* indigo */
+[data-role="hr"]    { --role-base: #0f766e; }   /* teal */
+[data-role="fin"]   { --role-base: #b45309; }   /* amber-brown */
+[data-role="emp"]   { --role-base: #2563eb; }   /* blue */
 
-/* ---------- Dark mode: set <html data-theme="dark"> (JS toggle comes later) ---------- */
+/* ---------- A person's accent: set <html data-accent="teal"> (ui/theme.js). Comes after the
+   role accents and only overrides --primary-base; none set = the role's own. ---------- */
+[data-accent="indigo"] { --primary-base: #4f46e5; }
+[data-accent="blue"]   { --primary-base: #2563eb; }
+[data-accent="teal"]   { --primary-base: #0f766e; }
+[data-accent="violet"] { --primary-base: #6d28d9; }
+[data-accent="slate"]  { --primary-base: #475569; }
+[data-accent="pink"]   { --primary-base: #be185d; }
+
+/* ---------- Dark mode: set <html data-theme="dark"> (ui/theme.js) ---------- */
 [data-theme="dark"] {
   color-scheme: dark;
   --color-primary: color-mix(in srgb, var(--primary-base) 62%, #ffffff);
+  --role-primary: color-mix(in srgb, var(--role-base) 62%, #ffffff);
   --color-on-primary: #0b1020;
 
   --color-bg: #0c111b;

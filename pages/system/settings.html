@@ -150,7 +150,7 @@
 
     <div class="stack">
 
-      <div class="alert alert--info">Sample, not built yet: company settings aren't part of OfficeOS yet. This page shows how they could look; nothing here is saved or applied, and the rules and values listed are examples.</div>
+      <div class="alert alert--info">Sample, not built yet: company settings aren't part of OfficeOS yet. This page shows how they could look; apart from the Appearance theme, which saves on this device, nothing here is saved or applied, and the rules and values listed are examples.</div>
 
       <section class="card" id="company">
         <div class="card__header"><h3 class="card__title">Company</h3></div>
@@ -283,11 +283,11 @@
       <section class="card" id="appearance">
         <div class="card__header"><h3 class="card__title">Appearance</h3></div>
         <div class="card__body">
-          <p class="form-label mb-2">Default theme</p>
-          <div class="choice-grid" role="radiogroup" aria-label="Default theme">
+          <p class="form-label mb-2">Theme on this device</p>
+          <div class="choice-grid" role="radiogroup" aria-label="Theme on this device">
             <label class="choice"><input type="radio" name="theme" value="light" checked><span class="choice__title">Light</span><span class="choice__meta">Bright background</span></label>
             <label class="choice"><input type="radio" name="theme" value="dark"><span class="choice__title">Dark</span><span class="choice__meta">Easier on the eyes at night</span></label>
-            <label class="choice"><input type="radio" name="theme" value="system"><span class="choice__title">Match the device</span><span class="choice__meta">Follows each person's setting</span></label>
+            <label class="choice"><input type="radio" name="theme" value="system"><span class="choice__title">Match the device</span><span class="choice__meta">Follows this device's setting</span></label>
           </div>
         </div>
         <div class="table-wrap">
@@ -295,7 +295,7 @@
             <thead>
               <tr>
                 <th>Role</th>
-                <th>Accent color</th>
+                <th>Accent colour</th>
                 <th>Colour code</th>
               </tr>
             </thead>
@@ -308,8 +308,8 @@
           </table>
         </div>
         <div class="card__footer">
-          <span class="card__meta">Each role's accent color is set from its role.</span>
-          <button class="btn btn--primary btn--sm" type="button" data-permission="settings:edit" data-not-implemented="Save appearance">Save appearance</button>
+          <span class="card__meta">Each role's accent colour is set from its role, unless someone picks their own in the Appearance menu.</span>
+          <button class="btn btn--primary btn--sm" type="button" data-permission="settings:edit" id="save-appearance">Save appearance</button>
         </div>
       </section>
 
