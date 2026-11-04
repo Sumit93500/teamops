@@ -2,6 +2,8 @@
 // The person's look on this device: light, dark or the device's setting, and an
 // accent colour (none = their role's own, tokens.css). Saved so it stays the same
 // across pages and sign-ins. The topbar's Appearance menu sets both.
+// Every page's head has a small script that paints them before the first paint, so
+// a saved look doesn't flash. It can't import this file and repeats THEMES and ACCENTS.
 
 import { save, load, remove } from "../core/storage.js";
 

@@ -26,5 +26,11 @@ export function load(key) {
 }
 
 export function remove(key) {
-  localStorage.removeItem(PREFIX + key);
+  try {
+    localStorage.removeItem(PREFIX + key);
+    return true;
+  } catch (err) {
+    console.error(`storage: failed to remove "${key}"`, err);
+    return false;
+  }
 }

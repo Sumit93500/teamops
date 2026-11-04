@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>(function(){try{var d=document.documentElement,g=function(k){try{return JSON.parse(localStorage.getItem("officeos:"+k))}catch(e){return null}},t,a;d.setAttribute("data-nav-pending","");addEventListener("load",function(){d.removeAttribute("data-nav-pending")});t=g("theme");a=g("accent");if(t==="system")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(t==="light"||t==="dark")d.setAttribute("data-theme",t);if(["indigo","blue","teal","violet","slate","pink"].indexOf(a)>-1)d.setAttribute("data-accent",a)}catch(e){}})();</script>
   <title>Add employee | OfficeOS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,7 +99,7 @@
       </div>
       <label class="topbar__search">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input type="search" placeholder="Search people, modules" aria-label="Search">
+        <input type="search" placeholder="Search" aria-label="Search">
         <kbd>Ctrl K</kbd>
       </label>
       <div class="topbar__actions">

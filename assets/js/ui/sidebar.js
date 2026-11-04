@@ -87,9 +87,14 @@ export function navItemVisible(item) {
   return can(item.permission) || (item.alsoForManagers && isManager());
 }
 
+// Built whole, then swapped in: a throw on the way leaves the page's static list as
+// it was. Every page's head script marks <html data-nav-pending>, which hides the list
+// and the footer below it (shell.css), so the static list never shows and the footer
+// doesn't jump; drawing lifts the mark, and so does the head script at load, so a list
+// that never gets drawn doesn't stay hidden.
 export function renderSidebar(container) {
   if (!container) return;
-  container.innerHTML = "";
+  const drawn = document.createDocumentFragment();
   const currentPath = currentPagePath();
 
   NAV.forEach((group) => {
@@ -99,12 +104,14 @@ export function renderSidebar(container) {
     const groupTitle = document.createElement("div");
     groupTitle.className = "nav__group-title";
     groupTitle.textContent = group.group;
-    container.appendChild(groupTitle);
+    drawn.appendChild(groupTitle);
 
     visibleItems.forEach((item) => {
-      container.appendChild(buildItem(item, currentPath));
+      drawn.appendChild(buildItem(item, currentPath));
     });
   });
+  container.replaceChildren(drawn);
+  document.documentElement.removeAttribute("data-nav-pending");
 }
 
 // The footer's headcount line (#sidebar-headcount on every page with a sidebar):
