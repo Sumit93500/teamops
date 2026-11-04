@@ -32,7 +32,7 @@ export function refreshBell() {
   bell.toggleAttribute("data-waiting", n > 0);
 }
 
-function initialsFrom(name) {
+export function initialsFrom(name) {
   if (!name) return "?";
   return name
     .split(" ")
@@ -40,6 +40,12 @@ function initialsFrom(name) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+}
+
+// The account menu's Sign out, and the drawer's (ui/rail.js).
+export function signOutNow() {
+  signOut();
+  window.location.href = resolvePageLink("auth/login.html");
 }
 
 export function renderTopbar({ breadcrumbSelector, avatarSelector, signOutSelector } = {}) {
@@ -62,10 +68,7 @@ export function renderTopbar({ breadcrumbSelector, avatarSelector, signOutSelect
   if (signOutSelector) {
     const el = document.querySelector(signOutSelector);
     if (el) {
-      el.addEventListener("click", () => {
-        signOut();
-        window.location.href = resolvePageLink("auth/login.html");
-      });
+      el.addEventListener("click", signOutNow);
     }
   }
 }

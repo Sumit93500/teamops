@@ -1,0 +1,175 @@
+/* ==========================================================
+   rail.css: the sidebar once ui/sidebar.js has drawn it
+   Above 820px an icon rail with flyouts (ui/rail.js), and at 820px and below an
+   accordion drawer. <html data-nav-pending> (each page's head script) and
+   data-nav-drawn (ui/sidebar.js) turn the rail on. With neither, the list was never
+   drawn: the page keeps its static list at the full width, so the names show.
+   ========================================================== */
+
+.icon--solid { fill: currentColor; stroke: none; }
+
+/* ---------- The rail ---------- */
+@media (min-width: 821px) {
+  [data-nav-pending], [data-nav-drawn] { --sidebar-width: 64px; }
+
+  [data-nav-pending] .sidebar, [data-nav-drawn] .sidebar {
+    z-index: calc(var(--z-sticky) + 1);         /* a tall flyout rises over the topbar */
+    align-items: center;
+    padding: var(--space-4) 10px;
+    overflow-x: hidden; scrollbar-width: none;
+  }
+  [data-nav-pending] .sidebar__brand, [data-nav-drawn] .sidebar__brand { font-size: 0; padding: var(--space-1) 0 var(--space-4); }
+  [data-nav-pending] .sidebar__nav { max-height: 0; overflow: hidden; }   /* the static list, never shown here */
+
+  .sidebar__nav:has(.nav__section) { align-items: center; gap: 4px; }
+  .nav__profile, .nav__signout, .nav__trigger-label, .nav__section--single .nav__group-title { display: none; }
+
+  .nav__trigger, .nav__section--single .nav__item {
+    position: relative;
+    display: grid; place-items: center;
+    width: 44px; height: 44px; padding: 0;
+    border: 0; border-radius: var(--radius-md);
+    background: none; color: var(--color-rail-icon);
+    font-size: 0; cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+  }
+  .nav__trigger .icon, .nav__section--single .nav__item .icon { width: 22px; height: 22px; }
+  .nav__trigger:hover, .nav__section.is-open > .nav__trigger, .nav__section--single .nav__item:hover { background: var(--color-sidebar-hover); color: #ffffff; }
+  .nav__section.is-current > .nav__trigger, .nav__section--single .nav__item.is-active {
+    background: var(--color-primary); color: var(--color-on-primary); box-shadow: none;
+  }
+  .nav__section--single .nav__count {
+    position: absolute; top: 2px; right: 0;
+    min-width: 16px; margin: 0; padding: 0 4px;
+    font-size: 10px; line-height: 16px;
+  }
+
+  /* The flyout: fixed, so the rail's scrolling doesn't clip it. ui/rail.js sets its top. */
+  .nav__panel {
+    display: none;
+    position: fixed; left: calc(var(--sidebar-width) + 6px);
+    flex-direction: column; gap: 2px;
+    width: 248px; max-height: calc(100vh - 16px); overflow-y: auto;
+    padding: var(--space-2);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-float);
+  }
+  .nav__section.is-open > .nav__panel { display: flex; }
+  .nav__section--single > .nav__panel { display: block; position: static; width: auto; max-height: none; padding: 0; background: none; border: 0; box-shadow: none; overflow: visible; }
+  .nav__panel:not(.nav__section--single > *) :focus-visible { outline-color: var(--color-primary); }
+  .nav__section:not(.nav__section--single) .nav__group-title { padding: 4px var(--space-2) 6px; color: var(--color-text); font-weight: var(--weight-semibold); }
+  .nav__section:not(.nav__section--single) .nav__item { color: var(--color-text); }
+  .nav__section:not(.nav__section--single) .nav__item .icon { color: var(--color-text-muted); }
+  .nav__section:not(.nav__section--single) .nav__item:hover { background: var(--color-surface-hover); color: var(--color-text); }
+  .nav__section:not(.nav__section--single) .nav__item.is-active {
+    background: var(--color-primary-soft); color: var(--color-text);
+    box-shadow: inset 3px 0 0 var(--color-primary);
+  }
+
+  /* The label chip: fixed with no top, so it stays beside its icon and isn't clipped */
+  [data-label]:hover::before, [data-label]:focus-visible::before {
+    content: attr(data-label);
+    position: fixed; left: calc(var(--sidebar-width) + 6px); margin-top: 8px; z-index: 1;
+    padding: 4px 10px;
+    font-size: var(--text-xs); font-weight: var(--weight-medium); line-height: 1.4; white-space: nowrap;
+    color: var(--color-text); background: var(--color-surface);
+    border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-float); pointer-events: none;
+  }
+  .nav__section.is-open > [data-label]::before { display: none; }
+
+  /* The footer: one icon at the foot of the rail, its two lines in a chip */
+  [data-nav-pending] .sidebar__footer, [data-nav-drawn] .sidebar__footer {
+    flex: none; display: grid; place-items: center;
+    width: 44px; height: 44px; padding: 0;
+    border: 0; border-radius: var(--radius-md);
+    color: var(--color-rail-icon); overflow: hidden;
+  }
+  .sidebar__footer .icon { width: 22px; height: 22px; }
+  .sidebar__footer:hover, .sidebar__footer:focus-visible { background: var(--color-sidebar-hover); color: #ffffff; }
+  .sidebar__footer-text {
+    display: none;
+    position: fixed; left: calc(var(--sidebar-width) + 6px); bottom: var(--space-2); z-index: 1;
+    padding: 6px 10px; white-space: nowrap;
+    font-size: var(--text-xs); line-height: 1.4;
+    color: var(--color-text-muted); background: var(--color-surface);
+    border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-float); pointer-events: none;
+  }
+  .sidebar__footer:hover .sidebar__footer-text, .sidebar__footer:focus-visible .sidebar__footer-text { display: block; }
+  .sidebar__footer-text strong { color: var(--color-text); }
+}
+
+/* ---------- The drawer ---------- */
+@media (max-width: 820px) {
+  [data-nav-drawn] .sidebar {
+    width: min(320px, 80vw); padding: 0;
+    background: var(--color-surface); color: var(--color-text);
+  }
+  [data-nav-drawn] .sidebar :focus-visible { outline-color: var(--color-primary); }
+  [data-nav-drawn] .sidebar__brand { display: none; }
+  .sidebar__nav:has(.nav__section) { gap: 0; padding: var(--space-2) 0; }
+
+  .nav__profile {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-5) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .nav__profile-avatar {
+    flex: none; display: grid; place-items: center;
+    width: 48px; height: 48px; border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));   /* paler than -soft: the initials need 4.5 : 1 in every accent */
+    color: var(--color-primary);
+    font-weight: var(--weight-semibold);
+  }
+  .nav__profile-text { min-width: 0; display: flex; flex-direction: column; font-size: var(--text-sm); color: var(--color-text-muted); }
+  .nav__profile-text strong { font-size: var(--text-md); font-weight: var(--weight-semibold); color: var(--color-text); }
+
+  /* A section's row, and a one-page section's link, which goes straight there */
+  .nav__trigger, .nav__section--single .nav__item, .nav__signout {
+    display: flex; align-items: center; gap: var(--space-4);
+    width: 100%; min-height: 52px; padding: var(--space-2) var(--space-4);
+    border: 0; border-radius: 0; background: none;
+    color: var(--color-text); font: inherit; font-size: var(--text-md); font-weight: var(--weight-medium); text-align: left;
+    cursor: pointer;
+  }
+  .nav__trigger .icon, .nav__section--single .nav__item .icon { width: 24px; height: 24px; color: var(--color-primary); }
+  .nav__trigger:hover, .nav__section--single .nav__item:hover, .nav__signout:hover { background: var(--color-surface-hover); color: var(--color-text); }
+  .nav__section--single .nav__item.is-active { background: var(--color-primary-soft); color: var(--color-text); box-shadow: inset 3px 0 0 var(--color-primary); }
+  .nav__section.is-current > .nav__trigger { font-weight: var(--weight-semibold); }
+
+  .nav__trigger::after {                        /* turns as the section expands */
+    content: ""; flex: none; margin-left: auto; width: 8px; height: 8px;
+    border-top: 2px solid var(--color-text-muted); border-right: 2px solid var(--color-text-muted);
+    transform: rotate(45deg); transition: transform var(--transition);
+  }
+  .nav__section.is-open > .nav__trigger::after { transform: rotate(135deg); }
+
+  .nav__section:not(.nav__section--single) > .nav__panel { display: none; }
+  .nav__section.is-open > .nav__panel { display: block; }
+  .nav__panel .nav__group-title { display: none; }
+
+  /* A section's pages: indented rows, a bullet, thin lines between */
+  .nav__section:not(.nav__section--single) .nav__item {
+    gap: var(--space-3); min-height: 44px; margin: 0 var(--space-4) 0 var(--space-6); padding: 8px 0 8px var(--space-3);
+    border-radius: 0; border-bottom: 1px solid var(--color-border);
+    color: var(--color-text); font-size: var(--text-base);
+  }
+  .nav__section:not(.nav__section--single) .nav__item:last-child { border-bottom: 0; }
+  .nav__section:not(.nav__section--single) .nav__item .icon { display: none; }
+  .nav__section:not(.nav__section--single) .nav__item::before {
+    content: ""; flex: none; width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--color-primary);
+  }
+  .nav__section:not(.nav__section--single) .nav__item:hover { background: var(--color-surface-hover); color: var(--color-text); }
+  .nav__section:not(.nav__section--single) .nav__item.is-active { background: var(--color-primary-soft); color: var(--color-text); box-shadow: none; font-weight: var(--weight-semibold); }
+
+  .nav__section--single .nav__count { background: var(--color-primary-soft); color: var(--color-text); }
+
+  .nav__signout { flex: none; border-top: 1px solid var(--color-border); }
+  .nav__signout .icon { width: 24px; height: 24px; color: var(--color-text-muted); }
+
+  [data-nav-drawn] .sidebar__footer { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-border); color: var(--color-text-muted); }
+  .sidebar__footer > .icon { display: none; }
+  [data-nav-drawn] .sidebar__footer strong { color: var(--color-text); }
+}

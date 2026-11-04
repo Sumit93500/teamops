@@ -7,6 +7,7 @@ import { getCurrentRole } from "./core/auth.js";
 import { applyPermissions } from "./core/rbac.js";
 import { loadTheme, renderThemeMenu } from "./ui/theme.js";
 import { renderSidebar, renderHeadcount } from "./ui/sidebar.js";
+import { initRail } from "./ui/rail.js";
 import { renderTopbar, renderBell } from "./ui/topbar.js";
 import { renderSearch } from "./ui/search.js";
 import { initDropdowns } from "./ui/dropdown.js";
@@ -31,6 +32,7 @@ if (ok) {
 
   renderSidebar(document.querySelector(".sidebar__nav"));
   renderHeadcount(document.getElementById("sidebar-headcount"));
+  initRail();
   renderTopbar({
     avatarSelector: ".avatar",
     signOutSelector: "[data-signout]",

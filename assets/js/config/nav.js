@@ -1,5 +1,7 @@
 // config/nav.js
 // The sidebar, described as data. One list for the whole app.
+// Each section is a module: an icon in the rail (ui/icons.js, SECTION_ICONS) and a
+// flyout of its pages. A section the person can see one page of goes straight there.
 // Each item says which permission is needed to see it. Nothing here mentions a role.
 // ui/sidebar.js keeps only the items the signed-in person's permissions allow.
 // alsoForManagers: true also shows the item to managers: anyone who has people
@@ -14,26 +16,52 @@
 
 export const NAV = [
   {
-    group: "Overview",
+    group: "Dashboard", icon: "dashboard",
     items: [
       { label: "Dashboard", icon: "home",  href: "@landing", permission: "dashboard:view" },
+    ],
+  },
+  {
+    group: "Approvals", icon: "approvals",
+    items: [
       { label: "Approvals", icon: "check", href: "requests/approvals-inbox.html", permission: "approvals:view", countWaiting: true, alsoForManagers: true },
     ],
   },
   {
-    group: "My work",
+    group: "Attendance", icon: "attendance",
     items: [
       { label: "My attendance",   icon: "clock",    href: "attendance/my-attendance.html",   permission: "attendance:view-own" },
       { label: "Mark attendance", icon: "tick",     href: "attendance/mark-attendance.html", permission: "attendance:mark" },
-      { label: "My leave",        icon: "calendar", href: "leave/my-leave.html",             permission: "leave:view-own" },
-      { label: "My payslips",     icon: "doc",      href: "payroll/payslips.html",           permission: "payslip:view-own" },
-      { label: "Requests",        icon: "chat",     href: "requests/my-requests.html",       permission: "requests:view-own" },
-      { label: "Claim expense",   icon: "wallet",   href: "requests/claim-expense.html",     permission: "expenses:create" },
-      { label: "My assets",       icon: "laptop",   href: "inventory/my-assets.html",        permission: "assets:view-own" },
+      { label: "Team attendance",      icon: "clock",  href: "attendance/team-attendance.html", permission: "attendance:view-all" },
+      { label: "Shifts",               icon: "sun",    href: "attendance/shifts.html",       permission: "shifts:manage" },
     ],
   },
   {
-    group: "People",
+    group: "Leave", icon: "leave",
+    items: [
+      { label: "My leave",        icon: "calendar", href: "leave/my-leave.html",             permission: "leave:view-own" },
+      { label: "Leave approvals",      icon: "calendar", href: "leave/leave-approvals.html", permission: "leave:approve" },
+    ],
+  },
+  {
+    group: "Payroll", icon: "payroll",
+    items: [
+      { label: "My payslips",     icon: "doc",      href: "payroll/payslips.html",           permission: "payslip:view-own" },
+      { label: "Payroll run",        icon: "cash",  href: "payroll/payroll-run.html",        permission: "payroll:view" },
+      { label: "Salary structure",   icon: "bars",  href: "payroll/salary-structure.html",   permission: "salary:view" },
+      { label: "Tax & deductions",   icon: "percent", href: "finance/tax-deductions.html",   permission: "tax:view" },
+    ],
+  },
+  {
+    group: "Requests & expenses", icon: "requests",
+    items: [
+      { label: "Requests",        icon: "chat",     href: "requests/my-requests.html",       permission: "requests:view-own" },
+      { label: "Claim expense",   icon: "wallet",   href: "requests/claim-expense.html",     permission: "expenses:create" },
+      { label: "Expenses",           icon: "wallet", href: "finance/expenses.html",          permission: "expenses:view" },
+    ],
+  },
+  {
+    group: "People", icon: "people",
     items: [
       { label: "Users",                icon: "users",  href: "users/users-list.html",        permission: "users:view" },
       { label: "Departments",          icon: "grid",   href: "users/departments.html",       permission: "departments:create" },
@@ -41,19 +69,13 @@ export const NAV = [
       { label: "Designations",         icon: "tag",    href: "access/designations.html",     permission: "designations:manage" },
       { label: "Approval workflows",   icon: "flow",   href: "access/approval-workflows.html", permission: "workflows:view" },
       { label: "Delegation",           icon: "swap",   href: "access/delegation.html",       permission: "delegation:create" },
-      { label: "Attendance",           icon: "clock",  href: "attendance/team-attendance.html", permission: "attendance:view-all" },
-      { label: "Shifts",               icon: "sun",    href: "attendance/shifts.html",       permission: "shifts:manage" },
-      { label: "Leave approvals",      icon: "calendar", href: "leave/leave-approvals.html", permission: "leave:approve" },
       { label: "Recruitment",          icon: "brief",  href: "recruitment/job-openings.html", permission: "recruitment:view" },
     ],
   },
   {
-    group: "Finance & operations",
+    group: "Assets & inventory", icon: "assets",
     items: [
-      { label: "Payroll run",        icon: "cash",  href: "payroll/payroll-run.html",        permission: "payroll:view" },
-      { label: "Salary structure",   icon: "bars",  href: "payroll/salary-structure.html",   permission: "salary:view" },
-      { label: "Expenses",           icon: "wallet", href: "finance/expenses.html",          permission: "expenses:view" },
-      { label: "Tax & deductions",   icon: "percent", href: "finance/tax-deductions.html",   permission: "tax:view" },
+      { label: "My assets",       icon: "laptop",   href: "inventory/my-assets.html",        permission: "assets:view-own" },
       { label: "Inventory",          icon: "box",   href: "inventory/items.html",            permission: "inventory:view" },
       { label: "Stock movements",    icon: "arrows", href: "inventory/stock-movements.html", permission: "inventory:view" },
       { label: "Asset assignment",   icon: "laptop", href: "inventory/asset-assignment.html", permission: "assets:view" },
@@ -61,13 +83,13 @@ export const NAV = [
     ],
   },
   {
-    group: "Communication",
+    group: "Announcements", icon: "announcements",
     items: [
       { label: "Announcements", icon: "megaphone", href: "announcements/announcements.html", permission: "announcements:view" },
     ],
   },
   {
-    group: "System",
+    group: "System", icon: "system",
     items: [
       { label: "Reports",    icon: "chart", href: "system/reports.html",    permission: "reports:view" },
       { label: "Audit log",  icon: "list",  href: "system/audit-log.html",  permission: "audit:view" },

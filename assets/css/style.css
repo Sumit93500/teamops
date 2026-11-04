@@ -47,5 +47,8 @@
 /* responsive: last, so its small-screen rules win over the components and pages above */
 @import url("layout/responsive.css");
 
+/* the rail and the drawer: after responsive, because the drawer builds on its rules */
+@import url("layout/rail.css");
+
 /* print (payslips): only applies when printing */
 @import url("print.css") print;
