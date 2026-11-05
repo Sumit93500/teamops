@@ -72,5 +72,5 @@
   .list__item .btn-group { width: 100%; padding-left: 43px; }   /* buttons drop under the text */
 
   .chart { gap: 3px; }
-  .chart__label:nth-child(even) { visibility: hidden; }         /* show every other date label */
+  .chart:not(.chart--12) .chart__col:nth-last-child(even) .chart__label { visibility: hidden; }   /* show every other date label, ending on today */
 }

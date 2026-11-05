@@ -20,6 +20,7 @@ import { initPasswordToggles } from "./ui/password-toggle.js";
 import { initOtpInputs } from "./ui/otp.js";
 import { initPlaceholders } from "./ui/placeholder.js";
 import { initExports } from "./ui/csv-export.js";
+import { initPhone } from "./ui/phone.js";
 
 loadTheme();
 
@@ -53,3 +54,4 @@ initPasswordToggles();
 initOtpInputs();
 initPlaceholders();
 initExports();
+initPhone();

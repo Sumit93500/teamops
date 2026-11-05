@@ -1,0 +1,110 @@
+/* ==========================================================
+   phone.css
+   The phone layout: 560px and under, and the touch sizes from 820px, where
+   the drawer starts. After responsive.css and rail.css, the last word at those
+   widths. Screen only: print.css is unchanged. ui/phone.js sets the data-* attributes.
+   The hold is its own block at the end of this file, so it can be removed alone.
+   ========================================================== */
+
+.topbar__back, .chart__readout, .table__more { display: none; }
+
+@media screen and (max-width: 560px) {
+  /* stat strip: 2 x 2 */
+  .stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat { position: relative; display: block; padding: 12px; min-width: 0; }
+  .stat .stat__icon { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; }
+  .stat .stat__icon .icon { width: 15px; height: 15px; }
+  .stat .stat__label { padding-right: 30px; min-height: 34px; line-height: 1.3; }
+  .stat .stat__value { font-size: 20px; margin: 2px 0; overflow-wrap: anywhere; }
+  .stat:nth-child(n) { border-bottom: 1px solid var(--color-border); border-right: 0; }
+  .stat:nth-child(odd) { border-right: 1px solid var(--color-border); }
+  .stat:nth-last-child(-n+2):nth-child(odd), .stat:nth-last-child(-n+2):nth-child(odd) ~ .stat, .stat:last-child { border-bottom: 0; }
+
+  /* chart: shorter, and tap or focus a bar for its value */
+  .chart { height: 140px; }
+  .chart__col.is-selected .chart__bar { outline: 2px solid var(--color-text); outline-offset: 1px; }
+  .chart__col:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+  .chart__readout { display: block; margin-top: 6px; min-height: 20px; font-size: var(--text-sm); color: var(--color-text-muted); }
+
+  /* tables of 4 columns or more: card rows. Line 1: the first cell and the status. Line 2: two key cells, label over value, and Details. Then the rest when open, then the actions. */
+  main .table-wrap:has(thead th:nth-child(4)) { overflow: visible; }
+  main .table:has(thead th:nth-child(4)), main .table:has(thead th:nth-child(4)) tbody { display: block; width: 100%; }
+  main .table:has(thead th:nth-child(4)) thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  main .table:has(thead th:nth-child(4)) tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(84px, auto); column-gap: 10px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--color-border); }
+  main .table:has(thead th:nth-child(4)) tbody tr:last-child { border-bottom: 0; }
+  main .table:has(thead th:nth-child(4)) tbody tr[hidden] { display: none; }
+  main .table:has(thead th:nth-child(4)) td { min-width: 0; padding: 0; border: 0; text-align: left; overflow-wrap: anywhere; white-space: normal; }
+  main .table:has(thead th:nth-child(4)) td .diff, main .table:has(thead th:nth-child(4)) td .day-pills { flex-wrap: wrap; min-width: 0; }
+  main .table:has(thead th:nth-child(4)) td .table__user { min-width: 0; }
+  main .table:has(thead th:nth-child(4)) td .table__user > :last-child { min-width: 0; }
+  main .table:has(thead th:nth-child(4)) td .table__user-name { white-space: normal; }
+  main .table:has(thead th:nth-child(4)) td[colspan] { grid-column: 1 / -1; }
+  /* before js has named the cells: the first cell, then two, the same height as the card will be */
+  main .table:has(thead th:nth-child(4)) td:not([data-card-part]):first-child { grid-column: 1 / 3; font-weight: var(--weight-medium); }
+  main .table:has(thead th:nth-child(4)) td:not([data-card-part]):nth-child(n+4) { display: none; }
+  main .table:has(thead th:nth-child(4)) td:not([data-card-part]):not(:first-child) { margin-top: 4px; min-height: 40px; font-size: var(--text-sm); }
+  main .table:has(thead th:nth-child(4)) td[data-card-part="primary"] { grid-column: 1 / 3; font-weight: var(--weight-medium); }
+  main .table:has(thead th:nth-child(4)) tr:not(:has(td[data-card-part="status"])) td[data-card-part="primary"] { grid-column: 1 / -1; }
+  main .table:has(thead th:nth-child(4)) td[data-card-part="status"] { grid-column: 3; grid-row: 1; justify-self: end; text-align: right; }
+  main .table:has(thead th:nth-child(4)) td[data-card-part="key"] { position: relative; align-self: start; margin-top: 4px; min-height: 40px; font-size: var(--text-sm); }
+  main .table:has(thead th:nth-child(4)) td[data-card-part="key"]:has(> .table__more) { grid-column: 2 / -1; padding-right: 94px; }
+  main .table:has(thead th:nth-child(4)) td[data-card-part="key"]::before { content: attr(data-label); display: block; font-size: var(--text-xs); color: var(--color-text-muted); }
+  main .table:has(thead th:nth-child(4)) td[data-card-part="rest"] { display: none; order: 1; grid-column: 1 / -1; padding: 4px 0; font-size: var(--text-sm); }
+  main .table:has(thead th:nth-child(4)) tr.is-open td[data-card-part="rest"] { display: flex; justify-content: space-between; gap: 12px; text-align: right; }
+  main .table:has(thead th:nth-child(4)) td[data-card-part="rest"]::before { content: attr(data-label); flex: none; max-width: 45%; text-align: left; color: var(--color-text-muted); }
+  main .table:has(thead th:nth-child(4)) td[data-card-part="actions"] { order: 2; grid-column: 1 / -1; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding-top: 10px; }
+  main .table:has(thead th:nth-child(4)) td[data-card-part="actions"]:empty { display: none; }
+  .table__more { position: absolute; right: 0; top: -2px; width: 84px; justify-content: flex-end; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; white-space: nowrap; font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-primary); }
+  .table__more::before { content: attr(aria-label); }
+  .table__more::after { content: ""; width: 7px; height: 7px; margin-top: -3px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .table__more[aria-expanded="true"]::after { margin-top: 3px; transform: rotate(-135deg); }
+
+  /* tabs: one row, sideways */
+  .tabs--pill { display: flex; flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
+  .tabs { gap: 8px; scrollbar-width: none; }
+  .pagination__pages { flex-wrap: wrap; gap: 8px; }
+  .tabs__tab { flex: none; }
+
+  /* calendar: shorter cells, a dot for the state, the legend in one sideways row */
+  .calendar__grid { gap: 4px; }
+  .calendar__day { min-height: 44px; padding: 4px; align-items: center; justify-content: center; gap: 2px; }
+  .calendar__day .calendar__tag { font-size: 0; gap: 0; }
+  .calendar__legend { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+  .calendar__legend > * { flex: none; }
+
+  /* topbar: the page title only, an icon row that fits; the back arrow on a detail page */
+  .topbar { padding: 0 4px; gap: 2px; }
+  .topbar__left { flex: 1; }
+  .topbar__left > span { display: none; }
+  .topbar__left strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-base); font-weight: var(--weight-semibold); }
+  .topbar__actions { flex: none; gap: 0; margin-left: 0; }
+  .topbar__back { flex: none; display: grid; place-items: center; width: 44px; height: 44px; color: var(--color-text); }
+  [data-has-back] .topbar__menu-toggle { display: none; }
+  [data-has-back] main .breadcrumb { display: none; }
+}
+
+/* touch: 44px where the drawer's breakpoint starts; 16px inputs so a phone doesn't zoom on focus */
+@media screen and (max-width: 820px) {
+  .btn { min-height: 44px; }
+  .input, .select, .textarea { min-height: 44px; font-size: 16px; }
+  .tabs__tab { display: inline-flex; align-items: center; min-height: 44px; }
+  .pagination__btn { min-width: 44px; min-height: 44px; }
+  .topbar__icon-btn, .topbar__menu-toggle, .topbar__actions .dropdown > button, .topbar__actions .theme-menu > button { min-width: 44px; min-height: 44px; display: grid; place-items: center; }
+  .btn-group { gap: 8px; }
+  .check { min-height: 44px; }
+  .switch { position: relative; }
+  .switch::after { content: ""; position: absolute; inset: -12px -4px; }
+  .settings__nav { gap: 8px; }
+  .settings__link { display: flex; align-items: center; min-height: 44px; }
+  .input-group--action > .input { padding-right: 48px; }
+  .input-group__action { right: 0; display: grid; place-items: center; width: 44px; height: 44px; }
+}
+
+/* ---------- The hold ----------
+   On a phone, main waits until ui/phone.js has labelled it, so the cards don't shift as js draws them. Only on signed-in pages (main.content),
+   only while the head script's mark or the sidebar's is there; with js off there's neither, and nothing is held. If js never finishes, it shows after 1s.
+   To remove the hold, delete from "The hold" to the end of this file: nothing else depends on it. */
+@keyframes phone-reveal { to { visibility: visible; } }
+@media screen and (max-width: 560px) {
+  html[data-nav-pending]:not([data-phone-ready]) main.content, html[data-nav-drawn]:not([data-phone-ready]) main.content { visibility: hidden; animation: phone-reveal 0s 1000ms forwards; }
+}

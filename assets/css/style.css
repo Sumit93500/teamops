@@ -50,5 +50,8 @@
 /* the rail and the drawer: after responsive, because the drawer builds on its rules */
 @import url("layout/rail.css");
 
+/* the phone layout: after rail, the last word at phone and drawer widths */
+@import url("layout/phone.css");
+
 /* print (payslips): only applies when printing */
 @import url("print.css") print;
