@@ -1,18 +1,20 @@
 // ui/phone.js
 // What the phone layout (layout/phone.css, 560px and under) can't do in css: labels
-// on table cells for the card rows, the Details toggle, the chart's readout and the
-// back arrow on a detail page. Above 560px it touches nothing.
+// on table cells for the card rows, the Details toggle, "Sort by" before a sortable
+// column's button, the chart's readout and the back arrow on a detail page. Above
+// 560px it touches nothing.
 
 const SMALLEST_CARD_TABLE = 4;   // a table of 3 columns or fewer fits as a table
 const KEY_CELLS = 2;             // shown after the first cell and the status; the rest wait under Details
 const CHART_HINT = "Tap a bar for its value";
+const SORT_LABEL = "Sort by";   // for the eye only: the heading's aria-sort already tells a screen reader
 const BACK_ICON = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>';
 
 // The pages that are a step inside another page: the arrow takes the hamburger's place
 // and goes to the breadcrumb's parent. A page with its own sidebar entry keeps its drawer.
 const DETAIL_PAGES = ["requests/claim-expense.html", "users/user-form.html", "users/user-profile.html", "access/role-editor.html", "leave/apply-leave.html", "payroll/payslip-view.html"];
 
-const headText = (th) => th.textContent.replace(/[▲▼]/g, "").replace(/\s+/g, " ").trim();
+const headText = (th) => [...th.childNodes].filter((n) => !n.classList?.contains("table__sort-label")).map((n) => n.textContent).join("").replace(/[▲▼]/g, "").replace(/\s+/g, " ").trim();
 const isActions = (th) => th.classList.contains("table__actions") || th.classList.contains("table__check") || headText(th) === "Actions" || headText(th) === "";
 
 // Which part of the card each column is: primary, status, key, rest, actions. The status is named, not
@@ -47,6 +49,12 @@ function labelTable(table) {
   const kinds = cellKinds(heads);
   table.dataset.cards = ""; table.setAttribute("role", "table");   // display: block takes the table's own role away
   heads.forEach((th) => th.setAttribute("role", "columnheader"));
+  // a sortable column's button stays above the cards (phone.css), after these words
+  heads.filter((th) => th.classList.contains("is-sortable") && !th.querySelector(".table__sort-label")).forEach((th) => {
+    const label = document.createElement("span");
+    label.className = "table__sort-label"; label.setAttribute("aria-hidden", "true"); label.textContent = SORT_LABEL;
+    th.prepend(label);
+  });
   table.querySelectorAll("tbody tr").forEach((row) => {
     if (row.children.length !== heads.length) return;              // a "no results" row spans the table
     row.setAttribute("role", "row");

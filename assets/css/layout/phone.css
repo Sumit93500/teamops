@@ -2,11 +2,11 @@
    phone.css
    The phone layout: 560px and under, and the touch sizes from 820px, where
    the drawer starts. After responsive.css and rail.css, the last word at those
-   widths. Screen only: print.css is unchanged. ui/phone.js sets the data-* attributes.
+   widths. Screen only: print.css is unchanged. ui/phone.js sets the data-* attributes; ui/search.js draws the search's icon and close button.
    The hold is its own block at the end of this file, so it can be removed alone.
    ========================================================== */
 
-.topbar__back, .chart__readout, .table__more { display: none; }
+.topbar__back, .chart__readout, .table__more, .table__sort-label, .topbar__search-open, .topbar__search-close { display: none; }
 
 @media screen and (max-width: 560px) {
   /* stat strip: 2 x 2 */
@@ -73,7 +73,7 @@
   .calendar__legend > * { flex: none; }
 
   /* topbar: the page title only, an icon row that fits; the back arrow on a detail page */
-  .topbar { padding: 0 4px; gap: 2px; }
+  .topbar { padding: 0; gap: 0; }
   .topbar__left { flex: 1; }
   .topbar__left > span { display: none; }
   .topbar__left strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-base); font-weight: var(--weight-semibold); }
@@ -81,6 +81,17 @@
   .topbar__back { flex: none; display: grid; place-items: center; width: 44px; height: 44px; color: var(--color-text); }
   [data-has-back] .topbar__menu-toggle { display: none; }
   [data-has-back] main .breadcrumb { display: none; }
+
+  /* a card table with a sortable column keeps that column's own button, above the cards, after "Sort by" (ui/phone.js); the other headings stay clipped */
+  main .table:has(thead th:nth-child(4)):has(thead th.is-sortable) thead { position: static; display: block; width: auto; height: auto; overflow: visible; clip-path: none; padding: 4px 16px; border-bottom: 1px solid var(--color-border); }
+  main .table:has(thead th:nth-child(4)):has(thead th.is-sortable) thead tr { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+  main .table:has(thead th:nth-child(4)):has(thead th.is-sortable) thead th:not(.is-sortable) { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
+  main .table:has(thead th:nth-child(4)):has(thead th.is-sortable) thead th.is-sortable { display: flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; }
+  main .table:has(thead th:nth-child(4)):has(thead th.is-sortable) thead .sort-btn { min-height: 44px; color: var(--color-primary); }
+  .table__sort-label { display: inline; color: var(--color-text-muted); text-transform: none; letter-spacing: 0; font-weight: var(--weight-regular); }
+
+  /* the icons' kept place (the 820 block, below): this row has no gap, so just the two icons; "html" outranks that later rule */
+  html .topbar:has(> label.topbar__search) .topbar__actions::before { width: 88px; }
 }
 
 /* touch: 44px where the drawer's breakpoint starts; 16px inputs so a phone doesn't zoom on focus */
@@ -98,6 +109,19 @@
   .settings__link { display: flex; align-items: center; min-height: 44px; }
   .input-group--action > .input { padding-right: 48px; }
   .input-group__action { right: 0; display: grid; place-items: center; width: 44px; height: 44px; }
+
+  /* search: the box is hidden here (responsive.css); an icon opens it across the topbar, which hides what it covers, out of the Tab order too */
+  .topbar__search-open { display: grid; -webkit-tap-highlight-color: transparent; }
+  /* the places of the two icons js draws in this row, Appearance and Search, kept while the page's own <label> box is there: search.js swaps it for its box as they're drawn, in one go, so nothing moves. Two icons and the row's gap */
+  .topbar:has(> label.topbar__search) .topbar__actions::before { content: ""; flex: none; width: calc(88px + var(--space-3)); }
+  .topbar.is-searching > :not(.topbar__search) { visibility: hidden; }
+  .topbar.is-searching .topbar__search { position: absolute; inset: 5px 8px; z-index: 1; display: flex; width: auto; margin: 0; padding: 0 0 0 10px; }
+  .topbar__search input { min-height: 42px; font-size: 16px; }
+  .topbar__search input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+  .topbar__search kbd { display: none; }
+  .topbar__search .topbar__search-close { display: grid; flex: none; }
+  .topbar__search .dropdown__menu:not([hidden]) { left: 0; right: 0; width: auto; max-height: min(420px, 60vh); overflow-y: auto; }
+  .topbar__search .dropdown__item { min-height: 44px; }
 }
 
 /* ---------- The hold ----------

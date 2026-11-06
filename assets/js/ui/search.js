@@ -5,7 +5,10 @@
 //     403 page otherwise)
 //   - people: only with users:view and the profile page's route; by name or id
 // Ctrl/Cmd+K focuses it; arrow keys and Enter pick a result; Esc closes the list.
-// The box is hidden below 820 px (responsive.css), and then Ctrl+K is left alone.
+// At 820 px and under the box is hidden (responsive.css) and an icon in the topbar
+// opens it across the topbar (layout/phone.css): Ctrl+K opens it there too, a second
+// Esc or its close button shuts it and focus goes back to the icon, and leaving it
+// shuts it. Reopened, it shows what was typed, selected.
 // Built with DOM calls, so names typed into the user form can't inject markup.
 
 import { NAV } from "../config/nav.js";
@@ -17,6 +20,8 @@ import { navItemHref, navItemVisible } from "./sidebar.js";
 
 const PROFILE = "users/user-profile.html";
 const MAX_EACH = 5;   // of pages and of people: typing more narrows them
+const SVG = "http://www.w3.org/2000/svg";
+const CLOSE_PATH = "M6 6l12 12M18 6 6 18";   // the dialogs' close icon
 
 function matchingPages(query) {
   return NAV.flatMap((group) => group.items
@@ -31,6 +36,26 @@ function matchingPeople(query) {
     .filter((user) => user.name.toLowerCase().includes(query) || user.id.toLowerCase().includes(query))
     .map((user) => ({ label: user.name, meta: user.designation ?? "", href: resolvePageLink(`${PROFILE}?id=${encodeURIComponent(user.id)}`) }))
     .slice(0, MAX_EACH);
+}
+
+function iconButton(className, name, icon) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `topbar__icon-btn ${className}`;
+  button.setAttribute("aria-label", name);
+  button.append(icon);
+  return button;
+}
+
+function closeIcon() {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("class", "icon");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS(SVG, "path");
+  path.setAttribute("d", CLOSE_PATH);
+  svg.append(path);
+  return svg;
 }
 
 function buildOption({ label, meta, href }, index) {
@@ -59,7 +84,37 @@ export function renderSearch() {
   box.className = label.className;
   box.append(...label.childNodes);
   label.replaceWith(box);
-  box.addEventListener("click", (e) => { if (!e.target.closest("a")) input.focus(); });
+  box.id = "topbar-search";
+  box.addEventListener("click", (e) => { if (!e.target.closest("a, button")) input.focus(); });
+
+  // At 820 px and under: the icon that opens the box, and the box's close button (both hidden wider, phone.css)
+  const topbar = box.closest(".topbar");
+  const opener = iconButton("topbar__search-open", "Search", box.querySelector("svg")?.cloneNode(true) ?? closeIcon());
+  opener.setAttribute("aria-controls", box.id);
+  opener.setAttribute("aria-expanded", "false");
+  const shut = iconButton("topbar__search-close", "Close search", closeIcon());
+  box.append(shut);
+  topbar?.querySelector(".topbar__actions")?.prepend(opener);
+  const searching = () => Boolean(topbar?.classList.contains("is-searching"));
+
+  function openBox() {
+    topbar?.classList.add("is-searching");
+    opener.setAttribute("aria-expanded", "true");
+    input.focus();   // in the tap itself, so a phone raises its keyboard
+    input.select();
+  }
+  function shutBox(refocus) {
+    if (!searching()) return;
+    close();
+    topbar.classList.remove("is-searching");
+    opener.setAttribute("aria-expanded", "false");
+    if (refocus) opener.focus();
+  }
+  opener.addEventListener("click", openBox);
+  // Pressing it mustn't take focus from the box first, which would shut the box before the click lands.
+  shut.addEventListener("mousedown", (e) => e.preventDefault());
+  shut.addEventListener("click", () => shutBox(true));
+  box.addEventListener("focusout", (e) => { if (!box.contains(e.relatedTarget)) shutBox(false); });
 
   input.placeholder = "Search";
   input.setAttribute("role", "combobox");
@@ -117,9 +172,10 @@ export function renderSearch() {
   input.addEventListener("blur", close);
   input.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-      if (list.hidden) return;
+      if (list.hidden && !searching()) return;
       e.preventDefault();   // a search box would also clear its text
-      close();
+      if (list.hidden) shutBox(true);
+      else close();
     } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       if (list.hidden) draw();
@@ -135,7 +191,13 @@ export function renderSearch() {
 
   document.addEventListener("keydown", (e) => {
     if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== "k") return;
-    if (getComputedStyle(box).display === "none" || document.querySelector(".modal.is-open")) return;
+    if (document.querySelector(".modal.is-open")) return;
+    if (getComputedStyle(box).display === "none") {
+      if (getComputedStyle(opener).display === "none") return;   // no search on this screen at all
+      e.preventDefault();
+      openBox();
+      return;
+    }
     e.preventDefault();
     input.focus();
     input.select();
