@@ -30,6 +30,7 @@ import {
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns } from "../ui/chart.js";
 import { correctionDetails } from "../ui/attendance-view.js";
+import { cardOpener } from "../ui/approval-card.js";
 
 const CHART_DAYS = 14;
 const CHART_FLOOR = 5;       // the chart's top is at least 5 requests, so one request isn't a full-height bar
@@ -145,8 +146,10 @@ function approvalItem(request) {
   const leave = !request.issue;
   const item = el("div", "list__item");
   const content = el("div", "list__content");
+  const title = el("span", "list__title", leave ? `${nameOf(request.userId)}, ${typeLabel(request.type).toLowerCase()}` : `Regularization: ${nameOf(request.userId)}`);
+  cardOpener(title, leave ? "leave" : "corrections", request.id, { refresh: render });   // the title opens the approval card (round 14G)
   content.append(
-    el("span", "list__title", leave ? `${nameOf(request.userId)}, ${typeLabel(request.type).toLowerCase()}` : `Regularization: ${nameOf(request.userId)}`),
+    title,
     el("span", "list__sub", leave ? `${requestDates(request)}, ${formatDays(request.days)}` : `${formatDay(request.date)}: ${correctionDetails(request)}`),
   );
   const buttons = leave

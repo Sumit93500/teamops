@@ -1,6 +1,6 @@
 // ui/topbar.js
 // Fills in the topbar's breadcrumb and avatar with the signed-in person's info,
-// and makes the bell a link to what waits for them.
+// and makes the bell open the list of what waits for them (round 14G).
 
 import { getCurrentRole, getCurrentUserId, getCurrentUserLabel, signOut } from "../core/auth.js";
 import { canOpenPage } from "../core/guard.js";
@@ -9,22 +9,31 @@ import { waitingCount } from "./waiting.js";
 
 const INBOX = "requests/approvals-inbox.html";
 
-// The bell links to the Approvals Inbox, labelled with what waits for this
-// person (ui/waiting.js, the sidebar's number); the dot only shows above 0. If
-// they can't open the Inbox it stays the page's placeholder button, with no dot.
+// The bell opens the list of what waits for this person (ui/approval-card.js,
+// loaded on the first click; See all goes to the Approvals Inbox), labelled with
+// how many (ui/waiting.js, the sidebar's number); the dot only shows above 0.
+// It's a new button: the placeholder's own carries its "not built yet" toast.
+// If they can't open the Inbox it stays the page's placeholder, with no dot.
 export function renderBell() {
   const button = document.querySelector(".topbar__icon-btn--dot");
   if (!button || !canOpenPage(INBOX)) return;
-  const bell = document.createElement("a");
+  const bell = document.createElement("button");
+  bell.type = "button";
   bell.className = button.className;
-  bell.href = resolvePageLink(INBOX);
+  bell.setAttribute("aria-haspopup", "dialog");
+  bell.setAttribute("aria-expanded", "false");
   bell.append(...button.childNodes);
+  bell.addEventListener("click", () => {
+    import("./approval-card.js")
+      .then((card) => card.toggleBellPanel(bell))
+      .catch(() => { window.location.href = resolvePageLink(INBOX); });   // if the list can't load, the inbox, as before
+  });
   button.replaceWith(bell);
   refreshBell();
 }
 
 export function refreshBell() {
-  const bell = document.querySelector("a.topbar__icon-btn--dot");
+  const bell = document.querySelector(".topbar__icon-btn--dot[aria-haspopup]");
   if (!bell) return;
   const n = waitingCount(getCurrentUserId(), getCurrentRole()?.key);
   bell.setAttribute("aria-label", `Waiting for you: ${n}`);

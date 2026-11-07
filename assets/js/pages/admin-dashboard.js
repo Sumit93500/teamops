@@ -34,6 +34,7 @@ import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns, barRow } from "../ui/chart.js";
 import { rupees } from "../ui/money.js";
 import { waitingFor } from "../ui/waiting.js";
+import { cardLink } from "../ui/approval-card.js";
 
 const CHART_DAYS = 14;
 const PAGE_SIZE = 10;
@@ -179,6 +180,7 @@ function renderApprovals() {
     content.append(el("span", "list__title", title), el("span", "list__sub", sub));
     const open = el("a", "btn btn--sm", "Review");
     open.href = resolvePageLink("requests/approvals-inbox.html");
+    cardLink(open, kind, request.id, { refresh: renderApprovals });   // the approval card (round 14G); still a link to the inbox
     item.append(el("div", avatarClass(request.userId), initials(nameOf(request.userId))), content, open);
     return item;
   }));

@@ -53,6 +53,7 @@ import {
 import { setStatValue, setOptionalStatNote } from "../ui/stats.js";
 import { correctionDetails } from "../ui/attendance-view.js";
 import { waitingFor, waitingCount } from "../ui/waiting.js";
+import { cardOpener } from "../ui/approval-card.js";
 
 const PILL_TAB = { "Pending": "pending", "Approved": "approved", "Rejected": "rejected" };
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -156,15 +157,24 @@ const salaryTitle = (p) => `Salary: ${nameOf(p.userId)}, ${rupees(p.gross)}`;
 // When a claim reached the stage this entry decided: the entry just before it.
 const reachedAt = (claim, entry) => claim.history[claim.history.indexOf(entry) - 1]?.at ?? claim.history[0].at;
 
+// A pending row's title opens the approval card (round 14G), without More:
+// this is where More leads. The page redraws if the card found it out of date.
+function titleCell(userId, text, kind, id, pending) {
+  const cell = el("td");
+  const wrap = el("div", "table__user");
+  const name = el("span", "table__user-name", text);
+  if (pending) cardOpener(name, kind, id, { more: false, refresh: render });
+  wrap.append(el("div", avatarClass(userId), initials(nameOf(userId))), name);
+  cell.append(wrap);
+  return cell;
+}
+
 // ---------- inbox rows ----------
 
 function leaveRow(request) {
   const tr = el("tr");
   tr.dataset.type = "leave";
-  const titleCell = el("td");
-  const wrap = el("div", "table__user");
-  wrap.append(el("div", avatarClass(request.userId), initials(nameOf(request.userId))), el("span", "table__user-name", leaveTitle(request)));
-  titleCell.append(wrap);
+  const title = titleCell(request.userId, leaveTitle(request), "leave", request.id, request.status === "pending");
   const typeCell = el("td");
   typeCell.append(el("span", "badge badge--square", "Leave"));
 
@@ -175,7 +185,7 @@ function leaveRow(request) {
   }
 
   tr.append(
-    titleCell,
+    title,
     typeCell,
     el("td", "", nameOf(request.userId)),
     el("td", "", `${typeLabel(request.type)}, ${formatDays(request.days)}`),
@@ -188,10 +198,7 @@ function leaveRow(request) {
 function correctionRow(request) {
   const tr = el("tr");
   tr.dataset.type = "attendance";
-  const titleCell = el("td");
-  const wrap = el("div", "table__user");
-  wrap.append(el("div", avatarClass(request.userId), initials(nameOf(request.userId))), el("span", "table__user-name", correctionTitle(request)));
-  titleCell.append(wrap);
+  const title = titleCell(request.userId, correctionTitle(request), "corrections", request.id, request.status === "pending");
   const typeCell = el("td");
   typeCell.append(el("span", "badge badge--square", "Attendance"));
 
@@ -201,7 +208,7 @@ function correctionRow(request) {
   }
 
   tr.append(
-    titleCell,
+    title,
     typeCell,
     el("td", "", nameOf(request.userId)),
     el("td", "", correctionDetails(request)),
@@ -219,10 +226,7 @@ function expenseRow(claim, decided = null) {
   const tr = el("tr");
   tr.dataset.type = "expense";
   tr.dataset.claimId = claim.id;
-  const titleCell = el("td");
-  const wrap = el("div", "table__user");
-  wrap.append(el("div", avatarClass(claim.userId), initials(nameOf(claim.userId))), el("span", "table__user-name", expenseTitle(claim)));
-  titleCell.append(wrap);
+  const title = titleCell(claim.userId, expenseTitle(claim), "expenses", claim.id, !decided);
   const typeCell = el("td");
   typeCell.append(el("span", "badge badge--square", "Expense"));
 
@@ -243,7 +247,7 @@ function expenseRow(claim, decided = null) {
   }
 
   tr.append(
-    titleCell,
+    title,
     typeCell,
     el("td", "", nameOf(claim.userId)),
     el("td", "", details),
@@ -260,10 +264,7 @@ function assetRow(request, decided = null) {
   const tr = el("tr");
   tr.dataset.type = "asset";
   tr.dataset.requestId = request.id;
-  const titleCell = el("td");
-  const wrap = el("div", "table__user");
-  wrap.append(el("div", avatarClass(request.userId), initials(nameOf(request.userId))), el("span", "table__user-name", assetTitle(request)));
-  titleCell.append(wrap);
+  const title = titleCell(request.userId, assetTitle(request), "assets", request.id, !decided);
   const typeCell = el("td");
   typeCell.append(el("span", "badge badge--square", "Asset"));
 
@@ -284,7 +285,7 @@ function assetRow(request, decided = null) {
   }
 
   tr.append(
-    titleCell,
+    title,
     typeCell,
     el("td", "", nameOf(request.userId)),
     el("td", "", details),
@@ -302,10 +303,7 @@ function salaryRow(p) {
   const tr = el("tr");
   tr.dataset.type = "salary";
   tr.dataset.proposalId = p.id;
-  const titleCell = el("td");
-  const wrap = el("div", "table__user");
-  wrap.append(el("div", avatarClass(p.userId), initials(nameOf(p.userId))), el("span", "table__user-name", salaryTitle(p)));
-  titleCell.append(wrap);
+  const title = titleCell(p.userId, salaryTitle(p), "salary", p.id, p.status === "pending");
   const typeCell = el("td");
   typeCell.append(el("span", "badge badge--square", "Salary"));
 
@@ -326,7 +324,7 @@ function salaryRow(p) {
   }
 
   tr.append(
-    titleCell,
+    title,
     typeCell,
     el("td", "", nameOf(p.enteredBy)),
     el("td", "", details),

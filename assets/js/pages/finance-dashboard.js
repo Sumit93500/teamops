@@ -31,6 +31,7 @@ import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
 import { can } from "../core/rbac.js";
 import { resolvePageLink } from "../core/paths.js";
 import { STAGE_NAME, categoryLabel } from "../ui/expense-view.js";
+import { cardLink } from "../ui/approval-card.js";
 import { el, plural, departmentName, personCell, nameOf, initials, avatarClass, formatDay, localDateOf, todayIso, monthShort } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
@@ -138,6 +139,7 @@ function renderPendingApprovals(card) {
     );
     const open = el("a", "btn btn--sm", "Review");
     open.href = resolvePageLink("requests/approvals-inbox.html");
+    cardLink(open, "expenses", claim.id, { refresh: () => renderPendingApprovals(card) });   // the approval card (round 14G); still a link to the inbox
     item.append(el("div", avatarClass(claim.userId), initials(nameOf(claim.userId))), content, open);
     return item;
   }));

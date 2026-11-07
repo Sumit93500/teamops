@@ -56,3 +56,58 @@
   padding: 14px 20px;
   border-top: 1px solid var(--color-border);
 }
+
+/* ---------- the approval card and the bell's list (round 14G, ui/approval-card.js) ----------
+   Built on first use, outside main; read-only for now (decisions come later, in its footer). */
+[data-card] { cursor: pointer; }
+.table__user-name[data-card]:hover, .list__title[data-card]:hover { text-decoration: underline; }
+.approval-card__who { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.approval-card__text { min-width: 0; }
+.approval-card__what { font-size: var(--text-sm); color: var(--color-text-muted); }
+.approval-card .kv__row dd { overflow-wrap: anywhere; }
+.approval-card__reason { margin-top: var(--space-4); font-size: var(--text-sm); }
+.approval-card__label { font-size: var(--text-sm); font-weight: var(--weight-regular); color: var(--color-text-muted); margin-bottom: var(--space-1); }
+.approval-card__reason p { white-space: pre-line; overflow-wrap: anywhere; }
+
+.bell-panel {
+  position: fixed; z-index: var(--z-dropdown);
+  top: var(--bell-top, 60px); right: var(--bell-right, 16px);
+  width: min(360px, calc(100vw - 16px));
+}
+.bell-panel__sheet {
+  display: flex; flex-direction: column;
+  max-height: calc(100vh - var(--bell-top, 60px) - 16px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+}
+.bell-panel__header { padding: 14px 16px 6px; }
+.bell-panel__title { font-size: var(--text-md); }
+.bell-panel__list { overflow-y: auto; padding: 0 var(--space-1) var(--space-1); }
+.bell-panel__item {
+  display: flex; align-items: center; gap: var(--space-3);
+  width: 100%; padding: 8px 12px;
+  border-radius: var(--radius-md); text-align: left;
+}
+.bell-panel__item:hover { background: var(--color-surface-hover); }
+.bell-panel__text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.bell-panel__name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.bell-panel__what, .bell-panel__when { font-size: var(--text-xs); color: var(--color-text-muted); }
+.bell-panel__when { flex: none; }
+.bell-panel__empty { padding: 4px 16px 12px; font-size: var(--text-sm); color: var(--color-text-muted); }
+.bell-panel__footer { display: flex; justify-content: flex-end; padding: 10px 16px; border-top: 1px solid var(--color-border); }
+
+/* 560px and under: both are bottom sheets, full width, up to 85% of the height, scrolling inside; no swipe */
+@media screen and (max-width: 560px) {
+  .approval-card.modal { align-items: flex-end; padding: 0; }
+  .approval-card .modal__dialog, .bell-panel__sheet {
+    max-width: none; width: 100%; max-height: 85vh;
+    border-bottom: 0; border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bell-panel { inset: 0; width: auto; z-index: var(--z-modal); display: flex; align-items: flex-end; background: var(--overlay); }
+  .approval-card .modal__close { width: 44px; height: 44px; }
+  .bell-panel__item { min-height: 44px; }
+}
+@media print { .bell-panel { display: none !important; } }
