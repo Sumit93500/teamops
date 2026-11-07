@@ -3,12 +3,14 @@
 // person, today only, through data/attendance-store.js: the status badge,
 // buttons, work mode, today's times and hours, this month's late marks and
 // the last few working days all come from the store and redraw after every
-// punch and once a minute. A session without an employee id (an old sign-in)
-// leaves the static page as it is.
+// punch and once a minute. Check-in opens at 8:30 AM and closes at the day's
+// own end (round 14F, checkInWindow in the store); after that the note points to
+// Request fix. A session without an employee id (an old sign-in) leaves the
+// static page as it is.
 
 import { getCurrentUserId } from "../core/auth.js";
 import { getUser } from "../data/store.js";
-import { ATTENDANCE_RULES, checkIn, checkOut, dayFor, monthFor, toMinutes } from "../data/attendance-store.js";
+import { ATTENDANCE_RULES, checkIn, checkOut, checkInWindow, dayFor, monthFor, nowMinutes, toMinutes } from "../data/attendance-store.js";
 import { typeLabel, el, todayIso, weekdayName, monthName, dayOfMonth, shortDate } from "../ui/leave-view.js";
 import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
 import { showToast } from "../ui/toast.js";
@@ -116,8 +118,11 @@ function renderStatus(day, user) {
     badge = ["badge badge--dot", "Not joined yet"];
     why = `Attendance starts on your joining date, ${user.dateOfJoining}.`;
   } else if (day.status === "absent") {
+    // The day's end has passed: check-in has closed (round 14F), so a correction is the way to record the day.
     badge = ["badge badge--danger badge--dot", "Not checked in, the shift has ended"];
-    canIn = true;
+    why = `Check-in closed at ${twelveHour(checkInWindow(day).closes)}. If you were working today, use Request fix on My attendance.`;
+  } else if (nowMinutes() < checkInWindow(day).opens) {
+    why = `Check-in opens at ${twelveHour(checkInWindow(day).opens)}.`;
   } else {
     canIn = true;
   }

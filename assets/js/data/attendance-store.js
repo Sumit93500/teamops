@@ -30,6 +30,7 @@ import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
 export const ATTENDANCE_RULES = {
   shiftStart: "09:30",
   shiftEnd: "18:30",
+  earliestCheckIn: "08:30",   // check-in opens; it closes at the day's own end (checkInWindow, round 14F)
   graceMinutes: 15,           // late = checking in after 09:45
   halfSplit: "14:00",         // where a half-day leave splits the shift
   fullDayMinutes: 8 * 60,
@@ -62,6 +63,11 @@ function todayIso() {
 export function nowMinutes() {
   const d = new Date();
   return d.getHours() * 60 + d.getMinutes();
+}
+// 1110 -> "6:30 PM", as the check-in refusals state a time.
+function clockLabel(minutes) {
+  const h = Math.floor(minutes / 60);
+  return `${h % 12 || 12}:${pad(minutes % 60)} ${h < 12 ? "AM" : "PM"}`;
 }
 // The moment a local date and time happened, as a stored ISO timestamp.
 function stampOf(date, hhmm) {
@@ -584,6 +590,15 @@ export function pendingRegularizations(deciderUserId, roleKey) {
 
 // ---------- check in / check out (always today, at the current time) ----------
 
+// When check-in is open on a day, in minutes since midnight (round 14F): from
+// the earliest check-in time up to, not including, the day's own end: the
+// shift's end, or the half-day split with second-half leave. At that end the
+// day already reads absent. The same for every role; check-out isn't limited.
+export function checkInWindow(day) {
+  const R = ATTENDANCE_RULES;
+  return { opens: toMinutes(R.earliestCheckIn), closes: toMinutes(day?.halfDayLeave === "second-half" ? R.halfSplit : R.shiftEnd) };
+}
+
 // mode: "office" | "wfh"; left out, it's "wfh" on an approved work-from-home day, else "office".
 // Success: { ok: true, record, day }.
 export function checkIn(userId, mode) {
@@ -600,6 +615,9 @@ export function checkIn(userId, mode) {
   if (day.status === "holiday") return fail("Today is a holiday, so no attendance is needed.");
   if (day.status === "weekend") return fail("Today is a weekend, so no attendance is needed.");
   if (day.status === "on-leave") return fail("You're on approved leave today, so check-in is closed.");
+  const { opens, closes } = checkInWindow(day);
+  if (ctx.now < opens) return fail(`Check-in opens at ${clockLabel(opens)}.`);
+  if (ctx.now >= closes) return fail(`Check-in closed at ${clockLabel(closes)}.`);
 
   const checkInAt = fromMinutes(ctx.now);
   const result = attendance.add({
@@ -716,6 +734,9 @@ export function requestRegularization(userId, fields = {}) {
   const record = recordOn(ctx, user, date);
   const problem = checkAgainstRecord(record, issue, time, ctx.today, date);
   if (problem) return problem;
+  // A corrected check-in has to be before the day's own end (round 14F): check-in closes then, the end itself included.
+  const { closes } = checkInWindow(day);
+  if (issue !== "missed-check-out" && toMinutes(time) >= closes) return fail(`The corrected check-in has to be before ${clockLabel(closes)}.`, "time");
   if (issue === "late-arrival" && day.minutesLate === 0) return fail("You weren't marked late that day.", "issue");
   if (ctx.requests.some((r) => r.userId === user.id && r.date === date && r.status === "pending")) {
     return fail("You already have a correction waiting for that date.", "date");
