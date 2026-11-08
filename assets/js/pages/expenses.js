@@ -23,7 +23,7 @@ import {
 } from "../data/expenses-store.js";
 import { decisionButtons } from "../ui/leave-decision.js";
 import { STAGE_NAME, categoryLabel, stageBadge, chainText, expenseFlow } from "../ui/expense-view.js";
-import { el, formatDay, localDateOf, plural, nameOf, departmentName, personCell } from "../ui/leave-view.js";
+import { el, formatDay, localDateOf, plural, nameOf, departmentName, personCell, showReason } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
 import { renderPagination } from "../ui/pagination.js";
@@ -279,6 +279,7 @@ function renderPayButton(claims) {
   else if (!claims.some((c) => c.status === "approved")) payButton.title = "No approved claims are waiting to be paid";
   else if (!userId) payButton.title = "This session has no employee ID; sign out and back in to pay claims";
   else payButton.title = "Someone else has to pay the approved claims";
+  showReason(payButton, payButton.disabled ? `${payButton.title}.` : "");   // the reason in words too, while it's disabled
 }
 
 function payApproved() {

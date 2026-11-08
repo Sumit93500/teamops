@@ -22,7 +22,7 @@ import { getUser } from "../data/store.js";
 import { ROLES } from "../config/roles.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { getCurrentUserId } from "../core/auth.js";
-import { el, escapeHtml, nameOf, plural, departmentName, personCell, step, todayIso, monthName, formatRange, formatDay } from "../ui/leave-view.js";
+import { el, escapeHtml, nameOf, plural, departmentName, personCell, step, todayIso, monthName, formatRange, formatDay, showReason } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
@@ -350,6 +350,8 @@ function renderApproval(run, approvers) {
   const approve = $("approve-run");
   approve.disabled = Boolean(approveBlock);
   approve.title = approveBlock || `Approve the ${monthName(month)} run`;
+  showReason(prepare, prepareBlock, approve);   // each disabled button's reason, under the buttons
+  showReason(approve, approveBlock);
 
   $("run-alert").textContent = alertText(run, me, approveBlock);
 }

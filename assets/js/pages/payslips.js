@@ -16,7 +16,7 @@ import { payslipsFor, payslipTotals } from "../data/payroll-store.js";
 import { getUser, joiningDate } from "../data/store.js";
 import { isSignedIn, getCurrentUserId } from "../core/auth.js";
 import { applyPermissions } from "../core/rbac.js";
-import { el, todayIso, monthName, monthShort, formatRange, formatDay, plural } from "../ui/leave-view.js";
+import { el, todayIso, monthName, monthShort, formatRange, formatDay, plural, showReason } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { rupees } from "../ui/money.js";
@@ -109,6 +109,7 @@ function buildRow(slip) {
   const badge = el("span", STATUS[statusKey(slip)]?.badge ?? "badge", STATUS[statusKey(slip)]?.label ?? slip.status);
   if (slip.holdReason) badge.title = slip.holdReason;
   statusCell.append(badge);
+  showReason(badge, slip.holdReason);   // the hold reason under the badge
 
   const actions = el("td", "table__actions");
   const group = el("div", "btn-group");

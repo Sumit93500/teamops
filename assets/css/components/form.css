@@ -22,6 +22,9 @@
 .form-label--required::after { content: " *"; color: var(--color-danger); }
 .form-hint { font-size: var(--text-xs); color: var(--color-text-muted); }
 .form-hint[data-missing="true"] { color: var(--color-warning); }   /* advisory, not an error (claim-expense.js) */
+/* Why a control can't be used (round 14E; showReason() in ui/leave-view.js): a line of its own, as wide as the
+   space its control already has (width 0 and min-width 100%, so it never widens a row, cell or header), wrapping there */
+.reason { display: block; width: 0; min-width: 100%; margin-top: var(--space-1); font-size: var(--text-xs); color: var(--color-text-muted); white-space: normal; overflow-wrap: anywhere; }
 .form-error { font-size: var(--text-xs); color: var(--color-danger); }
 
 .form-section-title {

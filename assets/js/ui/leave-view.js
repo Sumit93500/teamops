@@ -21,6 +21,28 @@ export function el(tag, className, text) {
   return node;
 }
 
+// Why a control can't be used, as a line of text after it (round 14E): a title alone never shows on a
+// phone. The line goes after `after` (the control itself unless it says), is tied to the control by
+// aria-describedby, and takes its data-permission and hidden, so it hides with it. No text: no line.
+let reasons = 0;
+export function showReason(control, text, after = control) {
+  const old = control.ownerDocument.getElementById(control.getAttribute("aria-describedby") ?? "");
+  const line = old?.classList.contains("reason") ? old : null;
+  if (!text) {
+    if (line) { line.remove(); control.removeAttribute("aria-describedby"); }
+    return;
+  }
+  if (line) { line.textContent = text; return; }
+  const added = el("span", "reason", text);
+  added.id = `reason-${++reasons}`;
+  if (control.dataset.permission) added.dataset.permission = control.dataset.permission;
+  added.hidden = control.hidden;
+  let spot = after;
+  while (spot.nextElementSibling?.classList.contains("reason")) spot = spot.nextElementSibling;
+  spot.after(added);
+  control.setAttribute("aria-describedby", added.id);
+}
+
 // For the few places that must go through toast.js, which uses innerHTML.
 export function escapeHtml(text) {
   return String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

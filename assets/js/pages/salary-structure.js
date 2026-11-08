@@ -19,7 +19,7 @@ import { salaryFor, salaryHistory, proposeSalary, pendingSalaryProposal, proposa
 import { getAllUsers, getUser } from "../data/store.js";
 import { permissionsOf } from "../config/roles.js";
 import { can, applyPermissions } from "../core/rbac.js";
-import { el, escapeHtml, todayIso, formatDay, plural, personCell, fillDepartmentSelect, nameOf } from "../ui/leave-view.js";
+import { el, escapeHtml, todayIso, formatDay, plural, personCell, fillDepartmentSelect, nameOf, showReason } from "../ui/leave-view.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { rupees } from "../ui/money.js";
 import { getCurrentUserId } from "../core/auth.js";
@@ -353,6 +353,8 @@ function buildRow(row, rows) {
   group.append(show, ...(row.pending ? [] : [salaryEditButton(row)]));
   const actions = el("td", "table__actions");
   actions.append(group);
+  const edit = group.querySelector("button:disabled");
+  if (edit) showReason(edit, edit.title, group);   // why Edit can't be used, under the row's buttons
   if (waiting.length) {
     const line = el("div", "mt-2");
     line.append(...waiting);

@@ -32,7 +32,7 @@ import { can } from "../core/rbac.js";
 import { resolvePageLink } from "../core/paths.js";
 import { STAGE_NAME, categoryLabel } from "../ui/expense-view.js";
 import { cardLink } from "../ui/approval-card.js";
-import { el, plural, departmentName, personCell, nameOf, initials, avatarClass, formatDay, localDateOf, todayIso, monthShort } from "../ui/leave-view.js";
+import { el, plural, departmentName, personCell, nameOf, initials, avatarClass, formatDay, localDateOf, todayIso, monthShort, showReason } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
 import { rupees } from "../ui/money.js";
@@ -91,6 +91,7 @@ function buildRow(row) {
   const badge = el("span", ROW_STATUS[row.status]?.badge ?? "badge", ROW_STATUS[row.status]?.label ?? row.status);
   if (row.holdReason) badge.title = row.holdReason;
   statusCell.append(badge);
+  showReason(badge, row.holdReason);   // the hold reason under the badge
   tr.append(
     personCell(row.userId, user, departmentName(user?.department)),
     el("td", "table__num", rupees(row.gross)),
