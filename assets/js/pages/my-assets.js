@@ -26,7 +26,7 @@ import { allItems, assetsFor, assetTypeOf, openReportOf, reportProblem } from ".
 import { submitAssetRequest, assetRequestsFor, previewRoute } from "../data/asset-requests-store.js";
 import { assetTypeLabel, conditionBadge, assetStatusBadge, officeDate } from "../ui/inventory-view.js";
 import { requestTitle, requestBadge, endNote, assetRequestSteps } from "../ui/asset-request-view.js";
-import { el, escapeHtml, formatDay, plural, nameOf } from "../ui/leave-view.js";
+import { el, escapeHtml, formatDay, plural, nameOf, showReason } from "../ui/leave-view.js";
 import { openModal, closeModal } from "../ui/modal.js";
 import { showToast } from "../ui/toast.js";
 import { initPlaceholders } from "../ui/placeholder.js";
@@ -78,6 +78,7 @@ function row(asset, item) {
     report.title = `Reported ${formatDay(officeDate(open.at), true)}: ${open.note}. An Admin will look at it.`;
   }
   actions.append(report);
+  if (open) showReason(report, report.title);   // when it was reported and what's wrong, in words too (round 14E part 2)
   const tr = el("tr");
   tr.dataset.tag = asset.id;
   tr.append(tag, what, el("td", "", asset.since ? formatDay(asset.since, true) : "–"), condition, status, actions);

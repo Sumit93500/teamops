@@ -12,7 +12,7 @@ import { openModal, closeModal } from "../ui/modal.js";
 import { resolvePageLink } from "../core/paths.js";
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
-import { el, formatDay, plural, todayIso } from "../ui/leave-view.js";
+import { el, formatDay, plural, todayIso, showReason } from "../ui/leave-view.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
 import { salaryFor } from "../data/payroll-store.js";
 import { approvalChainText, LEAVE_TYPES, balanceFor } from "../data/leave-store.js";
@@ -111,6 +111,11 @@ function renderStatus() {
     statusBtn.textContent = inactive ? "Reactivate" : "Deactivate";
     statusBtn.classList.toggle("btn--danger", !inactive);
   }
+  // Why Deactivate or Delete would be refused, in the toast's words, before the click (round 14E part 2); the
+  // click still refuses with its toast, and the buttons are as they were. The lines sit under the buttons.
+  const own = user.id === getCurrentUserId();
+  if (statusBtn) showReason(statusBtn, own && user.status !== "inactive" ? "You can't deactivate your own account." : "", deleteBtn ?? statusBtn);
+  if (deleteBtn) showReason(deleteBtn, own ? "You can't delete your own account." : (deleteProblem(getCurrentUserId(), user.id) ?? ""));
   renderLastDay();
   renderTenure();
 }

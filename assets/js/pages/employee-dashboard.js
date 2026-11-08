@@ -20,7 +20,7 @@ import { assetRequestsFor, waitingOn as assetWaitingOn } from "../data/asset-req
 import { assetTypeLabel } from "../ui/inventory-view.js";
 import {
   el, todayIso, formatDay, formatRange, monthName, typeLabel, requestDates,
-  statusBadge, newestPending, decisionOf, localDateOf, shortDate, whenText, plural, monthShort, nameOf,
+  statusBadge, newestPending, decisionOf, localDateOf, shortDate, whenText, plural, monthShort, nameOf, showReason,
 } from "../ui/leave-view.js";
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
@@ -162,7 +162,9 @@ function recentRow(day) {
   const tr = el("tr");
   const outText = day.incomplete ? "Not recorded" : (day.checkOut ?? "–");
   const status = el("td");
-  status.append(dayBadge(day));
+  const badge = dayBadge(day);
+  status.append(badge);
+  showReason(badge, badge.title);   // an Overdue badge's time in words too, not only on hover (round 14E part 2)
   if (day.regularized) status.append(" ", el("span", "badge badge--success badge--square", "Regularized"));
   tr.append(
     el("td", "", shortDate(day.date)),

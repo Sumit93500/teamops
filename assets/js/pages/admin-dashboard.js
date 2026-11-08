@@ -24,7 +24,7 @@ import { allAssetRequests } from "../data/asset-requests-store.js";
 import { reorderAlerts, allMovements, getItem } from "../data/inventory-store.js";
 import {
   el, todayIso, formatRange, monthName, departmentName, fillDepartmentSelect, personCell, plural, nameOf, typeLabel,
-  requestDates, formatDays, formatDay, initials, avatarClass, localDateOf,
+  requestDates, formatDays, formatDay, initials, avatarClass, localDateOf, showReason,
 } from "../ui/leave-view.js";
 import { dayBadge, presentNote, checkInCell, hoursCell, correctionDetails } from "../ui/attendance-view.js";
 import { STAGE_NAME as EXPENSE_STAGE, categoryLabel } from "../ui/expense-view.js";
@@ -284,7 +284,9 @@ function renderActivity() {
 function row({ person, day }) {
   const tr = el("tr");
   const status = el("td");
-  status.append(dayBadge(day));
+  const badge = dayBadge(day);
+  status.append(badge);
+  showReason(badge, badge.title);   // an Overdue badge's time in words too, not only on hover (round 14E part 2)
   tr.append(personCell(day.userId, person, person?.email ?? ""), el("td", "", day.userId), el("td", "", departmentName(person?.department)), status, checkInCell(day), hoursCell(day));
   return tr;
 }

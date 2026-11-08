@@ -18,7 +18,7 @@ import {
 import { renderPagination } from "../ui/pagination.js";
 import { openModal, closeModal } from "../ui/modal.js";
 import { showToast } from "../ui/toast.js";
-import { el, todayIso, formatDay, monthName, localDateOf, shortDate, plural } from "../ui/leave-view.js";
+import { el, todayIso, formatDay, monthName, localDateOf, shortDate, plural, showReason } from "../ui/leave-view.js";
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
@@ -187,7 +187,9 @@ function logRow(day, today) {
   const inText = day.checkIn ? `${day.checkIn}${day.mode === "wfh" ? " (WFH)" : ""}` : "–";
   const outText = day.incomplete ? "Not recorded" : (day.checkOut ?? "–");
   const status = el("td");
-  status.append(dayBadge(day));
+  const badge = dayBadge(day);
+  status.append(badge);
+  showReason(badge, badge.title);   // an Overdue badge's time in words too, not only on hover (round 14E part 2)
 
   const actions = el("td", "table__actions");
   const pending = day.regularization?.status === "pending" ? day.regularization : null;

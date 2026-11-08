@@ -8,9 +8,10 @@
 //   <table data-export-name="vendors">                  each table to export (one file each)
 //   <button data-export data-export-stats="name">       also export the page's .stat cards
 
-// Parts of a cell that aren't data: initials avatars, icons, and anything hidden
-// (e.g. a button hidden by applyPermissions()).
-const SKIP = ".avatar, svg, [hidden], [aria-hidden='true']";
+// Parts of a cell that aren't data: initials avatars, icons, a reason line under
+// a badge or note (class reason, round 14E: the words of its title, which the
+// export never had), and anything hidden (e.g. a button hidden by applyPermissions()).
+const SKIP = ".avatar, .reason, svg, [hidden], [aria-hidden='true']";
 
 // Quotes a value for CSV. Values starting with = + - @ are prefixed with ' so a
 // spreadsheet shows them as text instead of running them as formulas.

@@ -16,7 +16,7 @@ import { can, applyPermissions } from "../core/rbac.js";
 import { CATEGORY_KEYS, STOCK_STATUS_KEYS, LOCATIONS, stockBarPercent } from "../data/inventory.js";
 import { allItems, allAssets, inventoryTotals, reorderAlerts } from "../data/inventory-store.js";
 import { categoryLabel, assetTypeLabel, stockStatusLabel, stockLook, stockBadge, readyToAssign, READY_SHORT, UNTAGGED_TIP } from "../ui/inventory-view.js";
-import { el, plural } from "../ui/leave-view.js";
+import { el, plural, showReason } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
 import { renderPagination } from "../ui/pagination.js";
@@ -91,6 +91,7 @@ function categoryCell(item, assets) {
     const note = el("div", "text-sm text-muted", `${ready} of ${item.stock} ${READY_SHORT}`);
     note.title = UNTAGGED_TIP;
     td.append(note);
+    showReason(note, UNTAGGED_TIP);   // why the rest can't be assigned, in words too (round 14E part 2)
   }
   return td;
 }

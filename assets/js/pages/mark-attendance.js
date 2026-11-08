@@ -11,7 +11,7 @@
 import { getCurrentUserId } from "../core/auth.js";
 import { getUser } from "../data/store.js";
 import { ATTENDANCE_RULES, checkIn, checkOut, checkInWindow, dayFor, monthFor, nowMinutes, toMinutes } from "../data/attendance-store.js";
-import { typeLabel, el, todayIso, weekdayName, monthName, dayOfMonth, shortDate } from "../ui/leave-view.js";
+import { typeLabel, el, todayIso, weekdayName, monthName, dayOfMonth, shortDate, showReason } from "../ui/leave-view.js";
 import { dayNumber, isoFromDayNumber } from "../data/holidays.js";
 import { showToast } from "../ui/toast.js";
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
@@ -200,7 +200,9 @@ function recentRow(day) {
   if (day.incomplete) outText = "Not recorded";
   const hours = el("td", "table__num", day.minutesWorked === null ? "–" : hoursText(day.minutesWorked));
   const status = el("td");
-  status.append(dayBadge(day));
+  const badge = dayBadge(day);
+  status.append(badge);
+  showReason(badge, badge.title);   // an Overdue badge's time in words too, not only on hover (round 14E part 2)
   if (day.regularized) status.append(" ", el("span", "badge badge--success badge--square", "Regularized"));
   tr.append(el("td", "", shortDate(day.date)), inCell, el("td", "", outText), hours, status);
   return tr;

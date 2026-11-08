@@ -21,7 +21,7 @@ import { teamWeekFor, summaryFor, pendingRegularizations } from "../data/attenda
 import { renderPagination } from "../ui/pagination.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
-import { el, weekdayName, todayIso, initials, avatarClass, departmentName, shortDate, plural, fillDepartmentSelect, personCell } from "../ui/leave-view.js";
+import { el, weekdayName, todayIso, initials, avatarClass, departmentName, shortDate, plural, fillDepartmentSelect, personCell, showReason } from "../ui/leave-view.js";
 import { dayBadge, presentNote, checkInCell, hoursCell } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
@@ -137,7 +137,9 @@ function weekCell(week) {
 function row(r) {
   const tr = el("tr");
   const status = el("td");
-  status.append(dayBadge(r.day));
+  const badge = dayBadge(r.day);
+  status.append(badge);
+  showReason(badge, badge.title);   // an Overdue badge's time in words too, not only on hover (round 14E part 2)
   tr.append(
     personCell(r.day.userId, r.user, r.day.userId),
     el("td", "", departmentName(r.user?.department)),

@@ -4,6 +4,14 @@
 
 import { applyTheme, savedTheme, onAppearanceChange } from "../ui/theme.js";
 import { showToast } from "../ui/toast.js";
+import { showReason } from "../ui/leave-view.js";
+
+// The Payroll and Expenses module switches are on and can't be switched off: say so in words beside them (round
+// 14E part 2), under the module's description, not only by greying the switch.
+for (const name of ["Payroll module", "Expenses module"]) {
+  const input = document.querySelector(`#modules input[aria-label="${name}"]`);
+  if (input?.disabled) showReason(input, "Always on", input.closest(".setting-row")?.querySelector(".setting-row__text span") ?? input);
+}
 
 document.querySelectorAll(".settings__nav .settings__link").forEach((link) => {
   link.addEventListener("click", (e) => {

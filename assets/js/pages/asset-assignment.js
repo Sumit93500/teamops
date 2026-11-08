@@ -52,7 +52,7 @@ import {
 import { requestTitle, requestBadge, assetRequestFlow, openCloseModal } from "../ui/asset-request-view.js";
 import { decisionButtons } from "../ui/leave-decision.js";
 import {
-  el, escapeHtml, formatDay, plural, nameOf, departmentName, personCell, todayIso, initials, avatarClass,
+  el, escapeHtml, formatDay, plural, nameOf, departmentName, personCell, todayIso, initials, avatarClass, showReason,
 } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { renderPagination } from "../ui/pagination.js";
@@ -154,7 +154,11 @@ function row(asset, items) {
   const status = el("td");
   status.append(assetStatusBadge(asset.status));
   const report = openReportOf(asset);
-  if (report) status.append(" ", reportBadge(report));
+  if (report) {
+    const badge = reportBadge(report);
+    status.append(" ", badge);
+    showReason(badge, badge.title);   // the report's day and note in words too, not only on hover (round 14E part 2)
+  }
   const tr = el("tr");
   tr.dataset.tag = asset.id;
   tr.append(tag, assetCell(asset, items.get(asset.sku)), holderCell(asset), sinceCell(asset), condition, status, actionsCell(asset));

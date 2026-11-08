@@ -335,7 +335,12 @@ function buildRow(row, rows) {
   const badge = el("span", status.badge, status.label);
   if (status.title) badge.title = status.title;
   statusCell.append(badge);
-  if (row.pending) statusCell.append(waitingNote(row.pending));
+  showReason(badge, status.title);   // the coming salary in words too, not only on hover (round 14E part 2)
+  if (row.pending) {
+    const note = waitingNote(row.pending);
+    statusCell.append(note);
+    showReason(note, note.title);   // who proposed the change, and when
+  }
 
   const shown = user.id === exampleId;
   const show = el("button", `btn btn--sm${shown ? " btn--primary" : ""}`, "Breakdown");
