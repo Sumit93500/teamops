@@ -23,10 +23,16 @@ export function renderBell() {
   bell.setAttribute("aria-haspopup", "dialog");
   bell.setAttribute("aria-expanded", "false");
   bell.append(...button.childNodes);
+  // A second tap while the list's script is still on its way (a slow phone's first tap) is ignored:
+  // it would close the list the first tap is opening.
+  let loading = false;
   bell.addEventListener("click", () => {
+    if (loading) return;
+    loading = true;
     import("./approval-card.js")
       .then((card) => card.toggleBellPanel(bell))
-      .catch(() => { window.location.href = resolvePageLink(INBOX); });   // if the list can't load, the inbox, as before
+      .catch(() => { window.location.href = resolvePageLink(INBOX); })   // if the list can't load, the inbox, as before
+      .finally(() => { loading = false; });
   });
   button.replaceWith(bell);
   refreshBell();

@@ -277,6 +277,7 @@ export function cardLink(link, kind, id, options = {}) {
 
 let panel = null;
 let panelBell = null;
+let panelWidth = 0;   // the width it opened at (the resize rule below)
 
 function buildPanel() {
   panel = el("div", "bell-panel");
@@ -301,7 +302,9 @@ function buildPanel() {
     if (panel.hidden || panel.contains(e.target) || panelBell?.contains(e.target)) return;
     closeBellPanel(false);
   });
-  window.addEventListener("resize", () => closeBellPanel(false));
+  // A new width (a window resized, a phone turned) closes it. Chrome for Android fires resize as its address
+  // bar slides in or out, which changes only the height: the list stays open then.
+  window.addEventListener("resize", () => { if (window.innerWidth !== panelWidth) closeBellPanel(false); });
 }
 
 function bellItem({ kind, r }) {
@@ -354,6 +357,7 @@ export function openBellPanel(bell) {
   panel.style.setProperty("--bell-top", `${Math.round(box.bottom + 6)}px`);
   panel.style.setProperty("--bell-right", `${Math.max(8, Math.round(document.documentElement.clientWidth - box.right))}px`);
   panel.hidden = false;
+  panelWidth = window.innerWidth;
   bell.setAttribute("aria-expanded", "true");
   bell.setAttribute("aria-controls", "bell-panel");
   title.focus();
