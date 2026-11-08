@@ -43,6 +43,16 @@ export function showReason(control, text, after = control) {
   control.setAttribute("aria-describedby", added.id);
 }
 
+// A page opened without what it needs (Round Forms): the plain block user-profile.html has always drawn for an unknown id (class empty: a
+// title, a line, and a button back to the list the page belongs to). The caller puts it where the page's content was.
+export function emptyState(title, text, href, linkText) {
+  const empty = el("div", "empty");
+  const back = el("a", "btn", linkText);
+  back.href = href;
+  empty.append(el("h3", "empty__title", title), el("p", "empty__text", text), back);
+  return empty;
+}
+
 // For the few places that must go through toast.js, which uses innerHTML.
 export function escapeHtml(text) {
   return String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

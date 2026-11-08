@@ -1,6 +1,6 @@
 // pages/role-editor.js
 // Runs on role-editor.html (needs roles:manage: Admin). Shows the role named in
-// ?role=admin|hr|fin|emp (HR Manager when there's none, or it isn't a role),
+// ?role=admin|hr|fin|emp ("Role not found" when there's none, or it isn't a role: Round Forms),
 // all from config/roles.js, config/permissions.js and the employee list:
 // its details, who holds it, and every permission in the app, ticked where the
 // role has it.
@@ -13,11 +13,10 @@ import { ROLES } from "../config/roles.js";
 import { PERMISSIONS, ALL_PERMISSIONS } from "../config/permissions.js";
 import { getAllUsers } from "../data/store.js";
 import { resolvePageLink } from "../core/paths.js";
-import { el, initials, avatarClass, plural } from "../ui/leave-view.js";
+import { el, initials, avatarClass, plural, emptyState } from "../ui/leave-view.js";
 
-const DEFAULT_ROLE = "hr";
-const asked = new URLSearchParams(window.location.search).get("role");
-const role = ROLES[Object.hasOwn(ROLES, asked ?? "") ? asked : DEFAULT_ROLE];
+const asked = new URLSearchParams(window.location.search).get("role") ?? "";
+const role = Object.hasOwn(ROLES, asked) ? ROLES[asked] : null;   // none, or not a role: "not found" (it was HR Manager: Round Forms)
 
 // How the matrix groups modules, and their names. A module missing here still
 // shows, under "Other", named by its key.
@@ -119,7 +118,18 @@ function renderHolders(holders) {
   }));
 }
 
-if ($("matrix-rows")) {
+// No role, or not one of ours (Round Forms): the page's heading and All roles, then a plain message and the way back, where the role was.
+function renderNotFound() {
+  document.title = "Role not found | OfficeOS";
+  $("role-crumb").textContent = "Not found";
+  const card = el("section", "card");
+  card.append(emptyState("Role not found", asked ? `There's no role called "${asked}". The link may be wrong.` : "This link doesn't name a role.",
+    resolvePageLink("access/roles-list.html"), "All roles"));
+  document.querySelector("main > .stack")?.replaceChildren(card);
+}
+
+if ($("matrix-rows") && !role) renderNotFound();
+else if ($("matrix-rows")) {
   const holders = getAllUsers().filter((u) => u.role === role.key);
   renderDetails(holders);
   renderHolders(holders);

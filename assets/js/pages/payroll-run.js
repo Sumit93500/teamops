@@ -22,7 +22,7 @@ import { getUser } from "../data/store.js";
 import { ROLES } from "../config/roles.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { getCurrentUserId } from "../core/auth.js";
-import { el, escapeHtml, nameOf, plural, departmentName, personCell, step, todayIso, monthName, formatRange, formatDay, showReason } from "../ui/leave-view.js";
+import { el, escapeHtml, nameOf, plural, departmentName, personCell, step, todayIso, monthName, formatRange, formatDay, showReason, emptyState } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
@@ -58,11 +58,13 @@ let statusFilter = "";   // "" = all, or a row status
 
 // ---------- which month, and whose rows ----------
 
-// ?month=YYYY-MM, else this month.
+// ?month=YYYY-MM, else this month; null for a month the link gets wrong (Round Forms: it was swapped for this month without a word).
+const askedMonth = (new URLSearchParams(window.location.search).get("month") ?? "").trim();
 function viewedMonth() {
-  const asked = (new URLSearchParams(window.location.search).get("month") ?? "").trim();
+  const asked = askedMonth;
   const match = /^(\d{4})-(\d{2})$/.exec(asked);
   if (match && Number(match[2]) >= 1 && Number(match[2]) <= 12) return { year: Number(match[1]), month: Number(match[2]) };
+  if (asked) return null;
   return runMonth(todayIso());
 }
 
@@ -360,7 +362,16 @@ function renderApproval(run, approvers) {
 
 // The guard already sends anyone without payroll:view to the 403 page; this
 // stops the figures being drawn in the moment before that happens.
-if (can("payroll:view")) {
+// A link whose month isn't one (Round Forms): payslip-view.html's words under the page's heading, and the way back to this month's run.
+function renderBadMonth() {
+  document.querySelector(".page-header__actions")?.setAttribute("hidden", "");
+  const card = el("section", "card");
+  card.append(emptyState("That isn't a month", `The link asks for "${askedMonth}". A month looks like 2026-09.`, "payroll-run.html", "Back to payroll run"));
+  document.querySelector("main > .stack")?.replaceChildren(card);
+}
+
+if (can("payroll:view") && !viewedMonth()) renderBadMonth();
+else if (can("payroll:view")) {
   const { year, month } = viewedMonth();
   let run;
   const draw = () => {

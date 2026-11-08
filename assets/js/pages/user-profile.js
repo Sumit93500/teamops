@@ -1,6 +1,6 @@
 // pages/user-profile.js
-// Runs on user-profile.html. Shows the employee from ?id=EMP-xxxx (Rohan,
-// EMP-1042, when there's no id) and wires Reveal, Deactivate/Reactivate,
+// Runs on user-profile.html. Shows the employee from ?id=EMP-xxxx ("not found"
+// when there's no id, Round Forms) and wires Reveal, Deactivate/Reactivate,
 // Delete and Reset password. Cards with no data behind them yet stay as static
 // HTML.
 
@@ -12,7 +12,7 @@ import { openModal, closeModal } from "../ui/modal.js";
 import { resolvePageLink } from "../core/paths.js";
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions, can } from "../core/rbac.js";
-import { el, formatDay, plural, todayIso, showReason } from "../ui/leave-view.js";
+import { el, formatDay, plural, todayIso, showReason, emptyState } from "../ui/leave-view.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
 import { salaryFor } from "../data/payroll-store.js";
 import { approvalChainText, LEAVE_TYPES, balanceFor } from "../data/leave-store.js";
@@ -21,8 +21,7 @@ import { rupees } from "../ui/money.js";
 import { allItems, assetsFor } from "../data/inventory-store.js";
 import { conditionBadge } from "../ui/inventory-view.js";
 
-const DEFAULT_ID = "EMP-1042";
-const id = new URLSearchParams(window.location.search).get("id") || DEFAULT_ID;
+const id = new URLSearchParams(window.location.search).get("id") ?? "";   // none: "not found" (it was Rohan, EMP-1042: Round Forms)
 let user = getUser(id);
 
 const STATUS = {
@@ -278,21 +277,10 @@ function renderNotFound() {
 
   const card = document.querySelector(".card.profile");
   if (!card) return;
-  const empty = document.createElement("div");
-  empty.className = "empty";
-  const title = document.createElement("h3");
-  title.className = "empty__title";
-  title.textContent = "Employee not found";
-  const text = document.createElement("p");
-  text.className = "empty__text";
-  text.textContent = `There's no employee with ID ${id}. They may have been deleted, or the link is wrong.`;
-  const back = document.createElement("a");
-  back.className = "btn";
-  back.href = resolvePageLink("users/users-list.html");
-  back.textContent = "Back to users";
-  empty.append(title, text, back);
   card.classList.remove("profile");
-  card.replaceChildren(empty);
+  card.replaceChildren(emptyState("Employee not found", id
+    ? `There's no employee with ID ${id}. They may have been deleted, or the link is wrong.`
+    : "This link doesn't name an employee.", resolvePageLink("users/users-list.html"), "Back to users"));
 }
 
 // ---------- sensitive details ----------

@@ -10,6 +10,7 @@ import { approvalChainFor } from "../data/leave-store.js";
 import { showToast } from "../ui/toast.js";
 import { resolvePageLink } from "../core/paths.js";
 import { getCurrentRole, getCurrentUserId } from "../core/auth.js";
+import { el, emptyState } from "../ui/leave-view.js";
 
 const form = document.querySelector("form");
 const field = (id) => document.getElementById(id);
@@ -233,10 +234,20 @@ function overridesToSave() {
 // ---------- mode ----------
 
 if (editId && !editing) {
-  showToast("Employee not found", "danger");
-  setTimeout(() => {
-    window.location.href = resolvePageLink("users/users-list.html");
-  }, 1200);
+  // Round Forms: said in the page, where the form was, with the way back (it drew the Add form, toasted "Employee not found" and left
+  // for the list after 1.2 s). The form stays in the page, hidden, so nothing below loses its fields.
+  document.title = "Employee not found | OfficeOS";
+  const crumb = document.querySelector('.breadcrumb__item[aria-current="page"]');
+  if (crumb) crumb.textContent = "Not found";
+  const heading = document.querySelector(".page-header h1");
+  if (heading) heading.textContent = "Edit employee";
+  document.querySelector(".page-header__subtitle")?.setAttribute("hidden", "");
+  const grid = document.querySelector("main > .grid");
+  const card = el("section", "card");
+  card.append(emptyState("Employee not found", `There's no employee with ID ${editId}. They may have been deleted, or the link is wrong.`,
+    resolvePageLink("users/users-list.html"), "Back to users"));
+  grid?.setAttribute("hidden", "");
+  grid?.after(card);
 } else if (editing) {
   const [firstName, ...rest] = String(editing.name ?? "").split(" ");
   document.title = "Edit employee | OfficeOS";
