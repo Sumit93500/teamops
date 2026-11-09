@@ -49,7 +49,7 @@
 .auth__feature strong { display: block; color: #ffffff; font-weight: var(--weight-medium); }
 .auth__feature p { color: #94a3b8; font-size: var(--text-sm); }
 
-.auth__copy { color: #64748b; font-size: var(--text-xs); }
+.auth__copy { color: var(--color-sidebar-text); font-size: var(--text-xs); }
 
 /* ---------- Form panel (right) ---------- */
 .auth__title { font-size: var(--text-xl); letter-spacing: -0.02em; }
@@ -78,7 +78,7 @@
   font-variant-numeric: tabular-nums;
   color: var(--color-text);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-control);
   border-radius: var(--radius-md);
   transition: border-color var(--transition), box-shadow var(--transition);
 }

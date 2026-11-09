@@ -21,6 +21,7 @@
   --color-surface: #ffffff;         /* cards, tables, topbar */
   --color-surface-hover: #f2f4f7;   /* row hover, subtle fills */
   --color-border: #e4e7ec;
+  --color-border-control: #85878a;   /* the edge of a field, checkbox or switch: 3:1 on the surface and the page (Round Contrast pass) */
   --color-text: #101828;
   --color-text-muted: #667085;
 
@@ -31,6 +32,8 @@
   --color-sidebar-line: rgba(255, 255, 255, 0.1);
   --color-sidebar-hover: rgba(255, 255, 255, 0.08);
   --color-rail-icon: color-mix(in srgb, var(--color-primary) 40%, #ffffff);   /* the accent, lightened to read on the dark rail */
+  --color-rail-active: color-mix(in srgb, var(--primary-base) 62%, #ffffff);   /* the rail's active item: dark mode's fill in both themes, */
+  --color-on-rail-active: #0b1020;                                             /* so it reads 3:1 on the navy rail (Round Contrast pass) */
 
   /* ---------- Status colors: same meaning on every screen ---------- */
   --color-success: #067647;  --color-success-soft: #e7f6ec;   /* present, approved, paid */
@@ -39,7 +42,7 @@
   --color-info:    #175cd3;  --color-info-soft:    #e8f0fe;   /* on leave, processing */
 
   /* ---------- Stat-card icon colors ---------- */
-  --chip-1: #2563eb;  --chip-2: #059669;  --chip-3: #d97706;  --chip-4: #7c3aed;
+  --chip-1: #2056cc;  --chip-2: #046d4d;  --chip-3: #904f04;  --chip-4: #7c3aed;   /* 1-3 darker: avatar initials 4.5:1 on their tints (Round Contrast pass) */
 
   /* ---------- Typography ---------- */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -74,13 +77,13 @@
 /* ---------- Role accents: set <html data-role="hr"> and the UI recolors ---------- */
 [data-role="admin"] { --role-base: #4f46e5; }   /* indigo */
 [data-role="hr"]    { --role-base: #0f766e; }   /* teal */
-[data-role="fin"]   { --role-base: #b45309; }   /* amber-brown */
-[data-role="emp"]   { --role-base: #2563eb; }   /* blue */
+[data-role="fin"]   { --role-base: #aa4e09; }   /* amber-brown (was #b45309: 4.5:1 on its soft fill, Round Contrast pass) */
+[data-role="emp"]   { --role-base: #245fe2; }   /* blue (was #2563eb, as the accent) */
 
 /* ---------- A person's accent: set <html data-accent="teal"> (ui/theme.js). Comes after the
    role accents and only overrides --primary-base; none set = the role's own. ---------- */
 [data-accent="indigo"] { --primary-base: #4f46e5; }
-[data-accent="blue"]   { --primary-base: #2563eb; }
+[data-accent="blue"]   { --primary-base: #245fe2; }   /* was #2563eb: 4.44 on its soft fill (Round Contrast pass) */
 [data-accent="teal"]   { --primary-base: #0f766e; }
 [data-accent="violet"] { --primary-base: #6d28d9; }
 [data-accent="slate"]  { --primary-base: #475569; }
@@ -97,6 +100,7 @@
   --color-surface: #131a27;
   --color-surface-hover: #1a2333;
   --color-border: #243044;
+  --color-border-control: #6a7280;
   --color-text: #eef1f6;
   --color-text-muted: #98a2b3;
   --color-sidebar: #0a0f1d;
@@ -109,4 +113,5 @@
   --chip-1: #6ea0ff;  --chip-2: #34d399;  --chip-3: #fbbf24;  --chip-4: #a78bfa;
   --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-modal: 0 20px 48px rgba(0, 0, 0, 0.6);
+  --overlay: rgba(0, 0, 0, 0.6);   /* was the light value, rgba(16, 24, 40, 0.5), which barely dimmed the dark page (Round Contrast pass) */
 }

@@ -101,7 +101,7 @@
   font-variant-numeric: tabular-nums;
 }
 .date-tile--muted { opacity: 0.7; }
-.date-tile--muted .date-tile__month { color: var(--color-text-muted); }
+.date-tile--muted .date-tile__month { color: var(--color-text); }   /* muted under the tile's 0.7 was under 4.5:1 (Round Contrast pass) */
 
 /* ---------- Choice cards: pick one option (leave type) ----------
    <label class="choice"><input type="radio" name="type" checked>
@@ -122,6 +122,7 @@
 .choice__title { font-weight: var(--weight-medium); }
 .choice__meta { font-size: var(--text-sm); color: var(--color-text-muted); }
 .choice:has(input:checked) { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.choice:has(input:checked) .choice__meta { color: var(--color-text); }   /* muted on the soft fill was under 4.5:1 (Round Contrast pass) */
 .choice:has(input:focus-visible) { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .choice:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
 
