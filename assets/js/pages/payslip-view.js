@@ -21,7 +21,7 @@ import { getUser, joiningDate } from "../data/store.js";
 import { can } from "../core/rbac.js";
 import { isSignedIn, getCurrentUserId } from "../core/auth.js";
 import { resolvePageLink } from "../core/paths.js";
-import { el, todayIso, monthName, formatRange, departmentName, plural, formatDays, formatDay } from "../ui/leave-view.js";
+import { el, todayIso, monthName, formatRange, departmentName, plural, formatDays, formatDay, keepMonthsWhole } from "../ui/leave-view.js";
 import { rupees, rupeesInWords } from "../ui/money.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
 
@@ -264,6 +264,7 @@ function start() {
     const match = /^(\d{4})-(\d{2})$/.exec(asked.month);
     if (!match || Number(match[2]) < 1 || Number(match[2]) > 12) {
       showMessage("That isn't a month", `The link asks for "${asked.month}". A month looks like 2026-09.`);
+      keepMonthsWhole($("payslip-message-text"));
       return;
     }
     slip = slips.find((s) => s.month === asked.month);

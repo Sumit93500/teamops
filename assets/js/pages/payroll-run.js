@@ -22,7 +22,7 @@ import { getUser } from "../data/store.js";
 import { ROLES } from "../config/roles.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { getCurrentUserId } from "../core/auth.js";
-import { el, escapeHtml, nameOf, plural, departmentName, personCell, step, todayIso, monthName, formatRange, formatDay, showReason, emptyState } from "../ui/leave-view.js";
+import { el, escapeHtml, nameOf, plural, departmentName, personCell, step, todayIso, monthName, formatRange, formatDay, showReason, emptyState, keepMonthsWhole } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
@@ -367,6 +367,7 @@ function renderBadMonth() {
   document.querySelector(".page-header__actions")?.setAttribute("hidden", "");
   const card = el("section", "card");
   card.append(emptyState("That isn't a month", `The link asks for "${askedMonth}". A month looks like 2026-09.`, "payroll-run.html", "Back to payroll run"));
+  keepMonthsWhole(card.querySelector(".empty__text"));
   document.querySelector("main > .stack")?.replaceChildren(card);
 }
 

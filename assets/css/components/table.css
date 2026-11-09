@@ -33,7 +33,6 @@
 
 .table__num { text-align: right; font-variant-numeric: tabular-nums; }    /* money and counts */
 .table__actions { text-align: right; white-space: nowrap; }               /* edit / delete buttons */
-.table__check { width: 40px; }                                            /* checkbox column */
 
 .table__user { display: flex; align-items: center; gap: 10px; }           /* avatar + name + email */
 .table__user-name { display: block; font-weight: var(--weight-medium); }

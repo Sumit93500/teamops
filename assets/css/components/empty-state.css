@@ -24,4 +24,5 @@
 .empty__icon .icon { width: 22px; height: 22px; }
 .empty__title { font-size: var(--text-md); }
 .empty__text { max-width: 38ch; font-size: var(--text-sm); color: var(--color-text-muted); }
+.empty__keep { display: inline-block; overflow-wrap: anywhere; }   /* a month in the line, kept whole; longer than the line, it breaks (keepMonthsWhole, Round Small leftovers) */
 .empty .btn { margin-top: var(--space-2); }

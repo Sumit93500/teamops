@@ -53,6 +53,14 @@ export function emptyState(title, text, href, linkText) {
   return empty;
 }
 
+// "That isn't a month" (payroll-run, payslip-view): each quoted part and each yyyy-mm in the line kept whole, as "2026-09" would
+// otherwise break at its hyphen (Round Small leftovers). The words stay as they are; the parts become spans that empty-state.css
+// keeps on one line, unless one is longer than the line.
+export function keepMonthsWhole(line) {
+  const parts = line.textContent.split(/("[^"]*"|\d{4}-\d{2})/);
+  line.replaceChildren(...parts.map((part, i) => (i % 2 ? el("span", "empty__keep", part) : part)).filter((part) => part !== ""));
+}
+
 // For the few places that must go through toast.js, which uses innerHTML.
 export function escapeHtml(text) {
   return String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

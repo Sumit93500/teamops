@@ -55,7 +55,7 @@ export const NAV = [
   {
     group: "Requests & expenses", icon: "requests",
     items: [
-      { label: "Requests",        icon: "chat",     href: "requests/my-requests.html",       permission: "requests:view-own" },
+      { label: "My requests",     icon: "chat",     href: "requests/my-requests.html",       permission: "requests:view-own" },
       { label: "Claim expense",   icon: "wallet",   href: "requests/claim-expense.html",     permission: "expenses:create" },
       { label: "Expenses",           icon: "wallet", href: "finance/expenses.html",          permission: "expenses:view" },
     ],
@@ -97,4 +97,23 @@ export const NAV = [
       { label: "Backup",     icon: "cloud", href: "system/backup.html",     permission: "backup:manage" },
     ],
   },
+];
+
+// The routed pages the sidebar doesn't list (config/routes.js), by the name each page goes by and the section it sits under,
+// so every page has a name (Round Small leftovers). The topbar search finds them too (ui/search.js), when the person can open
+// them. needs: the page shows "not found" without that link parameter, so search doesn't offer it alone (a person's profile
+// comes up by their name; a role from Roles & permissions). The dashboards are named by Dashboard above: each role's landing.
+export const OTHER_PAGES = [
+  { label: "Add employee",     group: "People",     href: "users/user-form.html" },
+  { label: "Employee profile", group: "People",     href: "users/user-profile.html", needs: "id" },
+  { label: "Role",             group: "People",     href: "access/role-editor.html", needs: "role" },
+  { label: "Candidates",       group: "People",     href: "recruitment/candidates.html" },
+  { label: "Regularization",   group: "Attendance", href: "attendance/regularization.html" },
+  { label: "Apply for leave",  group: "Leave",      href: "leave/apply-leave.html" },
+  { label: "Holidays",         group: "Leave",      href: "leave/holidays.html" },
+  { label: "Payslip",          group: "Payroll",    href: "payroll/payslip-view.html" },
+  { label: "My profile",       group: "My account", href: "account/my-profile.html" },
+  { label: "Change password",  group: "My account", href: "account/change-password.html" },
+  { label: "Sessions",         group: "My account", href: "account/sessions.html" },
+  { label: "Notifications",    group: "My account", href: "account/notifications.html" },
 ];

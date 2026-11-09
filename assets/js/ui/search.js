@@ -2,7 +2,8 @@
 // The topbar's search. Jumps to pages and people, and nothing is listed by hand:
 //   - pages: the sidebar's items for this person (config/nav.js, ui/sidebar.js)
 //     that they can also open (core/guard.js, the rule that sends them to the
-//     403 page otherwise)
+//     403 page otherwise), then the pages the sidebar doesn't list (OTHER_PAGES)
+//     that they can open and that open without a link parameter
 //   - people: only with users:view and the profile page's route; by name or id
 // Ctrl/Cmd+K focuses it; arrow keys and Enter pick a result; Esc closes the list.
 // At 820 px and under the box is hidden (responsive.css) and an icon in the topbar
@@ -11,7 +12,7 @@
 // shuts it. Reopened, it shows what was typed, selected.
 // Built with DOM calls, so names typed into the user form can't inject markup.
 
-import { NAV } from "../config/nav.js";
+import { NAV, OTHER_PAGES } from "../config/nav.js";
 import { canOpenPage } from "../core/guard.js";
 import { can } from "../core/rbac.js";
 import { resolvePageLink } from "../core/paths.js";
@@ -24,10 +25,13 @@ const SVG = "http://www.w3.org/2000/svg";
 const CLOSE_PATH = "M6 6l12 12M18 6 6 18";   // the dialogs' close icon
 
 function matchingPages(query) {
-  return NAV.flatMap((group) => group.items
+  const inNav = NAV.flatMap((group) => group.items
     .filter((item) => item.label.toLowerCase().includes(query) && navItemVisible(item) && canOpenPage(navItemHref(item)))
-    .map((item) => ({ label: item.label, meta: group.group, href: resolvePageLink(navItemHref(item)) })))
-    .slice(0, MAX_EACH);
+    .map((item) => ({ label: item.label, meta: group.group, href: resolvePageLink(navItemHref(item)) })));
+  const others = OTHER_PAGES
+    .filter((page) => !page.needs && page.label.toLowerCase().includes(query) && canOpenPage(page.href))
+    .map((page) => ({ label: page.label, meta: page.group, href: resolvePageLink(page.href) }));
+  return [...inNav, ...others].slice(0, MAX_EACH);
 }
 
 function matchingPeople(query) {
