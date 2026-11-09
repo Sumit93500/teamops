@@ -4,7 +4,7 @@
 // The HTML pages use these same strings in their data-permission attributes.
 
 export const PERMISSIONS = {
-  dashboard:     ["view"],
+  dashboard:     ["view", "finance"],   // finance: open the finance dashboard (dashboard/finance.html), Finance's landing (Manager scoping part 1)
   approvals:     ["view", "decide"],
   users:         ["view", "create", "edit", "reset-password", "deactivate", "delete"],   // delete: Admin only (round 11N)
   pii:           ["view"],                       // bank account, PAN (personal identity data)

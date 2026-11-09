@@ -57,6 +57,7 @@ export const ROLES = {
     dataScope: "all",
     permissions: [
       ...SELF_SERVICE,
+      "dashboard:finance",   // its landing, dashboard/finance.html (Manager scoping part 1); not overridable, as no landing page's permission is
       "approvals:view", "approvals:decide",
       // no pii:view: nothing Finance does needs a full bank account or PAN yet (Round 7C)
       "payroll:view", "payroll:create", "payroll:export",   // note: no payroll:approve

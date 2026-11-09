@@ -7,7 +7,7 @@
 export const ROUTES = {
   "dashboard/admin.html":    "attendance:view-all",   // deliberate (193e5c0): gated by the data it shows, as hr.html is by leave:approve; HR can open it by URL but sees nothing it can't see elsewhere
   "dashboard/hr.html":       "leave:approve",
-  "dashboard/finance.html":  "dashboard:view",
+  "dashboard/finance.html":  "dashboard:finance",   // Finance's landing; Finance and Admin open it (everyone's pay is on it) (Manager scoping part 1; it was dashboard:view, which every Employee holds)
   "dashboard/employee.html": "dashboard:view",
 
   "requests/approvals-inbox.html": null,   // a personal inbox: it shows only what waits for you (approvals-inbox.js)

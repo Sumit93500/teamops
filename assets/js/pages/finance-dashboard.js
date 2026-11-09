@@ -8,9 +8,9 @@
 // rule for that month, so its note says so, as tax-deductions.html's "Sample
 // rules" does. Nothing here works out pay; the store does.
 //
-// The page is open to anyone with dashboard:view, and these are everyone's
-// salaries, so nothing is drawn without payroll:view (the HTML also hides
-// those parts).
+// The page needs dashboard:finance (Finance and Admin; config/routes.js), and
+// these are everyone's salaries, so nothing is drawn without payroll:view
+// either (the HTML also hides those parts).
 //
 // Expenses, from data/expenses-store.js, the same way:
 //   - "Reimbursements due" (approved claims waiting to be paid, the figure
