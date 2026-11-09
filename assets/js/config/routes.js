@@ -32,6 +32,7 @@ export const ROUTES = {
   "attendance/mark-attendance.html": "attendance:mark",
 
   "leave/leave-approvals.html": "leave:approve",
+  "leave/team-leave.html":      "leave:approve",   // and managers (ALSO_FOR_MANAGERS below; Manager scoping part 2)
   "leave/my-leave.html":        "leave:view-own",
   "leave/apply-leave.html":     "leave:create",
   "leave/holidays.html":        null,   // any signed-in person can view holidays
@@ -65,3 +66,8 @@ export const ROUTES = {
   "account/sessions.html":         null,
   "account/notifications.html":    null,
 };
+
+// Pages that also open for anyone with direct reports (data/reporting.js),
+// whatever their role, showing them only their reports (Manager scoping part 2;
+// core/guard.js canOpenPage). No pay, assets or exports among them.
+export const ALSO_FOR_MANAGERS = ["attendance/team-attendance.html", "leave/team-leave.html"];

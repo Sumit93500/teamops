@@ -41,6 +41,7 @@ import { createCollection, fail } from "./collection.js";
 import { getUser, getAllUsers } from "./store.js";
 import { dayNumber } from "./holidays.js";
 import { managerFor } from "./leave-store.js";
+import { isManager } from "./reporting.js";
 import { EXPENSE_POLICY, CATEGORIES, CATEGORY_KEYS, chainFor, nextStage, firstStage, needsReceipt } from "./expenses.js";
 import { permissionsOf } from "../config/roles.js";
 
@@ -336,10 +337,11 @@ export function previewRoute(userId, amount) {
   return stages.map((stage) => ({ stage, holderIds: holdersOf(draft, stage) }));
 }
 
-// Does anyone (active) report to this person? Such a person decides their
-// reports' claims at the manager stage, whatever their role.
+// Does anyone report to this person? Such a person decides their reports'
+// claims at the manager stage, whatever their role. The rule is
+// data/reporting.js's (Manager scoping part 2), the same one written there once.
 export function managesAnyone(userId) {
-  return Boolean(userId) && getAllUsers().some((u) => u.id !== userId && managerFor(u.id) === userId);
+  return isManager(userId);
 }
 
 // The claims this person decided: one { claim, entry } per claim, entry being

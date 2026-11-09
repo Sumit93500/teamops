@@ -526,9 +526,11 @@ export function teamWeekFor(date) {
 // Totals for one date across active people. present counts everyone who came
 // in (on time, late or a half day); late and halfDay are part of it. expected
 // is who should have worked (everyone but weekends, holidays and full leave).
-// overdue is the part of notYet already past the time to check in.
-export function summaryFor(date) {
-  return summarize(date, teamFor(date));
+// overdue is the part of notYet already past the time to check in. only: a Set
+// of ids to count (a manager's direct reports, team-attendance.js); null for all.
+export function summaryFor(date, only = null) {
+  const days = teamFor(date);
+  return summarize(date, only ? days.filter((d) => only.has(d.userId)) : days);
 }
 
 // summaryFor() for every date from one to another (both included, oldest

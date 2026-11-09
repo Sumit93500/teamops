@@ -7,6 +7,9 @@
 // alsoForManagers: true also shows the item to managers: anyone who has people
 // reporting to them, or an expense claim waiting on them as its manager (they
 // decide it at the manager stage).
+// alsoForReports: true also shows the item to anyone with direct reports
+// (data/reporting.js; the page is in routes.js ALSO_FOR_MANAGERS and shows them
+// only their reports). Narrower than alsoForManagers: no claim waiting counts.
 // countWaiting: true shows how many requests wait for the person's decision (the
 // approvals inbox's real Pending rows, ui/waiting.js), to everyone who sees the
 // item; no count when nothing waits.
@@ -32,7 +35,7 @@ export const NAV = [
     items: [
       { label: "My attendance",   icon: "clock",    href: "attendance/my-attendance.html",   permission: "attendance:view-own" },
       { label: "Mark attendance", icon: "tick",     href: "attendance/mark-attendance.html", permission: "attendance:mark" },
-      { label: "Team attendance",      icon: "clock",  href: "attendance/team-attendance.html", permission: "attendance:view-all" },
+      { label: "Team attendance",      icon: "clock",  href: "attendance/team-attendance.html", permission: "attendance:view-all", alsoForReports: true },
       { label: "Shifts",               icon: "sun",    href: "attendance/shifts.html",       permission: "shifts:manage" },
     ],
   },
@@ -41,6 +44,7 @@ export const NAV = [
     items: [
       { label: "My leave",        icon: "calendar", href: "leave/my-leave.html",             permission: "leave:view-own" },
       { label: "Leave approvals",      icon: "calendar", href: "leave/leave-approvals.html", permission: "leave:approve" },
+      { label: "Team leave",           icon: "calendar", href: "leave/team-leave.html",      permission: "leave:approve", alsoForReports: true },
     ],
   },
   {

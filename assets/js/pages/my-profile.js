@@ -102,7 +102,7 @@ if (user && role) {
 
   // Your access. The role comes from the session: it's what this person can do right now.
   setKv("Role", role.label);
-  setKv("Data scope", role.dataScope === "all" ? "All records" : "Own records");
+  setKv("Data scope", role.scopeLabel);
   setKv("Leave approved by", approvalChainText(user.id));   // the real chain (the stored leaveApprovedBy text is no longer shown)
 
   // Contact details

@@ -470,7 +470,7 @@ function render() {
   // static values (round 11F: "On" on every profile; round 11G: "Today, 09:10").
   setKv("Designation", orDash(user.designation));
   setKv("Default role", role?.label ?? user.role);
-  setKv("Data scope", role?.dataScope === "all" ? "All records" : "Own records");
+  setKv("Data scope", role?.scopeLabel ?? ROLES.emp.scopeLabel);
   setKv("Approval chain", approvalChainText(user.id));
   for (const label of ["Two-factor sign-in", "Last sign-in"]) {
     const dd = kvDd(label);

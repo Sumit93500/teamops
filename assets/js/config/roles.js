@@ -25,6 +25,7 @@ export const ROLES = {
     label: "Admin",
     landing: "dashboard/admin.html",   // page opened after sign-in, relative to the pages folder
     dataScope: "all",                  // whose records this role can reach
+    scopeLabel: "All records",         // the Data scope pages show: only what is enforced (Manager scoping part 2)
     permissions: ALL_PERMISSIONS,      // the admin can do everything
   },
 
@@ -33,6 +34,7 @@ export const ROLES = {
     label: "HR Manager",
     landing: "dashboard/hr.html",
     dataScope: "all",
+    scopeLabel: "All records",
     permissions: [
       ...SELF_SERVICE,
       "approvals:view", "approvals:decide",
@@ -55,6 +57,7 @@ export const ROLES = {
     label: "Finance Manager",
     landing: "dashboard/finance.html",
     dataScope: "all",
+    scopeLabel: "All finance records",
     permissions: [
       ...SELF_SERVICE,
       "dashboard:finance",   // its landing, dashboard/finance.html (Manager scoping part 1); not overridable, as no landing page's permission is
@@ -74,6 +77,7 @@ export const ROLES = {
     label: "Employee",
     landing: "dashboard/employee.html",
     dataScope: "own",
+    scopeLabel: "Own records, plus your direct reports if you manage people",
     permissions: [...SELF_SERVICE],
   },
 };

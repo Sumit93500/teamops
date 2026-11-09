@@ -158,7 +158,7 @@ function renderAccessSummary() {
   const manager = field("manager")?.value ?? "";
   setSummary("Designation", designationSelect?.value || "—");
   setSummary("Default role", ROLES[roleKey]?.label ?? roleKey);
-  setSummary("Data scope", ROLES[roleKey]?.dataScope === "all" ? "All records" : "Own records");
+  setSummary("Data scope", ROLES[roleKey]?.scopeLabel ?? ROLES.emp.scopeLabel);
   // A manager kept by name (not on record) isn't anyone's manager in the chain, as when saved.
   setSummary("Approval chain", approvalChainFor({ id: editing?.id ?? null, role: roleKey, reportingManagerId: manager.startsWith("name:") ? null : manager || null }));
   const twoFactor = summaryDd("Two-factor sign-in");

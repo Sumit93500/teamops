@@ -96,7 +96,7 @@ function renderDetails(holders) {
   landing.href = resolvePageLink(role.landing);
   $("role-landing").replaceChildren(landing);
   // Same wording as the profile pages' "Data scope".
-  $("role-scope").textContent = role.dataScope === "all" ? "All records" : "Own records";
+  $("role-scope").textContent = role.scopeLabel;
 }
 
 // Everyone holding the role, inactive people included (as roles-list counts them).

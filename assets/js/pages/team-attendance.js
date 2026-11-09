@@ -1,5 +1,9 @@
 // pages/team-attendance.js
-// Runs on team-attendance.html (needs attendance:view-all). Everything follows
+// Runs on team-attendance.html (attendance:view-all, or a manager: Manager
+// scoping part 2). A manager sees only their direct reports (data/reporting.js
+// teamScope) in every part: the rows, the tab counts, the stats, the
+// department bars and who needs attention; and no Export (team data isn't
+// exported: ruled). With attendance:view-all, everyone, as before. Everything follows
 // the date picker (today by default, never later than today): the stat strip,
 // a table of every active employee for that date with their Monday to Friday,
 // attendance by department, and who needs attention. The table has tabs
@@ -18,6 +22,7 @@ import { getUser, getAllUsers, getAllDepartments } from "../data/store.js";
 import { isValidDate } from "../data/holidays.js";
 import { allRequests } from "../data/leave-store.js";
 import { teamWeekFor, summaryFor, pendingRegularizations } from "../data/attendance-store.js";
+import { isManager, teamScope } from "../data/reporting.js";
 import { renderPagination } from "../ui/pagination.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
@@ -32,6 +37,7 @@ const userId = getCurrentUserId();
 const role = getCurrentRole()?.key;
 const user = getUser(userId);
 const today = todayIso();
+const scope = teamScope(userId, can("attendance:view-all"));   // null: everyone; else the direct reports' ids
 
 const dateInput = document.getElementById("team-date");
 const regLink = document.getElementById("team-reg-link");
@@ -90,7 +96,7 @@ const TABS = {
 // Every active employee for the date: { day, week, user }, by name.
 function loadRows() {
   const people = new Map(getAllUsers().map((u) => [u.id, u]));
-  return teamWeekFor(date).map(({ day, week }) => ({ day, week, user: people.get(day.userId) }));
+  return teamWeekFor(date).filter(({ day }) => scope === null || scope.has(day.userId)).map(({ day, week }) => ({ day, week, user: people.get(day.userId) }));
 }
 
 // ---------- stat strip ----------
@@ -198,7 +204,7 @@ function renderTable(rows) {
 
 function renderDepartments(rows) {
   deptDate.textContent = date === today ? "Today" : shortDate(date);
-  deptBars.replaceChildren(...getAllDepartments().map((d) => {
+  deptBars.replaceChildren(...getAllDepartments().filter((d) => scope === null || rows.some((r) => r.user?.department === d.code)).map((d) => {
     const days = rows.filter((r) => r.user?.department === d.code).map((r) => r.day);
     const expected = days.filter((day) => day.expected).length;
     const value = expected ? Math.round((days.filter(isPresent).length / expected) * 100) : null;
@@ -262,7 +268,7 @@ function renderRegularizationCount() {
 
 function render() {
   const rows = loadRows();
-  const summary = summaryFor(date);
+  const summary = summaryFor(date, scope);
   renderStats(summary, rows);
   renderTable(rows);
   renderDepartments(rows);
@@ -270,7 +276,8 @@ function render() {
 }
 
 // can() matters because guard.js only redirects; this script would still run.
-if (user && can("attendance:view-all") && dateInput && stats && tbody && paginationEl && deptBars && attentionList) {
+if (user && (can("attendance:view-all") || isManager(userId)) && dateInput && stats && tbody && paginationEl && deptBars && attentionList) {
+  if (scope !== null) document.querySelectorAll("main [data-export]").forEach((button) => button.remove());   // no team exports (ruled)
   dateInput.max = today;
   dateInput.value = today;
   dateInput.addEventListener("change", () => {

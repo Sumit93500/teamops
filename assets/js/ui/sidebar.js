@@ -13,6 +13,7 @@ import { resolvePageLink } from "../core/paths.js";
 import { ICONS, SECTION_ICONS } from "./icons.js";
 import { activeHeadcount } from "../data/store.js";
 import { managesAnyone, pendingFor } from "../data/expenses-store.js";
+import { isManager as hasReports } from "../data/reporting.js";
 import { pendingFor as pendingAssetRequests } from "../data/asset-requests-store.js";
 import { waitingCount } from "./waiting.js";
 import { refreshBell } from "./topbar.js";
@@ -85,7 +86,7 @@ function isManager() {
 
 // Whether the sidebar lists this item for the signed-in person (ui/search.js asks too).
 export function navItemVisible(item) {
-  return can(item.permission) || (item.alsoForManagers && isManager());
+  return can(item.permission) || (item.alsoForManagers && isManager()) || (item.alsoForReports && hasReports(getCurrentUserId()));
 }
 
 // Built whole, then swapped in: a throw on the way leaves the page's static list as

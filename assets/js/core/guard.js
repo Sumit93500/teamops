@@ -5,7 +5,8 @@
 // Skips the check entirely on pages that don't need sign-in (login, 403, etc.)
 
 import { isSignedIn, getCurrentRole, getCurrentUser, signOut } from "./auth.js";
-import { ROUTES } from "../config/routes.js";
+import { ROUTES, ALSO_FOR_MANAGERS } from "../config/routes.js";
+import { isManager } from "../data/reporting.js";
 import { can } from "./rbac.js";
 import { resolvePageLink } from "./paths.js";
 
@@ -21,9 +22,11 @@ const PUBLIC_PAGES = [
 
 // May the signed-in person open this page (relative to the pages folder)? The
 // one rule: guardPage() below enforces it, and whatever offers a link asks it.
+// A page in ALSO_FOR_MANAGERS also opens for anyone with direct reports
+// (data/reporting.js), whatever their role; the page then shows only them.
 export function canOpenPage(pagePath) {
   const required = ROUTES[pagePath];
-  return !required || can(required);
+  return !required || can(required) || (ALSO_FOR_MANAGERS.includes(pagePath) && isManager(getCurrentUser()?.id));
 }
 
 function currentPagePath() {
