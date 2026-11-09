@@ -15,6 +15,8 @@
 // stored, so they aren't links.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
+import { csvValue, csvColumns } from "../ui/csv-export.js";
+csvColumns("expense-claims", { Amount: { number: true, header: "Amount (₹)" } });   // Round Data export
 import { can, applyPermissions } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { EXPENSE_POLICY, CATEGORY_KEYS, needsReceipt } from "../data/expenses.js";
@@ -149,12 +151,13 @@ function row(claim, decidable) {
   const person = getUser(claim.userId);
   const amount = el("td", "table__num");
   amount.append(el("span", "expense-amount", rupees(claim.amount)));
+  csvValue(amount, claim.amount);
   const tr = el("tr");
   tr.dataset.claimId = claim.id;
   tr.append(
     personCell(claim.userId, person, departmentName(person?.department)),
     categoryCell(claim),
-    el("td", "", formatDay(claim.date)),
+    csvValue(el("td", "", formatDay(claim.date)), claim.date),
     amount,
     receiptCell(claim),
     stageCell(claim),

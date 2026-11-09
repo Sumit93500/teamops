@@ -114,5 +114,8 @@ export function officeTime(timestamp) {
   return `${formatDay(at.iso, at.year !== thisYear)}, ${at.time}`;
 }
 
+// officeTime() for a CSV: "2026-09-18 16:40", office time.
+export const officeIsoTime = (timestamp) => { const at = officeParts(timestamp); return `${at.iso} ${at.time}`; };
+
 // The office-time calendar date of a stored instant, as ISO ("2026-09-08").
 export const officeDate = (timestamp) => officeParts(timestamp).iso;

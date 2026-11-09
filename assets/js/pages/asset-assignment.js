@@ -37,6 +37,7 @@
 //     ends it without an asset, with a note.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
+import { csvValue, csvColumns } from "../ui/csv-export.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { getUser, getAllUsers } from "../data/store.js";
 import { dayNumber } from "../data/holidays.js";
@@ -122,9 +123,9 @@ function holderCell(asset) {
 }
 
 function sinceCell(asset) {
-  if (asset.status === "assigned" && asset.since) return el("td", "", formatDay(asset.since, true));
+  if (asset.status === "assigned" && asset.since) return csvValue(el("td", "", formatDay(asset.since, true)), asset.since);
   const day = asset.status === "in-repair" ? repairDay(asset) : null;
-  return el("td", day ? "text-muted" : "", day ? `Sent ${formatDay(day, true)}` : "–");
+  return csvValue(el("td", day ? "text-muted" : "", day ? `Sent ${formatDay(day, true)}` : "–"), day ?? "");
 }
 
 function actionsCell(asset) {

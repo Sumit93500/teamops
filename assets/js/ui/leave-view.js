@@ -137,6 +137,13 @@ export function requestDates(request) {
   return `${formatRange(request.from, request.to)}${half ? `, ${half}` : ""}`;
 }
 
+// requestDates() for a CSV: "2026-10-03", "2026-10-13/2026-10-15" (an ISO 8601
+// interval) or "2026-10-09 (first half)".
+export function requestDatesIso(request) {
+  const half = HALF[request.duration];
+  return `${request.from === request.to ? request.from : `${request.from}/${request.to}`}${half ? ` (${half})` : ""}`;
+}
+
 // "Casual leave, 3 Oct (1 day)"
 export function requestTitle(request) {
   return `${typeLabel(request.type)}, ${requestDates(request)} (${formatDays(request.days)})`;

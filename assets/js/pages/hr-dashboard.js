@@ -16,6 +16,9 @@
 // record (renderJoiners()).
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
+import { csvValue, csvColumns } from "../ui/csv-export.js";
+csvColumns("hr-dashboard-leave-requests", { Days: { number: true } });   // Round Data export
+import { requestDatesIso } from "../ui/leave-view.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser, getAllUsers, joiningDate } from "../data/store.js";
 import { addDays, dayOffChecker } from "../data/holidays.js";
@@ -213,7 +216,7 @@ function leaveRow(request) {
   person.append(wrap);
   const status = el("td");
   status.append(statusBadge(request.status));
-  tr.append(person, el("td", "", typeLabel(request.type)), el("td", "", requestDates(request)), el("td", "table__num", String(request.days)), status);
+  tr.append(person, el("td", "", typeLabel(request.type)), csvValue(el("td", "", requestDates(request)), requestDatesIso(request)), el("td", "table__num", String(request.days)), status);
   return tr;
 }
 

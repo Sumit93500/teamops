@@ -24,6 +24,8 @@
 //     the sidebar's count also hold leave, corrections and asset requests.
 
 import { runMonth, payrollRun, runTotals, payslipTotals } from "../data/payroll-store.js";
+import { csvValue, csvColumns } from "../ui/csv-export.js";
+csvColumns("finance-dashboard-payroll", { Gross: { number: true, header: "Gross (₹)" }, Deductions: { number: true, header: "Deductions (₹)" }, "Net pay": { number: true, header: "Net pay (₹)" } });   // Round Data export
 import { filingDates } from "../data/payroll.js";
 import { getUser, getAllDepartments } from "../data/store.js";
 import { allExpenses, pendingFor, expenseTotals } from "../data/expenses-store.js";
@@ -94,9 +96,9 @@ function buildRow(row) {
   showReason(badge, row.holdReason);   // the hold reason under the badge
   tr.append(
     personCell(row.userId, user, departmentName(user?.department)),
-    el("td", "table__num", rupees(row.gross)),
-    el("td", "table__num", rupees(row.deductions)),
-    el("td", "table__num", rupees(row.net)),
+    csvValue(el("td", "table__num", rupees(row.gross)), row.gross),
+    csvValue(el("td", "table__num", rupees(row.deductions)), row.deductions),
+    csvValue(el("td", "table__num", rupees(row.net)), row.net),
     statusCell,
   );
   return tr;

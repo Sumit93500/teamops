@@ -15,6 +15,9 @@
 // of it (ui/inventory-view.js's readyToAssign()).
 
 import { getCurrentUserId } from "../core/auth.js";
+import { csvValue, csvColumns } from "../ui/csv-export.js";
+csvColumns("stock-movements", { Quantity: { number: true } });   // Round Data export
+import { officeIsoTime } from "../ui/inventory-view.js";
 import { can } from "../core/rbac.js";
 import { getAllDepartments } from "../data/store.js";
 import { CATEGORY_KEYS, MOVEMENT_TYPE_KEYS } from "../data/inventory.js";
@@ -105,9 +108,10 @@ function row(m, item) {
   type.append(movementBadge(m.type));
   const qty = el("td", "table__num");
   qty.append(signedQty(m.change));
+  csvValue(qty, m.change);
   const tr = el("tr");
   tr.dataset.movementId = m.id;
-  tr.append(el("td", "", officeTime(m.at)), itemCell(m, item), type, qty, referenceCell(m), el("td", "", nameOf(m.recordedBy)));
+  tr.append(csvValue(el("td", "", officeTime(m.at)), officeIsoTime(m.at)), itemCell(m, item), type, qty, referenceCell(m), el("td", "", nameOf(m.recordedBy)));
   return tr;
 }
 

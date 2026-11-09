@@ -11,6 +11,7 @@
 // an employee id (an old sign-in) leaves the static page as it is.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
+import { csvValue, csvColumns } from "../ui/csv-export.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { allRegularizations, pendingRegularizations, dayFor } from "../data/attendance-store.js";
@@ -108,7 +109,7 @@ function row(request) {
   const person = getUser(request.userId);
   tr.append(
     personCell(request.userId, person, departmentName(person?.department)),
-    el("td", "", formatDay(request.date)),
+    csvValue(el("td", "", formatDay(request.date)), request.date),
     el("td", "", issueLabel(request)),
     timesCell(request),
     el("td", "reg-reason", request.reason),

@@ -13,6 +13,8 @@
 // stock-movements.html and the asset register.
 
 import { can, applyPermissions } from "../core/rbac.js";
+import { csvValue, csvColumns } from "../ui/csv-export.js";
+csvColumns("inventory-items", { "In stock": { number: true }, "Reorder level": { number: true }, "Unit price": { number: true, header: "Unit price (₹)" } });   // Round Data export
 import { CATEGORY_KEYS, STOCK_STATUS_KEYS, LOCATIONS, stockBarPercent } from "../data/inventory.js";
 import { allItems, allAssets, inventoryTotals, reorderAlerts } from "../data/inventory-store.js";
 import { categoryLabel, assetTypeLabel, stockStatusLabel, stockLook, stockBadge, readyToAssign, READY_SHORT, UNTAGGED_TIP } from "../ui/inventory-view.js";
@@ -126,7 +128,7 @@ function row(item, assets) {
     categoryCell(item, assets),
     stockCell(item),
     el("td", "table__num", String(item.reorderLevel)),
-    el("td", "table__num", rupees(item.unitPrice)),
+    csvValue(el("td", "table__num", rupees(item.unitPrice)), item.unitPrice),
     el("td", "", LOCATIONS[item.location]?.label ?? item.location),
     statusCell,
     actions,

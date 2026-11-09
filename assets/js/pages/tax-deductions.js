@@ -8,6 +8,8 @@
 // The tax slab table stays static.
 
 import { runMonth, payrollRun, payslipTotals } from "../data/payroll-store.js";
+import { csvValue, csvColumns } from "../ui/csv-export.js";
+csvColumns("statutory-deductions", { "This month": { number: true, header: "This month (₹)" } });   // Round Data export
 import { PAY_RULES, TAX_SAMPLE, annualTax, filingDates, tdsReturn } from "../data/payroll.js";
 import { dayNumber } from "../data/holidays.js";
 import { can } from "../core/rbac.js";
@@ -41,12 +43,12 @@ function render(run, year, month) {
   setStatValue(stat("pt"), rupees(totals.pt));
   setStatNote(stat("pt"), `${people(ptPayers)} at ${rupees(PAY_RULES.professionalTax)}`);
 
-  amountCell("pf").textContent = rupees(totals.pf);
-  amountCell("employer-pf").textContent = rupees(employerPf);
-  amountCell("pt").textContent = rupees(totals.pt);
-  amountCell("tds").textContent = rupees(totals.tds);
+  csvValue(amountCell("pf"), totals.pf).textContent = rupees(totals.pf);
+  csvValue(amountCell("employer-pf"), employerPf).textContent = rupees(employerPf);
+  csvValue(amountCell("pt"), totals.pt).textContent = rupees(totals.pt);
+  csvValue(amountCell("tds"), totals.tds).textContent = rupees(totals.tds);
   for (const [key, date] of [["pf", due.pf], ["employer-pf", due.pf], ["pt", due.pt], ["tds", due.tds]]) {
-    dueCell(key).textContent = formatDay(date);
+    csvValue(dueCell(key), date).textContent = formatDay(date);
   }
 
   // Regimes as the salary records hold them; a row with no salary has none.

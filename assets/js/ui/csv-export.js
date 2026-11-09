@@ -7,17 +7,24 @@
 //   <button data-export>Export</button>                 the button
 //   <table data-export-name="vendors">                  each table to export (one file each)
 //   <button data-export data-export-stats="name">       also export the page's .stat cards
+// What a cell writes (Round Data export): its machine value when the page gave one
+// (csvValue: an ISO date, a plain number), else its visible text. A column's CSV
+// heading and type come from csvColumns(): "Amount (₹)" when the page shows rupees,
+// and number for a numeric column (money and counts).
 
 // Parts of a cell that aren't data: initials avatars, icons, a reason line under
 // a badge or note (class reason, round 14E: the words of its title, which the
 // export never had), and anything hidden (e.g. a button hidden by applyPermissions()).
 const SKIP = ".avatar, .reason, svg, [hidden], [aria-hidden='true']";
 
-// Quotes a value for CSV. Values starting with = + - @ are prefixed with ' so a
-// spreadsheet shows them as text instead of running them as formulas.
-function csvCell(value) {
+// Quotes a value for CSV (RFC 4180: a value with a quote, comma or line break is
+// quoted, its quotes doubled). A value starting with = + - @, a tab or a carriage
+// return is prefixed with ' so a spreadsheet shows it as text instead of running it
+// as a formula (OWASP's CSV injection advice), except a plain number
+// (-?digits[.digits]) in a numeric column, which stays a number: a stock-out's -6.
+export function csvCell(value, numeric = false) {
   let text = String(value ?? "");
-  if (/^[=+\-@]/.test(text)) text = "'" + text;
+  if (/^[=+\-@\t\r]/.test(text) && !(numeric && /^-?\d+(\.\d+)?$/.test(text))) text = "'" + text;
   return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
@@ -27,8 +34,10 @@ function todayStamp() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-function downloadCsv(rows, filename) {
-  const csv = rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+// Writes rows (the first is the header) as "<filename>-<YYYY-MM-DD>.csv", CRLF rows,
+// a UTF-8 BOM first. numeric: per column, true where plain numbers stay numbers.
+export function downloadCsv(rows, filename, numeric = []) {
+  const csv = rows.map((row) => row.map((value, i) => csvCell(value, numeric[i] === true)).join(",")).join("\r\n");
   // The BOM tells Excel the file is UTF-8, so ₹ and accented names show correctly.
   const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -57,6 +66,25 @@ function cellText(cell) {
 
 const isHidden = (row) => row.hidden || row.style.display === "none";
 
+// What a cell or heading writes: the machine value the page gave it, else its text.
+const csvText = (cell) => cell.dataset.csv ?? cellText(cell);
+
+// Gives a cell the value its CSV writes (an ISO date, a plain number); "" for none.
+// Returns the cell, so a page can wrap el("td", ...) in it.
+export function csvValue(cell, value) {
+  cell.dataset.csv = String(value ?? "");
+  return cell;
+}
+
+// The columns of the table exported as exportName, by their heading's text:
+// { "Amount": { number: true, header: "Amount (₹)" } }. number: money or a count,
+// written as a plain number; header: the column's heading in the CSV. Kept here and
+// read when the table is exported, so the page itself isn't touched.
+const COLUMNS = new Map();
+export function csvColumns(exportName, spec) {
+  COLUMNS.set(exportName, spec);
+}
+
 // A header cell holding only a checkbox (or nothing) isn't a column of data,
 // and neither is an Actions column of buttons.
 const isDataColumn = (th) =>
@@ -73,9 +101,10 @@ export function exportTableAsCsv(table, filename) {
 
   const rows = Array.from(table.querySelectorAll("tbody tr"))
     .filter((row) => !isHidden(row) && row.children.length === headCells.length)   // skips "no results" rows that span the table
-    .map((row) => keep.map((i) => cellText(row.children[i])));
+    .map((row) => keep.map((i) => csvText(row.children[i])));
 
-  downloadCsv([keep.map((i) => cellText(headCells[i])), ...rows], filename);
+  const marks = keep.map((i) => COLUMNS.get(filename)?.[cellText(headCells[i])] ?? {});
+  downloadCsv([keep.map((i, k) => marks[k].header ?? cellText(headCells[i])), ...rows], filename, marks.map((mark) => mark.number === true));
   return rows.length;
 }
 

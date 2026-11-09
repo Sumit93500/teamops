@@ -10,6 +10,9 @@
 // without an employee id (an old sign-in) leaves the static page as it is.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
+import { csvValue, csvColumns } from "../ui/csv-export.js";
+csvColumns("leave-requests", { Days: { number: true } });   // Round Data export
+import { requestDatesIso } from "../ui/leave-view.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { LEAVE_POLICY, allRequests, pendingFor, overlaps, currentApproverName } from "../data/leave-store.js";
@@ -94,9 +97,9 @@ function row(request) {
   tr.append(
     personCell(request.userId, person, departmentName(person?.department)),
     el("td", "", typeLabel(request.type)),
-    el("td", "", requestDates(request)),
+    csvValue(el("td", "", requestDates(request)), requestDatesIso(request)),
     el("td", "table__num", String(request.days)),
-    el("td", "", formatDay(request.appliedOn)),
+    csvValue(el("td", "", formatDay(request.appliedOn)), request.appliedOn),
     stage,
     actions,
   );

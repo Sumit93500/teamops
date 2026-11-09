@@ -4,6 +4,7 @@
 // CSV export. All filters combine: a row must match every one that's set.
 
 import { getAllUsers, getAllDepartments, resetDemoData } from "../data/store.js";
+import { downloadCsv } from "../ui/csv-export.js";
 import { resetLeaveData } from "../data/leave-store.js";
 import { resetAttendanceData } from "../data/attendance-store.js";
 import { resetPayrollData } from "../data/payroll-store.js";
@@ -238,37 +239,15 @@ roleSelect?.addEventListener("change", () => {
 
 // ---------- export ----------
 
-// Quotes a value for CSV. Values starting with = + - @ are prefixed with ' so a
-// spreadsheet shows them as text instead of running them as formulas.
-function csvCell(value) {
-  let text = String(value ?? "");
-  if (/^[=+\-@]/.test(text)) text = "'" + text;
-  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-}
-
-function todayStamp() {
-  const d = new Date();
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-function buildUsersCsv(users) {
+// The filtered users, through the shared CSV code (ui/csv-export.js: the cell rule,
+// the UTF-8 BOM, "users-<date>.csv"; Round Data export: it had its own copy).
+function usersRows(users) {
   const header = ["ID", "Name", "Email", "Designation", "Department", "Role", "Status"];
-  const rows = users.map((u) => [u.id, u.name, u.email, u.designation, departmentName(u.department), roleLabel(u.role), statusLabel(u.status)]);
-  return [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+  return [header, ...users.map((u) => [u.id, u.name, u.email, u.designation, departmentName(u.department), roleLabel(u.role), statusLabel(u.status)])];
 }
 
 function exportCsv() {
-  // The BOM tells Excel the file is UTF-8, so names with accents show correctly.
-  const blob = new Blob(["﻿" + buildUsersCsv(getFilteredUsers())], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = el("a");
-  link.href = url;
-  link.download = `users-${todayStamp()}.csv`;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 0);
+  downloadCsv(usersRows(getFilteredUsers()), "users");
 }
 
 exportBtn?.addEventListener("click", exportCsv);

@@ -15,6 +15,8 @@
 // proposed it. A component's Edit and Add component stay placeholders.
 
 import { SALARY_COMPONENTS, computePay } from "../data/payroll.js";
+import { csvValue, csvColumns } from "../ui/csv-export.js";
+csvColumns("employee-salaries", { "Gross per month": { number: true, header: "Gross per month (₹)" }, "Annual cost": { number: true, header: "Annual cost (₹)" } });   // Round Data export
 import { salaryFor, salaryHistory, proposeSalary, pendingSalaryProposal, proposalDecidersFor, withdrawSalaryProposal } from "../data/payroll-store.js";
 import { getAllUsers, getUser } from "../data/store.js";
 import { permissionsOf } from "../config/roles.js";
@@ -369,9 +371,9 @@ function buildRow(row, rows) {
   tr.append(
     personCell(user.id, user, user.id),
     el("td", "", user.designation || "—"),
-    el("td", "table__num", pay ? rupees(pay.gross) : "—"),
-    el("td", "table__num", pay ? rupees(monthlyCost(pay) * 12) : "—"),
-    el("td", "", current ? formatDay(current.effectiveFrom, true) : "—"),
+    csvValue(el("td", "table__num", pay ? rupees(pay.gross) : "—"), pay ? pay.gross : ""),
+    csvValue(el("td", "table__num", pay ? rupees(monthlyCost(pay) * 12) : "—"), pay ? monthlyCost(pay) * 12 : ""),
+    csvValue(el("td", "", current ? formatDay(current.effectiveFrom, true) : "—"), current ? current.effectiveFrom : ""),
     statusCell,
     actions,
   );
