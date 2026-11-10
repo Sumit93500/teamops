@@ -17,6 +17,7 @@ import { maskAccount, maskPan } from "../ui/pii.js";
 import { salaryFor } from "../data/payroll-store.js";
 import { approvalChainText, LEAVE_TYPES, balanceFor } from "../data/leave-store.js";
 import { barRow } from "../ui/chart.js";
+import { leaveBalanceChart, valuesOf } from "../data/chart-data.js";
 import { rupees } from "../ui/money.js";
 import { allItems, assetsFor } from "../data/inventory-store.js";
 import { conditionBadge } from "../ui/inventory-view.js";
@@ -371,13 +372,13 @@ const LEAVE_SHORT = { casual: "Casual", sick: "Sick", earned: "Earned", wfh: "WF
 function renderLeave() {
   const card = cardTitled("Leave balance");
   if (!card) return;
-  const balance = balanceFor(user.id);
-  const rows = LEAVE_TYPES.filter((type) => balance[type].allowance !== null);
+  const data = leaveBalanceChart(user.id);   // the numbers (data/chart-data.js); this draws them
+  const [allowance, left] = ["Allowance", "Left"].map((name) => valuesOf(data, name));
+  const rows = data.labels.map((type, i) => ({ type, allowance: allowance[i], left: left[i] })).filter((r) => r.allowance !== null);
   const body = el("div", "card__body");
-  body.append(...rows.map((type) => {
-    const b = balance[type];
-    const share = Math.min(100, Math.max(0, Math.round((b.left / b.allowance) * 100)));
-    return barRow(LEAVE_SHORT[type] ?? type, String(b.left), share);
+  body.append(...rows.map((r) => {
+    const share = Math.min(100, Math.max(0, Math.round((r.left / r.allowance) * 100)));
+    return barRow(LEAVE_SHORT[r.type] ?? r.type, String(r.left), share);
   }));
   body.append(el("p", "text-xs text-muted mt-4", "Days left this year; work from home, this month."));
   Array.from(card.children).filter((c) => !c.classList.contains("card__header")).forEach((c) => c.remove());

@@ -37,6 +37,7 @@ import { cardLink } from "../ui/approval-card.js";
 import { el, plural, departmentName, personCell, nameOf, initials, avatarClass, formatDay, localDateOf, todayIso, monthShort, showReason } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
+import { payrollByDepartmentChart, valuesOf } from "../data/chart-data.js";
 import { rupees } from "../ui/money.js";
 
 const ROW_STATUS = {
@@ -75,15 +76,11 @@ function renderStats(run, year, month) {
 // it (0 for an empty one); bars are relative to the largest. Someone whose
 // department isn't in the list still counts, under their own row.
 function renderDepartments(run) {
-  const gross = new Map(getAllDepartments().map((d) => [d.code, { name: d.name, amount: 0 }]));
-  for (const row of run.rows) {
-    const code = getUser(row.userId)?.department ?? "";
-    if (!gross.has(code)) gross.set(code, { name: departmentName(code) || "No department", amount: 0 });
-    gross.get(code).amount += row.gross;
-  }
-  const top = Math.max(1, ...[...gross.values()].map((g) => g.amount));
-  $("fin-dept-meta").textContent = `Gross pay, ${shortWithYear(run)}`;
-  $("fin-dept-bars").replaceChildren(...[...gross.values()].map((g) => barRow(g.name, rupees(g.amount), Math.round((g.amount / top) * 100))));
+  const data = payrollByDepartmentChart(run);   // the numbers (data/chart-data.js); this draws them
+  const gross = valuesOf(data, "Gross");
+  const top = Math.max(1, ...gross);
+  $("fin-dept-meta").textContent = `Gross pay, ${shortWithYear(data.period)}`;
+  $("fin-dept-bars").replaceChildren(...data.labels.map((name, i) => barRow(name || "No department", rupees(gross[i]), Math.round((gross[i] / top) * 100))));
 }
 
 // ---------- the run's employees ----------

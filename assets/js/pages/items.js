@@ -21,6 +21,7 @@ import { categoryLabel, assetTypeLabel, stockStatusLabel, stockLook, stockBadge,
 import { el, plural, showReason } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
+import { inventoryValueChart, valuesOf } from "../data/chart-data.js";
 import { renderPagination } from "../ui/pagination.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 import { rupees } from "../ui/money.js";
@@ -206,10 +207,11 @@ function renderAlerts() {
 function renderValue(items) {
   const body = $("value-by-category");
   if (!body) return;
-  const { byCategory: per } = inventoryTotals(items);
-  const top = Math.max(...CATEGORY_KEYS.map((k) => per[k].value));
-  body.replaceChildren(...CATEGORY_KEYS.map((k) =>
-    barRow(categoryLabel(k), rupees(per[k].value), top ? Math.round((per[k].value / top) * 100) : 0)));
+  const data = inventoryValueChart(items);   // the numbers (data/chart-data.js); this draws them
+  const value = valuesOf(data, "Value");
+  const top = Math.max(...value);
+  body.replaceChildren(...data.labels.map((k, i) =>
+    barRow(categoryLabel(k), rupees(value[i]), top ? Math.round((value[i] / top) * 100) : 0)));
 }
 
 // ---------- start ----------

@@ -22,6 +22,7 @@ import { el, todayIso, formatDay, monthName, localDateOf, shortDate, plural, sho
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
+import { monthAttendanceChart, valuesOf } from "../data/chart-data.js";
 
 const PAGE_SIZE = 10;
 const MONTHS_BACK = 3;
@@ -140,16 +141,14 @@ function renderCalendar(summary, today) {
 
 // ---------- month summary and late-mark alert ----------
 
+const SUMMARY_LABEL = { present: "On time", late: "Late", "half-day": "Half day", "on-leave": "On leave", absent: "Absent" };
 function renderSummary(summary, today) {
-  const done = soFar(summary.days, today);
-  summaryCard.querySelector(".card__meta").textContent = `${plural(done.length, "working day", "working days")} so far`;
   // Counted over the days so far only, so leave booked later this month doesn't show yet.
-  const count = (status) => done.filter((d) => d.status === status).length;
-  const rows = [["On time", count("present")], ["Late", count("late")]];
-  if (count("half-day")) rows.push(["Half day", count("half-day")]);
-  rows.push(["On leave", count("on-leave")], ["Absent", count("absent")]);
-  summaryCard.querySelector(".card__body").replaceChildren(...rows.map(([label, count]) => (
-    barRow(label, String(count), done.length ? Math.round((count / done.length) * 100) : 0)
+  const data = monthAttendanceChart(soFar(summary.days, today));   // the numbers (data/chart-data.js); this draws them
+  const days = valuesOf(data, "Days");
+  summaryCard.querySelector(".card__meta").textContent = `${plural(data.total, "working day", "working days")} so far`;
+  summaryCard.querySelector(".card__body").replaceChildren(...data.labels.map((status, i) => (
+    barRow(SUMMARY_LABEL[status], String(days[i]), data.total ? Math.round((days[i] / data.total) * 100) : 0)
   )));
 }
 

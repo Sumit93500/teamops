@@ -549,6 +549,10 @@ export function summaryRange(from, to) {
   return out;
 }
 
+// summarize() for a page's own list of one date's derived days (data/chart-data.js:
+// a department's people on team attendance, counted as summaryFor() counts them).
+export const summaryOfDays = (date, days) => summarize(date, days);
+
 // The totals for one date's derived days (shared by summaryFor and summaryRange).
 function summarize(date, days) {
   const count = (...statuses) => days.filter((d) => statuses.includes(d.status)).length;

@@ -32,6 +32,7 @@ import { STAGE_NAME as ASSET_STAGE, requestTitle as assetRequestTitle } from "..
 import { assetTypeLabel, movementTypeLabel, officeDate } from "../ui/inventory-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns, barRow } from "../ui/chart.js";
+import { attendanceRateChart, headcountChart, valuesOf } from "../data/chart-data.js";
 import { rupees } from "../ui/money.js";
 import { csvColumns, csvRows, csvStat } from "../ui/csv-export.js";
 csvColumns("admin-dashboard-attendance", { Employee: { split: "Work email" } });   // Round Data export part 2
@@ -121,23 +122,23 @@ function renderPresent(summary, days) {
 // Today is still filling in until the shift ends, so its bar is drawn faded and
 // its title says "so far"; after the shift ends it's a normal bar.
 function renderChart(range) {
-  const from = range[0].date;
-  const todayOpen = nowMinutes() < toMinutes(ATTENDANCE_RULES.shiftEnd);
-  rateRange.textContent = formatRange(from, today);
-  chart.replaceChildren(...chartColumns(range, (s) => {
-    if (!s.expected) return { modifier: "chart__bar--muted", height: 0, what: s.off ? "day off" : "nobody expected" };
-    const partial = s.date === today && todayOpen;
-    const height = Math.round((s.present / s.expected) * 100);
+  const data = attendanceRateChart(range, today);   // the numbers (data/chart-data.js); this draws them
+  const [rate, present, expected] = ["Rate", "Present", "Expected"].map((name) => valuesOf(data, name));
+  const { from, to, todayOpen } = data.period;
+  rateRange.textContent = formatRange(from, to);
+  chart.replaceChildren(...chartColumns(data.labels.map((date, i) => ({ date, i })), ({ i }) => {
+    if (!expected[i]) return { modifier: "chart__bar--muted", height: 0, what: data.marks[i].off ? "day off" : "nobody expected" };
+    const partial = data.marks[i].partial;
     return {
       modifier: partial ? "chart__bar--progress" : "",
-      height,
-      what: `${height}%${partial ? " so far" : ""} (${s.present} of ${s.expected} expected)`,
+      height: rate[i],
+      what: `${rate[i]}%${partial ? " so far" : ""} (${present[i]} of ${expected[i]} expected)`,
     };
   }));
-  const rates = range.filter((s) => s.expected && !(s.date === today && todayOpen)).map((s) => Math.round((s.present / s.expected) * 100));
+  const rates = rate.filter((r, i) => expected[i] && !data.marks[i].partial);
   chart.setAttribute("aria-label", rates.length
-    ? `Attendance rate, ${formatRange(from, today)}: between ${Math.min(...rates)} and ${Math.max(...rates)} percent on working days`
-    : `Attendance rate, ${formatRange(from, today)}: no finished working days`);
+    ? `Attendance rate, ${formatRange(from, to)}: between ${Math.min(...rates)} and ${Math.max(...rates)} percent on working days`
+    : `Attendance rate, ${formatRange(from, to)}: no finished working days`);
   rateNote.textContent = todayOpen
     ? "Present out of expected. Weekends and holidays are shown lighter; today is faded until the shift ends."
     : "Present out of expected. Weekends and holidays are shown lighter.";
@@ -192,15 +193,11 @@ function renderApprovals() {
 // ---------- headcount ----------
 
 function renderHeadcount() {
-  const counts = headcountByDepartment();
-  const departments = getAllDepartments();
-  const total = departments.reduce((sum, d) => sum + (counts[d.code] ?? 0), 0);
-  const top = Math.max(1, ...departments.map((d) => counts[d.code] ?? 0));
-  headcountMeta.textContent = `${total} total`;
-  headcountBars.replaceChildren(...departments.map((d) => {
-    const count = counts[d.code] ?? 0;
-    return barRow(d.name, String(count), Math.round((count / top) * 100));
-  }));
+  const data = headcountChart();   // the numbers (data/chart-data.js); this draws them
+  const counts = valuesOf(data, "Employees");
+  const top = Math.max(1, ...counts);
+  headcountMeta.textContent = `${data.total} total`;
+  headcountBars.replaceChildren(...data.labels.map((name, i) => barRow(name, String(counts[i]), Math.round((counts[i] / top) * 100))));
 }
 
 // ---------- recent activity ----------

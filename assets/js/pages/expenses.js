@@ -28,6 +28,7 @@ import { STAGE_NAME, categoryLabel, stageBadge, chainText, expenseFlow } from ".
 import { el, formatDay, localDateOf, plural, nameOf, departmentName, personCell, showReason } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
+import { expenseSpendChart, valuesOf } from "../data/chart-data.js";
 import { renderPagination } from "../ui/pagination.js";
 import { rupees } from "../ui/money.js";
 import { showToast } from "../ui/toast.js";
@@ -232,10 +233,11 @@ function renderStats(claims) {
 function renderSpend(claims) {
   const body = $("expense-spend");
   if (!body) return;
-  const spent = expenseTotals(claims.filter((c) => c.status === "approved" || c.status === "paid")).byCategory;
-  const top = Math.max(...CATEGORY_KEYS.map((k) => spent[k].amount));
-  body.replaceChildren(...CATEGORY_KEYS.map((k) =>
-    barRow(categoryLabel(k), rupees(spent[k].amount), top ? Math.round((spent[k].amount / top) * 100) : 0)));
+  const data = expenseSpendChart(claims);   // the numbers (data/chart-data.js); this draws them
+  const spent = valuesOf(data, "Approved and paid");
+  const top = Math.max(...spent);
+  body.replaceChildren(...data.labels.map((k, i) =>
+    barRow(categoryLabel(k), rupees(spent[i]), top ? Math.round((spent[i] / top) * 100) : 0)));
 }
 
 // Built from the rules, so the card can't disagree with what the store does.

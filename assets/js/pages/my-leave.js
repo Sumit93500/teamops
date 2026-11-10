@@ -9,6 +9,7 @@ import { applyPermissions } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { LEAVE_POLICY, LEAVE_TYPES, balanceFor, requestsFor, cancelLeave } from "../data/leave-store.js";
 import { getAllHolidays } from "../data/holidays.js";
+import { leaveBalanceChart, valuesOf } from "../data/chart-data.js";
 import { renderPagination } from "../ui/pagination.js";
 import { showToast } from "../ui/toast.js";
 import {
@@ -35,7 +36,7 @@ let currentPage = 1;
 const BAR = { casual: "progress", sick: "progress progress--success", earned: "progress", wfh: "progress progress--warning", unpaid: "progress progress--info" };
 
 function balanceCard(type, b, month) {
-  const policy = LEAVE_POLICY[type];
+  const policy = { allowance: b.allowance, per: b.per };   // from leaveBalanceChart() (data/chart-data.js)
   const card = el("div", "balance");
 
   const head = el("div", "balance__head");
@@ -66,8 +67,9 @@ function balanceCard(type, b, month) {
 
 function renderBalances() {
   const [y, m] = todayIso().split("-").map(Number);
-  const balances = balanceFor(user.id, y, m);
-  balanceGrid.replaceChildren(...LEAVE_TYPES.map((type) => balanceCard(type, balances[type], m)));
+  const data = leaveBalanceChart(user.id, y, m);   // the numbers (data/chart-data.js); balanceCard() draws them
+  const [allowance, approved, pending, left] = ["Allowance", "Approved", "Pending", "Left"].map((name) => valuesOf(data, name));
+  balanceGrid.replaceChildren(...data.labels.map((type, i) => balanceCard(type, { allowance: allowance[i], approved: approved[i], pending: pending[i], left: left[i], per: data.marks[i].per }, m)));
 }
 
 // ---------- history ----------

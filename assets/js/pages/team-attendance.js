@@ -32,6 +32,7 @@ import { el, weekdayName, todayIso, initials, avatarClass, departmentName, short
 import { dayBadge, presentNote, checkInCell, hoursCell } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
+import { departmentPresenceChart, valuesOf } from "../data/chart-data.js";
 
 const PAGE_SIZE = 10;
 
@@ -206,13 +207,12 @@ function renderTable(rows) {
 // ---------- side cards ----------
 
 function renderDepartments(rows) {
-  deptDate.textContent = date === today ? "Today" : shortDate(date);
-  deptBars.replaceChildren(...getAllDepartments().filter((d) => scope === null || rows.some((r) => r.user?.department === d.code)).map((d) => {
-    const days = rows.filter((r) => r.user?.department === d.code).map((r) => r.day);
-    const expected = days.filter((day) => day.expected).length;
-    const value = expected ? Math.round((days.filter(isPresent).length / expected) * 100) : null;
-    const bar = barRow(d.name, value === null ? "–" : `${value}%`, value ?? 0);
-    bar.title = expected ? `${days.filter(isPresent).length} of ${expected} expected are in` : "Nobody expected";
+  const data = departmentPresenceChart(date, rows, scope);   // the numbers (data/chart-data.js); this draws them
+  const [rate, present, expected] = ["Rate", "Present", "Expected"].map((name) => valuesOf(data, name));
+  deptDate.textContent = data.period.date === today ? "Today" : shortDate(data.period.date);
+  deptBars.replaceChildren(...data.labels.map((name, i) => {
+    const bar = barRow(name, rate[i] === null ? "–" : `${rate[i]}%`, rate[i] ?? 0);
+    bar.title = expected[i] ? `${present[i]} of ${expected[i]} expected are in` : "Nobody expected";
     return bar;
   }));
 }

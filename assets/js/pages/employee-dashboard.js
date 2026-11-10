@@ -25,6 +25,7 @@ import {
 import { hoursText, dayBadge } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns, barRow } from "../ui/chart.js";
+import { hoursChart, leaveBalanceChart, valuesOf } from "../data/chart-data.js";
 
 const CHART_DAYS = 14;
 const RECENT_DAYS = 5;
@@ -125,34 +126,40 @@ function renderPayslip() {
 
 // ---------- hours chart ----------
 
-// One day's bar for chartColumns(): { modifier, height 0-100, what happened }.
-function barLook(day) {
+// One day's bar for chartColumns(): { modifier, height 0-100, what happened }, from
+// its point in hoursChart() (data/chart-data.js): its minutes worked and its mark.
+function barLook(minutes, mark) {
   const look = (modifier, height, what) => ({ modifier, height, what });
-  if (isOff(day)) return look("chart__bar--muted", 0, day.holiday && day.status === "holiday" ? `${day.holiday.name}, day off` : "day off");
-  if (day.status === "no-data") return look("chart__bar--muted", 0, "no data");
-  if (day.status === "not-joined") return look("chart__bar--muted", 0, "before joining");
-  if (day.status === "left") return look("chart__bar--muted", 0, "after leaving");   // round 12K
-  if (day.status === "on-leave") return look("chart__bar--leave", MARKER, "on leave");
-  if (day.minutesWorked !== null) {
-    const hours = (day.minutesWorked / 60).toFixed(1);
-    const height = Math.min(100, Math.round(day.minutesWorked / 6));   // 10 hours = the top of the chart
-    if (day.inProgress) return look("chart__bar--progress", height, `${hours} hours so far`);
-    const note = { late: ", late", "half-day": ", half day", absent: ", under 4 hours (absent)" }[day.status] ?? "";
-    return look("", height, `${hours} hours${note}`);
+  switch (mark.kind) {
+    case "off": return look("chart__bar--muted", 0, mark.holiday !== null ? `${mark.holiday}, day off` : "day off");
+    case "no-data": return look("chart__bar--muted", 0, "no data");
+    case "not-joined": return look("chart__bar--muted", 0, "before joining");
+    case "left": return look("chart__bar--muted", 0, "after leaving");   // round 12K
+    case "on-leave": return look("chart__bar--leave", MARKER, "on leave");
+    case "in-progress":
+    case "worked": {
+      const hours = (minutes / 60).toFixed(1);
+      const height = Math.min(100, Math.round(minutes / 6));   // 10 hours = the top of the chart
+      if (mark.kind === "in-progress") return look("chart__bar--progress", height, `${hours} hours so far`);
+      const note = { late: ", late", "half-day": ", half day", absent: ", under 4 hours (absent)" }[mark.status] ?? "";
+      return look("", height, `${hours} hours${note}`);
+    }
+    case "incomplete": return look("chart__bar--incomplete", MARKER, `checked in at ${mark.checkIn}, no check-out`);
+    case "absent": return look("chart__bar--absent", MARKER, "absent");
+    default: return look("", 0, mark.overdue ? "not checked in yet (overdue)" : "not in yet");   // not-yet: today
   }
-  if (day.incomplete) return look("chart__bar--incomplete", MARKER, `checked in at ${day.checkIn}, no check-out`);
-  if (day.status === "absent") return look("chart__bar--absent", MARKER, "absent");
-  return look("", 0, day.overdue ? "not checked in yet (overdue)" : "not in yet");   // not-yet: today
 }
 
 function renderChart(days) {
-  const from = days[0].date;
-  hoursRange.textContent = formatRange(from, today);
-  chart.replaceChildren(...chartColumns(days, barLook));
-  const worked = days.filter((d) => d.minutesWorked !== null && !d.inProgress).map((d) => d.minutesWorked / 60);
+  const data = hoursChart(days, today);   // the numbers (data/chart-data.js); this draws them
+  const minutes = valuesOf(data, "Worked");
+  const { from, to } = data.period;
+  hoursRange.textContent = formatRange(from, to);
+  chart.replaceChildren(...chartColumns(data.labels.map((date, i) => ({ date, i })), ({ i }) => barLook(minutes[i], data.marks[i])));
+  const worked = minutes.filter((m, i) => m !== null && !data.marks[i].inProgress).map((m) => m / 60);
   chart.setAttribute("aria-label", worked.length
-    ? `Working hours, ${formatRange(from, today)}: ${plural(worked.length, "day", "days")} worked, between ${Math.min(...worked).toFixed(1)} and ${Math.max(...worked).toFixed(1)} hours`
-    : `Working hours, ${formatRange(from, today)}: no finished days recorded`);
+    ? `Working hours, ${formatRange(from, to)}: ${plural(worked.length, "day", "days")} worked, between ${Math.min(...worked).toFixed(1)} and ${Math.max(...worked).toFixed(1)} hours`
+    : `Working hours, ${formatRange(from, to)}: no finished days recorded`);
   hoursNote.textContent = "Weekends and holidays are days off. Short marks: blue is leave, red is absent, amber is a missing check-out.";
 }
 
@@ -215,7 +222,10 @@ function renderRequestList(leave, corrections, assets) {
   requestList.replaceChildren(...items);
 }
 
-function renderBalanceCard(rows) {
+function renderBalanceCard(data) {
+  // leaveBalanceChart() (data/chart-data.js): the types with an allowance, in policy order
+  const [allowance, pending, left] = ["Allowance", "Pending", "Left"].map((name) => valuesOf(data, name));
+  const rows = data.labels.map((type, i) => ({ type, allowance: allowance[i], pending: pending[i], left: left[i] })).filter((r) => r.allowance !== null);
   const bars = rows.map((r) => {
     const share = r.allowance ? Math.min(100, Math.max(0, Math.round((r.left / r.allowance) * 100))) : 0;
     return barRow(SHORT[r.type], String(r.left), share);
@@ -287,7 +297,7 @@ if (user && stats && chart && requestList && balanceCard && updates && recentBod
     hoursNote.textContent = "Attendance isn't tracked.";
   }
   renderRequestList(leave, corrections, assets);
-  renderBalanceCard(balance);
+  renderBalanceCard(leaveBalanceChart(user.id, year, month));
   renderUpdates(leave, corrections, assets);
   renderRecent(days);
 }

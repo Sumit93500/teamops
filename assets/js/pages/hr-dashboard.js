@@ -32,6 +32,7 @@ import {
 } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns } from "../ui/chart.js";
+import { leaveRequestsChart, valuesOf } from "../data/chart-data.js";
 import { correctionDetails } from "../ui/attendance-view.js";
 import { cardOpener } from "../ui/approval-card.js";
 
@@ -125,21 +126,19 @@ function renderJoiners() {
 
 // Requests sent per day (appliedOn), whatever became of them later.
 function renderChart() {
-  const from = addDays(today, -(CHART_DAYS - 1));
-  const isOff = dayOffChecker();
-  const perDay = new Map();
-  allRequests().forEach((r) => perDay.set(r.appliedOn, (perDay.get(r.appliedOn) ?? 0) + 1));
-  const days = Array.from({ length: CHART_DAYS }, (_, i) => addDays(from, i)).map((date) => ({ date, count: perDay.get(date) ?? 0, off: isOff(date) }));
-  const top = Math.max(CHART_FLOOR, ...days.map((d) => d.count));
+  const data = leaveRequestsChart(today, CHART_DAYS);   // the numbers (data/chart-data.js); this draws them
+  const counts = valuesOf(data, "Requests");
+  const top = Math.max(CHART_FLOOR, ...counts);
+  const { from, to } = data.period;
 
-  leaveRange.textContent = formatRange(from, today);
-  chart.replaceChildren(...chartColumns(days, (day) => ({
-    modifier: day.off ? "chart__bar--muted" : "",
-    height: Math.round((day.count / top) * 100),
-    what: plural(day.count, "request", "requests"),
+  leaveRange.textContent = formatRange(from, to);
+  chart.replaceChildren(...chartColumns(data.labels.map((date, i) => ({ date, i })), ({ i }) => ({
+    modifier: data.marks[i].off ? "chart__bar--muted" : "",
+    height: Math.round((counts[i] / top) * 100),
+    what: plural(counts[i], "request", "requests"),
   })));
-  const total = days.reduce((sum, d) => sum + d.count, 0);
-  chart.setAttribute("aria-label", `Leave requests sent per day, ${formatRange(from, today)}: ${plural(total, "request", "requests")} in all, at most ${Math.max(...days.map((d) => d.count))} on one day`);
+  const total = counts.reduce((sum, n) => sum + n, 0);
+  chart.setAttribute("aria-label", `Leave requests sent per day, ${formatRange(from, to)}: ${plural(total, "request", "requests")} in all, at most ${Math.max(...counts)} on one day`);
   leaveNote.textContent = "Requests counted on the day they were sent. Weekends and holidays are shown lighter.";
 }
 

@@ -16,6 +16,7 @@ import { can } from "../core/rbac.js";
 import { el, plural, todayIso, monthName, monthShort, formatDay } from "../ui/leave-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
+import { taxRegimeChart, valuesOf } from "../data/chart-data.js";
 import { rupees } from "../ui/money.js";
 
 const $ = (id) => document.getElementById(id);
@@ -53,13 +54,12 @@ function render(run, year, month) {
 
   // Regimes as the salary records hold them; a row with no salary has none.
   // Every seeded salary is "new": the old regime has no tax rules here.
-  const withSalary = run.rows.filter((r) => r.regime);
-  const onNew = withSalary.filter((r) => r.regime === "new").length;
-  const onOld = withSalary.filter((r) => r.regime === "old").length;
+  const data = taxRegimeChart(run);   // the numbers (data/chart-data.js); this draws them
+  const [onNew, onOld] = valuesOf(data, "Employees");
   setStatValue(stat("regime"), String(onNew));
   setStatNote(stat("regime"), `${onOld} on the old regime`);
-  $("regime-meta").textContent = plural(withSalary.length, "employee", "employees");
-  const top = Math.max(1, withSalary.length);
+  $("regime-meta").textContent = plural(data.total, "employee", "employees");
+  const top = Math.max(1, data.total);
   $("regime-bars").replaceChildren(
     barRow("New regime", String(onNew), Math.round((onNew / top) * 100)),
     barRow("Old regime", String(onOld), Math.round((onOld / top) * 100)),
