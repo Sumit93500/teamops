@@ -33,6 +33,8 @@ import { assetTypeLabel, movementTypeLabel, officeDate } from "../ui/inventory-v
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { chartColumns, barRow } from "../ui/chart.js";
 import { rupees } from "../ui/money.js";
+import { csvColumns, csvRows, csvStat } from "../ui/csv-export.js";
+csvColumns("admin-dashboard-attendance", { Employee: { split: "Work email" } });   // Round Data export part 2
 import { waitingFor } from "../ui/waiting.js";
 import { cardLink } from "../ui/approval-card.js";
 
@@ -86,6 +88,7 @@ function renderPayroll() {
   const label = stats.querySelector('[data-stat="payroll"] .stat__label');
   if (label) label.textContent = `Payroll, ${monthName(month).slice(0, 3)}`;
   setStat("payroll", rupees(runTotals(run).gross), `Gross for ${plural(run.rows.length, "employee", "employees")}, draft`);
+  csvStat(stats.querySelector('[data-stat="payroll"]'), runTotals(run).gross, "₹");   // the stats file: a plain number
 }
 
 // ---------- low stock ----------
@@ -313,6 +316,7 @@ function renderTable() {
   const all = teamFor(today).map((day) => ({ day, person: people.get(day.userId) }));
   const query = search.trim().toLowerCase();
   const rows = all.filter((r) => (!dept || r.person?.department === dept) && (!query || (r.person?.name ?? "").toLowerCase().includes(query)));
+  csvRows("admin-dashboard-attendance", () => rows.map(row));   // the export: every page
   const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   page = Math.min(Math.max(1, page), pages);
   const shown = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

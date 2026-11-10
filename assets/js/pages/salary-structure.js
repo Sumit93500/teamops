@@ -16,7 +16,7 @@
 
 import { SALARY_COMPONENTS, computePay } from "../data/payroll.js";
 import { csvValue, csvColumns } from "../ui/csv-export.js";
-csvColumns("employee-salaries", { "Gross per month": { number: true, header: "Gross per month (₹)" }, "Annual cost": { number: true, header: "Annual cost (₹)" } });   // Round Data export
+csvColumns("employee-salaries", { Employee: { split: "Employee ID" }, "Gross per month": { number: true, header: "Gross per month (₹)" }, "Annual cost": { number: true, header: "Annual cost (₹)" } });   // Round Data export
 import { salaryFor, salaryHistory, proposeSalary, pendingSalaryProposal, proposalDecidersFor, withdrawSalaryProposal } from "../data/payroll-store.js";
 import { getAllUsers, getUser } from "../data/store.js";
 import { permissionsOf } from "../config/roles.js";

@@ -10,8 +10,8 @@
 // without an employee id (an old sign-in) leaves the static page as it is.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
-import { csvValue, csvColumns } from "../ui/csv-export.js";
-csvColumns("leave-requests", { Days: { number: true } });   // Round Data export
+import { csvValue, csvColumns, csvRows } from "../ui/csv-export.js";
+csvColumns("leave-requests", { Employee: { split: "Department" }, Days: { number: true } });   // Round Data export (part 2: the split)
 import { requestDatesIso } from "../ui/leave-view.js";
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
@@ -108,6 +108,7 @@ function row(request) {
 
 function renderTable() {
   const rows = tabRequests(tab).filter(matches);
+  csvRows("leave-requests", () => rows.map(row));   // the export: every page
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   currentPage = Math.min(Math.max(1, currentPage), totalPages);
   const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

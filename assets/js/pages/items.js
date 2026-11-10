@@ -13,7 +13,7 @@
 // stock-movements.html and the asset register.
 
 import { can, applyPermissions } from "../core/rbac.js";
-import { csvValue, csvColumns } from "../ui/csv-export.js";
+import { csvValue, csvColumns, csvRows } from "../ui/csv-export.js";
 csvColumns("inventory-items", { "In stock": { number: true }, "Reorder level": { number: true }, "Unit price": { number: true, header: "Unit price (₹)" } });   // Round Data export
 import { CATEGORY_KEYS, STOCK_STATUS_KEYS, LOCATIONS, stockBarPercent } from "../data/inventory.js";
 import { allItems, allAssets, inventoryTotals, reorderAlerts } from "../data/inventory-store.js";
@@ -138,6 +138,7 @@ function row(item, assets) {
 
 function renderTable(items) {
   const rows = items.filter(matches).sort(byCategory);
+  csvRows("inventory-items", () => { const assets = allAssets(); return rows.map((item) => row(item, assets)); });   // the export: every page   // Round Data export part 2
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   currentPage = Math.min(Math.max(1, currentPage), totalPages);
   const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

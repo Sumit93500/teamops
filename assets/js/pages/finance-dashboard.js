@@ -24,8 +24,8 @@
 //     the sidebar's count also hold leave, corrections and asset requests.
 
 import { runMonth, payrollRun, runTotals, payslipTotals } from "../data/payroll-store.js";
-import { csvValue, csvColumns } from "../ui/csv-export.js";
-csvColumns("finance-dashboard-payroll", { Gross: { number: true, header: "Gross (₹)" }, Deductions: { number: true, header: "Deductions (₹)" }, "Net pay": { number: true, header: "Net pay (₹)" } });   // Round Data export
+import { csvValue, csvColumns, csvStat } from "../ui/csv-export.js";
+csvColumns("finance-dashboard-payroll", { Employee: { split: "Department" }, Gross: { number: true, header: "Gross (₹)" }, Deductions: { number: true, header: "Deductions (₹)" }, "Net pay": { number: true, header: "Net pay (₹)" } });   // Round Data export
 import { filingDates } from "../data/payroll.js";
 import { getUser, getAllDepartments } from "../data/store.js";
 import { allExpenses, pendingFor, expenseTotals } from "../data/expenses-store.js";
@@ -58,11 +58,14 @@ function renderStats(run, year, month) {
   const totals = runTotals(run);
   stat("payroll").querySelector(".stat__label").textContent = `Payroll, ${short(run)}`;
   setStatValue(stat("payroll"), rupees(totals.gross));
+  csvStat(stat("payroll"), totals.gross, "₹");   // the stats file: plain numbers (Round Data export part 2)
   setStatNote(stat("payroll"), `Gross for ${people(run.rows.length)}, draft`);
   setStatValue(stat("tds"), rupees(payslipTotals(run.rows).tds));
+  csvStat(stat("tds"), payslipTotals(run.rows).tds, "₹");
   setStatNote(stat("tds"), `Sample tax rates; deposit by ${formatDay(filingDates(year, month).tds)}`);
   stat("net").querySelector(".stat__label").textContent = `Net pay, ${short(run)}`;
   setStatValue(stat("net"), rupees(totals.net));
+  csvStat(stat("net"), totals.net, "₹");
   setStatNote(stat("net"), "Draft, not paid yet");
 }
 
@@ -118,6 +121,7 @@ const claimText = (claim) => `${rupees(claim.amount)} claim from ${nameOf(claim.
 function renderReimbursements() {
   const { approved } = expenseTotals(allExpenses()).byStatus;
   setStatValue(stat("reimbursements"), rupees(approved.amount));
+  csvStat(stat("reimbursements"), approved.amount, "₹");
   setStatNote(stat("reimbursements"), approved.count ? `${claimsText(approved.count)} waiting to be paid` : "Nothing waiting to be paid", approved.count ? "up" : "");
 }
 

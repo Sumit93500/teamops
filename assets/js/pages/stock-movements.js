@@ -15,7 +15,7 @@
 // of it (ui/inventory-view.js's readyToAssign()).
 
 import { getCurrentUserId } from "../core/auth.js";
-import { csvValue, csvColumns } from "../ui/csv-export.js";
+import { csvValue, csvColumns, csvRows } from "../ui/csv-export.js";
 csvColumns("stock-movements", { Quantity: { number: true } });   // Round Data export
 import { officeIsoTime } from "../ui/inventory-view.js";
 import { can } from "../core/rbac.js";
@@ -118,6 +118,7 @@ function row(m, item) {
 function renderTable() {
   const items = itemsBySku();
   const rows = allMovements().filter((m) => matches(m, items));
+  csvRows("stock-movements", () => rows.map((m) => row(m, items.get(m.sku))));   // the export: every page   // Round Data export part 2
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   currentPage = Math.min(Math.max(1, currentPage), totalPages);
   const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

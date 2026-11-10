@@ -11,7 +11,8 @@
 // an employee id (an old sign-in) leaves the static page as it is.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
-import { csvValue, csvColumns } from "../ui/csv-export.js";
+import { csvValue, csvColumns, csvRows } from "../ui/csv-export.js";
+csvColumns("regularization-requests", { Employee: { split: "Department" } });   // Round Data export part 2
 import { applyPermissions, can } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { allRegularizations, pendingRegularizations, dayFor } from "../data/attendance-store.js";
@@ -121,6 +122,7 @@ function row(request) {
 
 function renderTable() {
   const rows = tabRequests(tab).filter(matches);
+  csvRows("regularization-requests", () => rows.map(row));   // the export: every page
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   currentPage = Math.min(Math.max(1, currentPage), totalPages);
   const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

@@ -37,7 +37,7 @@
 //     ends it without an asset, with a note.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
-import { csvValue, csvColumns } from "../ui/csv-export.js";
+import { csvValue, csvColumns, csvRows } from "../ui/csv-export.js";
 import { can, applyPermissions } from "../core/rbac.js";
 import { getUser, getAllUsers } from "../data/store.js";
 import { dayNumber } from "../data/holidays.js";
@@ -169,6 +169,7 @@ function row(asset, items) {
 function renderTable(assets) {
   const items = itemsBySku();
   const rows = assets.filter((a) => matches(a, items)).sort(byTag);
+  csvRows("asset-assignments", () => rows.map((a) => row(a, items)));   // the export: every page   // Round Data export part 2
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   currentPage = Math.min(Math.max(1, currentPage), totalPages);
   const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

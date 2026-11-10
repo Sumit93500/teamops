@@ -11,6 +11,13 @@
 // (csvValue: an ISO date, a plain number), else its visible text. A column's CSV
 // heading and type come from csvColumns(): "Amount (₹)" when the page shows rupees,
 // and number for a numeric column (money and counts).
+// Round Data export part 2: a paged table's page registers its whole filtered
+// list (csvRows), so the file has every row its filters, search and tab match,
+// not only the page on screen; a person cell's name and sub-line are written
+// as two columns (csvColumns split); a stat card's plain number and unit come
+// from csvStat(); the file name's date is the office date (India time).
+
+import { officeDate } from "./inventory-view.js";
 
 // Parts of a cell that aren't data: initials avatars, icons, a reason line under
 // a badge or note (class reason, round 14E: the words of its title, which the
@@ -28,11 +35,9 @@ export function csvCell(value, numeric = false) {
   return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
-function todayStamp() {
-  const d = new Date();
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
+// Today in office time (India), whatever the viewer's own time zone: the
+// office-time helper stock-movements.js uses for its times.
+const todayStamp = () => officeDate(new Date().toISOString());
 
 // Writes rows (the first is the header) as "<filename>-<YYYY-MM-DD>.csv", CRLF rows,
 // a UTF-8 BOM first. numeric: per column, true where plain numbers stay numbers.
@@ -81,16 +86,47 @@ export function csvValue(cell, value) {
 // written as a plain number; header: the column's heading in the CSV. Kept here and
 // read when the table is exported, so the page itself isn't touched.
 const COLUMNS = new Map();
+// split: the column holds a person cell (ui/leave-view.js personCell()); its
+// name is written under the column's heading and its sub-line in a column of
+// its own after it, under this heading: { Employee: { split: "Department" } }.
 export function csvColumns(exportName, spec) {
   COLUMNS.set(exportName, spec);
 }
+
+// The rows of a table its page shows a page at a time: rows() gives table rows,
+// built by the page's own row function, for its whole filtered list (every page
+// of it). The page registers it each time it draws the table, so the file has
+// what the page last drew, all of it. Kept per table, so it goes with the page;
+// a table without one exports the rows on screen.
+const ROWS = new WeakMap();
+export function csvRows(exportName, rows) {
+  const table = document.querySelector(`table[data-export-name="${exportName}"]`);
+  if (table) ROWS.set(table, rows);
+}
+
+// A person cell's name and its sub-line (department, employee ID or work
+// email), for a split column. A cell without them writes its text, then "".
+function personParts(cell) {
+  const name = cell.querySelector(".table__user-name");
+  const sub = cell.querySelector(".table__user-sub");
+  return name ? [cellText(name), sub ? cellText(sub) : ""] : [csvText(cell), ""];
+}
+
+// A stat card's figure for the stats file: its plain number, and its unit
+// ("₹"), which goes in the metric's name: "Payroll, Sep (₹)". Kept per card.
+const STATS = new WeakMap();
+export function csvStat(stat, number, unit = "") {
+  if (stat) STATS.set(stat, { number, unit });
+}
+const PLAIN = /^-?\d+(\.\d+)?$/;
 
 // A header cell holding only a checkbox (or nothing) isn't a column of data,
 // and neither is an Actions column of buttons.
 const isDataColumn = (th) =>
   cellText(th) !== "" && !th.classList.contains("table__actions") && cellText(th) !== "Actions";
 
-// Exports the table's visible rows (whatever search or filters currently show).
+// Exports the table's rows: whatever its search, filters and tab show, every
+// page of them when its page registered them (csvRows), else the rows on screen.
 // Returns the number of data rows written.
 export function exportTableAsCsv(table, filename) {
   const headerRows = table.querySelectorAll("thead tr");
@@ -99,27 +135,35 @@ export function exportTableAsCsv(table, filename) {
   const headCells = Array.from(header.children);
   const keep = headCells.map((th, i) => (isDataColumn(th) ? i : -1)).filter((i) => i !== -1);
 
-  const rows = Array.from(table.querySelectorAll("tbody tr"))
-    .filter((row) => !isHidden(row) && row.children.length === headCells.length)   // skips "no results" rows that span the table
-    .map((row) => keep.map((i) => csvText(row.children[i])));
-
   const marks = keep.map((i) => COLUMNS.get(filename)?.[cellText(headCells[i])] ?? {});
-  downloadCsv([keep.map((i, k) => marks[k].header ?? cellText(headCells[i])), ...rows], filename, marks.map((mark) => mark.number === true));
+  const cells = (row) => keep.flatMap((i, k) => (marks[k].split ? personParts(row.children[i]) : [csvText(row.children[i])]));
+  const source = ROWS.get(table);
+  const rows = (source ? source() : Array.from(table.querySelectorAll("tbody tr")))
+    .filter((row) => !isHidden(row) && row.children.length === headCells.length)   // skips "no results" rows that span the table
+    .map(cells);
+
+  const headings = keep.flatMap((i, k) => [marks[k].header ?? cellText(headCells[i]), ...(marks[k].split ? [marks[k].split] : [])]);
+  downloadCsv([headings, ...rows], filename, marks.flatMap((mark) => [mark.number === true, ...(mark.split ? [false] : [])]));
   return rows.length;
 }
 
 // Exports [label, value] pairs, e.g. a dashboard's stat cards, as Metric,Value.
 export function exportStatsAsCsv(stats, filename) {
-  downloadCsv([["Metric", "Value"], ...stats.map(([label, value]) => [label, value])], filename);
+  downloadCsv([["Metric", "Value"], ...stats.map(([label, value]) => [label, value])], filename, [false, true]);
   return stats.length;
 }
 
-// Reads the page's stat cards as [label, value] pairs.
+// Reads the page's stat cards as [label, value] pairs: the value a plain number
+// (csvStat()'s, else the card's when it is one, else nothing: "—"), the unit in
+// the label. A hidden card is an empty row.
 function readStats(scope) {
-  return Array.from(scope.querySelectorAll(".stat")).map((stat) => [
-    cellText(stat.querySelector(".stat__label") ?? stat),
-    cellText(stat.querySelector(".stat__value") ?? stat),
-  ]);
+  return Array.from(scope.querySelectorAll(".stat")).map((stat) => {
+    if (stat.closest(SKIP)) return ["", ""];
+    const label = cellText(stat.querySelector(".stat__label") ?? stat);
+    const value = cellText(stat.querySelector(".stat__value") ?? stat);
+    const mark = STATS.get(stat);
+    return [mark?.unit ? `${label} (${mark.unit})` : label, mark ? String(mark.number) : PLAIN.test(value) ? value : ""];
+  });
 }
 
 // Wires every [data-export] button: one file per table[data-export-name] on the

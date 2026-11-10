@@ -15,8 +15,8 @@
 // stored, so they aren't links.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
-import { csvValue, csvColumns } from "../ui/csv-export.js";
-csvColumns("expense-claims", { Amount: { number: true, header: "Amount (₹)" } });   // Round Data export
+import { csvValue, csvColumns, csvRows } from "../ui/csv-export.js";
+csvColumns("expense-claims", { Employee: { split: "Department" }, Amount: { number: true, header: "Amount (₹)" } });   // Round Data export
 import { can, applyPermissions } from "../core/rbac.js";
 import { getUser } from "../data/store.js";
 import { EXPENSE_POLICY, CATEGORY_KEYS, needsReceipt } from "../data/expenses.js";
@@ -168,6 +168,7 @@ function row(claim, decidable) {
 
 function renderTable(claims) {
   const rows = tabClaims(claims, tab).filter(matches);
+  csvRows("expense-claims", () => { const decidable = decidableIds(); return rows.map((c) => row(c, decidable)); });   // the export: every page   // Round Data export part 2
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   currentPage = Math.min(Math.max(1, currentPage), totalPages);
   const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

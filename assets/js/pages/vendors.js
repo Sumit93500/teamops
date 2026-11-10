@@ -15,6 +15,7 @@ import { allVendors } from "../data/inventory-store.js";
 import { vendorStatusLabel, vendorStatusBadge } from "../ui/inventory-view.js";
 import { el, initials } from "../ui/leave-view.js";
 import { renderPagination } from "../ui/pagination.js";
+import { csvRows } from "../ui/csv-export.js";
 import { initPlaceholders } from "../ui/placeholder.js";
 
 const PAGE_SIZE = 10;
@@ -84,6 +85,7 @@ function renderTable() {
   const vendors = allVendors().sort(byId);
   const place = new Map(vendors.map((v, i) => [v.id, i]));
   const rows = vendors.filter(matches);
+  csvRows("vendors", () => rows.map((v) => row(v, place.get(v.id))));   // the export: every page   // Round Data export part 2
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   currentPage = Math.min(Math.max(1, currentPage), totalPages);
   const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

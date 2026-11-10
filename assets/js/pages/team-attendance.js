@@ -24,6 +24,8 @@ import { allRequests } from "../data/leave-store.js";
 import { teamWeekFor, summaryFor, pendingRegularizations } from "../data/attendance-store.js";
 import { isManager, teamScope } from "../data/reporting.js";
 import { renderPagination } from "../ui/pagination.js";
+import { csvColumns, csvRows } from "../ui/csv-export.js";
+csvColumns("team-attendance", { Employee: { split: "Employee ID" } });   // Round Data export part 2
 import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
 import { el, weekdayName, todayIso, initials, avatarClass, departmentName, shortDate, plural, fillDepartmentSelect, personCell, showReason } from "../ui/leave-view.js";
@@ -180,6 +182,7 @@ function renderTable(rows) {
 
   const byName = (a, b) => (a.user?.name ?? "").localeCompare(b.user?.name ?? "") || a.day.userId.localeCompare(b.day.userId);
   const shown = narrowed.filter((r) => TABS[tab](r.day)).sort((a, b) => (ascending ? byName(a, b) : byName(b, a)));
+  csvRows("team-attendance", () => shown.map(row));   // the export: every page
   const totalPages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
   currentPage = Math.min(Math.max(1, currentPage), totalPages);
   const pageRows = shown.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

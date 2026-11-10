@@ -16,7 +16,7 @@
 // record (renderJoiners()).
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
-import { csvValue, csvColumns } from "../ui/csv-export.js";
+import { csvValue, csvColumns, csvRows } from "../ui/csv-export.js";
 csvColumns("hr-dashboard-leave-requests", { Days: { number: true } });   // Round Data export
 import { requestDatesIso } from "../ui/leave-view.js";
 import { applyPermissions, can } from "../core/rbac.js";
@@ -227,6 +227,7 @@ function renderTable() {
   const rows = all
     .filter((r) => (!statusFilter || r.status === statusFilter) && (!query || nameOf(r.userId).toLowerCase().includes(query)))
     .sort(newestSent);
+  csvRows("hr-dashboard-leave-requests", () => rows.map(leaveRow));   // the export: all of them, not only the ten shown   // Round Data export part 2
   const shown = rows.slice(0, TABLE_ROWS);
   if (shown.length) {
     leaveRows.replaceChildren(...shown.map(leaveRow));
