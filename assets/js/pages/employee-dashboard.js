@@ -17,6 +17,7 @@ import { LEAVE_TYPES, balanceFor, requestsFor, currentApproverName } from "../da
 import { monthFor, rangeFor, regularizationsFor } from "../data/attendance-store.js";
 import { payslipsFor } from "../data/payroll-store.js";
 import { assetRequestsFor, waitingOn as assetWaitingOn } from "../data/asset-requests-store.js";
+import { openRequests } from "../data/own-requests.js";
 import { assetTypeLabel } from "../ui/inventory-view.js";
 import {
   el, todayIso, formatDay, formatRange, monthName, typeLabel, requestDates,
@@ -54,10 +55,7 @@ const staticUpdates = Array.from(updates?.querySelectorAll("[data-static]") ?? [
 
 // ---------- formatting ----------
 
-const isPending = (r) => r.status === "pending";
 const isAsset = (r) => r.id.startsWith("ARQ-");
-// An asset request is open until an asset is handed over (or it ends otherwise).
-const isOpenAsset = (r) => r.status === "pending" || r.status === "approved";
 const assetName = (r) => `${assetTypeLabel(r.assetType)} request`;
 const isOff = (day) => day.status === "weekend" || day.status === "holiday";
 
@@ -100,15 +98,17 @@ function renderBalanceStat(rows) {
   setStat("balance", `${total} ${total === 1 ? "day" : "days"}`, most.map((r) => `${SHORT[r.type]} ${r.left}`).join(", "));
 }
 
-function renderOpenRequests(leave, corrections, assets) {
-  const leavePending = leave.filter(isPending).length;
-  const correctionsPending = corrections.filter(isPending).length;
-  const assetsOpen = assets.filter(isOpenAsset).length;
+// What My requests lists under Pending (data/own-requests.js, round 14E part 4): leave,
+// corrections, expense claims and asset requests not handed over yet.
+function renderOpenRequests() {
+  const open = openRequests(user.id);
+  const count = (kind) => open.filter((r) => r.kind === kind).length;
   const parts = [];
-  if (leavePending) parts.push(`${leavePending} leave`);
-  if (correctionsPending) parts.push(plural(correctionsPending, "correction", "corrections"));
-  if (assetsOpen) parts.push(plural(assetsOpen, "asset", "assets"));
-  setStat("requests", String(leavePending + correctionsPending + assetsOpen), parts.join(", ") || "None");
+  if (count("leave")) parts.push(`${count("leave")} leave`);
+  if (count("attendance")) parts.push(plural(count("attendance"), "correction", "corrections"));
+  if (count("expense")) parts.push(plural(count("expense"), "claim", "claims"));
+  if (count("asset")) parts.push(plural(count("asset"), "asset", "assets"));
+  setStat("requests", String(open.length), parts.join(", ") || "None");
 }
 
 // The payslip for this month, as payslips.html's "Next payslip" card shows it.
@@ -287,7 +287,7 @@ if (user && stats && chart && requestList && balanceCard && updates && recentBod
 
   renderPresent(monthFor(user.id, year, month));
   renderBalanceStat(balance);
-  renderOpenRequests(leave, corrections, assets);
+  renderOpenRequests();
   renderPayslip();
   if (days.length) {
     renderChart(days.slice(-CHART_DAYS));

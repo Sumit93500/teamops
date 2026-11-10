@@ -14,6 +14,7 @@ import { requestsFor, cancelLeave, currentApproverName } from "../data/leave-sto
 import { regularizationsFor, cancelRegularization } from "../data/attendance-store.js";
 import { expensesFor, cancelExpense, waitingOn } from "../data/expenses-store.js";
 import { assetRequestsFor, cancelAssetRequest, waitingOn as assetWaitingOn } from "../data/asset-requests-store.js";
+import { ownRequests } from "../data/own-requests.js";
 import { categoryLabel, stageBadge, expenseSteps } from "../ui/expense-view.js";
 import { requestTitle as assetTitle, statusBadgeOf, endNote, assetRequestSteps } from "../ui/asset-request-view.js";
 import { rupees } from "../ui/money.js";
@@ -218,16 +219,15 @@ function assetRow(request) {
 
 // The tabs an asset request counts under: fulfilled as approved (it was
 // approved, then handed over); closed, like cancelled, only under All.
-const ASSET_TAB = { fulfilled: "approved" };
+// Every request of this person's with the tab it's under, from data/own-requests.js: the
+// rule the employee dashboard's Open requests counts by (round 14E part 4). A paid claim is
+// approved; an approved asset request waiting to be handed over is still pending.
+const ROW = { leave: leaveRow, attendance: correctionRow, expense: expenseRow, asset: assetRow };
 
 function allRows() {
-  const leave = requestsFor(user.id).map((r) => ({ node: leaveRow(r), type: "leave", status: r.status, sent: r.appliedOn, id: r.id }));
-  const corrections = regularizationsFor(user.id).map((r) => ({ node: correctionRow(r), type: "attendance", status: r.status, sent: r.appliedOn, id: r.id }));
-  // A paid claim counts as approved for the tabs (it was approved, then paid).
-  const claims = expensesFor(user.id).map((c) => ({ node: expenseRow(c), type: "expense", status: c.status === "paid" ? "approved" : c.status, sent: c.appliedOn, id: c.id }));
-  const assets = assetRequestsFor(user.id).map((r) => ({ node: assetRow(r), type: "asset", status: ASSET_TAB[r.status] ?? r.status, sent: r.appliedOn, id: r.id }));
   // Newest sent first; the id breaks ties between two sent the same day.
-  return [...leave, ...corrections, ...claims, ...assets].sort((a, b) => b.sent.localeCompare(a.sent) || b.id.localeCompare(a.id));
+  return ownRequests(user.id).map(({ kind, request, status }) => ({ node: ROW[kind](request), type: kind, status, sent: request.appliedOn, id: request.id }))
+    .sort((a, b) => b.sent.localeCompare(a.sent) || b.id.localeCompare(a.id));
 }
 
 function pillStatus(pill) {

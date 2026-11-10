@@ -4,7 +4,7 @@
 // that the person sees as a manager), and highlighting the current page.
 // An item with countWaiting shows how many requests wait for the person's
 // decision (ui/waiting.js, the same rows as the approvals inbox).
-// Also fills the footer's "N active employees" line from the live employee list.
+// Also fills the footer's "N employees" line from the live employee list.
 
 import { NAV } from "../config/nav.js";
 import { can } from "../core/rbac.js";
@@ -153,5 +153,5 @@ function buildTrigger(group, panelId) {
 export function renderHeadcount(target) {
   if (!target) return;
   const n = activeHeadcount();
-  target.textContent = `${n} active ${n === 1 ? "employee" : "employees"}`;
+  target.textContent = `${n} ${n === 1 ? "employee" : "employees"}`;   // everyone not inactive (round 14E part 4: was "N active employees")
 }

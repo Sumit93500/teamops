@@ -528,7 +528,7 @@ export function reportingManagerName(user) {
 }
 
 // How many employees aren't inactive (people on leave count): the sidebar's
-// "N active employees" and the Admin dashboard's total.
+// "N employees" and the Admin dashboard's total.
 export function activeHeadcount() {
   return getAllUsers().filter((u) => u.status !== "inactive").length;
 }

@@ -91,7 +91,7 @@ const pendingCorrections = () => (showCorrections ? pendingRegularizations(userI
 function renderStats() {
   const summary = summaryFor(today);
   setStat("on-leave", String(summary.onLeave), summary.total
-    ? `${percent(summary.onLeave, summary.total)} of ${summary.total} active, ${summary.expected} expected at work`
+    ? `${percent(summary.onLeave, summary.total)} of ${summary.total} employees, ${summary.expected} expected at work`   // the sidebar's count and word (round 14E part 4: was "active")
     : "No active employees");
 
   // "Leave for you to decide": what this person may decide now, with the
