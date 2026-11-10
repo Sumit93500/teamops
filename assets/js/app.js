@@ -21,6 +21,7 @@ import { initOtpInputs } from "./ui/otp.js";
 import { initPlaceholders } from "./ui/placeholder.js";
 import { initExports } from "./ui/csv-export.js";
 import { initPhone } from "./ui/phone.js";
+import { resolvePageLink } from "./core/paths.js";
 
 loadTheme();
 
@@ -30,6 +31,11 @@ if (ok) {
   // Public pages (login, 403, ...) pass the guard with nobody signed in, so keep their hardcoded data-role.
   const role = getCurrentRole();
   if (role) document.documentElement.dataset.role = role.key;
+  // An error page's "Go to dashboard" is the signed-in person's own landing page (round 14E part 3:
+  // it was always the Admin dashboard, which most roles can't open, so it led back to this page).
+  if (role && window.location.pathname.includes("/pages/errors/")) {
+    document.querySelectorAll('main a[href$="dashboard/admin.html"]').forEach((link) => link.setAttribute("href", resolvePageLink(role.landing)));
+  }
 
   renderSidebar(document.querySelector(".sidebar__nav"));
   renderHeadcount(document.getElementById("sidebar-headcount"));
