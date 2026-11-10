@@ -14,6 +14,10 @@
 // that run fixed, marked Approved (round 11T); any other month is a Draft,
 // worked out live. Paying isn't built, so a payslip is never "Paid" and has no
 // pay date; one on hold says so, with the store's reason.
+//
+// Print or save as PDF is the browser's print dialog (round Demo buttons part 1;
+// it replaced a Download PDF placeholder): print.css prints the payslip alone,
+// in light colours, on one A4 page. A real PDF download needs the backend.
 
 import { payslipsFor } from "../data/payroll-store.js";
 import { ATTENDANCE_RULES } from "../data/attendance-store.js";
@@ -88,14 +92,13 @@ function setText(node, text) {
 }
 
 // Instead of a payslip: a title and a line saying why there isn't one. With
-// no payslip there's nothing to download or print.
+// no payslip there's nothing to print.
 function showMessage(title, text) {
   document.title = "Payslip | OfficeOS";
   setText($("payslip-title"), "Payslip");
   setText($("payslip-crumb"), "Payslip");
   setText($("payslip-subtitle"), "");
   $("payslip").hidden = true;
-  $("payslip-download").hidden = true;
   $("payslip-print").hidden = true;
   setText($("payslip-message-title"), title);
   setText($("payslip-message-text"), text);
@@ -277,7 +280,7 @@ function start() {
   renderInfo(user, slip);
   renderAmounts(slip);
   renderNotes(slip);
-  // The payslip and Print start hidden in the HTML, so nothing shows until a
+  // The payslip and Print or save as PDF start hidden in the HTML, so nothing shows until a
   // payslip this person may see has been drawn.
   $("payslip").hidden = false;
   $("payslip-print").hidden = false;

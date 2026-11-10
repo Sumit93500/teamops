@@ -546,20 +546,11 @@ deleteBtn?.addEventListener("click", () => {
   }, 1200);
 });
 
-// Demo only: nothing is sent or saved, the note is just on screen, and the
-// toast says so (round 11L; it said "Reset link sent to … (demo)." while
-// Forgot password and Reset password say no reset link is sent).
+// Nothing is sent or saved, and the toast says so (round 11L). No confirm()
+// and no "Reset requested" note any more (round Demo buttons part 1): there was
+// nothing to confirm, and the note read as if a reset had been sent.
 resetBtn?.addEventListener("click", () => {
-  if (!window.confirm(`Send a password reset to ${user.email}?`)) return;
   showToast(`Passwords aren't part of OfficeOS yet: no reset link was sent to ${user.email}.`, "info");
-
-  let note = actions.querySelector(".reset-note");
-  if (!note) {
-    note = document.createElement("span");
-    note.className = "reset-note text-xs text-muted";
-    resetBtn.after(note);
-  }
-  note.textContent = `Reset requested ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 });
 
 if (user) render();

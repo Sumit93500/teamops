@@ -26,9 +26,8 @@ import { isManager, teamScope } from "../data/reporting.js";
 import { renderPagination } from "../ui/pagination.js";
 import { csvColumns, csvRows } from "../ui/csv-export.js";
 csvColumns("team-attendance", { Employee: { split: "Employee ID" } });   // Round Data export part 2
-import { initPlaceholders } from "../ui/placeholder.js";
 import { showToast } from "../ui/toast.js";
-import { el, weekdayName, todayIso, initials, avatarClass, departmentName, shortDate, plural, fillDepartmentSelect, personCell, showReason } from "../ui/leave-view.js";
+import { el, weekdayName, todayIso, formatDay, initials, avatarClass, departmentName, shortDate, plural, fillDepartmentSelect, personCell, showReason } from "../ui/leave-view.js";
 import { dayBadge, presentNote, checkInCell, hoursCell } from "../ui/attendance-view.js";
 import { setStatValue, setStatNote } from "../ui/stats.js";
 import { barRow } from "../ui/chart.js";
@@ -248,13 +247,22 @@ function renderAttention(rows, summary) {
       el("span", "list__title", r.user?.name ?? r.day.userId),
       el("span", "list__sub", `${departmentName(r.user?.department)}, ${attentionNote(r.day, pendingLeave)}`),
     );
-    const message = el("button", "btn btn--sm", "Message");
-    message.type = "button";
-    message.dataset.notImplemented = "Message";
-    item.append(el("div", avatarClass(r.day.userId), initials(r.user?.name)), content, message);
+    item.append(el("div", avatarClass(r.day.userId), initials(r.user?.name)), content);
+    if (r.user?.email) item.append(messageLink(r.user));
     return item;
   }));
-  initPlaceholders(attentionList);
+}
+
+// Message (round Demo buttons part 1; it was a placeholder): an email to the
+// person's work address, its subject naming the date ("Attendance on 12 Oct";
+// with the year when it isn't this year's). Only on the rows above, so the same
+// people see it as before: Admin and HR everyone, a manager their direct reports.
+function messageLink(user) {
+  const subject = `Attendance on ${formatDay(date, date.slice(0, 4) !== today.slice(0, 4))}`;
+  const link = el("a", "btn btn--sm", "Message");
+  link.href = `mailto:${user.email}?subject=${encodeURIComponent(subject)}`;
+  link.setAttribute("aria-label", `Message ${user.name}`);
+  return link;
 }
 
 function renderRegularizationCount() {

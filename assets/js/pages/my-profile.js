@@ -2,11 +2,18 @@
 // Runs on my-profile.html. Replaces the placeholder profile with the signed-in
 // person's details from the live store. If there's no matching user (e.g. a
 // session saved before employee ids were stored), the HTML is left as-is.
+//
+// Save changes (round Demo buttons part 1) saves the person's own contact
+// details and emergency contact through the store's updateOwnContact(), which
+// takes only those fields and only for their own record. Preferred name is
+// shown, not saved: it's the first part of the name on record, which HR changes.
+// Change photo is still a placeholder.
 
 import { getCurrentUserId, getCurrentRole } from "../core/auth.js";
-import { getUser, getAllDepartments, reportingManagerName } from "../data/store.js";
+import { getUser, getAllDepartments, reportingManagerName, updateOwnContact } from "../data/store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { maskAccount, maskPan } from "../ui/pii.js";
+import { showToast } from "../ui/toast.js";
 import { approvalChainText } from "../data/leave-store.js";
 
 const STATUS = {
@@ -68,6 +75,56 @@ function setField(id, value) {
   if (field) field.defaultValue = value ?? "";
 }
 
+// ---------- Save changes (round Demo buttons part 1) ----------
+
+// What Save changes sends: input id -> the record's field, the store's
+// OWN_CONTACT_FIELDS. Preferred name (p-name) is shown, not saved.
+const SAVED = {
+  "p-phone": "phone", "p-email": "personalEmail", "p-city": "city", "p-address": "address",
+  "e-name": "emergencyContactName", "e-rel": "emergencyContactRelation", "e-phone": "emergencyContactPhone",
+};
+const form = document.querySelector("main form");
+
+// An error next to its field, as user-form.js shows one (change-password.js's pattern).
+function clearError() {
+  form.querySelector(".form-error")?.remove();
+}
+
+function showError(input, message) {
+  clearError();
+  const error = document.createElement("span");
+  error.className = "form-error";
+  error.id = `${input.id}-error`;
+  error.textContent = message;
+  input.closest(".form-field").appendChild(error);
+  input.setAttribute("aria-describedby", error.id);
+  input.focus();
+}
+
+// The browser checks Personal email first (type="email", as on user-form's work
+// email); the store checks it again, and refuses any other field or anyone
+// else's record.
+function save(e) {
+  e.preventDefault();
+  clearError();
+  const changes = {};
+  for (const [id, key] of Object.entries(SAVED)) changes[key] = document.getElementById(id).value.trim();
+  const result = updateOwnContact(getCurrentUserId(), user.id, changes);
+  if (!result.ok) {
+    const id = Object.keys(SAVED).find((k) => SAVED[k] === result.field);
+    if (id) showError(document.getElementById(id), result.error);
+    else showToast(result.error, "danger");
+    return;
+  }
+  // Discard now goes back to what was just saved.
+  for (const [id, key] of Object.entries(SAVED)) {
+    const field = document.getElementById(id);
+    field.defaultValue = result.record[key] ?? "";
+    field.value = field.defaultValue;
+  }
+  showToast("Saved.", "success");
+}
+
 const user = getUser(getCurrentUserId());
 const role = getCurrentRole();
 
@@ -116,4 +173,7 @@ if (user && role) {
   setField("e-name", user.emergencyContactName);
   setField("e-rel", user.emergencyContactRelation);
   setField("e-phone", user.emergencyContactPhone);
+
+  form?.addEventListener("submit", save);
+  form?.addEventListener("input", clearError);
 }

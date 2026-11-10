@@ -147,7 +147,8 @@
           <div class="form-grid">
             <div class="form-field">
               <label class="form-label" for="p-name">Preferred name</label>
-              <input class="input" id="p-name" type="text" value="Arjun">
+              <input class="input" id="p-name" type="text" value="Arjun" disabled aria-describedby="p-name-hint">
+              <span class="form-hint" id="p-name-hint">From your name on record. To change it, ask HR.</span>
             </div>
             <div class="form-field">
               <label class="form-label" for="p-phone">Phone</label>
@@ -193,7 +194,7 @@
           <span class="card__meta">Changes are saved to your profile only.</span>
           <div class="btn-group">
             <button class="btn" type="reset">Discard</button>
-            <button class="btn btn--primary" type="submit" data-permission="profile:edit-own" data-not-implemented="Save changes">Save changes</button>
+            <button class="btn btn--primary" type="submit" data-permission="profile:edit-own">Save changes</button>
           </div>
         </div>
       </form>

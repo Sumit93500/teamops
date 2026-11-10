@@ -3,9 +3,11 @@
 // month (this month and the three before it), all from data/attendance-store.js:
 // the stat strip, the calendar, the month summary, the late-mark alert and the
 // daily log with Request fix / Cancel. Also the "Request regularization" modal,
-// which sends a correction request through the store. A session without an
-// employee id (an old sign-in) leaves the static page as it is, apart from
-// keeping the modal's Send request from reloading the page.
+// which sends a correction request through the store. Without an employee
+// record (an old or deleted sign-in) nothing here is set up: the guard (app.js,
+// which runs first) has already signed the session out and is opening the login
+// page (round 11P). Round Demo buttons part 1 removed the static page's own Send
+// request handler and its "isn't available in this demo" toast.
 
 import { getCurrentUserId } from "../core/auth.js";
 import { applyPermissions } from "../core/rbac.js";
@@ -365,12 +367,5 @@ if (user && monthSelect && stats && calendarCard && summaryCard && lateAlert && 
   form.addEventListener("submit", submit);
   Object.values(FIELDS).forEach((id) => field(id).addEventListener("input", clearErrors));
   render();
-} else if (form) {
-  // The static page (an old sign-in with no employee id): the modal still opens
-  // from its buttons, so stop Send request from reloading the page and losing
-  // what was typed.
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    showToast("Send request isn't available in this demo.", "info");
-  });
 }
+// No else: without an employee record the guard has already signed the session out (see the top).

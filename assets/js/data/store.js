@@ -593,6 +593,29 @@ export function updateUser(actorUserId, id, changes = {}) {
   return changeUser(actor, id, changes);
 }
 
+// My profile's Save changes (round Demo buttons part 1): a person changes their
+// own contact details and emergency contact, and nothing else. Only these
+// fields, only on their own record, with profile:edit-own (every role has it);
+// anything else, or anyone else's record, is refused and nothing is saved.
+// HR and Admins edit people through updateUser() (users:edit), as before.
+export const OWN_CONTACT_FIELDS = ["phone", "personalEmail", "city", "address", "emergencyContactName", "emergencyContactRelation", "emergencyContactPhone"];
+// The browser's own rule for <input type="email"> (the HTML standard's), which user-form.js relies on for the work email.
+const EMAIL = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+export function updateOwnContact(actorUserId, id, changes = {}) {
+  const actor = actorWith(actorUserId, "profile:edit-own");
+  if (!actor) return fail("You can't change your profile.");
+  if (actor.id !== id) return fail("You can only change your own contact details.");
+  const other = Object.keys(changes).find((key) => !OWN_CONTACT_FIELDS.includes(key));
+  if (other) return fail("Only your contact details and emergency contact can be changed here.", other);
+  const values = Object.fromEntries(Object.entries(changes).map(([key, value]) => [key, String(value ?? "").trim()]));
+  if (values.personalEmail && !EMAIL.test(values.personalEmail)) return fail("Enter a valid email address, like name@example.com.", "personalEmail");
+  const box = loadUsers();
+  const record = box.records.find((u) => u.id === id);
+  Object.assign(record, values);
+  return commit(USERS_KEY, box, record);
+}
+
 // updateUser()'s checks and save, for an acting person already checked
 // (deactivateUser() and reactivateUser() come through here too).
 function changeUser(actor, id, changes = {}) {
