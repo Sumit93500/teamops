@@ -5,7 +5,7 @@ import Shell from "../shell/Shell.jsx";
 
 export default function Frame({ page, children }) {
   const meta = META[page];
-  if (meta?.shell) return <Shell page={page} title={meta.title}>{children}</Shell>;
+  if (meta?.shell) return <Shell page={page} title={meta.title} back={meta.back}>{children}</Shell>;
   return (
     <div className="app">
       <div className="main">

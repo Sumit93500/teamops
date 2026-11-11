@@ -21,7 +21,11 @@ function pageMeta() {
         for (const file of fs.readdirSync(dir).filter((f) => f.endsWith(".html"))) {
           const html = fs.readFileSync(path.join(dir, file), "utf8");
           this.addWatchFile(path.join(dir, file));
+          // the breadcrumb's last link, from the pages folder: where the phone's back arrow goes (ui/phone.js addBack)
+          const crumbs = html.match(/<ol class="breadcrumb[^"]*"[\s\S]*?<\/ol>/)?.[0] ?? "";
+          const lastHref = [...crumbs.matchAll(/<a href="([^"]+)"/g)].at(-1)?.[1] ?? null;
           meta[`${area}/${file}`] = {
+            back: lastHref ? path.posix.normalize(`${area}/${lastHref}`) : null,
             title: html.match(/class="topbar__left">[\s\S]*?<strong>([^<]*)<\/strong>/)?.[1].replace(/&amp;/g, "&") ?? null,
             docTitle: html.match(/<title>([^<]*)<\/title>/)?.[1].replace(/&amp;/g, "&") ?? "OfficeOS",
             shell: html.includes('class="sidebar"'),

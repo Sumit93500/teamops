@@ -3,13 +3,29 @@
 // hold: the shell is drawn whole, so there is nothing to wait for). The drawer (820px and below) opens from the menu button,
 // as ui/menu-toggle.js: focus moves into it; a link in it, a click outside (which only closes) or Esc closes it.
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMedia } from "./media.js";
 import Sidebar from "./Sidebar.jsx";
+
+// Closes the bell's list and the card if the old module has been loaded (it is only loaded by the bell's first click).
+let cardModule = null;
+const closeCards = () => {
+  if (!document.getElementById("bell-panel") && !document.getElementById("approval-card")) return;
+  (cardModule ??= import("../../../assets/js/ui/approval-card.js")).then((m) => { m.closeBellPanel(false); m.closeApprovalCard(); });
+};
 import Topbar from "./Topbar.jsx";
 import "./solid-header.css";
 
-export default function Shell({ page, title, children }) {
+// The pages that are a step inside another page (ui/phone.js DETAIL_PAGES): at 560px and under the back arrow takes the
+// menu button's place and goes to the breadcrumb's parent (from the page's HTML, at build time).
+const DETAIL_PAGES = ["requests/claim-expense.html", "users/user-form.html", "users/user-profile.html", "access/role-editor.html", "leave/apply-leave.html", "payroll/payslip-view.html"];
+
+export default function Shell({ page, title, back, children }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const toggleRef = useRef(null);
+  const navigate = useNavigate();
+  const phone = useMedia("(max-width: 560px)");
+  const backTo = phone && DETAIL_PAGES.includes(page) ? back : null;
 
   useLayoutEffect(() => {
     const html = document.documentElement;
@@ -17,6 +33,22 @@ export default function Shell({ page, title, children }) {
     html.setAttribute("data-nav-drawn", "");
     html.setAttribute("data-phone-ready", "");
   }, []);
+  useLayoutEffect(() => { document.documentElement.toggleAttribute("data-has-back", Boolean(backTo)); }, [backTo]);
+
+  // The bell's list and card (old ui/approval-card.js, drawn on <body>): their inbox links go through the router, and a
+  // new page closes them.
+  useEffect(() => {
+    const onClick = (e) => {
+      const a = e.target.closest("#bell-panel a[href], #approval-card a[href]");
+      if (!a || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      closeCards();
+      navigate(new URL(a.href, window.location.href).pathname);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [navigate]);
+  useEffect(() => () => closeCards(), [page]);
 
   useEffect(() => {
     if (!drawerOpen) return undefined;
@@ -37,7 +69,7 @@ export default function Shell({ page, title, children }) {
     <div className="app">
       <Sidebar page={page} drawerOpen={drawerOpen} closeDrawer={() => setDrawerOpen(false)} />
       <div className="main">
-        <Topbar title={title} drawerOpen={drawerOpen} toggleDrawer={() => setDrawerOpen((o) => !o)} toggleRef={toggleRef} />
+        <Topbar title={title} back={backTo} drawerOpen={drawerOpen} toggleDrawer={() => setDrawerOpen((o) => !o)} toggleRef={toggleRef} />
         <main className="content" id="main" data-page={page}>{children}</main>
       </div>
     </div>

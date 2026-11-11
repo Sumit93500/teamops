@@ -4,6 +4,8 @@
 // initials from the session. A dropdown opens on its button, closes on a click elsewhere or Esc (focus back on its button).
 // The bell: whoever may open the Approvals Inbox gets "Waiting for you: n" and the dot above 0; it opens the inbox until
 // round 3 brings the approval card. Anyone else keeps the old placeholder ("Notifications isn't available in this demo.").
+// Round 3: the bell opens the old list of what waits and its read-only cards; the phone's back arrow (a detail page, 560px
+// and under) goes to the breadcrumb's parent, as ui/phone.js addBack.
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { THEMES, ACCENTS, applyTheme, applyAccent, savedTheme, onAppearanceChange } from "../../../assets/js/ui/theme.js";
@@ -63,6 +65,7 @@ function Bell() {
   const { userId, role } = useSession();
   const navigate = useNavigate();
   const showToast = useToast();
+  const loading = useRef(false);
   const inbox = useData(() => canOpenPage(INBOX), [userId, role?.key]);
   const n = useData(() => waitingCount(userId, role?.key), [userId, role?.key]);
   if (!inbox) {
@@ -71,14 +74,28 @@ function Bell() {
         onClick={(e) => { e.preventDefault(); showToast("Notifications isn't available in this demo.", "info"); }}><Icon d={BELL} /></button>
     );
   }
+  // The list of what waits, and each item's read-only card: the old ui/approval-card.js, unchanged, loaded on the first
+  // click as before; it draws outside the React tree (on <body>) and only sets the bell's aria-expanded/-controls.
+  // If it can't load, the inbox (its old fallback). A second click while it loads is ignored.
+  const onClick = (e) => {
+    const bell = e.currentTarget;
+    if (loading.current) return;
+    loading.current = true;
+    import("../../../assets/js/ui/approval-card.js")
+      .then((card) => card.toggleBellPanel(bell))
+      .catch(() => navigate(pageUrl(INBOX)))
+      .finally(() => { loading.current = false; });
+  };
   return (
     <button className="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-haspopup="dialog" aria-expanded="false"
       aria-label={`Waiting for you: ${n}`} title={`Waiting for you: ${n}`} data-waiting={n > 0 ? "" : undefined}
-      onClick={() => navigate(pageUrl(INBOX))}><Icon d={BELL} /></button>
+      onClick={onClick}><Icon d={BELL} /></button>
   );
 }
 
-export default function Topbar({ title, drawerOpen, toggleDrawer, toggleRef }) {
+const BACK_ICON = <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>;
+
+export default function Topbar({ title, back, drawerOpen, toggleDrawer, toggleRef }) {
   const { user, session } = useSession();
   const navigate = useNavigate();
   const [menu, setMenu] = useState(null);   // "theme" | "account" | null
@@ -103,6 +120,7 @@ export default function Topbar({ title, drawerOpen, toggleDrawer, toggleRef }) {
 
   return (
     <header className={`topbar${searching ? " is-searching" : ""}`}>
+      {back && <Link className="topbar__back" to={pageUrl(back)} aria-label="Back">{BACK_ICON}</Link>}
       <button className="topbar__menu-toggle" type="button" aria-label={drawerOpen ? "Close menu" : "Open menu"} aria-controls="sidebar"
         aria-expanded={String(drawerOpen)} ref={toggleRef} onClick={toggleDrawer}>
         <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
