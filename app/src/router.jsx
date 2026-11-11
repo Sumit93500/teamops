@@ -14,6 +14,8 @@ import FinanceDashboard from "./pages/FinanceDashboard.jsx";
 import MarkAttendance from "./pages/MarkAttendance.jsx";
 import MyAttendance from "./pages/MyAttendance.jsx";
 import SamplePage from "./pages/SamplePage.jsx";
+import TeamAttendance from "./pages/TeamAttendance.jsx";
+import Regularization from "./pages/Regularization.jsx";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
@@ -26,6 +28,8 @@ const PORTED = {
   "attendance/mark-attendance.html": MarkAttendance,
   "attendance/my-attendance.html": MyAttendance,
   "attendance/shifts.html": () => <SamplePage page="attendance/shifts.html" />,
+  "attendance/team-attendance.html": TeamAttendance,
+  "attendance/regularization.html": Regularization,
 };
 
 function Home() {
