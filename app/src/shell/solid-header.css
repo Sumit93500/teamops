@@ -1,0 +1,40 @@
+/* The solid Eazy-style header (14D's J-D5, React round 2): the topbar is the base accent (the role's colour, or the person's
+   chosen accent) in BOTH themes, with white text and icons and a white bell dot. Dark mode lightens --color-primary; the bar
+   keeps --primary-base, so white keeps the light theme's contrast (5.0 to 7.6 across the roles and accents, 14D section 6).
+   Open menus and the search results keep their own colours. App-only: assets/css is unchanged. */
+.topbar {
+  --bar-text: #ffffff;
+  background: var(--primary-base);
+  border-bottom-color: transparent;
+  color: var(--bar-text);
+}
+.topbar .topbar__left,
+.topbar .topbar__left strong,
+.topbar .topbar__icon-btn,
+.topbar .topbar__menu-toggle { color: var(--bar-text); }
+.topbar .topbar__icon-btn:hover,
+.topbar .topbar__menu-toggle:hover { background: rgb(255 255 255 / 0.14); color: var(--bar-text); }
+.topbar .topbar__icon-btn:focus-visible,
+.topbar .topbar__menu-toggle:focus-visible,
+.topbar .dropdown > button:focus-visible { outline-color: var(--bar-text); }
+
+/* the search box: a white field on the bar, its own text colours inside */
+.topbar .topbar__search { background: #ffffff; border-color: transparent; color: #475467; }
+.topbar .topbar__search input { color: #101828; }
+.topbar .topbar__search input::placeholder { color: #475467; }
+.topbar .topbar__search kbd { color: #475467; border-color: #d0d5dd; background: #f9fafb; }
+
+/* in dark, a white field glares on the dark page: the field takes the page's surface and its usual colours */
+[data-theme="dark"] .topbar .topbar__search { background: var(--color-surface); color: var(--color-text-muted); }
+[data-theme="dark"] .topbar .topbar__search input { color: var(--color-text); }
+[data-theme="dark"] .topbar .topbar__search input::placeholder { color: var(--color-text-muted); }
+[data-theme="dark"] .topbar .topbar__search kbd { color: var(--color-text-muted); border-color: var(--color-border); background: transparent; }
+
+/* the avatar: a white disc with the accent's initials */
+.topbar .avatar { background: #ffffff; color: var(--primary-base); }
+
+/* the bell's dot: white on the bar (red is 1.05 to 1.35 against it) */
+.topbar .topbar__icon-btn--dot[data-waiting]::after { background: #ffffff; box-shadow: 0 0 0 2px var(--primary-base); }
+
+/* what opens from the bar keeps the page's colours */
+.topbar .dropdown__menu { color: var(--color-text); }
