@@ -10,6 +10,18 @@
 // day off, today still filling in) adds marks: [{ ... }], also in label order,
 // and a dated chart adds period. Everything is read through the stores' own
 // functions; no rule is decided here.
+//
+// Every chart also says whether it has anything to show (round Empty ranges):
+//   empty        true when no point carries a value for this range or list
+//   emptyReason  why, when empty: "nobody-expected" (every day in range had
+//                nobody expected at work: days off, before joining, or before
+//                records began) or "no-records" (nothing on record to count);
+//                null when not empty
+// Labels and series are kept either way, so a chart can still draw its axis;
+// a page draws "No data in this range." instead (ui/chart.js showNoData).
+// What "empty" means is each function's own, written next to it. A zero that
+// is a real count isn't empty on its own: a range is empty only when every
+// point is.
 
 import { ATTENDANCE_RULES, toMinutes, nowMinutes, summaryOfDays } from "./attendance-store.js";
 import { addDays, dayOffChecker } from "./holidays.js";
@@ -22,6 +34,9 @@ import { inventoryTotals } from "./inventory-store.js";
 
 const series = (name, values) => ({ name, values });
 const percentOf = (part, whole) => (whole ? Math.round((part / whole) * 100) : null);
+const sum = (values) => values.reduce((total, v) => total + (v ?? 0), 0);
+// The two empty fields, from whether the chart is empty and why.
+const emptyAs = (empty, reason) => ({ empty, emptyReason: empty ? reason : null });
 
 // A chart's values by series name ([] when it has no such series).
 export const valuesOf = (chart, name) => chart.series.find((s) => s.name === name)?.values ?? [];
@@ -30,9 +45,11 @@ export const valuesOf = (chart, name) => chart.series.find((s) => s.name === nam
 // (summaryRange()'s days, oldest first), up to today. Rate is present out of
 // expected, in percent (null when nobody was expected); marks say whether the
 // day was off for anyone and whether it is today while the shift is still on.
+// Empty when nobody was expected on any day of the range.
 export function attendanceRateChart(range, today) {
   const todayOpen = nowMinutes() < toMinutes(ATTENDANCE_RULES.shiftEnd);
   return {
+    ...emptyAs(range.every((s) => !s.expected), "nobody-expected"),
     title: "Attendance rate",
     unit: "%",
     period: { from: range[0]?.date ?? today, to: today, todayOpen },
@@ -47,12 +64,14 @@ export function attendanceRateChart(range, today) {
 }
 
 // The admin dashboard's headcount: active people per department, in the
-// departments' order (headcountByDepartment(), the sidebar's count).
+// departments' order (headcountByDepartment(), the sidebar's count). Empty
+// with nobody active in any department.
 export function headcountChart() {
   const counts = headcountByDepartment();
   const departments = getAllDepartments();
   const values = departments.map((d) => counts[d.code] ?? 0);
   return {
+    ...emptyAs(sum(values) === 0, "no-records"),
     title: "Headcount by department",
     unit: "employees",
     labels: departments.map((d) => d.name),
@@ -75,9 +94,14 @@ function dayKind(day) {
 
 // The employee dashboard's working hours: one point per day of days (one
 // person's rangeFor() days, oldest first), up to today, in minutes worked
-// (null when none were recorded).
+// (null when none were recorded). Empty when no day has anything of the
+// person's to draw: only days off, days with no record, before joining or
+// after leaving, and today before anything is in. Hours, leave, an absence
+// or a missing check-out on any day is something to show.
+const HOURS_DATA = ["worked", "in-progress", "on-leave", "incomplete", "absent"];
 export function hoursChart(days, today) {
   return {
+    ...emptyAs(!days.some((d) => HOURS_DATA.includes(dayKind(d))), "no-records"),
     title: "Working hours",
     unit: "minutes",
     period: { from: days[0]?.date ?? today, to: today },
@@ -96,11 +120,13 @@ export function hoursChart(days, today) {
 
 // One person's leave balance, every leave type in policy order (balanceFor()):
 // Allowance is null for a type with no limit (unpaid), and so is Left. marks
-// say what each allowance is counted over ("year" or "month").
+// say what each allowance is counted over ("year" or "month"). Never empty:
+// the policy's allowances are always there to show.
 export function leaveBalanceChart(userId, year, month) {
   const balance = balanceFor(userId, year, month);
   const of = (field) => LEAVE_TYPES.map((type) => balance[type][field]);
   return {
+    ...emptyAs(false, null),
     title: "Leave balance",
     unit: "days",
     labels: [...LEAVE_TYPES],
@@ -118,12 +144,14 @@ export function leaveRequestsChart(today, days) {
   const perDay = new Map();
   allRequests().forEach((r) => perDay.set(r.appliedOn, (perDay.get(r.appliedOn) ?? 0) + 1));
   const labels = Array.from({ length: days }, (_, i) => addDays(from, i));
+  const values = labels.map((date) => perDay.get(date) ?? 0);
   return {
+    ...emptyAs(sum(values) === 0, "no-records"),   // empty: no request sent on any day of the range
     title: "Leave requests sent per day",
     unit: "requests",
     period: { from, to: today },
     labels,
-    series: [series("Requests", labels.map((date) => perDay.get(date) ?? 0))],
+    series: [series("Requests", values)],
     marks: labels.map((date) => ({ off: isOff(date) })),
   };
 }
@@ -132,11 +160,13 @@ export function leaveRequestsChart(today, days) {
 // in rupees; labels are the category keys.
 export function expenseSpendChart(claims) {
   const spent = expenseTotals(claims.filter((c) => c.status === "approved" || c.status === "paid")).byCategory;
+  const values = EXPENSE_CATEGORIES.map((k) => spent[k].amount);
   return {
+    ...emptyAs(sum(values) === 0, "no-records"),   // empty: nothing approved or paid in any category
     title: "Spend by category",
     unit: "₹",
     labels: [...EXPENSE_CATEGORIES],
-    series: [series("Approved and paid", EXPENSE_CATEGORIES.map((k) => spent[k].amount))],
+    series: [series("Approved and paid", values)],
   };
 }
 
@@ -152,6 +182,7 @@ export function payrollByDepartmentChart(run) {
     gross.get(code).amount += row.gross;
   }
   return {
+    ...emptyAs(sum([...gross.values()].map((g) => g.amount)) === 0, "no-records"),   // empty: no gross pay in any department
     title: "Gross pay by department",
     unit: "₹",
     period: { month: run.month },
@@ -165,11 +196,13 @@ export function payrollByDepartmentChart(run) {
 // rupees; labels are the category keys.
 export function inventoryValueChart(items) {
   const { byCategory } = inventoryTotals(items);
+  const values = INVENTORY_CATEGORIES.map((k) => byCategory[k].value);
   return {
+    ...emptyAs(sum(values) === 0, "no-records"),   // empty: no stock value in any category
     title: "Value by category",
     unit: "₹",
     labels: [...INVENTORY_CATEGORIES],
-    series: [series("Value", INVENTORY_CATEGORIES.map((k) => byCategory[k].value))],
+    series: [series("Value", values)],
   };
 }
 
@@ -180,6 +213,7 @@ export function monthAttendanceChart(done) {
   const count = (status) => done.filter((d) => d.status === status).length;
   const labels = ["present", "late", ...(count("half-day") ? ["half-day"] : []), "on-leave", "absent"];
   return {
+    ...emptyAs(done.length === 0, "no-records"),   // empty: no working day of the month has finished yet
     title: "This month so far",
     unit: "days",
     labels,
@@ -193,6 +227,7 @@ export function monthAttendanceChart(done) {
 export function taxRegimeChart(run) {
   const withSalary = run.rows.filter((r) => r.regime);
   return {
+    ...emptyAs(withSalary.length === 0, "no-records"),   // empty: nobody in the run has a salary (a regime)
     title: "Tax regime",
     unit: "employees",
     labels: ["new", "old"],
@@ -210,6 +245,7 @@ export function departmentPresenceChart(date, rows, scope) {
   const departments = getAllDepartments().filter((d) => scope === null || rows.some((r) => r.user?.department === d.code));
   const sums = departments.map((d) => summaryOfDays(date, rows.filter((r) => r.user?.department === d.code).map((r) => r.day)));
   return {
+    ...emptyAs(sums.every((s) => !s.expected), "nobody-expected"),   // empty: nobody expected in any department on the date
     title: "Present by department",
     unit: "%",
     period: { date },

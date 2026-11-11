@@ -511,6 +511,15 @@ export function rangeFor(userId, from, to) {
   return days;
 }
 
+// The first day attendance was recorded ("YYYY-MM-DD"): any day before it is
+// "no-data" for everyone (the same date deriveDay() compares with). null
+// when nothing is on record (round Empty ranges: the earliest day a range can
+// have data; team attendance's date input starts there).
+export function recordsStart() {
+  const start = attendance.getAll().reduce((min, r) => (r.date < min ? r.date : min), "9999-12-31");   // context()'s trackingStart
+  return start === "9999-12-31" ? null : start;
+}
+
 // teamFor() with each person's Monday to Friday, reading storage once:
 // [{ day, week: [Mon..Fri days] }], by name.
 export function teamWeekFor(date) {

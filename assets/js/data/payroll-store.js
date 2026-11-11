@@ -25,7 +25,7 @@ import { getUser, getAllUsers, joiningDate, leavingDate, awayOn, approvedMonthCo
 import { permissionsOf } from "../config/roles.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker, isValidDate } from "./holidays.js";
 import { allRequests, PAST_DAY_WINDOW } from "./leave-store.js";
-import { monthFor, allRegularizations, ATTENDANCE_RULES } from "./attendance-store.js";
+import { monthFor, allRegularizations, ATTENDANCE_RULES, recordsStart } from "./attendance-store.js";
 import { computePay, taxYearMonths } from "./payroll.js";
 
 // ---------- seed ----------
@@ -446,6 +446,30 @@ export function storedRun(year, month) {
   const m = Number(month);
   if (!validMonth(y, m)) return null;
   return storedRuns().find((r) => r.month === monthKey(y, m)) ?? null;
+}
+
+// Whether a month's run has data (round Empty ranges), for payroll-run.html:
+//   { empty, emptyReason, firstMonth, currentMonth }
+// emptyReason "after-current" for a month after the current payroll month
+// (runMonth(today): nothing worked yet), "before-records" for one wholly
+// before attendance records began (recordsStart(); nobody's pay can be
+// worked out); null when not empty. A stored (prepared or approved) run is
+// never empty. firstMonth and currentMonth are "YYYY-MM" (firstMonth null with
+// nothing on record), so the page can say which months have runs. null for a
+// month that isn't one.
+export function runMonthState(year, month, today) {
+  const y = Number(year);
+  const m = Number(month);
+  const current = runMonth(today);
+  if (!validMonth(y, m) || !current) return null;
+  const asked = monthKey(y, m);
+  const currentMonth = monthKey(current.year, current.month);
+  const firstMonth = recordsStart()?.slice(0, 7) ?? null;
+  const state = (emptyReason) => ({ empty: emptyReason !== null, emptyReason, firstMonth, currentMonth });
+  if (storedRun(y, m)) return state(null);
+  if (asked > currentMonth) return state("after-current");
+  if (firstMonth === null || asked < firstMonth) return state("before-records");
+  return state(null);
 }
 
 // Why a month can't be prepared or approved yet, as phrases ([] when it can):
