@@ -1,0 +1,103 @@
+// Approve and Reject (ui/leave-decision.js createDecisionFlow), shared by the pages that decide requests (the HR dashboard
+// first; the approval pages later). Approve asks "Approve this request?" and the request's line, now in the in-app dialog
+// (round 4); Reject opens a small modal that needs a reason (the shared Modal: its focus rules and the unsaved-changes guard,
+// as ui/modal.js gave the old one). Each goes through the kind's decide function as the signed-in person, shows the old
+// toasts (fixed text; a store error only when no fixed failure text is set), then bumps the data bus, so the page, the
+// sidebar's count and the bell redraw from the stores.
+//   const leave = useDecision(LEAVE_FLOW);  leave.approve(request); leave.reject(request); render {leave.modal}
+import { useState } from "react";
+import { decideLeave } from "../../../assets/js/data/leave-store.js";
+import { decideRegularization } from "../../../assets/js/data/attendance-store.js";
+import { requestTitle, formatDay, nameOf } from "../../../assets/js/ui/leave-view.js";
+import { issueLabel } from "../../../assets/js/ui/attendance-view.js";
+import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
+import { bump } from "../data/bus.js";
+import { useToast } from "../ui/Toast.jsx";
+import { useConfirm } from "./Confirm.jsx";
+import Modal from "./Modal.jsx";
+
+export const LEAVE_FLOW = {
+  decide: decideLeave,
+  describe: (request) => `${nameOf(request.userId)}: ${requestTitle(request)}`,
+  noteId: "reject-note",
+  labels: {
+    title: "Reject leave request",
+    approved: (result) => (result.record.status === "approved" ? "Leave request approved." : "Approved. It now goes to HR or an Admin."),
+    rejected: "Leave request rejected.",
+  },
+};
+export const CORRECTION_FLOW = {
+  decide: decideRegularization,
+  describe: (r) => `${nameOf(r.userId)}: ${issueLabel(r)}, ${formatDay(r.date)}, corrected to ${r.time}`,
+  noteId: "reject-correction-note",
+  labels: {
+    title: "Reject correction request",
+    approved: (result) => (result.record.status === "approved" ? "Correction approved. The attendance record is updated." : "Approved. It now goes to HR or an Admin."),
+    rejected: "Correction request rejected.",
+    approveFailed: "Couldn't approve the request. It may already have been decided, or the attendance record has changed.",
+    rejectFailed: "Couldn't reject the request. It may already have been decided.",
+  },
+};
+
+const decider = () => ({ id: getCurrentUserId(), role: getCurrentRole()?.key });
+
+export function useDecision(flow) {
+  const showToast = useToast();
+  const confirm = useConfirm();
+  const [rejecting, setRejecting] = useState(null);   // { request, onDone }
+  const [note, setNote] = useState("");
+  const [error, setError] = useState(null);
+  const failure = (fixed, result) => fixed ?? result.error;
+  const done = (result, onDone) => { bump(); onDone?.(result); };
+
+  async function approve(request, onDone) {
+    if (!(await confirm({ message: `Approve this request?\n${flow.describe(request)}`, confirmLabel: "Approve" }))) return;
+    const { id, role } = decider();
+    const result = flow.decide(request.id, id, role, "approve");
+    if (result.ok) showToast(typeof flow.labels.approved === "function" ? flow.labels.approved(result) : flow.labels.approved, "success");
+    else showToast(failure(flow.labels.approveFailed, result), "danger");
+    done(result, onDone);
+  }
+  function reject(request, onDone) { setNote(""); setError(null); setRejecting({ request, onDone }); }
+  function submit(e) {
+    e.preventDefault();
+    const { request, onDone } = rejecting;
+    const { id, role } = decider();
+    const result = flow.decide(request.id, id, role, "reject", note);
+    if (!result.ok && result.field === "note") { setError(result.error); document.getElementById(flow.noteId)?.focus(); return; }
+    setRejecting(null);
+    if (!result.ok) showToast(failure(flow.labels.rejectFailed, result), "danger");
+    else showToast(flow.labels.rejected, "success");
+    done(result, onDone);
+  }
+
+  const modal = (
+    <Modal open={Boolean(rejecting)} onClose={() => setRejecting(null)} title={flow.labels.title} desc={rejecting ? flow.describe(rejecting.request) : ""} size="sm"
+      footer={<>
+        <button className="btn" type="button" data-modal-close onClick={() => setRejecting(null)}>Cancel</button>
+        <button className="btn btn--danger" type="submit" form={`${flow.noteId}-form`}>{flow.labels.submit ?? "Reject request"}</button>
+      </>}>
+      <form noValidate onSubmit={submit} id={`${flow.noteId}-form`}>
+        <div className="form">
+          <div className="form-field">
+            <label className="form-label form-label--required" htmlFor={flow.noteId}>Reason</label>
+            <textarea className="textarea" id={flow.noteId} required placeholder={flow.labels.placeholder ?? "The employee sees this note"} value={note}
+              aria-describedby={error ? `${flow.noteId}-error` : undefined} onChange={(e) => { setNote(e.target.value); setError(null); }} />
+            {error && <span className="form-error" id={`${flow.noteId}-error`}>{error}</span>}
+          </div>
+        </div>
+      </form>
+    </Modal>
+  );
+  return { approve, reject, modal };
+}
+
+// Reject + Approve for one pending request (leave-decision.js decisionButtons).
+export function DecisionButtons({ onReject, onApprove, permission }) {
+  return (
+    <div className="btn-group">
+      <button className="btn btn--sm" type="button" data-permission={permission} onClick={onReject}>Reject</button>
+      <button className="btn btn--primary btn--sm" type="button" data-permission={permission} onClick={onApprove}>Approve</button>
+    </div>
+  );
+}
