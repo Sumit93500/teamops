@@ -15,7 +15,7 @@ const BACK_ICON = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><pat
 const DETAIL_PAGES = ["requests/claim-expense.html", "users/user-form.html", "users/user-profile.html", "access/role-editor.html", "leave/apply-leave.html", "payroll/payslip-view.html"];
 
 const headText = (th) => [...th.childNodes].filter((n) => !n.classList?.contains("table__sort-label")).map((n) => n.textContent).join("").replace(/[▲▼]/g, "").replace(/\s+/g, " ").trim();
-const isActions = (th) => th.classList.contains("table__actions") || th.classList.contains("table__check") || headText(th) === "Actions" || headText(th) === "";
+const isActions = (th) => th.classList.contains("table__actions") || headText(th) === "Actions" || headText(th) === "";
 
 // Which part of the card each column is: primary, status, key, rest, actions. The status is named, not
 // guessed from a badge: Type and Role wear badges too. Columns people look for come first among the keys.
