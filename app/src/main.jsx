@@ -6,6 +6,7 @@ import { RouterProvider } from "react-router-dom";
 import "../../assets/css/style.css";
 import { loadTheme } from "../../assets/js/ui/theme.js";
 import { ToastProvider } from "./ui/Toast.jsx";
+import { ConfirmProvider } from "./components/Confirm.jsx";
 import { router } from "./router.jsx";
 
 loadTheme();
@@ -13,7 +14,9 @@ loadTheme();
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ToastProvider>
-      <RouterProvider router={router} />
+      <ConfirmProvider>
+        <RouterProvider router={router} />
+      </ConfirmProvider>
     </ToastProvider>
   </StrictMode>,
 );

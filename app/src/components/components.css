@@ -1,0 +1,23 @@
+/* Round 4's components: what assets/css doesn't already draw. App-only; assets/css is unchanged. */
+
+/* The chart's value readout at every width (phone.css shows it at 560px and under only). */
+.chart__readout.chart__readout--all { display: block; margin-top: 6px; min-height: 20px; font-size: var(--text-sm); color: var(--color-text-muted); }
+.chart__col { cursor: pointer; }
+.chart__col.is-selected .chart__bar { outline: 2px solid var(--color-text); outline-offset: 1px; }
+.chart__col:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+
+/* The non-colour cue: a pattern over each bar whose meaning was colour alone. */
+.chart__bar--leave { background-image: repeating-linear-gradient(135deg, rgb(255 255 255 / 0.55) 0 2px, transparent 2px 6px); }
+.chart__bar--absent { background-image: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.6) 0 2px, transparent 2px 5px); }
+.chart__bar--incomplete { background-image: radial-gradient(circle, rgb(255 255 255 / 0.7) 1px, transparent 1.5px); background-size: 5px 5px; }
+.chart__bar--muted { background-image: repeating-linear-gradient(45deg, rgb(0 0 0 / 0.12) 0 2px, transparent 2px 6px); }
+[data-theme="dark"] .chart__bar--muted { background-image: repeating-linear-gradient(45deg, rgb(255 255 255 / 0.18) 0 2px, transparent 2px 6px); }
+
+/* The in-app confirm: the question in the title's size, its further lines under it. */
+.confirm-dialog .confirm-dialog__question { margin: 0 0 var(--space-2); white-space: pre-line; }
+.confirm-dialog .modal__body { padding-top: var(--space-6, 24px); }
+.confirm-dialog .modal__desc { margin: 0; }
+
+/* The gallery's own layout (not a product page). */
+.gallery__section { display: grid; gap: var(--space-3); }
+.gallery__row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }

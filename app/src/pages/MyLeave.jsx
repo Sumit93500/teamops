@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import Frame from "../ui/Frame.jsx";
 import Pagination from "../ui/Pagination.jsx";
 import { useToast } from "../ui/Toast.jsx";
+import { useConfirm } from "../components/Confirm.jsx";
 import { StatusBadge, PendingSteps } from "../ui/leave.jsx";
 import { usePhone, cardColumns, MoreButton } from "../ui/phone.jsx";
 import { useData, useAction, useSession, useCan } from "../data/hooks.js";
@@ -103,9 +104,10 @@ export default function MyLeave() {
   });
 
   const cancel = useAction(cancelLeave);
-  // window.confirm stays until the confirm dialog moves over (round 4), as the old page asks.
-  function cancelRequest(request) {
-    if (!window.confirm(`Cancel your ${typeLabel(request.type).toLowerCase()} request for ${requestDates(request)}?`)) return;
+  // The old page's question, in the in-app dialog (round 4) instead of window.confirm.
+  const confirm = useConfirm();
+  async function cancelRequest(request) {
+    if (!(await confirm({ message: `Cancel your ${typeLabel(request.type).toLowerCase()} request for ${requestDates(request)}?`, confirmLabel: "Cancel request", cancelLabel: "Keep it", danger: true }))) return;
     const result = cancel(request.id, userId);
     if (!result.ok) showToast(result.error, "danger");
     else showToast("Leave request cancelled.", "success");

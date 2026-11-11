@@ -6,6 +6,7 @@ import RequireRoute from "./RequireRoute.jsx";
 import NotPorted from "./NotPorted.jsx";
 import MyLeave from "./pages/MyLeave.jsx";
 import PublicPage from "./pages/PublicPage.jsx";
+import Gallery from "./pages/Gallery.jsx";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
@@ -26,6 +27,7 @@ function pageElement(page) {
 
 export const router = createBrowserRouter([
   { path: "/", element: <Home /> },
+  { path: "/gallery", element: <Gallery /> },   // round 4's component gallery (not a product page)
   ...ALL_PAGES.map((page) => ({ path: pageUrl(page), element: <RequireRoute page={page}>{pageElement(page)}</RequireRoute> })),
   { path: "*", element: <Navigate to={pageUrl("errors/404.html")} replace /> },
 ]);
