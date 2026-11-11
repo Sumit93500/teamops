@@ -11,6 +11,9 @@ import AdminDashboard from "./pages/AdminDashboard.jsx";
 import EmployeeDashboard from "./pages/EmployeeDashboard.jsx";
 import HrDashboard from "./pages/HrDashboard.jsx";
 import FinanceDashboard from "./pages/FinanceDashboard.jsx";
+import MarkAttendance from "./pages/MarkAttendance.jsx";
+import MyAttendance from "./pages/MyAttendance.jsx";
+import SamplePage from "./pages/SamplePage.jsx";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
@@ -20,6 +23,9 @@ const PORTED = {
   "dashboard/employee.html": EmployeeDashboard,
   "dashboard/hr.html": HrDashboard,
   "dashboard/finance.html": FinanceDashboard,
+  "attendance/mark-attendance.html": MarkAttendance,
+  "attendance/my-attendance.html": MyAttendance,
+  "attendance/shifts.html": () => <SamplePage page="attendance/shifts.html" />,
 };
 
 function Home() {
