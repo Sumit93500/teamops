@@ -38,6 +38,38 @@ export function cardColumns(heads, phone) {
   };
 }
 
+// The same marks on a table whose rows are DOM nodes (ui/Nodes.jsx), as ui/phone.js labelTable() puts them (round 6): on a
+// phone, data-cards and the roles, each cell's label and part, Details in the last key cell; off a phone, all taken away.
+export function labelTable(table, phone) {
+  if (!table) return;
+  const heads = [...(table.querySelectorAll("thead tr")[table.querySelectorAll("thead tr").length - 1]?.children ?? [])];
+  const rows = [...table.querySelectorAll("tbody tr")];
+  if (!phone || heads.length < SMALLEST_CARD_TABLE) {
+    table.removeAttribute("data-cards"); if (table.getAttribute("role") === "table") table.removeAttribute("role");
+    heads.forEach((th) => th.removeAttribute("role"));
+    rows.forEach((row) => { row.removeAttribute("role"); row.classList.remove("is-open"); row.querySelector(".table__more")?.remove();
+      [...row.children].forEach((td) => { delete td.dataset.label; delete td.dataset.cardPart; td.removeAttribute("role"); }); });
+    return;
+  }
+  const texts = heads.map((th) => th.textContent.replace(/[▲▼]/g, "").replace(/\s+/g, " ").trim());
+  const kinds = cellKinds(texts.map((t, i) => (heads[i].classList.contains("table__actions") ? "Actions" : t)));
+  table.dataset.cards = ""; table.setAttribute("role", "table");
+  heads.forEach((th) => th.setAttribute("role", "columnheader"));
+  rows.forEach((row) => {
+    if (row.children.length !== heads.length) return;   // a "no results" row spans the table
+    row.setAttribute("role", "row");
+    [...row.children].forEach((td, i) => { td.dataset.label = texts[i]; td.dataset.cardPart = kinds[i]; td.setAttribute("role", "cell"); });
+    if (kinds.includes("rest") && !row.querySelector(".table__more")) {
+      const more = document.createElement("button");
+      more.type = "button"; more.className = "table__more";
+      more.setAttribute("aria-label", "Details"); more.setAttribute("aria-expanded", "false");
+      more.addEventListener("click", () => more.setAttribute("aria-expanded", String(row.classList.toggle("is-open"))));
+      const keys = row.querySelectorAll('[data-card-part="key"]');
+      keys[keys.length - 1].append(more);
+    }
+  });
+}
+
 // The Details toggle: no text (css shows its aria-label), opens the row's other cells.
 export function MoreButton({ open, onToggle }) {
   return <button type="button" className="table__more" aria-label="Details" aria-expanded={String(open)} onClick={onToggle} />;

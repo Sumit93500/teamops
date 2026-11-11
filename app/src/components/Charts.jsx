@@ -11,14 +11,21 @@ import { shortDate, dayOfMonth } from "../../../assets/js/ui/leave-view.js";
 import { usePhone } from "../ui/phone.jsx";
 import "./components.css";
 
-export function ColumnChart({ days, label }) {
+// The empty-range message in a chart's place (rer's ui/chart.js showNoData): an .empty block, marked data-no-data.
+export const NO_DATA = "No data in this range.";
+export function NoData() {
+  return <div className="empty" data-no-data=""><p className="empty__text">{NO_DATA}</p></div>;
+}
+
+export function ColumnChart({ days, label, id, empty = false }) {
   const phone = usePhone();
   const [selected, setSelected] = useState(null);
   const hint = phone ? "Tap a bar for its value" : "Select a bar for its value";
   const nameOf = (d) => `${shortDate(d.date)}: ${d.what}`;
+  if (empty) return <NoData />;
   return (
     <>
-      <div className="chart" role="group" aria-label={label}>
+      <div className="chart" id={id} role="group" aria-label={label}>
         {days.map((d, i) => (
           <div key={d.date} className={`chart__col${selected === i ? " is-selected" : ""}`} tabIndex={0} role="button" aria-label={nameOf(d)}
             onClick={() => setSelected(i)} onFocus={() => setSelected(i)}>

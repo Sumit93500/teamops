@@ -7,11 +7,15 @@ import NotPorted from "./NotPorted.jsx";
 import MyLeave from "./pages/MyLeave.jsx";
 import PublicPage from "./pages/PublicPage.jsx";
 import Gallery from "./pages/Gallery.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
+import EmployeeDashboard from "./pages/EmployeeDashboard.jsx";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
 const PORTED = {
   "leave/my-leave.html": MyLeave,
+  "dashboard/admin.html": AdminDashboard,
+  "dashboard/employee.html": EmployeeDashboard,
 };
 
 function Home() {

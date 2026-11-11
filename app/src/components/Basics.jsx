@@ -17,14 +17,16 @@ const Icon = ({ d }) => <svg className="icon" viewBox="0 0 24 24" aria-hidden="t
 export function StatStrip({ label, children }) {
   return <section className="stat-strip" aria-label={label}>{children}</section>;
 }
-export function StatCard({ icon, tone = 1, label, value, note, noteTone = "", id }) {
+// hidden + permission: a stat the person may not see stays in place, hidden, with no figure (as applyPermissions left the old
+// ones: a stats export then carries an empty row). note "" draws the empty delta line the old pages kept.
+export function StatCard({ icon, tone = 1, label, value, note, noteTone = "", id, permission, hidden }) {
   return (
-    <div className="stat" data-stat={id}>
+    <div className="stat" data-stat={id} data-permission={permission} hidden={hidden || undefined}>
       {icon && <div className={`stat__icon stat__icon--${tone}`}><Icon d={icon} /></div>}
       <div>
         <span className="stat__label">{label}</span>
         <strong className="stat__value">{value}</strong>
-        {note && <span className={`stat__delta${noteTone ? ` stat__delta--${noteTone}` : ""}`}>{note}</span>}
+        {note != null && <span className={`stat__delta${noteTone ? ` stat__delta--${noteTone}` : ""}`}>{note}</span>}
       </div>
     </div>
   );
