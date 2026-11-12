@@ -9,7 +9,7 @@ import { can } from "../../../assets/js/core/rbac.js";
 import { getAllUsers, getAllDepartments } from "../../../assets/js/data/store.js";
 import { isValidDate } from "../../../assets/js/data/holidays.js";
 import { allRequests } from "../../../assets/js/data/leave-store.js";
-import { teamWeekFor, summaryFor, pendingRegularizations } from "../../../assets/js/data/attendance-store.js";
+import { teamWeekFor, summaryFor, pendingRegularizations, recordsStart } from "../../../assets/js/data/attendance-store.js";
 import { teamScope } from "../../../assets/js/data/reporting.js";
 import { csvColumns, csvRows, initExports } from "../../../assets/js/ui/csv-export.js";
 import { el, weekdayName, todayIso, formatDay, initials, avatarClass, departmentName, shortDate, plural, personCell, showReason } from "../../../assets/js/ui/leave-view.js";
@@ -18,9 +18,11 @@ import { barRow } from "../../../assets/js/ui/chart.js";
 import { departmentPresenceChart, valuesOf } from "../../../assets/js/data/chart-data.js";
 import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
+import { usePhone } from "../ui/phone.jsx";
 import Pagination from "../ui/Pagination.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
+import { NoData, NO_DATA } from "../components/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
 
@@ -34,6 +36,7 @@ const WEEK = {
   "not-joined": ["nd", "NJ", "before joining"], left: ["nd", "AL", "after leaving"],
 };
 const weekPart = (day) => WEEK[day.status] ?? ["nd", "?", day.status];
+const NO_RECORD = ["no-data", "not-joined", "left"];
 const isPresent = (day) => ["present", "late", "half-day"].includes(day.status);
 const isAbsent = (day) => day.status === "absent" || day.overdue;
 const isMissing = (day) => !day.checkIn && isAbsent(day);
@@ -104,6 +107,8 @@ export default function TeamAttendance() {
   const [dept, setDept] = useState("");
   const [ascending, setAscending] = useState(true);
   const [page, setPage] = useState(1);
+  const phone = usePhone();   // "Sort by" before the sortable heading on a phone, as ui/phone.js (round 9b)
+  const start = recordsStart();   // the first day with data: the date input's min (round 9b, as rer)
   const scope = useMemo(() => teamScope(userId, can("attendance:view-all")), [userId, role?.key, canAll]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   const d = useData(() => {
@@ -114,7 +119,9 @@ export default function TeamAttendance() {
 
   // the table (team-attendance.js renderTable)
   const query = search.trim().toLowerCase();
-  const narrowed = d.rows.filter((r) => (!dept || r.user?.department === dept) && (!query || (r.user?.name ?? "").toLowerCase().includes(query)));
+  // a date with no data (round 9b, as rer): people, but nobody's day has a record; it lists nobody and one row says so
+  const noData = d.rows.length > 0 && d.rows.every((r) => NO_RECORD.includes(r.day.status));
+  const narrowed = (noData ? [] : d.rows).filter((r) => (!dept || r.user?.department === dept) && (!query || (r.user?.name ?? "").toLowerCase().includes(query)));
   const byName = (a, b) => (a.user?.name ?? "").localeCompare(b.user?.name ?? "") || a.day.userId.localeCompare(b.day.userId);
   const shown = narrowed.filter((r) => TABS[tab](r.day)).sort((a, b) => (ascending ? byName(a, b) : byName(b, a)));
   const totalPages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
@@ -154,7 +161,7 @@ export default function TeamAttendance() {
           <p className="page-header__subtitle">Who is in, late, on leave or absent</p>
         </div>
         <div className="page-header__actions">
-          <input className="input input--sm" id="team-date" type="date" aria-label="Choose date" style={{ width: "auto" }} max={today} value={dateField} onChange={(e) => pick(e.target.value)} />
+          <input className="input input--sm" id="team-date" type="date" aria-label="Choose date" style={{ width: "auto" }} min={start && start <= today ? start : undefined} max={today} value={dateField} onChange={(e) => pick(e.target.value)} />
           <Link className="btn" id="team-reg-link" to={pageUrl("attendance/regularization.html")} data-permission="attendance:approve" hidden={!canApprove || undefined}>
             Regularization{d.regCount ? <>{" "}<span className="badge badge--count">{String(d.regCount)}<span className="sr-only"> pending</span></span></> : null}
           </Link>
@@ -165,7 +172,9 @@ export default function TeamAttendance() {
         <StatStrip label="Key numbers">
           {[["present", "Present", s.present, presentNote(s, d.rows.map((r) => r.day)), ""], ["late", "Late arrivals", s.late, "Included in present", ""],
             ["on-leave", "On leave", s.onLeave, "Not counted in expected", ""], ["absent", "Absent", absent, absentNote, absent ? "down" : ""]].map(([key, label, value, note, tone]) => (
-            <StatCard key={key} id={key} icon={ICONS[key][0]} tone={ICONS[key][1]} label={label} value={String(value)} note={note} noteTone={tone} />
+            noData
+              ? <StatCard key={key} id={key} icon={ICONS[key][0]} tone={ICONS[key][1]} label={label} value="–" note={NO_DATA} />
+              : <StatCard key={key} id={key} icon={ICONS[key][0]} tone={ICONS[key][1]} label={label} value={String(value)} note={note} noteTone={tone} />
           ))}
         </StatStrip>
         <div className="grid grid-main-aside">
@@ -194,11 +203,11 @@ export default function TeamAttendance() {
               <table className="table" data-export-name="team-attendance">
                 <thead>
                   <tr>
-                    <th className="is-sortable" aria-sort={ascending ? "ascending" : "descending"}><button className="sort-btn" id="team-sort" type="button" onClick={() => setAscending(!ascending)}>Employee <span aria-hidden="true">{ascending ? "▲" : "▼"}</span></button></th>
+                    <th className="is-sortable" aria-sort={ascending ? "ascending" : "descending"}>{phone && <span className="table__sort-label" aria-hidden="true">Sort by</span>}<button className="sort-btn" id="team-sort" type="button" onClick={() => setAscending(!ascending)}>Employee <span aria-hidden="true">{ascending ? "▲" : "▼"}</span></button></th>
                     <th>Department</th><th>Check-in</th><th className="table__num">Hours</th><th>This week</th><th>Status</th>
                   </tr>
                 </thead>
-                <Nodes as="tbody" id="team-rows" build={() => (pageRows.length ? pageRows.map(row) : [emptyRow(empty)])} deps={[d, tab, search, dept, ascending, current]} />
+                <Nodes as="tbody" id="team-rows" build={() => (pageRows.length ? pageRows.map(row) : [emptyRow(noData ? NO_DATA : empty)])} deps={[d, tab, search, dept, ascending, current]} />
               </table>
             </div>
             <Pagination totalItems={shown.length} pageSize={PAGE_SIZE} currentPage={current} onPageChange={setPage} />
@@ -209,11 +218,12 @@ export default function TeamAttendance() {
                 <h3 className="card__title">Attendance by department</h3>
                 <span className="card__meta" id="team-dept-date">{d.chart.period.date === today ? "Today" : shortDate(d.chart.period.date)}</span>
               </div>
-              <Nodes className="card__body" id="team-dept-bars" deps={[d]} build={() => d.chart.labels.map((name, i) => {
+              <Nodes className="card__body" id="team-dept-bars" hidden={d.chart.empty || undefined} deps={[d]} build={() => d.chart.labels.map((name, i) => {
                 const bar = barRow(name, rate[i] === null ? "–" : `${rate[i]}%`, rate[i] ?? 0);
                 bar.title = expected[i] ? `${present[i]} of ${expected[i]} expected are in` : "Nobody expected";
                 return bar;
               })} />
+              {d.chart.empty && <NoData />}
             </section>
             <section className="card">
               <div className="card__header">

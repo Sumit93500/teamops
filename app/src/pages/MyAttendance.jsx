@@ -19,6 +19,7 @@ import { useToast } from "../ui/Toast.jsx";
 import Modal from "../components/Modal.jsx";
 import { useConfirm } from "../components/Confirm.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
+import { NoData, NO_DATA } from "../components/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
@@ -157,7 +158,11 @@ export default function MyAttendance() {
   const s2 = [summary.averageMinutes === null ? "–" : hoursText(summary.averageMinutes), `Target is ${R.fullDayMinutes / 60}h`];
   const inMonth = d.requests.filter((r) => r.date.startsWith(`${year}-${pad(month)}-`)).sort((a, b) => b.appliedOn.localeCompare(a.appliedOn) || b.id.localeCompare(a.id, "en", { numeric: true }));
   const s3 = [String(inMonth.length), inMonth.length ? latestNote(inMonth[0]) : "None this month"];
-  const stats = [["Days present", ...s0], ["Late marks", ...s1], ["Average hours", ...s2], ["Correction requests", ...s3]];
+  // a month with no logged day has no data (round 9b, as rer's renderStats): every stat "–" and the message
+  const logDays = summary.days.filter((x) => x.date <= today && !isOffOrEmpty(x)).reverse();
+  const noData = !logDays.length;
+  const stats = [["Days present", ...s0], ["Late marks", ...s1], ["Average hours", ...s2], ["Correction requests", ...s3]]
+    .map(([label, value, note]) => (noData ? [label, "–", NO_DATA] : [label, value, note]));
   // calendar
   const lead = (new Date(dayNumber(summary.days[0].date) * 86400000).getUTCDay() + 6) % 7;
   const cells = [...Array(lead).fill(null), ...summary.days];
@@ -169,7 +174,6 @@ export default function MyAttendance() {
     ? `You have ${plural(summary.lateMarks, "late mark", "late marks")} this month. Every ${ordinal(R.penaltyEvery)} late mark counts as half a day.${summary.penaltyHalfDays ? ` That's ${plural(summary.penaltyHalfDays, "half day", "half days")} this month.` : ` ${left === 1 ? "The next one" : `${left} more`} would count as half a day.`} Each half day is taken from your pay, not your leave balance, when payroll is processed.`
     : null;
   // log
-  const logDays = summary.days.filter((x) => x.date <= today && !isOffOrEmpty(x)).reverse();
   const totalPages = Math.max(1, Math.ceil(logDays.length / PAGE_SIZE));
   const current = Math.min(Math.max(1, page), totalPages);
   const pageDays = logDays.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
@@ -229,7 +233,8 @@ export default function MyAttendance() {
                 <h3 className="card__title">Month summary</h3>
                 <span className="card__meta">{`${plural(chart.total, "working day", "working days")} so far`}</span>
               </div>
-              <Nodes className="card__body" build={() => chart.labels.map((st, i) => barRow(SUMMARY_LABEL[st], String(counts[i]), chart.total ? Math.round((counts[i] / chart.total) * 100) : 0))} deps={[d, year, month]} />
+              <Nodes className="card__body" hidden={chart.empty || undefined} build={() => chart.labels.map((st, i) => barRow(SUMMARY_LABEL[st], String(counts[i]), chart.total ? Math.round((counts[i] / chart.total) * 100) : 0))} deps={[d, year, month]} />
+              {chart.empty && <NoData />}
             </section>
             <div className="alert alert--warning" id="late-alert" hidden={!alert || undefined}>{alert}</div>
           </aside>
@@ -244,7 +249,7 @@ export default function MyAttendance() {
               <thead><tr><th>Date</th><th>Check-in</th><th>Check-out</th><th className="table__num">Hours</th><th>Status</th><th className="table__actions">Actions</th></tr></thead>
               <Nodes as="tbody" deps={[d, year, month, current, canFix]} build={() => {
                 if (pageDays.length) return pageDays.map((x) => logRow(x, today, on, canFix));
-                const td = el("td", "text-muted", "No attendance recorded for this month."); td.colSpan = 6;
+                const td = el("td", "text-muted", NO_DATA); td.colSpan = 6;
                 const tr = el("tr"); tr.append(td); return [tr];
               }} />
             </table>

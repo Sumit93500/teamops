@@ -51,7 +51,7 @@ export function labelTable(table, phone) {
       [...row.children].forEach((td) => { delete td.dataset.label; delete td.dataset.cardPart; td.removeAttribute("role"); }); });
     return;
   }
-  const texts = heads.map((th) => th.textContent.replace(/[▲▼]/g, "").replace(/\s+/g, " ").trim());
+  const texts = heads.map((th) => (th.textContent.slice((th.querySelector(".table__sort-label")?.textContent ?? "").length)).replace(/[▲▼]/g, "").replace(/\s+/g, " ").trim());
   const kinds = cellKinds(texts.map((t, i) => (heads[i].classList.contains("table__actions") ? "Actions" : t)));
   table.dataset.cards = ""; table.setAttribute("role", "table");
   heads.forEach((th) => th.setAttribute("role", "columnheader"));
