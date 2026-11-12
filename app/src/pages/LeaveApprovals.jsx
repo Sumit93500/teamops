@@ -106,7 +106,8 @@ export default function LeaveApprovals() {
         <StatStrip label="Key numbers">
           {STATS.map(([label, tone, icon], i) => <StatCard key={label} icon={icon} tone={tone} label={label} value={values[i][0]} note={values[i][1] || null} />)}
         </StatStrip>
-        <div className="grid grid-main-aside">
+        {/* --wide (13c, ruled): the aside goes under the table below 1440px, so the Actions column shows (the inbox's rule) */}
+        <div className="grid grid-main-aside grid-main-aside--wide">
           <section className="card">
             <div className="table__toolbar">
               <Tabs pill active={tab} onChange={(i) => { setTab(i); setPage(1); }} tabs={TABS.map(([key, label]) => ({ label, count: String(d.lists[key].length) }))} />

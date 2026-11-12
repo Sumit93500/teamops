@@ -14,7 +14,7 @@ import { todayIso, monthName, formatRange, departmentName, plural, formatDays, f
 import { rupeesInWords } from "../../../assets/js/ui/money.js";
 import { maskAccount, maskPan } from "../../../assets/js/ui/pii.js";
 import Frame from "../ui/Frame.jsx";
-import { Badge, badgeOf } from "../components/Basics.jsx";
+import { Badge, badgeOf, NO_DATA } from "../components/Basics.jsx";
 import { KeepWhole, rupees } from "../ui/payroll.jsx";
 import { useData, useSession } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
@@ -94,7 +94,8 @@ function pick(me, asked) {
     const match = /^(\d{4})-(\d{2})$/.exec(asked.month);
     if (!match || Number(match[2]) < 1 || Number(match[2]) > 12) return { own, message: ["That isn't a month", `The link asks for "${asked.month}". A month looks like 2026-09.`, true] };
     slip = slips.find((s) => s.month === asked.month);
-    if (!slip) return { own, message: [`No payslip for ${monthLabel(asked.month)}`, missingMonthText(asked.month, slips, user, own)] };
+    // 13c, rer's empty range: the one message as the title, then why
+    if (!slip) return { own, message: [NO_DATA, missingMonthText(asked.month, slips, user, own)] };
   }
   return { own, user, slip };
 }

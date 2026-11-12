@@ -185,7 +185,7 @@ export default function Expenses() {
                 <h3 className="card__title">Spend by category</h3>
                 <span className="card__meta" id="expense-spend-meta">Approved and paid claims</span>
               </div>
-              <BarRows id="expense-spend" className="card__body value-bars" rows={spend.labels.map((k, i) => ({ label: categoryLabel(k), value: rupees(spent[i]), percent: top ? Math.round((spent[i] / top) * 100) : 0 }))} />
+              <BarRows id="expense-spend" className="card__body value-bars" rows={spend.labels.map((k, i) => ({ label: categoryLabel(k), value: rupees(spent[i]), percent: top ? Math.round((spent[i] / top) * 100) : 0 }))} empty={spend.empty} />
             </section>
             <section className="card">
               <div className="card__header"><h3 className="card__title">Expense policy</h3></div>

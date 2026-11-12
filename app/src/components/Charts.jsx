@@ -42,9 +42,11 @@ export function ColumnChart({ days, label, id, empty = false }) {
 }
 
 // id / className (round 12): a page whose old container was a plain div (tax deductions' #regime-bars) passes className={null}.
-export function BarRows({ rows, id, className = "bar-rows" }) {
+// empty (13c): the rows hidden and NoData after them, as rer's showNoData draws it.
+export function BarRows({ rows, id, className = "bar-rows", empty = false }) {
   return (
-    <div className={className ?? undefined} id={id}>
+    <>
+    <div className={className ?? undefined} id={id} hidden={empty || undefined}>
       {rows.map((r) => (
         <div className="bar-row" key={r.label}>
           <span>{r.label}</span>
@@ -53,5 +55,7 @@ export function BarRows({ rows, id, className = "bar-rows" }) {
         </div>
       ))}
     </div>
+    {empty && <NoData />}
+    </>
   );
 }

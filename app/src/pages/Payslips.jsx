@@ -9,7 +9,7 @@ import { getUser, joiningDate } from "../../../assets/js/data/store.js";
 import { todayIso, monthName, monthShort, formatRange, formatDay, plural } from "../../../assets/js/ui/leave-view.js";
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
-import { StatStrip, StatCard, Badge, badgeOf, NotBuilt, Reason } from "../components/Basics.jsx";
+import { StatStrip, StatCard, Badge, badgeOf, NotBuilt, Reason, NO_DATA } from "../components/Basics.jsx";
 import { rupees } from "../ui/payroll.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
@@ -85,12 +85,17 @@ export default function Payslips() {
       "ytd-tds": ["Tax deducted this year", rupees(totals.tds), slips.length ? `TDS on sample tax rates, ${span(slips)}` : "TDS, no payslips"],
       next: ["Next payslip", next ? `${short(next)} ${yearOf(next)}` : "—", next ? `${statusNote(next)}; no pay date set` : "No payslip yet"],
     };
+    if (!slips.length) {   // the financial year has no payslips (13c, rer's empty range: the one message)
+      stats["ytd-net"] = ["Net pay this year", "–", NO_DATA];
+      stats["ytd-tds"] = ["Tax deducted this year", "–", NO_DATA];
+      empty = NO_DATA;
+    }
     rows = slips;
     const note = joinedNote(all, slips, joined, today);
     extra = note ? <MessageRow text={note} /> : null;
     historyMeta = `Financial year ${yearLabel(fy)}`;
-    ytd = Object.fromEntries(["gross", "pf", "pt", "tds", "deductions", "net"].map((k) => [k, rupees(totals[k])]));
-    ytdMeta = slips.length ? spanWithYear(slips) : "No payslips";
+    ytd = Object.fromEntries(["gross", "pf", "pt", "tds", "deductions", "net"].map((k) => [k, slips.length ? rupees(totals[k]) : "–"]));
+    ytdMeta = slips.length ? spanWithYear(slips) : NO_DATA;
   }
   const columns = [
     { key: "month", label: "Month", render: (s) => <span className="table__user-name">{label(s)}</span> },

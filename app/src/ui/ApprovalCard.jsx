@@ -100,7 +100,9 @@ export function cardLink(link, kind, id, options = {}) {
 
 const CloseIcon = () => <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>;
 const focusables = (root) => Array.from(root.querySelectorAll('a[href], button:not([disabled]), [tabindex="0"]')).filter((n) => !n.closest("[hidden]"));
-const InboxLink = ({ text, label }) => <a className="btn btn--primary btn--sm" href={INBOX} aria-label={label}>{text}</a>;
+// secondary (13c, ruled): More sits beside Approve, so it is a plain button and Approve stays the one primary; See all,
+// alone in its footer, stays primary.
+const InboxLink = ({ text, label, secondary }) => <a className={`btn${secondary ? "" : " btn--primary"} btn--sm`} href={INBOX} aria-label={label}>{text}</a>;
 
 function Card({ card, onClose, decide }) {
   const ref = useRef(null);
@@ -137,7 +139,7 @@ function Card({ card, onClose, decide }) {
               {item.reason && <div className="approval-card__reason"><h3 className="approval-card__label">Reason</h3><p>{item.reason}</p></div>}
             </div>
             <div className="modal__footer">
-              {more && <InboxLink text="More" label="More in Approvals inbox" />}
+              {more && <InboxLink text="More" label="More in Approvals inbox" secondary />}
               <DecisionButtons permission={permission} onReject={() => decide("reject")} onApprove={() => decide("approve")} />
             </div>
           </>

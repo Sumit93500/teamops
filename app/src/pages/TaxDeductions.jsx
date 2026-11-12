@@ -138,7 +138,7 @@ export default function TaxDeductions() {
                 <span className="card__meta" id="regime-meta">{plural(chart.total, "employee", "employees")}</span>
               </div>
               <div className="card__body">
-                <BarRows id="regime-bars" className={null} rows={[{ label: "New regime", value: String(onNew), percent: Math.round((onNew / top) * 100) }, { label: "Old regime", value: String(onOld), percent: Math.round((onOld / top) * 100) }]} />
+                <BarRows id="regime-bars" className={null} rows={[{ label: "New regime", value: String(onNew), percent: Math.round((onNew / top) * 100) }, { label: "Old regime", value: String(onOld), percent: Math.round((onOld / top) * 100) }]} empty={chart.empty} />
                 <p className="form-hint mt-2">From each person's salary record. Only the new regime has tax rules in this demo, and choosing a regime isn't built yet.</p>
               </div>
             </section>
