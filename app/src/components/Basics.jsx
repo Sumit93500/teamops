@@ -59,9 +59,9 @@ export function PersonCell({ userId, name, sub }) {
 }
 
 const CHECK = "m5 12 5 5 9-10";
-export function Stepper({ steps, vertical = true }) {
+export function Stepper({ steps, vertical = true, id }) {
   return (
-    <ol className={`stepper${vertical ? " stepper--vertical" : ""}`}>
+    <ol className={`stepper${vertical ? " stepper--vertical" : ""}`} id={id}>
       {steps.map((s, i) => (
         <li key={i} className={`stepper__step${s.state ? ` is-${s.state}` : ""}`}>
           <span className="stepper__dot">{s.state === "done" ? <Icon d={CHECK} /> : String(i + 1)}</span>
@@ -80,8 +80,10 @@ export function NotBuilt({ what, className = "btn", children }) {
   );
 }
 
-export function Tabs({ tabs, pill = false }) {
-  const [active, setActive] = useState(0);
+// Controlled (round 10): active + onChange(index), for a page whose tabs filter one table; tabs without content draw no panels.
+export function Tabs({ tabs, pill = false, active: activeProp, onChange }) {
+  const [own, setOwn] = useState(0);
+  const active = activeProp ?? own, setActive = onChange ?? setOwn;
   return (
     <>
       <div className={`tabs${pill ? " tabs--pill" : ""}`} role="tablist">
@@ -90,7 +92,7 @@ export function Tabs({ tabs, pill = false }) {
             onClick={() => setActive(i)}>{t.label}{t.count != null && <>{" "}<span className="badge badge--count">{t.count}</span></>}</button>
         ))}
       </div>
-      {tabs.map((t, i) => <div key={t.label} className="tab-panel" role="tabpanel" hidden={i !== active}>{t.content}</div>)}
+      {tabs.some((t) => t.content !== undefined) && tabs.map((t, i) => <div key={t.label} className="tab-panel" role="tabpanel" hidden={i !== active}>{t.content}</div>)}
     </>
   );
 }

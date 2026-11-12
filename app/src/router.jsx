@@ -16,6 +16,10 @@ import MyAttendance from "./pages/MyAttendance.jsx";
 import SamplePage from "./pages/SamplePage.jsx";
 import TeamAttendance from "./pages/TeamAttendance.jsx";
 import Regularization from "./pages/Regularization.jsx";
+import ApplyLeave from "./pages/ApplyLeave.jsx";
+import LeaveApprovals from "./pages/LeaveApprovals.jsx";
+import TeamLeave from "./pages/TeamLeave.jsx";
+import Holidays from "./pages/Holidays.jsx";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
@@ -30,6 +34,10 @@ const PORTED = {
   "attendance/shifts.html": () => <SamplePage page="attendance/shifts.html" />,
   "attendance/team-attendance.html": TeamAttendance,
   "attendance/regularization.html": Regularization,
+  "leave/apply-leave.html": ApplyLeave,
+  "leave/leave-approvals.html": LeaveApprovals,
+  "leave/team-leave.html": TeamLeave,
+  "leave/holidays.html": Holidays,
 };
 
 function Home() {
