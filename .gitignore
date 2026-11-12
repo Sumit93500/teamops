@@ -9,3 +9,7 @@ Thumbs.db
 .vscode/
 .idea/
 scratch.html
+# the test runner's work folders (tools/run-tests.py) and the code graph's large raw files (tools/graph.py)
+tests/.suites/
+tests/.out/
+docs/graph/raw/

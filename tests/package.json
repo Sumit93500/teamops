@@ -1,0 +1,10 @@
+{
+  "name": "officeos-tests",
+  "private": true,
+  "type": "module",
+  "description": "What the suites need: jsdom for the live suites, playwright-core for the React harnesses (they drive Microsoft Edge).",
+  "dependencies": {
+    "jsdom": "24.1.3",
+    "playwright-core": "1.63.0"
+  }
+}

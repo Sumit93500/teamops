@@ -1,0 +1,4 @@
+# Font caches and the archive are bytes: no line-ending conversion. run.sh must stay LF to run under sh.
+*.bin binary
+*.tar.gz binary
+*.sh text eol=lf

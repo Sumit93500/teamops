@@ -1,0 +1,25 @@
+{
+ "url": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap",
+ "status": 200,
+ "headers": {
+  "content-type": "text/css; charset=utf-8",
+  "vary": "Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site",
+  "access-control-allow-origin": "*",
+  "timing-allow-origin": "*",
+  "link": "<https://fonts.gstatic.com>; rel=preconnect; crossorigin",
+  "strict-transport-security": "max-age=31536000",
+  "expires": "Wed, 11 Nov 2026 04:18:39 GMT",
+  "date": "Wed, 11 Nov 2026 04:18:39 GMT",
+  "cache-control": "private, max-age=86400, stale-while-revalidate=604800",
+  "last-modified": "Wed, 11 Nov 2026 02:37:30 GMT",
+  "cross-origin-opener-policy": "same-origin-allow-popups",
+  "cross-origin-resource-policy": "cross-origin",
+  "server": "ESF",
+  "x-xss-protection": "0",
+  "x-frame-options": "SAMEORIGIN",
+  "x-content-type-options": "nosniff",
+  "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+ },
+ "sha256": "414e9dbfc53a116f58f01160269a679e84bc1733d98a39d29ff1362b2b764166",
+ "fetched": "2026-11-11T04:18:36.624Z"
+}

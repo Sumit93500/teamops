@@ -1,0 +1,38 @@
+round,date,commit,passed,failed,total,note
+13Z,2026-11-03,9c7423e,15686,0,15686,full run: 379 suite runs
+14C,2026-11-04,ed842d7,17198,0,17198,full run: 391 suite runs
+14D,2026-11-05,fc28e6b,17639,0,17639,full run: 394 suite runs
+14F,2026-11-07,34bad8e,17990,0,17990,full run: 400 suite runs
+14E part 1,2026-11-08,8a0aade,18296,0,18296,full run: 409 suite runs
+14E part 2,2026-11-08,1000200,18377,0,18377,full run: 412 suite runs
+Forms,2026-11-08,8ba83f0,18467,0,18467,full run: 415 suite runs
+Contrast pass,2026-11-09,bb9d29a,18524,0,18524,full run: 418 suite runs
+Small leftovers,2026-11-09,49af1a4,18584,0,18584,full run: 421 suite runs
+Manager scoping 1,2026-11-09,dea07bd,18629,0,18629,full run: 424 suite runs
+Manager scoping 2,2026-11-09,f6b283b,18728,0,18728,full run: 427 suite runs
+Data export,2026-11-09,f2deeaa,18794,0,18794,full run: 430 suite runs
+Data export 2,2026-11-10,acd0871,18866,0,18866,full run: 433 suite runs
+Chart data,2026-11-10,60cfef8,18959,0,18959,full run: 436 suite runs
+14E part 3,2026-11-10,5fa2f50,19025,0,19025,full run: 439 suite runs
+14E part 4,2026-11-10,8e99242,19031,0,19031,full run: 439 suite runs
+Demo buttons 1,2026-11-10,01109f5,19184,0,19184,full run: 442 suite runs
+Small tidy-ups,2026-11-11,9c21988,19223,0,19223,full run: 445 suite runs
+React 1,2026-11-11,e8350f3,350,0,350,round checks: smoke 330; my leave 20. Old suites: hash proof (app/ only)
+React 2,2026-11-11,3723a7f,350,0,350,round checks: smoke 330; my leave 20
+React 3,2026-11-11,1117864,350,0,350,round checks: smoke 330; my leave 20
+React 4,2026-11-11,1b9af30,91,0,91,round checks: gallery 28; shell 63
+React 5,2026-11-11,c5f7fad,19271,0,19271,full run: 448 suite runs (the data round); mutants 11/11
+React 6,2026-11-11,df3be23,352,0,352,round checks: dashboards 22; smoke 330. Old suites: traced gate 0 of 151
+React 7,2026-11-11,0a38686,44,0,44,round checks: dashboards 29 + 15. Traced gate 0 of 151
+React 8,2026-11-11,cd32ba3,79,0,79,round checks: att 35; dashboards 44. Traced gate 0 of 151
+React 9,2026-11-11,f89d014,60,0,60,round checks: att 25 + 35. Traced gate 0 of 151
+React 9b,2026-11-12,d1c75a6,417,0,417,round checks: att 46 + 12 + 29; smoke 330. Traced gate 0 of 151
+React 10,2026-11-12,d0e72b7,376,0,376,round checks: leave 46; smoke 330. Traced gate 0 of 151
+React 11,2026-11-12,9d7b5fc,402,0,402,round checks: pay 17 + 2 + 53; smoke 330. Traced gate 0 of 151
+React 12,2026-11-12,59294a1,365,0,365,round checks: fin 35; smoke 330. Traced gate 0 of 151
+React 13a,2026-11-12,ab58059,380,0,380,round checks: req 50; smoke 330. Traced gate 0 of 151
+React 13b,2026-11-12,c6693a1,493,0,493,round checks: shell 64; dashboards 45; inbox 54; smoke 330. Traced gate 0 of 151
+React 13c,2026-11-12,603d3d6,702,0,702,round checks: leave 51; fin 39; req 71; shell 64; dash 43; pay 54; c13 22; smoke 330; gallery 28
+React 16,2026-11-12,0cbd36f,437,0,437,round checks: access 79; smoke 330; gallery 28. Traced gate 0 of 151
+React 23,2026-11-12,740c40e,518,0,518,round checks: rest 115; dash 45; smoke 330; gallery 28. Traced gate 0 of 151
+D1,2026-11-12,740c40e,17902,0,17902,docs round on top of 740c40e: tests/run 424 suite runs in 3 zones (17045) + 11 React harnesses (857)

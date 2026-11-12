@@ -1,0 +1,255 @@
+id,suite,case,x
+react-access.R1,react-access,admin on access/roles-list.html: as it opens,x1
+react-access.R2,react-access,"admin: search fin, system, zzz, cleared",x1
+react-access.R,react-access,hr on access/roles-list.html: lands where the old site does,x4 (4 roles)
+react-access.Eadmin,react-access,admin on access/role-editor.html?role=admin: lands where the old site does,x5 (5 roles)
+react-access.Ehr,react-access,admin on access/role-editor.html?role=hr: lands where the old site does,x5 (5 roles)
+react-access.Efin,react-access,admin on access/role-editor.html?role=fin: lands where the old site does,x5 (5 roles)
+react-access.Eemp,react-access,admin on access/role-editor.html?role=emp: lands where the old site does,x5 (5 roles)
+react-access.Eboss,react-access,admin on access/role-editor.html?role=boss: lands where the old site does,x5 (5 roles)
+react-access.Enone1,react-access,admin on access/role-editor.html: as it opens,x1
+react-access.Enone2,react-access,admin: the tab's title and the crumb,x1
+react-access.Enone,react-access,hr on access/role-editor.html: lands where the old site does,x4 (4 roles)
+react-access.W1,react-access,admin on access/approval-workflows.html: as it opens,x1
+react-access.W2,react-access,admin: Edit on the first row: its toast,x1
+react-access.W,react-access,hr on access/approval-workflows.html: lands where the old site does,x4 (4 roles)
+react-access.G1,react-access,admin on access/delegation.html: as it opens,x1
+react-access.G2,react-access,admin: Delegate approvals: its toast,x1
+react-access.G,react-access,hr on access/delegation.html: lands where the old site does,x4 (4 roles)
+react-access.D1,react-access,"admin: every designation, its department, default role and people holding it",x2 (2 roles)
+react-access.D2,react-access,admin: Engineering only,x2 (2 roles)
+react-access.D3,react-access,admin: Finance only,x2 (2 roles)
+react-access.D4,react-access,admin: all again,x2 (2 roles)
+react-access.D5,react-access,admin: the default role options (Admin only for an Admin),x2 (2 roles)
+react-access.D6,react-access,admin: the department options: the store's active departments,x2 (2 roles)
+react-access.D7,react-access,admin: Manage roles shown only with roles:manage (Admin),x2 (2 roles)
+react-access.D8,react-access,admin: the header and the Add form as on the old page,x2 (2 roles)
+react-access.D9,react-access,admin: Edit's toast,x2 (2 roles)
+react-access.D10,react-access,admin: Add designation's toast,x2 (2 roles)
+react-access.D12,react-access,admin: at 412 the rows are cards with the old sample's parts,x2 (2 roles)
+react-access.D,react-access,fin: lands where the old site does,x3 (3 roles)
+react-access.P.roles-list,react-access,admin on access/roles-list.html at 412: the same cards,x1
+react-access.P.role-editor?role=hr,react-access,admin on access/role-editor.html?role=hr at 412: the same cards,x1
+react-access.P.approval-workflows,react-access,admin on access/approval-workflows.html at 412: the same cards,x1
+react-access.P.delegation,react-access,admin on access/delegation.html at 412: the same cards,x1
+react-access.X1,react-access,shots written,x1
+react-att.M1,react-att,admin on attendance/mark-attendance.html: as it opens,x5 (5 roles)
+react-att.M2,react-att,"admin: Work from home, Check in, Check out: the same toasts and page after each",x3 (4 roles)
+react-att.S1,react-att,admin on attendance/shifts.html: as it opens,x2 (2 roles)
+react-att.S2,react-att,admin: a placeholder's toast,x2 (2 roles)
+react-att.S,react-att,fin on attendance/shifts.html: lands where the old site does,x3 (3 roles)
+react-att.P.mark-attendance,react-att,emp on attendance/mark-attendance.html at 412: the same cards,x1
+react-att.P.my-attendance,react-att,emp on attendance/my-attendance.html at 412: the same cards,x1
+react-att.P.shifts,react-att,admin on attendance/shifts.html at 412: the same cards,x1
+react-att.X1,react-att,shots written,x1
+react-dash.A1,react-dash,admin: the page as it opens,x2 (2 roles)
+react-dash.A2,react-dash,"admin: search, department, Next",x2 (2 roles)
+react-dash.A3,react-dash,"Export: the same two files, byte for byte",x1
+react-dash.A,react-dash,fin on dashboard/admin.html: lands where the old site does,x3 (4 roles)
+react-dash.E1,react-dash,emp: the page as it opens,x5 (5 roles)
+react-dash.H1,react-dash,hr: the page as it opens,x2 (2 roles)
+react-dash.H2,react-dash,hr: search and status filter,x2 (2 roles)
+react-dash.H,react-dash,fin on dashboard/hr.html: lands where the old site does,x3 (4 roles)
+react-dash.H3,react-dash,"Approve, then No: the same question, nothing changes",x1
+react-dash.H4,react-dash,"Approve, then Yes: the same toast and the same page after (stats, list, activity, table)",x1
+react-dash.H5,react-dash,"Reject: the modal's title, the request, focus on the reason; no reason refused with the store's words; a reason rejects it, the modal closes, the same toast",x1
+react-dash.H6,react-dash,after the rejection: the same page,x1
+react-dash.H7,react-dash,no page errors in the decisions,x1
+react-dash.F1,react-dash,fin: the page as it opens,x2 (2 roles)
+react-dash.F2,react-dash,fin: the run table's search hides the same rows,x2 (2 roles)
+react-dash.F3,react-dash,"fin: Export, the same files byte for byte",x2 (2 roles)
+react-dash.F,react-dash,hr on dashboard/finance.html: lands where the old site does,x3 (3 roles)
+react-dash.Y1,react-dash,"hr on dashboard/hr.html: ""No data in this range."" in the chart's place",x1
+react-dash.Y2,react-dash,"fin on dashboard/finance.html: ""No data in this range."" in the chart's place",x1
+react-dash.Y3,react-dash,"admin on dashboard/finance.html: ""No data in this range."" in the chart's place",x1
+react-dash.M,react-dash,admin on dashboard/admin.html at 412: the same cards,x2 (2 roles)
+react-dash.M.employee,react-dash,emp on dashboard/employee.html at 412: the same cards,x2 (2 roles)
+react-dash.M.finance,react-dash,fin on dashboard/finance.html at 412: the same cards,x1
+react-dash.Z1,react-dash,"dashboard/admin.html: ""No data in this range."" in the chart's place, the range and note kept, the other cards still drawn",x1
+react-dash.Z2,react-dash,"dashboard/employee.html: ""No data in this range."" in the chart's place, the range and note kept, the other cards still drawn",x1
+react-dash.S1,react-dash,shots written,x1
+react-fin.G1,react-fin,admin on payroll/salary-structure.html: as it opens,x2 (2 roles)
+react-fin.G2,react-fin,"admin: search, department, no matches; Breakdown on the third row",x2 (2 roles)
+react-fin.G3,react-fin,admin: Export: both files byte for byte,x2 (2 roles)
+react-fin.G5,react-fin,"admin: Edit Arjun: ₹91,000 from Dec takes effect at once (revision due): dialog, toast, row, page",x1
+react-fin.G,react-fin,hr on payroll/salary-structure.html: lands where the old site does,x3 (3 roles)
+react-fin.G4,react-fin,"fin: Edit Rohan: empty refused under the field; ₹99,000 from Nov sent (waits); Withdraw: question, toast, row",x1
+react-fin.G6,react-fin,"Finance proposes two changes; Admin approves Rohan's (question, toast, row) and rejects Meera's (the modal, no reason refused, a reason)",x1
+react-fin.G7,react-fin,the decisions really ran,x1
+react-fin.T1,react-fin,admin on finance/tax-deductions.html: as it opens,x2 (2 roles)
+react-fin.T2,react-fin,admin: Export: every file byte for byte,x2 (2 roles)
+react-fin.T3,react-fin,admin: a placeholder's toast,x2 (2 roles)
+react-fin.T,react-fin,hr on finance/tax-deductions.html: lands where the old site does,x3 (3 roles)
+react-fin.E1,react-fin,admin on finance/expenses.html: as it opens,x2 (2 roles)
+react-fin.E2,react-fin,"admin: each tab, search, category, no matches",x2 (2 roles)
+react-fin.E3,react-fin,"admin: Export (Pending), byte for byte",x2 (2 roles)
+react-fin.E4,react-fin,"admin: Export (Paid), byte for byte",x2 (2 roles)
+react-fin.E5,react-fin,"admin: Approve the first decidable claim, Reject the next (no reason refused, then one); Pay approved claims",x2 (2 roles)
+react-fin.E,react-fin,hr on finance/expenses.html: lands where the old site does,x3 (3 roles)
+react-fin.P.salary-structure,react-fin,admin on payroll/salary-structure.html at 412: the same cards,x1
+react-fin.P.expenses,react-fin,fin on finance/expenses.html at 412: the same cards,x1
+react-fin.P.tax-deductions,react-fin,fin on finance/tax-deductions.html at 412: the same cards,x1
+react-fin.X1,react-fin,shots written,x1
+react-gallery.G.1280.light,react-gallery,everything drawn at 1280 light,x1
+react-gallery.K.1280.light,react-gallery,"the readout: hint, click, focus; a pattern on every colour-only bar",x1
+react-gallery.T.1280.light,react-gallery,"sort both ways, search, no matches, export",x1
+react-gallery.D1.1280.light,react-gallery,"confirm: words, role, focus on Cancel; yes on its button; Esc says no and returns focus",x1
+react-gallery.D2.1280.light,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
+react-gallery.B.1280.light,react-gallery,tabs switch; not-built and success toasts,x1
+react-gallery.E.1280.light,react-gallery,no page or console errors,x1
+react-gallery.G.1280.dark,react-gallery,everything drawn at 1280 dark,x1
+react-gallery.K.1280.dark,react-gallery,"the readout: hint, click, focus; a pattern on every colour-only bar",x1
+react-gallery.T.1280.dark,react-gallery,"sort both ways, search, no matches, export",x1
+react-gallery.D1.1280.dark,react-gallery,"confirm: words, role, focus on Cancel; yes on its button; Esc says no and returns focus",x1
+react-gallery.D2.1280.dark,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
+react-gallery.B.1280.dark,react-gallery,tabs switch; not-built and success toasts,x1
+react-gallery.E.1280.dark,react-gallery,no page or console errors,x1
+react-gallery.G.412.light,react-gallery,everything drawn at 412 light,x1
+react-gallery.K.412.light,react-gallery,"the readout: hint, click, focus; a pattern on every colour-only bar",x1
+react-gallery.T.412.light,react-gallery,"sort both ways, search, no matches, export",x1
+react-gallery.D1.412.light,react-gallery,"confirm: words, role, focus on Cancel; yes on its button; Esc says no and returns focus",x1
+react-gallery.D2.412.light,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
+react-gallery.B.412.light,react-gallery,tabs switch; not-built and success toasts,x1
+react-gallery.E.412.light,react-gallery,no page or console errors,x1
+react-gallery.G.412.dark,react-gallery,everything drawn at 412 dark,x1
+react-gallery.K.412.dark,react-gallery,"the readout: hint, click, focus; a pattern on every colour-only bar",x1
+react-gallery.T.412.dark,react-gallery,"sort both ways, search, no matches, export",x1
+react-gallery.D1.412.dark,react-gallery,"confirm: words, role, focus on Cancel; yes on its button; Esc says no and returns focus",x1
+react-gallery.D2.412.dark,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
+react-gallery.B.412.dark,react-gallery,tabs switch; not-built and success toasts,x1
+react-gallery.E.412.dark,react-gallery,no page or console errors,x1
+react-leave.A1,react-leave,admin on leave/apply-leave.html: as it opens,x5 (5 roles)
+react-leave.A2,react-leave,"admin: Sick, a range, a half day over two dates refused live; too many casual days refused under the field; a valid request sent: toasts, button, landing",x5 (5 roles)
+react-leave.L1,react-leave,admin on leave/leave-approvals.html: as it opens,x2 (2 roles)
+react-leave.L2,react-leave,"admin: each tab, a search, the type filter, no matches",x2 (2 roles)
+react-leave.L3,react-leave,"admin: Export (Pending), the same file byte for byte",x2 (2 roles)
+react-leave.L4,react-leave,"admin: Export (Approved, every page), the same file byte for byte",x2 (2 roles)
+react-leave.L5,react-leave,"admin: Approve the first decidable request (question, toast, page), Reject the next (no reason refused, then a reason)",x2 (2 roles)
+react-leave.L,react-leave,fin on leave/leave-approvals.html: lands where the old site does,x3 (3 roles)
+react-leave.T1,react-leave,admin on leave/team-leave.html: as it opens,x4 (4 roles)
+react-leave.T2,react-leave,admin: the calendar two months on and back three,x4 (4 roles)
+react-leave.T,react-leave,emp on leave/team-leave.html: lands where the old site does,x1
+react-leave.H1,react-leave,admin on leave/holidays.html: as it opens,x5 (5 roles)
+react-leave.H2,react-leave,"admin: each year, the month arrows",x5 (5 roles)
+react-leave.H3,react-leave,"admin: Add holiday: empty refused under the field, then a weekday added (toast, the calendar on its month)",x2 (2 roles)
+react-leave.H4,react-leave,"admin: Remove the first upcoming holiday: the question, the toast, the page",x2 (2 roles)
+react-leave.P.apply-leave,react-leave,emp on leave/apply-leave.html at 412: the same cards,x1
+react-leave.P.leave-approvals,react-leave,hr on leave/leave-approvals.html at 412: the same cards,x1
+react-leave.P.team-leave,react-leave,mgr on leave/team-leave.html at 412: the same cards,x1
+react-leave.P.holidays,react-leave,hr on leave/holidays.html at 412: the same cards,x1
+react-leave.X1,react-leave,shots written,x1
+react-pay.S1,react-pay,admin on payroll/payslips.html: as it opens,x5 (5 roles)
+react-pay.S2,react-pay,admin: each financial year; the badges and hold reasons,x5 (5 roles)
+react-pay.Q1,react-pay,"emp: printed on A4: one page, old and new, the same text printed",x2 (2 roles)
+react-pay.P.payroll-run,react-pay,fin on payroll/payroll-run.html at 412: the same cards,x1
+react-pay.P.payslips,react-pay,emp on payroll/payslips.html at 412: the same cards,x1
+react-pay.P.payslip-view,react-pay,emp on payroll/payslip-view.html at 412: the same cards,x1
+react-pay.X1,react-pay,shots written,x1
+react-req.I1,react-req,admin on requests/approvals-inbox.html: as it opens,x5 (5 roles)
+react-req.I2,react-req,"admin: each tab, each type",x5 (5 roles)
+react-req.I3,react-req,"admin: a pending title opens the card (text, focus); Escape closes it, focus back to the title",x5 (5 roles)
+react-req.I4,react-req,"admin: Approve the first decidable request (question, toast, page), Reject the next (no reason refused, then one)",x5 (5 roles)
+react-req.I5,react-req,admin: a sample row's button: its toast,x5 (5 roles)
+react-req.K1.Approve,react-req,"admin: Approve from the card does what Approve on the old row did: question/modal, toasts, the inbox after, the bell's count",x4 (4 roles)
+react-req.K2.Approve,react-req,"admin: the card's footer is Reject, Approve (no More on the inbox's card); the card closed; focus back (the row is gone: the bell)",x4 (4 roles)
+react-req.K1.Reject,react-req,"admin: Reject from the card does what Reject on the old row did: question/modal, toasts, the inbox after, the bell's count",x4 (4 roles)
+react-req.K2.Reject,react-req,"admin: the card's footer is Reject, Approve (no More on the inbox's card); the card closed; focus back (the row is gone: the bell)",x4 (4 roles)
+react-req.K3.bell,react-req,"HR on the dashboard: bell, first item's card: More, Reject, Approve; Approve asks, decides, and the bell's count drops by one",x1
+react-req.M1,react-req,admin on requests/my-requests.html: as it opens,x5 (5 roles)
+react-req.M2,react-req,"admin: each tab, each type",x5 (5 roles)
+react-req.M3,react-req,"admin: Cancel the first cancellable request: question, toast, page",x5 (5 roles)
+react-req.C1,react-req,admin on requests/claim-expense.html: as it opens,x5 (5 roles)
+react-req.C2,react-req,"admin: over the receipt limit; empty refused under the field; a whole claim sent: toasts, button, landing",x5 (5 roles)
+react-req.P.approvals-inbox,react-req,admin on requests/approvals-inbox.html at 412: the same cards,x1
+react-req.P.my-requests,react-req,emp on requests/my-requests.html at 412: the same cards,x1
+react-req.P.claim-expense,react-req,emp on requests/claim-expense.html at 412: the same cards,x1
+react-req.X1,react-req,shots written,x1
+react-rest.Ap1,react-rest,admin on account/my-profile.html: as it opens,x5 (5 roles)
+react-rest.Ap2,react-rest,"admin: Save (toast, page, after a reload), Discard, a refused emergency phone (error, focus), cleared on typing",x5 (5 roles)
+react-rest.Ap3,react-rest,admin: Change photo's toast,x5 (5 roles)
+react-rest.Ac1,react-rest,admin on account/change-password.html: as it opens,x5 (5 roles)
+react-rest.Ac2,react-rest,"admin: the eye; different passwords (error, focus); typing clears it; the same (the toast)",x5 (5 roles)
+react-rest.As1,react-rest,admin on account/sessions.html: as it opens,x5 (5 roles)
+react-rest.As2,react-rest,admin: the first placeholder's toast,x5 (5 roles)
+react-rest.An1,react-rest,admin on account/notifications.html: as it opens,x5 (5 roles)
+react-rest.An2,react-rest,admin: the first placeholder's toast,x5 (5 roles)
+react-rest.Sr0,react-rest,admin: the chart's readout line under it,x3 (3 roles)
+react-rest.Sr1,react-rest,admin on system/reports.html: as it opens (the readout set aside),x3 (3 roles)
+react-rest.Sr2,react-rest,admin: the first placeholder's toast,x3 (3 roles)
+react-rest.Sr3,react-rest,"admin: at 412, tapping September shows its value",x3 (3 roles)
+react-rest.Sr,react-rest,emp on system/reports.html: lands where the old site does,x2 (2 roles)
+react-rest.Sb1,react-rest,admin on system/backup.html: as it opens,x1
+react-rest.Sb2,react-rest,admin: the first placeholder's toast,x1
+react-rest.Sb,react-rest,hr on system/backup.html: lands where the old site does,x4 (4 roles)
+react-rest.Sa1,react-rest,admin on system/audit-log.html: as it opens,x2 (2 roles)
+react-rest.Sa2,react-rest,"admin: search fail, payroll, zzz, cleared",x2 (2 roles)
+react-rest.Sa3,react-rest,admin: the first placeholder's toast,x2 (2 roles)
+react-rest.Sa,react-rest,fin on system/audit-log.html: lands where the old site does,x3 (3 roles)
+react-rest.Ss1,react-rest,admin on system/settings.html: as it opens,x1
+react-rest.Ss2,react-rest,"admin: Security marked; the Always on lines; Dark + Save appearance (toast, theme, after a reload); a placeholder",x1
+react-rest.Ss,react-rest,hr on system/settings.html: lands where the old site does,x4 (4 roles)
+react-rest.Rj1,react-rest,admin on recruitment/job-openings.html: as it opens,x2 (2 roles)
+react-rest.Rj2,react-rest,"admin: the Closed tab marked; search design, zzz, cleared; a placeholder",x2 (2 roles)
+react-rest.Rj,react-rest,fin on recruitment/job-openings.html: lands where the old site does,x3 (3 roles)
+react-rest.Rc1,react-rest,admin on recruitment/candidates.html: as it opens,x2 (2 roles)
+react-rest.Rc2,react-rest,admin: the first placeholder's toast,x2 (2 roles)
+react-rest.Rc,react-rest,fin on recruitment/candidates.html: lands where the old site does,x3 (3 roles)
+react-rest.Ra1,react-rest,admin on announcements/announcements.html: as it opens,x5 (5 roles)
+react-rest.Ra2,react-rest,admin: the first placeholder's toast,x5 (5 roles)
+react-rest.P.my-profile,react-rest,emp on account/my-profile.html at 412: the same cards,x1
+react-rest.P.change-password,react-rest,emp on account/change-password.html at 412: the same cards,x1
+react-rest.P.sessions,react-rest,emp on account/sessions.html at 412: the same cards,x1
+react-rest.P.notifications,react-rest,emp on account/notifications.html at 412: the same cards,x1
+react-rest.P.reports,react-rest,admin on system/reports.html at 412: the same cards,x1
+react-rest.P.audit-log,react-rest,admin on system/audit-log.html at 412: the same cards,x1
+react-rest.P.backup,react-rest,admin on system/backup.html at 412: the same cards,x1
+react-rest.P.settings,react-rest,admin on system/settings.html at 412: the same cards,x1
+react-rest.P.job-openings,react-rest,hr on recruitment/job-openings.html at 412: the same cards,x1
+react-rest.P.candidates,react-rest,hr on recruitment/candidates.html at 412: the same cards,x1
+react-rest.P.announcements,react-rest,emp on announcements/announcements.html at 412: the same cards,x1
+react-shell.D,react-shell,admin on dashboard/admin.html,x2 (2 roles)
+react-shell.D.my-leave,react-shell,admin on leave/my-leave.html,x5 (5 roles)
+react-shell.D.users-list,react-shell,admin on users/users-list.html,x1
+react-shell.D.leave-approvals,react-shell,hr on leave/leave-approvals.html,x1
+react-shell.D.finance,react-shell,fin on dashboard/finance.html,x1
+react-shell.D.payroll-run,react-shell,fin on payroll/payroll-run.html,x1
+react-shell.D.employee,react-shell,emp on dashboard/employee.html,x2 (2 roles)
+react-shell.D.my-requests,react-shell,emp on requests/my-requests.html,x1
+react-shell.D.team-leave,react-shell,mgr on leave/team-leave.html,x1
+react-shell.R1,react-shell,"keyboard open + focus, Esc, arrows, hover open and leave: the same",x1
+react-shell.Q.le,react-shell,"admin searches ""le""",x2 (2 roles)
+react-shell.Q.pay,react-shell,"admin searches ""pay""",x2 (2 roles)
+react-shell.Q.arj,react-shell,"admin searches ""arj""",x2 (2 roles)
+react-shell.Q.zzz,react-shell,"admin searches ""zzz""",x2 (2 roles)
+react-shell.Q.enter,react-shell,"admin: ArrowDown + Enter on ""pay"" opens the same page",x2 (2 roles)
+react-shell.T1,react-shell,"open, Dark, Teal, Esc: the same states",x1
+react-shell.N1,react-shell,a sidebar link opens its page through the router (no full load),x1
+react-shell.N2,react-shell,"Back returns to My leave, still without a full load",x1
+react-shell.N3,react-shell,no text in the topbar or sidebar rewritten in place after paint,x1
+react-shell.N4,react-shell,no page errors,x1
+react-shell.F.announcements,react-shell,emp on announcements/announcements.html: one bar colour from the first frame,x2 (2 roles)
+react-shell.F.my-leave,react-shell,emp on leave/my-leave.html: one bar colour from the first frame,x1
+react-shell.F.users-list,react-shell,hr on users/users-list.html: one bar colour from the first frame,x1
+react-shell.F,react-shell,hr on dashboard/hr.html: one bar colour from the first frame,x1
+react-shell.P.my-leave,react-shell,"emp on leave/my-leave.html at 412: topbar, drawer open, another section, Esc",x1
+react-shell.P.user-form,react-shell,"admin on users/user-form.html at 412: topbar, drawer open, another section, Esc",x1
+react-shell.P.apply-leave,react-shell,"emp on leave/apply-leave.html at 412: topbar, drawer open, another section, Esc",x1
+react-shell.P,react-shell,"admin on dashboard/admin.html at 412: topbar, drawer open, another section, Esc",x1
+react-shell.B.1280,react-shell,"hr at 1280: bell, list, card, Esc, See all",x3 (3 roles)
+react-shell.B.412,react-shell,"hr at 412: bell, list, card, Esc, See all",x1
+react-shell.A.login,react-shell,signed out on auth/login.html,x1
+react-shell.A.forgot-password,react-shell,signed out on auth/forgot-password.html,x1
+react-shell.A.reset-password,react-shell,signed out on auth/reset-password.html,x1
+react-shell.A.two-factor,react-shell,signed out on auth/two-factor.html,x1
+react-shell.A.403,react-shell,signed out on errors/403.html,x1
+react-shell.A.404,react-shell,signed out on errors/404.html,x1
+react-shell.A.500,react-shell,signed out on errors/500.html,x1
+react-shell.A.forgot-password#2,react-shell,emp on auth/forgot-password.html,x2 (2 roles)
+react-shell.A.403#2,react-shell,emp on errors/403.html,x2 (2 roles)
+react-shell.A.404#2,react-shell,emp on errors/404.html,x2 (2 roles)
+react-shell.A.500#2,react-shell,emp on errors/500.html,x2 (2 roles)
+react-shell.A.flow.reset-password,react-shell,auth/reset-password.html: the page's own behaviour,x1
+react-shell.A.flow.two-factor,react-shell,auth/two-factor.html: the page's own behaviour,x1
+react-shell.A.flow.forgot-password,react-shell,auth/forgot-password.html: the page's own behaviour,x1
+react-shell.A.flow.login,react-shell,auth/login.html: the page's own behaviour,x1
+react-shell.S1,react-shell,shots written,x1

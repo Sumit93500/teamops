@@ -1,0 +1,31 @@
+# Code graph
+
+A map of the code's functions and modules and who calls whom, made with [Graphify](https://github.com/safishamsi/graphify) (PyPI package `graphifyy`, version 0.9.106 when this was made).
+
+## What it covers
+
+- **Scope:** `app/src`, `assets/js` and `tools`. Not node_modules, dist, the test suites or the HTML pages.
+- **Size:** 175 code files; 2,442 nodes, 10,636 edges, 82 communities (2026-11-12).
+- **Code only:** Graphify's local AST extraction, with no model call (its report says "Token cost: 0 input · 0 output").
+  - API keys are removed from its environment.
+  - Communities are not named by a model, so they stay "Community N".
+  - It runs in about 30 s.
+
+## Files
+
+| file | in git | what |
+|---|---|---|
+| `docs/graph/GRAPH_REPORT.md` | yes | Graphify's report: communities, hubs, surprising links, paths made relative |
+| `docs/graph/hubs.txt` | yes | the 25 most connected functions (`el()`, `getUser()`, `formatDay()`, `nameOf()` ...) |
+| `docs/graph/raw/graph.json`, `graph.html` | no (`.gitignore`) | the full graph (about 3.5 MB each) and its interactive view; regenerate them locally |
+
+## Regenerate
+
+```bash
+uv tool install graphifyy          # or: pipx install graphifyy   (a venv with pip works too)
+python tools/graph.py              # app/src, assets/js and tools (paths as arguments replace that scope)
+```
+
+Set `GRAPHIFY=<path to graphify>` if it isn't on PATH. Then ask the graph, for example `graphify explain "payrollRunFor()" --graph docs/graph/raw/graph.json`, or `graphify affected "can()" --graph docs/graph/raw/graph.json`.
+
+The per-round rule (CLAUDE.md) is to refresh the graph only for the area a round touched. In practice, rerun `python tools/graph.py` (about 30 s) when a round changed code in `app/src`, `assets/js` or `tools`, and skip it otherwise. A run on fewer paths would replace the whole report with a partial one.
