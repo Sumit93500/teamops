@@ -42,6 +42,9 @@ app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (b
 - **New screens (L1):** Offices (everyone reads; an Admin adds branches, edits, deactivates, moves people; the position from
   this device or typed), Settings' Company profile (Admin), About with the overview, mission and offices; the sign-in and
   error pages end with "© <year> <company> · Powered by OfficeOS".
+- **New screens (L2):** My locations (`/pages/account/my-locations.html`: your office, your homes set once, change requests, history),
+  location changes in the approvals inbox, card, bell, sidebar count and Admin dashboard (`app/src/data/waiting.js`), My devices
+  and check-in places on My profile, and Offices in the sidebar's Attendance section for every role (`app/src/shell/appNav.js`).
 - **Left:** inventory (rounds 21–22, after the data rounds 17–20).
 - **Bundle:** what loads first is one 1,090 kB file (L1; 1,013 kB at D2b); the charts' drawing (Recharts, 418 kB) and the map (179 kB) load on first use. Route-level code splitting is planned for round 27.
 
@@ -55,6 +58,8 @@ See [../tests/TEST-CATALOG.md](../tests/TEST-CATALOG.md).
 - **charts:** the D2b charts and map in the gallery (cases, keyboard, phone taps, zoom, table) and the Admin headcount chart.
 - **users:** L1's users pages against the old ones (role access, every cell, field and flow, read by meaning, not by CSS), and the
   new screens: offices (with a mocked device location), company profile, About, the public pages' footer, keyboard, 412 / 1280.
+- **locs:** L2's new screens: My locations (set once, change, cancel, with a mocked location), location changes decided by an
+  Admin (inbox, card, bell, counts, dashboard), HR and managers seeing none, My devices, keyboard, 412 / 1280, light and dark.
 
 They live in `tests/live/react/` and run with `python tools/run-tests.py --react`, which needs Microsoft Edge.
 

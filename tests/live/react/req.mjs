@@ -57,8 +57,10 @@ const read = (t) => t.evaluate(() => {
   const vis = (e) => e.getClientRects().length > 0;
   const tx = (s) => s.replace(/\s+/g, " ").trim();
   return {
-    text: tx(m.innerText),
-    controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
+    // L2 (ruled): the inbox's type filter gains "Location" and Who approves what gains "Home location changes: An Admin" (the
+    // React app's sixth kind, checked in locs.mjs); read without them so the rest still matches the old page.
+    text: tx(m.innerText).replace(" Asset Salary Location ", " Asset Salary ").replace(" Home location changes An Admin", ""),
+    controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.tagName === "SELECT" ? c.textContent.replace(/SalaryLocation$/, "Salary") : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
     tables: [...m.querySelectorAll("table")].map((tb) => [...tb.querySelectorAll("tbody tr")].filter(vis).map((r) => [...r.cells].map((c) => tx(c.innerText)))),
     hiddenIds: [...m.querySelectorAll("[id]")].filter((e) => e.hidden).map((e) => (/^reason-\d+$|^_r_\w*_$/.test(e.id) ? "reason" : e.id)).sort(),
     cal: [...m.querySelectorAll(".calendar__day")].map((c) => c.className.replace("calendar__day ", "")).join("|"),
@@ -128,7 +130,7 @@ if (ONLY.includes("I")) {
     const steps = async (t) => {
       const out = [];
       for (const i of [1, 2, 0]) { await t.click(`.table__toolbar .tabs__tab >> nth=${i}`); await settle(t, 150); out.push(await read(t)); }
-      const types = await t.evaluate(() => [...document.querySelectorAll('select[aria-label="Filter by type"] option')].map((o) => o.value));
+      const types = await t.evaluate(() => [...document.querySelectorAll('select[aria-label="Filter by type"] option')].map((o) => o.value).filter((v) => v !== "location"));   // L2: Location is new (locs.mjs)
       for (const v of [...types.slice(1), ""]) { await t.selectOption('select[aria-label="Filter by type"]', v); await settle(t, 100); out.push((await read(t)).tables); }
       return out;
     };

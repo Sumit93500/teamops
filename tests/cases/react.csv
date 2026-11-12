@@ -201,6 +201,57 @@ react-leave.P.leave-approvals,react-leave,hr on leave/leave-approvals.html at 41
 react-leave.P.team-leave,react-leave,mgr on leave/team-leave.html at 412: the same cards,x1
 react-leave.P.holidays,react-leave,hr on leave/holidays.html at 412: the same cards,x1
 react-leave.X1,react-leave,shots written,x1
+react-locs.R1,react-locs,"admin: opens My locations (heading, tab title, privacy line); Offices last in the sidebar's Attendance section",x5 (5 roles)
+react-locs.R2,react-locs,the topbar search finds My locations (under Attendance),x1
+react-locs.N1,react-locs,"emp: the office (head office, 150 m), ""Home check-in isn't on for you"", whom to ask by name (HR / Admin), no forms, no request or history cards",x2 (2 roles)
+react-locs.S1,react-locs,"eligible: both homes ""Not set"" with a form each; empty requests and history say what comes next",x1
+react-locs.S2,react-locs,saving with no address: refused at the address in the store's words,x1
+react-locs.S3,react-locs,Use my current location fills the position and says how accurate,x1
+react-locs.S4,react-locs,"saved: toast, ""Set"" chip, the address / position / radius / day, a history line (Set: permanent home, by You)",x1
+react-locs.S5,react-locs,a typed latitude that isn't a number: refused at the latitude,x1
+react-locs.S6,react-locs,Request change: the dialog names the home; a one-letter reason is refused at the reason,x1
+react-locs.S7,react-locs,"sent: toast, ""Change waiting"" chip, the waiting note, the request row ""Waiting for an Admin"", no second Request change",x1
+react-locs.S8,react-locs,"Cancel request asks first; then cancelled (toast, ""Set"" chip again, status Cancelled)",x1
+react-locs.S9,react-locs,location permission denied: says what to do instead (type the position),x1
+react-locs.C1,react-locs,admin: a waiting location change adds 1 to the bell and the sidebar's Approvals count,x3 (3 roles)
+react-locs.A1,react-locs,"the inbox lists it: title, Location badge, who, the new address, waiting time, Reject / Approve",x1
+react-locs.A2,react-locs,"the type filter has Location (1 row); Who approves what: Home location changes, An Admin",x1
+react-locs.A3,react-locs,"its card: the person, ""Permanent home location change"", new address / position / now / sent / waiting, the reason, Reject and Approve",x1
+react-locs.A4,react-locs,"Approve asks (the person, the home, the new address); then the toast, the row leaves Pending, the new place applies",x1
+react-locs.A5,react-locs,"Approved tab: the change, decided today; Recently decided lists it",x1
+react-locs.A6,react-locs,"the employee sees it: Approved by Aarav Mehta today, the history line (Changed, from, to, by), the new address",x1
+react-locs.A7,react-locs,"Reject: the dialog; no reason refused (""Give a reason. The employee sees it.""); then the toast, rejected with the note, the old place kept",x1
+react-locs.A8,react-locs,Rejected tab: the row's details carry the note,x1
+react-locs.A9,react-locs,the Admin dashboard's Waiting for you list has it,x1
+react-locs.A10,react-locs,the bell's list has it,x1
+react-locs.H1,react-locs,hr: no location change rows (only an Admin decides them),x2 (2 roles)
+react-locs.D1,react-locs,"none yet: ""0 of 2"", what registers one, the honest note; no token is made by looking",x1
+react-locs.D2,react-locs,"Check-in places on My profile: the office, home check-in off, a link to My locations",x1
+react-locs.D3,react-locs,"two devices, this one marked, ""2 of 2"", no limit warning (this one is registered)",x1
+react-locs.D4,react-locs,a third browser: neither marked; the limit warning says check-ins are refused until an Admin resets,x1
+react-locs.D5,react-locs,"the Admin's reset on the user profile: asked, then the toast, none left",x1
+react-locs.Y1,react-locs,"the dialog says it applies at once; sent: the toast, still ""Set"" (nothing waits), Approved by You, a Changed line",x1
+react-locs.Y2,react-locs,an Admin's own waiting change (if one were left) isn't theirs to decide: no row,x1
+react-locs.K1,react-locs,"the set form in order: address, Use my current location, latitude, longitude, Save",x1
+react-locs.K2,react-locs,Request change by Enter: the dialog opens on its first field; Esc closes it and focus returns,x1
+react-locs.K3,react-locs,an inbox location title opens its card by Enter,x1
+react-locs.W.eligible.1280.light,react-locs,"account/my-locations.html (eligible) at 1280, light: no sideways scroll",x1
+react-locs.W.eligible.1280.dark,react-locs,"account/my-locations.html (eligible) at 1280, dark: no sideways scroll",x1
+react-locs.W.eligible.412.light,react-locs,"account/my-locations.html (eligible) at 412, light: no sideways scroll",x1
+react-locs.W.eligible.412.dark,react-locs,"account/my-locations.html (eligible) at 412, dark: no sideways scroll",x1
+react-locs.W.off.1280.light,react-locs,"account/my-locations.html (off) at 1280, light: no sideways scroll",x1
+react-locs.W.off.1280.dark,react-locs,"account/my-locations.html (off) at 1280, dark: no sideways scroll",x1
+react-locs.W.off.412.light,react-locs,"account/my-locations.html (off) at 412, light: no sideways scroll",x1
+react-locs.W.off.412.dark,react-locs,"account/my-locations.html (off) at 412, dark: no sideways scroll",x1
+react-locs.W.profile.1280.light,react-locs,"account/my-profile.html (profile) at 1280, light: no sideways scroll",x1
+react-locs.W.profile.1280.dark,react-locs,"account/my-profile.html (profile) at 1280, dark: no sideways scroll",x1
+react-locs.W.profile.412.light,react-locs,"account/my-profile.html (profile) at 412, light: no sideways scroll",x1
+react-locs.W.profile.412.dark,react-locs,"account/my-profile.html (profile) at 412, dark: no sideways scroll",x1
+react-locs.W.inbox.1280.light,react-locs,"requests/approvals-inbox.html (inbox) at 1280, light: no sideways scroll",x1
+react-locs.W.inbox.1280.dark,react-locs,"requests/approvals-inbox.html (inbox) at 1280, dark: no sideways scroll",x1
+react-locs.W.inbox.412.light,react-locs,"requests/approvals-inbox.html (inbox) at 412, light: no sideways scroll",x1
+react-locs.W.inbox.412.dark,react-locs,"requests/approvals-inbox.html (inbox) at 412, dark: no sideways scroll",x1
+react-locs.E,react-locs,no page or console errors,x1
 react-pay.S1,react-pay,admin on payroll/payslips.html: as it opens,x5 (5 roles)
 react-pay.S2,react-pay,admin: each financial year; the badges and hold reasons,x5 (5 roles)
 react-pay.Q1,react-pay,"emp: printed on A4: one page, old and new, the same text printed",x2 (2 roles)

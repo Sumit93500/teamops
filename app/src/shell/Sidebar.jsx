@@ -5,14 +5,14 @@
 // the drawer opens on the section of the page you're on. Links go through the router.
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { NAV } from "../../../assets/js/config/nav.js";
+import { APP_NAV as NAV } from "./appNav.js";
 import { can } from "../../../assets/js/core/rbac.js";
 import { ICONS, SECTION_ICONS } from "../../../assets/js/ui/icons.js";
 import { activeHeadcount } from "../../../assets/js/data/store.js";
 import { managesAnyone, pendingFor } from "../../../assets/js/data/expenses-store.js";
 import { isManager as hasReports } from "../../../assets/js/data/reporting.js";
 import { pendingFor as pendingAssetRequests } from "../../../assets/js/data/asset-requests-store.js";
-import { waitingCount } from "../../../assets/js/ui/waiting.js";
+import { waitingCount } from "../data/waiting.js";
 import { useData, useSession, signOutNow } from "../data/hooks.js";
 import { pageUrl, ABOUT } from "../routes.js";
 import { useMedia, RAIL, inRail, initialsFrom } from "./media.js";
@@ -164,7 +164,7 @@ export default function Sidebar({ page, drawerOpen, closeDrawer }) {
                     <Link key={item.label} className={`nav__item${active ? " is-active" : ""}`} to={pageUrl(href)}
                       aria-current={active ? "page" : undefined} data-label={single ? item.label : undefined}
                       data-count-waiting={item.countWaiting ? "" : undefined}>
-                      <Icon d={single ? SECTION_ICONS[group.icon] : ICONS[item.icon] ?? ICONS.default} solid={single} />{item.label}
+                      <Icon d={single ? SECTION_ICONS[group.icon] : item.iconPath ?? ICONS[item.icon] ?? ICONS.default} solid={single} />{item.label}
                       {item.countWaiting && waiting > 0 && <span className="nav__count">{String(waiting)}</span>}
                     </Link>
                   );

@@ -16,6 +16,7 @@ import { decideExpense } from "../../../assets/js/data/expenses-store.js";
 import { describeClaim } from "../../../assets/js/ui/expense-view.js";
 import { decideAssetRequest } from "../../../assets/js/data/asset-requests-store.js";
 import { describeRequest } from "../../../assets/js/ui/asset-request-view.js";
+import { decideLocationChange } from "../../../assets/js/data/locations-store.js";
 import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
 import { bump } from "../data/bus.js";
 import { useToast } from "../ui/Toast.jsx";
@@ -80,6 +81,22 @@ export const ASSET_FLOW = {
     title: "Reject asset request",
     approved: (result) => (result.record.status === "approved" ? "Request approved. It's waiting for an asset to be assigned." : "Request approved. It goes to an Admin next."),
     rejected: "Asset request rejected.",
+  },
+};
+
+// A home location change waiting for an Admin (L2): My locations' requests, in the inbox, the card and the bell. The store
+// takes "approved" / "rejected" and keeps an optional note; the inbox's Reject asks for one, as every other kind does.
+export const LOCATION_FLOW = {
+  decide: (requestId, actorUserId, _role, action, note) => {
+    if (action === "reject" && !String(note ?? "").trim()) return { ok: false, error: "Give a reason. The employee sees it.", field: "note" };
+    return decideLocationChange(requestId, actorUserId, action === "approve" ? "approved" : "rejected", note ?? "");
+  },
+  describe: (r) => `${nameOf(r.userId)}: ${r.kind} home to ${r.place.address}`,
+  noteId: "reject-location-note",
+  labels: {
+    title: "Reject location change",
+    approved: "Location change approved. The new place counts from now.",
+    rejected: "Location change rejected.",
   },
 };
 

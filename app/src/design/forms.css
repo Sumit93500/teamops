@@ -74,3 +74,5 @@ a.ds-person__name:hover { text-decoration: underline; }
 @media (max-width: 1000px) { .ds-two-col { grid-template-columns: minmax(0, 1fr); } }
 .ds-cards { display: grid; gap: var(--ds-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
 .ds-privacy { margin: 0; font-size: var(--ds-text-xs); color: var(--ds-text-3); }
+/* L2: My locations, two home cards side by side (one column on a phone) */
+.ds-cards--wide { grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }

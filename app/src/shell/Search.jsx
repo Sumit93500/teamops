@@ -4,8 +4,7 @@
 // through the router.
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { NAV, OTHER_PAGES } from "../../../assets/js/config/nav.js";
-import { canOpenPage } from "../../../assets/js/core/guard.js";
+import { APP_NAV as NAV, APP_OTHER_PAGES as OTHER_PAGES, openable as canOpenPage } from "./appNav.js";
 import { can } from "../../../assets/js/core/rbac.js";
 import { getAllUsers } from "../../../assets/js/data/store.js";
 import { useSession } from "../data/hooks.js";

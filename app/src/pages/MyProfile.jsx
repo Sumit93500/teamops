@@ -5,11 +5,18 @@
 // store's updateOwnContact() (only those fields, only their own record); an error goes under its field, a refusal is a toast;
 // Discard goes back to what was last saved. Preferred name is shown, not saved. Change photo is a placeholder.
 // Components: Badge, NotBuilt. Written as JSX from the old page (tools/react/html2jsx.py).
+// L2: two cards in the side column: Check-in places (your office and homes, a link to My locations) and My devices (the
+// devices your check-ins registered, at most 2, this one marked, and the honest note that a browser can't prove who uses it).
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { getUser, getAllDepartments, reportingManagerName, updateOwnContact } from "../../../assets/js/data/store.js";
 import { DEPARTMENTS } from "../../../assets/js/data/users.js";
 import { approvalChainText } from "../../../assets/js/data/leave-store.js";
+import { load } from "../../../assets/js/core/storage.js";
+import { devicesFor, MAX_DEVICES } from "../../../assets/js/data/devices-store.js";
+import { officeOf } from "../../../assets/js/data/offices-store.js";
+import { homeOf } from "../../../assets/js/data/locations-store.js";
+import { formatDay, localDateOf } from "../../../assets/js/ui/leave-view.js";
 import { maskAccount, maskPan } from "../../../assets/js/ui/pii.js";
 import Frame from "../ui/Frame.jsx";
 import { Badge, badgeOf, NotBuilt } from "../components/Basics.jsx";
@@ -17,7 +24,7 @@ import { useToast } from "../ui/Toast.jsx";
 import { useData, useSession } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
 import { usePerm } from "../ui/perm.js";
-import { pageUrl } from "../routes.js";
+import { pageUrl, MY_LOCATIONS } from "../routes.js";
 
 const PAGE = "account/my-profile.html";
 const STATUS = {
@@ -72,6 +79,60 @@ function Field({ id, label, type = "text", value, error, full, area, hint, disab
       {hint && <>{" "}<span className="form-hint" id={`${id}-hint`}>{hint}</span></>}
       {error && <span className="form-error" id={`${id}-error`}>{error}</span>}
     </div>
+  );
+}
+
+// This browser's device token, read without making one (a profile page writes nothing).
+const thisToken = () => { try { return load("device-token")?.token ?? null; } catch { return null; } };
+const DEVICE_NOTE = "A browser can't prove who is using it: a device here is a random token kept in this browser, nothing more. If you clear your browser's data, this one counts as new.";
+const onDay = (iso) => formatDay(localDateOf(iso), true);
+
+function MyDevices({ userId }) {
+  const list = useData(() => devicesFor(userId, userId), [userId]);
+  const token = thisToken();
+  if (!list.ok) return null;
+  const mine = list.records;
+  const here = mine.some((d) => d.token === token);
+  const full = mine.length >= MAX_DEVICES && !here;
+  return (
+    <section className="card" id="my-devices">
+      <div className="card__header"><h3 className="card__title">My devices</h3><span className="card__meta">{`${mine.length} of ${MAX_DEVICES}`}</span></div>
+      <div className="card__body stack">
+        {mine.length === 0 ? <p className="text-sm text-muted">No devices yet. Your first check-in registers the device it comes from.</p> : (
+          <ul className="list" aria-label="Registered devices">
+            {mine.map((d) => (
+              <li className="list__item" key={d.id} data-device-id={d.id}>
+                <div className="list__content">
+                  <span className="list__title">{d.label}{d.token === token && <>{" "}<Badge tone="primary">This device</Badge></>}</span>
+                  <span className="list__sub">{`Registered ${onDay(d.registeredAt)}, last used ${onDay(d.lastUsedAt)}`}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        {full && <div className="alert alert--warning" id="device-limit">This device isn't registered and you already use {MAX_DEVICES}. Check-ins from it are refused until an Admin resets your devices.</div>}
+        <p className="text-sm text-muted" id="device-note">{DEVICE_NOTE}</p>
+      </div>
+    </section>
+  );
+}
+
+function CheckInPlaces({ userId }) {
+  const office = useData(() => officeOf(userId), [userId]);
+  const home = useData(() => homeOf(userId), [userId]);
+  const place = (h) => (h ? h.address : "Not set");
+  return (
+    <section className="card" id="my-places">
+      <div className="card__header"><h3 className="card__title">Check-in places</h3><Link className="btn btn--sm" to={pageUrl(MY_LOCATIONS)}>My locations</Link></div>
+      <div className="card__body">
+        <dl className="kv">
+          <Kv term="Office">{office ? office.name : "Not set"}</Kv>
+          <Kv term="Home check-in">{home.homeEligible ? "On" : "Off"}</Kv>
+          {home.homeEligible && <Kv term="Permanent home">{place(home.permanent)}</Kv>}
+          {home.homeEligible && <Kv term="Temporary home">{place(home.temporary)}</Kv>}
+        </dl>
+      </div>
+    </section>
   );
 }
 
@@ -194,6 +255,8 @@ export default function MyProfile() {
                 </dl>
               </div>
             </section>
+            {user && <CheckInPlaces userId={user.id} />}
+            {user && <MyDevices userId={user.id} />}
             <div className="alert alert--info">Work details, bank account and PAN are managed by HR. To correct them, send HR a request.</div>
           </aside>
         </div>

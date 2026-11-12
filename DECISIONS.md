@@ -76,3 +76,7 @@ One line per decision: date, round, decision, why. Newest last. Every round appe
 | 2026-11-12 | L1 | Settings gains a saved Company profile section (Admin, as Settings is); About shows the overview, mission and offices | the profile store from round 14 |
 | 2026-11-12 | L1 | Public pages' footer: "© <year> <company> · Powered by OfficeOS"; the brand panel's old "© 2026 OfficeOS" line removed | parking-lot item, said once |
 | 2026-11-12 | L1 | The profile's Tenure says "—" with no joining date (the old page kept its static sample "5 years, 6 months") | no invented figures |
+| 2026-11-12 | L2 | Offices is the last item of the sidebar's Attendance section for every role (React-only list, app/src/shell/appNav.js; config/nav.js unchanged); About stays reachable from the company name only | ruled after L1 |
+| 2026-11-12 | L2 | My locations is the app's own page (/pages/account/my-locations.html), open to everyone: homes set once, then a change request with a reason; search finds it, My profile and Mark attendance link it (not in the sidebar) | the L brief; only Offices was ruled into the sidebar |
+| 2026-11-12 | L2 | Location changes are the inbox's sixth kind in app/src/data/waiting.js; the inbox, card, bell, sidebar count and Admin dashboard all read it; only locations:review (Admin) decides; Reject needs a reason | counts never disagree with the list |
+| 2026-11-12 | L2 | My devices on My profile reads the device token without making one, marks this browser, warns at the limit, and says a browser can't prove who uses it | reads never write |

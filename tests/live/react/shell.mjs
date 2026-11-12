@@ -43,7 +43,10 @@ const browser = await chromium.launch({ channel: "msedge", headless: true, args:
 //   at 412 the header's company mark ("About <company>") after the menu button (not on a detail page, where the back arrow is);
 //   the sign-in pages' brand panel "O OfficeOS ..." -> "N <company> ..."; the tab title "page | OfficeOS" -> "page | <company>".
 const COMPANY = "Northwind Technologies Pvt. Ltd.";
-const ruledShell = (s) => ({ ...s, brand: s.brand === "O OfficeOS" ? `N${COMPANY}` : s.brand, crumbs: s.crumbs?.replace(/^Workspace\//, `${COMPANY}/`) });
+// L2 (ruled): Offices is the last item of the sidebar's Attendance section, for every role.
+const OFFICES_ITEM = ["Offices", "/pages/company/offices.html", false, null, null, "icon", "M12 22s7-6.2 7-12a7 "];
+const withOffices = (sections) => sections?.map((s) => (s.title === "Attendance" ? { ...s, items: [...s.items, OFFICES_ITEM] } : s));
+const ruledShell = (s) => ({ ...s, brand: s.brand === "O OfficeOS" ? `N${COMPANY}` : s.brand, crumbs: s.crumbs?.replace(/^Workspace\//, `${COMPANY}/`), sections: withOffices(s.sections) });
 const ruledPhone = (s) => (s.toggle?.[0] ? { ...s, shown: [s.shown[0], `About ${COMPANY}`, ...s.shown.slice(1)] } : s);
 // L1 (ruled): the brand panel's "© 2026 OfficeOS. All rights reserved." line is gone; the footer says "© <year> <company> · Powered by OfficeOS"
 const ruledAuth = (s) => ({ ...s, text: s.text?.replace(/^O OfficeOS /, `N ${COMPANY} `).replace(/ © 2026 OfficeOS\. All rights reserved\./, ""), title: s.title?.replace(/\| OfficeOS$/, `| ${COMPANY}`) });

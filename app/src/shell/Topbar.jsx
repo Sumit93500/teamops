@@ -10,7 +10,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { THEMES, ACCENTS, applyTheme, applyAccent, savedTheme, onAppearanceChange } from "../../../assets/js/ui/theme.js";
 import { canOpenPage } from "../../../assets/js/core/guard.js";
-import { waitingCount } from "../../../assets/js/ui/waiting.js";
+import { waitingCount } from "../data/waiting.js";
 import { load } from "../../../assets/js/core/storage.js";
 import { useData, useSession, signOutNow } from "../data/hooks.js";
 import { pageUrl, ABOUT } from "../routes.js";

@@ -17,5 +17,8 @@ export const ABOUT = "company/about.html";
 // The Offices page (L1): also the app's own; everyone signed in may open it (offices:view is everyone's self-service).
 export const OFFICES = "company/offices.html";
 
+// My locations (L2): the app's own; everyone signed in may open it (home places need HR's home check-in switch).
+export const MY_LOCATIONS = "account/my-locations.html";
+
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

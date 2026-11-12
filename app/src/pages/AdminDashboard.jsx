@@ -26,7 +26,7 @@ import { assetTypeLabel, movementTypeLabel, officeDate } from "../../../assets/j
 import { attendanceRateChart, headcountChart, valuesOf } from "../../../assets/js/data/chart-data.js";
 import { rupees } from "../../../assets/js/ui/money.js";
 import { csvColumns, csvRows, csvStat, initExports } from "../../../assets/js/ui/csv-export.js";
-import { waitingFor } from "../../../assets/js/ui/waiting.js";
+import { waitingFor } from "../data/waiting.js";
 import { cardLink } from "../ui/ApprovalCard.jsx";
 import { can } from "../../../assets/js/core/rbac.js";
 import { resolvePageLink } from "../../../assets/js/core/paths.js";
@@ -50,13 +50,14 @@ const ICONS = {
 };
 
 // ---------- pending approvals (admin-dashboard.js renderApprovals) ----------
-const sentOn = (request) => request.appliedOn ?? request.enteredAt.slice(0, 10);
+const sentOn = (request) => request.appliedOn ?? (request.requestedAt ? localDateOf(request.requestedAt) : request.enteredAt.slice(0, 10));
 const APPROVAL_TEXT = {
   leave: (r) => [`${nameOf(r.userId)}, ${typeLabel(r.type).toLowerCase()}`, `${requestDates(r)}, ${formatDays(r.days)}`],
   corrections: (r) => [`Regularization: ${nameOf(r.userId)}`, `${formatDay(r.date)}: ${correctionDetails(r)}`],
   expenses: (c) => [`Expense claim: ${nameOf(c.userId)}`, `${rupees(c.amount)}, ${categoryLabel(c.category)}, ${EXPENSE_STAGE[c.stage]} stage`],
   assets: (r) => [`Asset request: ${nameOf(r.userId)}`, `${assetRequestTitle(r)}, ${ASSET_STAGE[r.stage]} stage`],
   salary: (p) => [`Salary change: ${nameOf(p.userId)}`, `${rupees(p.gross)} a month from ${formatDay(p.effectiveFrom, true)}, proposed by ${nameOf(p.enteredBy)}`],
+  locations: (r) => [`Home location change: ${nameOf(r.userId)}`, `${r.kind === "permanent" ? "Permanent" : "Temporary"} home to ${r.place.address}`],
 };
 function approvalItems(waiting, refresh) {
   const shown = waiting.slice(0, SHOWN_APPROVALS);

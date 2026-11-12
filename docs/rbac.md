@@ -35,6 +35,7 @@ Round 14 added seven permissions for its data layer. L0 moved them into `PERMISS
 
 - `hasPermission(user, permission)` (`config/roles.js`) is now the same check as `permissionsOf(user).includes(permission)`. `LOCATION_PERMISSIONS` and `LOCATION_GRANTS` remain as the round-14 subset.
 - None is overridable. Managers get nothing extra.
+- L2: only `locations:review` (an Admin) sees and decides location changes in the inbox; HR and managers don't. Offices is in the sidebar for everyone (`offices:view`).
 
 ## The check
 

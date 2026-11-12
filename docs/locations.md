@@ -3,7 +3,7 @@
 Built in round 14 (2026-11-12) as **data only**: stores, rules and tests. The location page rounds (L0–L3) add the screens:
 L1 the Offices page (`/pages/company/offices.html`), Settings' Company profile, About's offices, and on the users pages the
 employee's office, home check-in switch, check-in places and devices; L2 and L3 the employee's own homes, devices and
-check-in. L0 moved the seven permissions into the main list (see [rbac.md](rbac.md)), gave offices a state, and made "Reset demo data" clear these stores.
+check-in (L2 built My locations, the location changes in the inbox and My devices). L0 moved the seven permissions into the main list (see [rbac.md](rbac.md)), gave offices a state, and made "Reset demo data" clear these stores.
 
 **Files:** `assets/js/data/company-store.js`, `offices-store.js`, `locations-store.js`, `devices-store.js`, `places.js`; `config/permissions.js` and `config/roles.js` (the permissions, see [rbac.md](rbac.md)); `data/attendance-store.js` (the optional check-in stamp, see [attendance.md](attendance.md)).
 
@@ -50,7 +50,21 @@ The React app's shared name `COMPANY.name` (`app/src/data/company.js`) now reads
   3. An approval applies the new place. An Admin's own request is approved at once, as their leave is.
 - **Requests:** `cancelLocationChange`, `pendingLocationChanges(deciderId, roleKey)`, `locationChangesFor(userId)`.
 - **History:** every set, change and eligibility switch is kept as `{ at, byUserId, action, kind, from, to, requestId }` (`homeOf(userId).history`).
-- **The inbox:** location changes aren't counted in the approvals inbox, sidebar or bell yet (`ui/waiting.js`). All three learn the new kind together in the page round, so the counts never disagree with the list. There is no separate notifications store: the bell is the inbox count.
+- **The inbox (L2):** location changes are a sixth kind in the React app's `app/src/data/waiting.js` (the old `ui/waiting.js` plus `pendingLocationChanges`). The approvals inbox lists them (badge "Location", type filter, Approved / Rejected tabs, Recently decided); its stat, the sidebar's Approvals count, the topbar bell and its list, the approval card and the Admin dashboard's list all count from that one function, so they never disagree. Approve and Reject go through the shared decision flow (`LOCATION_FLOW` in `components/Decision.jsx`); Reject asks for a reason, which the employee sees. There is no separate notifications store: the bell is the inbox count.
+
+## My locations (L2)
+
+`/pages/account/my-locations.html`, the app's own page, open to everyone signed in; found by search, linked from My profile and Mark attendance.
+
+- **Your office:** name, address and radius.
+- **Not home-eligible:** "Home check-in isn't on for you", and whom to ask by name (active people with `users:edit`). No forms.
+- **Home-eligible:** a card per home with a status chip ("Not set", "Set", "Change waiting").
+  - Not set: a form (address, "Use my current location" read once on press, latitude and longitude typed as the fallback; no map). Saved once.
+  - Set: the address, position, radius and day; "Request change" opens a dialog (the new place and a reason). A waiting change can be cancelled (asked first).
+  - An Admin's own change applies at once and is logged ("Changed", decided by You).
+- **Change requests:** every request with its status chip and who decided it, with the note.
+- **History:** every set, change and switch, from and to, by whom.
+- The privacy line: "Your location is read only when you check in or out, never in the background."
 
 ## The place check
 
@@ -77,6 +91,7 @@ The React app's shared name `COMPANY.name` (`app/src/data/company.js`) now reads
 - **The label:** short and harmless, from the user agent: "Edge on Windows".
 - **Registering:** a device registers when it is first used for a check-in or check-out, at most 2 per employee. A third is refused with code `device-limit` until an Admin resets that person's devices (`resetDevices`, `devices:reset`).
 - **Who sees devices:** everyone sees their own (`devicesFor`). An Admin sees anyone's.
+- **My devices (L2):** My profile lists your devices ("N of 2"), marks this browser's, warns when this browser is unregistered and the limit is reached, and says that a browser can't prove who uses it. Reading the page makes no token. The Admin's reset is on the user profile (L1).
 
 ## Check-in and check-out with a place
 
@@ -116,3 +131,5 @@ The users page's "Reset demo data" clears all of these back to the seed (L0): `r
 - `places`: the place check;
 - `punch14`: check-in and check-out, flags, old data;
 - `perms14`: the permissions matrix for all four roles and a manager.
+
+The React harness `tests/live/react/locs.mjs` (L2) covers My locations, the location changes in the inbox, card, bell, counts and Admin dashboard, My devices, Offices in the sidebar, keyboard, and 412 / 1280 in both themes.

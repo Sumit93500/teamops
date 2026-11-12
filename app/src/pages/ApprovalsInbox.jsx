@@ -21,12 +21,13 @@ import { assetTypeLabel } from "../../../assets/js/ui/inventory-view.js";
 import { salaryFor, salaryProposals } from "../../../assets/js/data/payroll-store.js";
 import { todayIso, formatDay, formatDays, requestDates, typeLabel, initials, avatarClass, decisionOf, localDateOf, nameOf } from "../../../assets/js/ui/leave-view.js";
 import { correctionDetails } from "../../../assets/js/ui/attendance-view.js";
-import { waitingFor, waitingCount } from "../../../assets/js/ui/waiting.js";
+import { waitingFor, waitingCount } from "../data/waiting.js";
+import { allLocationChanges } from "../../../assets/js/data/locations-store.js";
 import { openApprovalCard } from "../ui/ApprovalCard.jsx";
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
 import { StatStrip, StatCard, Badge, Tabs, NotBuilt } from "../components/Basics.jsx";
-import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, DecisionButtons } from "../components/Decision.jsx";
+import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, DecisionButtons } from "../components/Decision.jsx";
 import { StatusBadge } from "../ui/leave.jsx";
 import { rupees } from "../ui/payroll.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
@@ -36,7 +37,7 @@ import { pageUrl } from "../routes.js";
 const PAGE = "requests/approvals-inbox.html";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TABS = [["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]];
-const TYPES = ["Access", "Purchase", "System", "Leave", "Attendance", "Expense", "Asset", "Salary"];
+const TYPES = ["Access", "Purchase", "System", "Leave", "Attendance", "Expense", "Asset", "Salary", "Location"];
 const STATS = [["Waiting for you", 3, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"], ["Approved this week", 2, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"],
   ["Rejected this week", 4, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M9 9l6 6M15 9l-6 6"], ["Average response", 1, "M4 20V10M10 20V4M16 20v-7M22 20H2"]];
 // The old page's sample rows (data-static in its HTML): pending ones wait for nobody, their buttons are placeholders.
@@ -49,7 +50,6 @@ const SAMPLE_DECIDED = [
   { type: "access", status: "approved", date: "2026-09-16", title: "Role change: an employee", badge: "Access", by: "An HR Manager", when: "16 Sep" },
   { type: "system", status: "rejected", date: "2026-09-11", title: "Backup restore request", badge: "System", by: "An Admin", when: "11 Sep" },
 ];
-const FLOW = { leave: LEAVE_FLOW, corrections: CORRECTION_FLOW, expenses: EXPENSE_FLOW, assets: ASSET_FLOW, salary: SALARY_FLOW };
 
 function waitingSince(timestamp) {
   const minutes = Math.max(0, Math.floor((Date.now() - Date.parse(timestamp)) / 60000));
@@ -64,6 +64,7 @@ const correctionTitle = (r) => `Regularization: ${nameOf(r.userId)}, ${formatDay
 const expenseTitle = (c) => `Expense: ${nameOf(c.userId)}, ${rupees(c.amount)}`;
 const assetTitle = (r) => `Asset: ${nameOf(r.userId)}, ${assetTypeLabel(r.assetType).toLowerCase()}`;
 const salaryTitle = (p) => `Salary: ${nameOf(p.userId)}, ${rupees(p.gross)}`;
+const locationTitle = (r) => `Home location: ${nameOf(r.userId)}, ${r.kind}`;
 const decisionDate = (r) => localDateOf(decisionOf(r).at);
 const reachedAt = (claim, entry) => claim.history[claim.history.indexOf(entry) - 1]?.at ?? claim.history[0].at;
 
@@ -71,7 +72,7 @@ const reachedAt = (claim, entry) => claim.history[claim.history.indexOf(entry) -
 function readInbox(userId, role) {
   const user = getUser(userId);
   const allLeave = can("leave:approve"), allCorrections = can("attendance:approve"), showSalary = can("salary:view");
-  const waiting = user ? waitingFor(userId, role) : { leave: [], corrections: [], expenses: [], assets: [], salary: [] };
+  const waiting = user ? waitingFor(userId, role) : { leave: [], corrections: [], expenses: [], assets: [], salary: [], locations: [] };
   const asDecidedBy = (request) => {
     const i = request.history.map((h) => h.byUserId === userId && (h.decision === "approved" || h.decision === "rejected")).lastIndexOf(true);
     return i < 0 ? null : { ...request, status: request.history[i].decision, history: request.history.slice(0, i + 1) };
@@ -89,6 +90,9 @@ function readInbox(userId, role) {
   const salaryDecided = (s) => (showSalary && user ? salaryProposals() : []).filter((p) => p.status === s && p.decidedBy !== p.enteredBy && (p.decidedBy === userId || p.enteredBy === userId))
     .sort((a, b) => b.decidedAt.localeCompare(a.decidedAt) || b.id.localeCompare(a.id, "en", { numeric: true }));
   const salaryByMe = (s) => salaryDecided(s).filter((p) => p.decidedBy === userId);
+  const locPending = [...waiting.locations].sort((a, b) => a.requestedAt.localeCompare(b.requestedAt) || a.id.localeCompare(b.id, "en", { numeric: true }));
+  const locDecided = (s) => (user ? allLocationChanges() : []).filter((r) => r.status === s && r.decidedBy === userId && r.userId !== userId)
+    .sort((a, b) => b.decidedAt.localeCompare(a.decidedAt) || b.id.localeCompare(a.id, "en", { numeric: true }));
 
   // The inbox rows: { type, kind, id, userId, title, badge, by, details, when, pending, record, permission } or a sample { sample }.
   const leaveRow = (r) => ({ type: "leave", kind: "leave", id: r.id, userId: r.userId, title: leaveTitle(r), badge: "Leave", by: nameOf(r.userId), details: `${typeLabel(r.type)}, ${formatDays(r.days)}`,
@@ -130,14 +134,17 @@ function readInbox(userId, role) {
     return { type: "salary", kind: "salary", id: p.id, userId: p.userId, title: salaryTitle(p), badge: "Salary", by: nameOf(p.enteredBy), details, attrs: { "data-proposal-id": p.id },
       when: p.status === "pending" ? waitingSince(p.enteredAt) : formatDay(localDateOf(p.decidedAt)), pending: p.status === "pending", record: p, permission: undefined };
   };
+  const locRow = (r) => ({ type: "location", kind: "locations", id: r.id, userId: r.userId, title: locationTitle(r), badge: "Location", by: nameOf(r.userId),
+    details: r.status === "rejected" && r.note ? `${r.place.address}: ${r.note}` : r.place.address, attrs: { "data-change-id": r.id },
+    when: r.status === "pending" ? waitingSince(r.requestedAt) : formatDay(localDateOf(r.decidedAt)), pending: r.status === "pending", record: r, permission: "locations:review" });
   const real = (which) => {
     if (which === "pending") {
       return [...leavePending.map((r) => [r.appliedOn, leaveRow(r)]), ...corrPending.map((r) => [r.appliedOn, corrRow(r)]), ...expPending.map((c) => [c.appliedOn, expRow(c)]),
-        ...assetPending.map((r) => [r.appliedOn, assetRow(r)]), ...salaryPending.map((p) => [p.enteredAt, salaryRow(p)])].sort((a, b) => a[0].localeCompare(b[0])).map((x) => x[1]);
+        ...assetPending.map((r) => [r.appliedOn, assetRow(r)]), ...salaryPending.map((p) => [p.enteredAt, salaryRow(p)]), ...locPending.map((r) => [localDateOf(r.requestedAt), locRow(r)])].sort((a, b) => a[0].localeCompare(b[0])).map((x) => x[1]);
     }
     return [...leaveDecided(which).map((r) => [decisionOf(r).at, leaveRow(r)]), ...corrDecided(which).map((r) => [decisionOf(r).at, corrRow(r)]),
       ...expDecided(which).map((x) => [x.entry.at, expRow(x.claim, x.entry)]), ...assetDecided(which).map((x) => [x.entry.at, assetRow(x.request, x.entry)]),
-      ...salaryDecided(which).map((p) => [new Date(p.decidedAt).toISOString(), salaryRow(p)])].sort((a, b) => b[0].localeCompare(a[0])).map((x) => x[1]);
+      ...salaryDecided(which).map((p) => [new Date(p.decidedAt).toISOString(), salaryRow(p)]), ...locDecided(which).map((r) => [r.decidedAt, locRow(r)])].sort((a, b) => b[0].localeCompare(a[0])).map((x) => x[1]);
   };
   const samples = can("approvals:view");
   const inbox = (which) => (which === "pending" ? [...(samples ? SAMPLE_PENDING.map((s) => ({ ...s, sample: true })) : []), ...real("pending")]
@@ -150,6 +157,7 @@ function readInbox(userId, role) {
   const showsExp = Boolean(user) && (can("expenses:approve") || managesAnyone(userId) || expPending.length > 0 || expenseDecisionsBy(userId).length > 0);
   const showsAssets = Boolean(user) && (can("assets:approve") || managesAnyone(userId) || assetPending.length > 0 || assetRequestDecisionsBy(userId).length > 0);
   const showsSalary = salaryPending.length > 0 || salaryByMe("approved").length > 0 || salaryByMe("rejected").length > 0;
+  const showsLoc = locPending.length > 0 || locDecided("approved").length > 0 || locDecided("rejected").length > 0;
   const since = isoFromDayNumber(dayNumber(todayIso()) - 6);
   let stats = [String(user ? waitingCount(userId, role) : 0), "—", "—", "—"];
   const requests = [...leaveDecided("approved"), ...leaveDecided("rejected"), ...corrDecided("approved"), ...corrDecided("rejected")]
@@ -157,8 +165,9 @@ function readInbox(userId, role) {
   const claims = [...expDecided("approved"), ...expDecided("rejected")].map(({ claim, entry }) => ({ status: entry.decision, date: localDateOf(entry.at), auto: false, days: (Date.parse(entry.at) - Date.parse(reachedAt(claim, entry))) / DAY_MS }));
   const assets = [...assetDecided("approved"), ...assetDecided("rejected")].map(({ request, entry }) => ({ status: entry.decision, date: localDateOf(entry.at), auto: false, days: (Date.parse(entry.at) - Date.parse(reachedAt(request, entry))) / DAY_MS }));
   const changes = [...salaryByMe("approved"), ...salaryByMe("rejected")].map((p) => ({ status: p.status, date: localDateOf(p.decidedAt), auto: false, days: (Date.parse(p.decidedAt) - Date.parse(p.enteredAt)) / DAY_MS }));
-  if (showLeave || showCorr || showsExp || showsAssets || showsSalary) {
-    const decided = [...requests, ...claims, ...assets, ...changes];
+  const homes = [...locDecided("approved"), ...locDecided("rejected")].map((r) => ({ status: r.status, date: localDateOf(r.decidedAt), auto: false, days: (Date.parse(r.decidedAt) - Date.parse(r.requestedAt)) / DAY_MS }));
+  if (showLeave || showCorr || showsExp || showsAssets || showsSalary || showsLoc) {
+    const decided = [...requests, ...claims, ...assets, ...changes, ...homes];
     const times = decided.filter((x) => !x.auto).map((x) => x.days);
     stats = [stats[0], String(decided.filter((x) => x.status === "approved" && x.date >= since).length), String(decided.filter((x) => x.status === "rejected" && x.date >= since).length),
       times.length ? `${(times.reduce((a, b) => a + b, 0) / times.length).toFixed(1)} days` : "—"];
@@ -171,6 +180,7 @@ function readInbox(userId, role) {
     ...[...expDecided("approved"), ...expDecided("rejected")].map(({ claim, entry }) => ({ title: expenseTitle(claim), badge: "Expense", by: nameOf(claim.userId), status: entry.decision, date: localDateOf(entry.at) })).filter((x) => x.date >= since),
     ...[...assetDecided("approved"), ...assetDecided("rejected")].map(({ request, entry }) => ({ title: assetTitle(request), badge: "Asset", by: nameOf(request.userId), status: entry.decision, date: localDateOf(entry.at) })).filter((x) => x.date >= since),
     ...[...salaryByMe("approved"), ...salaryByMe("rejected")].map((p) => ({ title: salaryTitle(p), badge: "Salary", by: nameOf(p.enteredBy), status: p.status, date: localDateOf(p.decidedAt) })).filter((x) => x.date >= since),
+    ...[...locDecided("approved"), ...locDecided("rejected")].map((r) => ({ title: locationTitle(r), badge: "Location", by: nameOf(r.userId), status: r.status, date: localDateOf(r.decidedAt) })).filter((x) => x.date >= since),
   ].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
   return { user, lists, stats, recent };
 }
@@ -178,7 +188,7 @@ function readInbox(userId, role) {
 export default function ApprovalsInbox() {
   const { userId, role } = useSession();
   const canWorkflows = useCan("workflows:view"), canDecideSamples = useCan("approvals:decide");
-  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW) };
+  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW) };
   const [tab, setTab] = useState(0);
   const [type, setType] = useState("");
   const d = useData(() => readInbox(userId, role?.key), [userId, role?.key]);
@@ -226,7 +236,7 @@ export default function ApprovalsInbox() {
   ];
   const WHO = [["Expense claims", chain.always], ["", `Then ${chain.extra} too, above ${rupees(EXPENSE_POLICY.adminAbove)}`], ["Leave requests", "Manager, then HR or an Admin"],
     ["Attendance corrections", "Manager, then HR or an Admin"], ["Purchase orders", "Not built yet"], ["Role changes", "Not built yet"], ["Salary revisions", "Finance, then an Admin"],
-    ["Backup restore", "Not built yet"], ["Asset requests", "Manager, then an Admin"]];
+    ["Backup restore", "Not built yet"], ["Asset requests", "Manager, then an Admin"], ["Home location changes", "An Admin"]];
 
   return (
     <Frame page={PAGE}>

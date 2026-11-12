@@ -73,19 +73,21 @@ await Promise.all(Array.from({ length: WORKERS }, worker));
 
 // D2a: About (/pages/company/about.html), the app's own page, as every session. The old site has no About, so the oracle is the
 // rule itself: signed out goes to sign-in; anyone signed in opens it, inside the shell, with its text drawn and no errors.
+// L2: the app's other own pages, Offices (L1) and My locations (L2), by the same rule.
+const OWN = ["company/about.html", "company/offices.html", "account/my-locations.html"];
 let aboutCases = 0;
-for (const who of Object.keys(WHO)) {
+for (const own of OWN) for (const who of Object.keys(WHO)) {
   aboutCases++;
-  const n = await open(N, who, "company/about.html", true);
-  const want = who === "out" ? "auth/login.html" : "company/about.html";
+  const n = await open(N, who, own, true);
+  const want = who === "out" ? "auth/login.html" : own;
   const ok = n.at === want && !n.errs.length && n.main > 0 && n.shell === (who !== "out");
   const kind = who === "out" ? "to sign-in" : "opened";
   tally[`${who} ${kind}`] = (tally[`${who} ${kind}`] ?? 0) + 1; if (n.shell) shells++;
-  if (ok) passed++; else { failed++; fails.push(`FAIL  ${who.padEnd(5)} company/about.html  want->${want}  new->${n.at}  main=${n.main}  shell ${n.shell}  ${n.errs.join(" | ")}`); }
+  if (ok) passed++; else { failed++; fails.push(`FAIL  ${who.padEnd(5)} ${own}  want->${want}  new->${n.at}  main=${n.main}  shell ${n.shell}  ${n.errs.join(" | ")}`); }
 }
 await browser.close();
 fails.forEach((f) => console.log(f));
 for (const who of Object.keys(WHO)) console.log(`${who.padEnd(5)} ` + ["opened", "to sign-in", "to 403", "elsewhere"].map((k) => `${k} ${tally[`${who} ${k}`] ?? 0}`).join(", "));
-const byWho = Object.keys(WHO).map((w) => `${w} ${PAGES.length + 1}`).join(", ");
-console.log(`\nsmoke: ${PAGES.length} pages + About x ${Object.keys(WHO).length} sessions (${byWho}) = ${cases.length + aboutCases} cases (${shells} inside the shell, as on the old site); passed ${passed}, failed ${failed}; ${Math.round((Date.now() - t0) / 1000)} s`);
+const byWho = Object.keys(WHO).map((w) => `${w} ${PAGES.length + OWN.length}`).join(", ");
+console.log(`\nsmoke: ${PAGES.length} pages + About, Offices, My locations x ${Object.keys(WHO).length} sessions (${byWho}) = ${cases.length + aboutCases} cases (${shells} inside the shell, as on the old site); passed ${passed}, failed ${failed}; ${Math.round((Date.now() - t0) / 1000)} s`);
 process.exit(failed ? 1 : 0);

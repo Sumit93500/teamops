@@ -56,13 +56,18 @@ const read = (t) => t.evaluate(() => {
   if (!m) return null;
   const vis = (e) => e.getClientRects().length > 0;
   const tx = (s) => s.replace(/\s+/g, " ").trim();
-  return {
+  // L2 (ruled): My profile's new Check-in places and My devices cards (checked in locs.mjs) are read past, so the rest still
+  // matches the old page; they're shown again after the read.
+  const added = [...m.querySelectorAll("#my-places, #my-devices")];
+  added.forEach((e) => { e.style.display = "none"; });
+  try { return read2(); } finally { added.forEach((e) => { e.style.display = ""; }); }
+  function read2() { return {
     text: tx(m.innerText),
     controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.tagName === "SELECT" ? [...c.options].map((o) => tx(o.textContent)).join(" ") : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
     tables: [...m.querySelectorAll("table")].map((tb) => [...tb.querySelectorAll("tbody tr")].filter(vis).map((r) => [...r.cells].map((c) => tx(c.innerText)))),
     hiddenIds: [...m.querySelectorAll("[id]")].filter((e) => e.hidden).map((e) => (/^reason-\d+$|^_r_\w*_$/.test(e.id) ? "reason" : e.id)).sort(),
     cal: [...m.querySelectorAll(".calendar__day")].map((c) => c.className.replace("calendar__day ", "")).join("|"),
-  };
+  }; }
 });
 const toasts = (t) => t.evaluate(() => [...document.querySelectorAll(".toast")].map((e) => e.className + " | " + e.querySelector(".toast__text").textContent.trim()));
 function where(x, y) {
