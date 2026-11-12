@@ -34,6 +34,17 @@ import RoleEditor from "./pages/RoleEditor.jsx";
 import ApprovalWorkflows from "./pages/ApprovalWorkflows.jsx";
 import Designations from "./pages/Designations.jsx";
 import Delegation from "./pages/Delegation.jsx";
+import MyProfile from "./pages/MyProfile.jsx";
+import ChangePassword from "./pages/ChangePassword.jsx";
+import Notifications from "./pages/Notifications.jsx";
+import Sessions from "./pages/Sessions.jsx";
+import Reports from "./pages/Reports.jsx";
+import AuditLog from "./pages/AuditLog.jsx";
+import Backup from "./pages/Backup.jsx";
+import Settings from "./pages/Settings.jsx";
+import JobOpenings from "./pages/JobOpenings.jsx";
+import Candidates from "./pages/Candidates.jsx";
+import Announcements from "./pages/Announcements.jsx";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
@@ -66,6 +77,17 @@ const PORTED = {
   "access/approval-workflows.html": ApprovalWorkflows,
   "access/designations.html": Designations,
   "access/delegation.html": Delegation,
+  "account/my-profile.html": MyProfile,
+  "account/change-password.html": ChangePassword,
+  "account/notifications.html": Notifications,
+  "account/sessions.html": Sessions,
+  "system/reports.html": Reports,
+  "system/audit-log.html": AuditLog,
+  "system/backup.html": Backup,
+  "system/settings.html": Settings,
+  "recruitment/job-openings.html": JobOpenings,
+  "recruitment/candidates.html": Candidates,
+  "announcements/announcements.html": Announcements,
 };
 
 function Home() {

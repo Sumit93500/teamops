@@ -17,26 +17,27 @@ export function NoData() {
   return <div className="empty" data-no-data=""><p className="empty__text">{NO_DATA}</p></div>;
 }
 
-export function ColumnChart({ days, label, id, empty = false }) {
+// cols (round 23): columns that aren't days, [{ label, height, name, modifier? }] (reports' months); className adds to "chart".
+export function ColumnChart({ days, cols, label, id, empty = false, className }) {
   const phone = usePhone();
   const [selected, setSelected] = useState(null);
   const hint = phone ? "Tap a bar for its value" : "Select a bar for its value";
-  const nameOf = (d) => `${shortDate(d.date)}: ${d.what}`;
+  const items = cols ?? days.map((d) => ({ key: d.date, label: String(dayOfMonth(d.date)), height: d.height, modifier: d.modifier, name: `${shortDate(d.date)}: ${d.what}` }));
   if (empty) return <NoData />;
   return (
     <>
-      <div className="chart" id={id} role="group" aria-label={label}>
-        {days.map((d, i) => (
-          <div key={d.date} className={`chart__col${selected === i ? " is-selected" : ""}`} tabIndex={0} role="button" aria-label={nameOf(d)}
+      <div className={`chart${className ? ` ${className}` : ""}`} id={id} role="group" aria-label={label}>
+        {items.map((d, i) => (
+          <div key={d.key ?? i} className={`chart__col${selected === i ? " is-selected" : ""}`} tabIndex={0} role="button" aria-label={d.name}
             onClick={() => setSelected(i)} onFocus={() => setSelected(i)}>
             <div className="chart__track">
-              <span className={`chart__bar${d.modifier ? ` chart__bar--${d.modifier}` : ""}`} style={{ "--h": String(d.height) }} title={nameOf(d)} />
+              <span className={`chart__bar${d.modifier ? ` chart__bar--${d.modifier}` : ""}`} style={{ "--h": String(d.height) }} title={d.name} />
             </div>
-            <span className="chart__label">{String(dayOfMonth(d.date))}</span>
+            <span className="chart__label">{d.label}</span>
           </div>
         ))}
       </div>
-      <p className="chart__readout chart__readout--all" aria-live="polite">{selected === null ? hint : nameOf(days[selected])}</p>
+      <p className="chart__readout chart__readout--all" aria-live="polite">{selected === null ? hint : items[selected].name}</p>
     </>
   );
 }
