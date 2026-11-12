@@ -14,6 +14,8 @@ import { decideSalaryProposal } from "../../../assets/js/data/payroll-store.js";
 import { describeChange } from "../../../assets/js/ui/salary-change-view.js";
 import { decideExpense } from "../../../assets/js/data/expenses-store.js";
 import { describeClaim } from "../../../assets/js/ui/expense-view.js";
+import { decideAssetRequest } from "../../../assets/js/data/asset-requests-store.js";
+import { describeRequest } from "../../../assets/js/ui/asset-request-view.js";
 import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
 import { bump } from "../data/bus.js";
 import { useToast } from "../ui/Toast.jsx";
@@ -66,6 +68,18 @@ export const EXPENSE_FLOW = {
     title: "Reject expense claim",
     approved: (result) => (result.record.status === "approved" ? "Claim approved. It's ready to be paid." : `Claim approved. It goes to ${result.record.stage === "admin" ? "an Admin" : "Finance"} next.`),
     rejected: "Claim rejected.",
+  },
+};
+
+// An asset request (ui/asset-request-view.js assetRequestFlow, round 13): the inbox (and asset assignment later).
+export const ASSET_FLOW = {
+  decide: decideAssetRequest,
+  describe: describeRequest,
+  noteId: "reject-asset-request-note",
+  labels: {
+    title: "Reject asset request",
+    approved: (result) => (result.record.status === "approved" ? "Request approved. It's waiting for an asset to be assigned." : "Request approved. It goes to an Admin next."),
+    rejected: "Asset request rejected.",
   },
 };
 

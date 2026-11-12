@@ -48,7 +48,7 @@ function detachedRows(list, columns, rowKey, rowProps) {
 }
 
 export default function Table({ title, columns, rows, rowKey = (r) => r.id, filter, exportName, pageSize = 10, empty = "Nothing to show.", tools, initialSort = null,
-  bare = false, page: pageProp, onPageChange, rowProps, oldExport = false, pager = true, extraRows = null, tbodyId, tableClass = "table" }) {
+  bare = false, page: pageProp, onPageChange, rowProps, oldExport = false, pager = true, extraRows = null, tbodyId, tableClass = "table", tableId }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState(initialSort);   // { key, dir: "ascending" | "descending" }
   const [ownPage, setOwnPage] = useState(1);
@@ -87,7 +87,7 @@ export default function Table({ title, columns, rows, rowKey = (r) => r.id, filt
   const body = (
     <>
       <div className="table-wrap">
-        <table className={tableClass} ref={tableRef} data-export-name={oldExport ? exportName : undefined} {...cols.table}>
+        <table className={tableClass} id={tableId} ref={tableRef} data-export-name={oldExport ? exportName : undefined} {...cols.table}>
           <thead>
             <tr>
               {columns.map((c) => {
@@ -109,7 +109,7 @@ export default function Table({ title, columns, rows, rowKey = (r) => r.id, filt
           <tbody id={tbodyId}>
             {visible.length
               ? visible.map((r) => <Row key={rowKey(r)} row={r} columns={columns} cols={cols} rowProps={rowProps} />)
-              : <tr><td className="text-muted" colSpan={columns.length}>{query ? "No matches." : empty}</td></tr>}
+              : empty === null && !query ? null : <tr><td className="text-muted" colSpan={columns.length}>{query ? "No matches." : empty}</td></tr>}
             {extraRows}
           </tbody>
         </table>

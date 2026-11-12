@@ -26,6 +26,9 @@ import PayslipView from "./pages/PayslipView.jsx";
 import SalaryStructure from "./pages/SalaryStructure.jsx";
 import Expenses from "./pages/Expenses.jsx";
 import TaxDeductions from "./pages/TaxDeductions.jsx";
+import ApprovalsInbox from "./pages/ApprovalsInbox.jsx";
+import MyRequests from "./pages/MyRequests.jsx";
+import ClaimExpense from "./pages/ClaimExpense.jsx";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
@@ -50,6 +53,9 @@ const PORTED = {
   "payroll/salary-structure.html": SalaryStructure,
   "finance/expenses.html": Expenses,
   "finance/tax-deductions.html": TaxDeductions,
+  "requests/approvals-inbox.html": ApprovalsInbox,
+  "requests/my-requests.html": MyRequests,
+  "requests/claim-expense.html": ClaimExpense,
 };
 
 function Home() {
