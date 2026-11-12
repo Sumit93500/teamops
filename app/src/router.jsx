@@ -20,6 +20,9 @@ import ApplyLeave from "./pages/ApplyLeave.jsx";
 import LeaveApprovals from "./pages/LeaveApprovals.jsx";
 import TeamLeave from "./pages/TeamLeave.jsx";
 import Holidays from "./pages/Holidays.jsx";
+import PayrollRun from "./pages/PayrollRun.jsx";
+import Payslips from "./pages/Payslips.jsx";
+import PayslipView from "./pages/PayslipView.jsx";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
@@ -38,6 +41,9 @@ const PORTED = {
   "leave/leave-approvals.html": LeaveApprovals,
   "leave/team-leave.html": TeamLeave,
   "leave/holidays.html": Holidays,
+  "payroll/payroll-run.html": PayrollRun,
+  "payroll/payslips.html": Payslips,
+  "payroll/payslip-view.html": PayslipView,
 };
 
 function Home() {

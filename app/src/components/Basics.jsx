@@ -44,8 +44,17 @@ export function EmptyState({ title = NO_DATA, text, to, linkText, icon }) {
   );
 }
 
-export function Badge({ tone = "", dot = false, square = false, children }) {
-  return <span className={["badge", tone && `badge--${tone}`, dot && "badge--dot", square && "badge--square"].filter(Boolean).join(" ")}>{children}</span>;
+export function Badge({ tone = "", dot = false, square = false, children, ...props }) {
+  return <span {...props} className={["badge", tone && `badge--${tone}`, dot && "badge--dot", square && "badge--square"].filter(Boolean).join(" ")}>{children}</span>;
+}
+// A badge from the old pages' class strings ("badge badge--warning badge--dot"), for status maps kept in that form (round 11).
+export const badgeOf = (cls = "badge") => ({ tone: /badge--(?!dot\b|square\b)([\w-]+)/.exec(cls)?.[1] ?? "", dot: /\bbadge--dot\b/.test(cls), square: /\bbadge--square\b/.test(cls) });
+
+// Why a control can't be used, as a line of text after it (leave-view.js showReason, round 14E): the control points at it with
+// aria-describedby={id}; it takes the control's permission and hidden, so it hides with it. No text: no line (round 11).
+export function Reason({ id, text, permission, hidden }) {
+  if (!text) return null;
+  return <span className="reason" id={id} data-permission={permission} hidden={hidden || undefined}>{text}</span>;
 }
 
 export function PersonCell({ userId, name, sub }) {
@@ -72,10 +81,10 @@ export function Stepper({ steps, vertical = true, id }) {
   );
 }
 
-export function NotBuilt({ what, className = "btn", children }) {
+export function NotBuilt({ what, className = "btn", children, ...props }) {
   const showToast = useToast();
   return (
-    <button className={className} type="button" data-not-implemented={what}
+    <button {...props} className={className} type="button" data-not-implemented={what}
       onClick={(e) => { e.preventDefault(); showToast(`${what} isn't available in this demo.`, "info"); }}>{children ?? what}</button>
   );
 }
