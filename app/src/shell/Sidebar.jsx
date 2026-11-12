@@ -14,8 +14,10 @@ import { isManager as hasReports } from "../../../assets/js/data/reporting.js";
 import { pendingFor as pendingAssetRequests } from "../../../assets/js/data/asset-requests-store.js";
 import { waitingCount } from "../../../assets/js/ui/waiting.js";
 import { useData, useSession, signOutNow } from "../data/hooks.js";
-import { pageUrl } from "../routes.js";
+import { pageUrl, ABOUT } from "../routes.js";
 import { useMedia, RAIL, inRail, initialsFrom } from "./media.js";
+import { COMPANY } from "../data/company.js";
+import { CompanyMark } from "./Brand.jsx";
 
 const OPEN_MS = 120, CLOSE_MS = 250, EDGE = 8;
 export const SIGN_OUT_ICON = "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9";
@@ -124,14 +126,15 @@ export default function Sidebar({ page, drawerOpen, closeDrawer }) {
   };
   const onFocusOut = (e) => { if (inRail() && !navRef.current.contains(e.relatedTarget) && document.hasFocus()) setOpen(null); };
 
-  const footerText = `Northwind Technologies ${headcount} ${headcount === 1 ? "employee" : "employees"}`;
+  const footerText = `${COMPANY.shortName} ${headcount} ${headcount === 1 ? "employee" : "employees"}`;
   return (
     <aside className={`sidebar${drawerOpen ? " is-open" : ""}`} id="sidebar" ref={sidebarRef}
       onClick={(e) => { if (e.target.closest("a")) closeDrawer(); }}>
-      <div className="sidebar__brand">
-        <span className="sidebar__logo">O</span>{" "}
-        OfficeOS
-      </div>
+      {/* D2a: the company's name (data/company.js), a link to About; the rail shows its mark, the name stays its accessible name */}
+      <Link className="sidebar__brand" to={pageUrl(ABOUT)} title={COMPANY.name}>
+        <CompanyMark />
+        <span className="sidebar__brand-name">{COMPANY.name}</span>
+      </Link>
       {user && (
         <div className="nav__profile">
           <span className="nav__profile-avatar" aria-hidden="true">{initialsFrom(user.name)}</span>
@@ -177,7 +180,7 @@ export default function Sidebar({ page, drawerOpen, closeDrawer }) {
       <div className="sidebar__footer" role="group" aria-label={footerText} tabIndex={rail ? 0 : undefined}>
         <Icon d={SECTION_ICONS.company} solid />
         <span className="sidebar__footer-text">
-          <strong>Northwind Technologies</strong>{" "}
+          <strong>{COMPANY.shortName}</strong>{" "}
           <span id="sidebar-headcount">{`${headcount} ${headcount === 1 ? "employee" : "employees"}`}</span>
         </span>
       </div>

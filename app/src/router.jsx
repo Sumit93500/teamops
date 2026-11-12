@@ -45,7 +45,8 @@ import Settings from "./pages/Settings.jsx";
 import JobOpenings from "./pages/JobOpenings.jsx";
 import Candidates from "./pages/Candidates.jsx";
 import Announcements from "./pages/Announcements.jsx";
-import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
+import About from "./pages/About.jsx";
+import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
 const PORTED = {
@@ -104,6 +105,7 @@ function pageElement(page) {
 export const router = createBrowserRouter([
   { path: "/", element: <Home /> },
   { path: "/gallery", element: <Gallery /> },   // round 4's component gallery (not a product page)
+  { path: pageUrl(ABOUT), element: <About /> },   // D2a: the company's About page, for anyone signed in
   ...ALL_PAGES.map((page) => ({ path: pageUrl(page), element: <RequireRoute page={page}>{pageElement(page)}</RequireRoute> })),
   { path: "*", element: <Navigate to={pageUrl("errors/404.html")} replace /> },
 ]);

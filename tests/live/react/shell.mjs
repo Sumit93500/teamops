@@ -37,6 +37,15 @@ const PAGES = { admin: ["dashboard/admin.html", "leave/my-leave.html", "users/us
 const UA = "Mozilla/5.0 (Linux; Android 14; Pixel 6a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 const SIZES = { 412: { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2.625, isMobile: true, hasTouch: true, userAgent: UA }, 1280: { viewport: { width: 1280, height: 900 } } };
 const browser = await chromium.launch({ channel: "msedge", headless: true, args: ["--disable-gpu", "--disable-partial-raster"] });
+// D2a's ruled branding (2026-11-12): the app shows the company (data/company.js) where the old pages show "OfficeOS". It is applied
+// to the OLD side only, and only to these fields; everything else still has to match exactly:
+//   the sidebar's brand "O OfficeOS" -> the company's mark + name; the header's "Workspace / page" -> "<company> / page";
+//   at 412 the header's company mark ("About <company>") after the menu button (not on a detail page, where the back arrow is);
+//   the sign-in pages' brand panel "O OfficeOS ..." -> "N <company> ..."; the tab title "page | OfficeOS" -> "page | <company>".
+const COMPANY = "Northwind Technologies Pvt. Ltd.";
+const ruledShell = (s) => ({ ...s, brand: s.brand === "O OfficeOS" ? `N${COMPANY}` : s.brand, crumbs: s.crumbs?.replace(/^Workspace\//, `${COMPANY}/`) });
+const ruledPhone = (s) => (s.toggle?.[0] ? { ...s, shown: [s.shown[0], `About ${COMPANY}`, ...s.shown.slice(1)] } : s);
+const ruledAuth = (s) => ({ ...s, text: s.text?.replace(/^O OfficeOS /, `N ${COMPANY} `), title: s.title?.replace(/\| OfficeOS$/, `| ${COMPANY}`) });
 let passed = 0, failed = 0;
 const check = (n, label, cond, detail = "") => { cond ? passed++ : failed++; console.log(`${cond ? "PASS" : "FAIL"}  ${String(n).padEnd(9)} ${label}${detail !== "" ? `  -> ${String(detail).slice(0, 600)}` : ""}`); };
 const j = JSON.stringify;
@@ -92,7 +101,7 @@ if (ONLY.includes("D")) {
   console.log("--- D. The drawn shell at 1280 ---");
   for (const who of Object.keys(PAGES)) for (const page of PAGES[who]) {
     const o = await open(O, who, page), n = await open(N, who, page);
-    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, await readShell(o.t), await readShell(n.t));
+    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, ruledShell(await readShell(o.t)), await readShell(n.t));
     if (o.errs.length || n.errs.length) check(`D.${who}.err`, "no page errors", false, j([o.errs, n.errs]));
     await o.ctx.close(); await n.ctx.close();
   }
@@ -106,7 +115,9 @@ if (ONLY.includes("R")) {
     const triggers = await t.$$(".nav__trigger");
     for (const k of [0, 2]) {
       await triggers[k].focus(); await t.keyboard.press("Enter"); await t.waitForTimeout(100);
-      out.push(await t.evaluate(() => { const s = document.querySelector(".nav__section.is-open"); return s ? [s.querySelector(".nav__trigger").getAttribute("aria-label"), s.querySelector(".nav__trigger").getAttribute("aria-expanded"), s.querySelector(".nav__panel").style.top, document.activeElement.textContent.trim()] : null; }));
+      // the panel's top relative to its button (D2a: the rail's brand is taller, so every button sits 10px lower; the panel still
+      // opens level with its button, which is what this checks)
+      out.push(await t.evaluate(() => { const s = document.querySelector(".nav__section.is-open"); return s ? [s.querySelector(".nav__trigger").getAttribute("aria-label"), s.querySelector(".nav__trigger").getAttribute("aria-expanded"), Math.round(parseFloat(s.querySelector(".nav__panel").style.top) - s.querySelector(".nav__trigger").getBoundingClientRect().top), document.activeElement.textContent.trim()] : null; }));
       await t.keyboard.press("Escape"); await t.waitForTimeout(100);
       out.push(await t.evaluate(() => [document.querySelectorAll(".nav__section.is-open").length, document.activeElement.getAttribute("aria-label")]));
     }
@@ -225,7 +236,7 @@ if (ONLY.includes("P")) {
       await t.keyboard.press("Escape"); await t.waitForTimeout(250); out.push(await phoneRead(t));
       return out;
     };
-    const [a, b] = [await steps(o.t), await steps(n.t)];
+    const [a, b] = [(await steps(o.t)).map(ruledPhone), await steps(n.t)];
     const name = `P.${who}.${page.split("/")[1].replace(".html", "")}`;
     check(name, `${who} on ${page} at 412: topbar, drawer open, another section, Esc`, j(a) === j(b), j(a) === j(b) ? j(b.at(-1)).slice(0, 300) : `see ${name}.json`);
     if (j(a) !== j(b)) fs.writeFileSync(path.join(SHOTS, `${name}.json`), JSON.stringify({ old: a, new: b }, null, 1));
@@ -276,7 +287,7 @@ if (ONLY.includes("A")) {
   for (const who of [null, "emp", "fin"]) for (const page of ["auth/login.html", "auth/forgot-password.html", "auth/reset-password.html", "auth/two-factor.html", "errors/403.html", "errors/404.html", "errors/500.html"]) {
     if (who && page.startsWith("auth/") && page !== "auth/forgot-password.html") continue;
     const o = await open(O, who ?? "out", page), n = await open(N, who ?? "out", page);
-    const [a, b] = [await read(o.t), await read(n.t)];
+    const [a, b] = [ruledAuth(await read(o.t)), await read(n.t)];
     check(`A.${who ?? "out"}.${page.split("/")[1].replace(".html", "")}`, `${who ?? "signed out"} on ${page}`, j(a) === j(b), j(a) === j(b) ? `${a.links.length} links, role ${a.role}` : `old ${j(a)} new ${j(b)}`);
     await o.ctx.close(); await n.ctx.close();
   }

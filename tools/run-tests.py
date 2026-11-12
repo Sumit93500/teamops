@@ -21,7 +21,7 @@ ZONES = ["Asia/Kolkata", "UTC", "America/Los_Angeles"]
 COUNT = re.compile(r"(\d+) passed, (\d+) failed")
 REACT = [  # harness, ONLY letters (the harness's own default when empty)
     ("smoke.mjs", ""), ("gallery.mjs", ""), ("shell.mjs", "DRQTNFPBAS"), ("dash.mjs", "AEZHFYMS"), ("att.mjs", "MSPX"), ("leave.mjs", ""),
-    ("pay.mjs", "SQPX"), ("fin.mjs", ""), ("req.mjs", "IKMCPX"), ("access.mjs", ""), ("rest.mjs", ""),
+    ("pay.mjs", "SQPX"), ("fin.mjs", ""), ("req.mjs", "IKMCPX"), ("access.mjs", ""), ("rest.mjs", ""), ("design.mjs", ""),
 ]
 # Left out on purpose: att Y (my attendance's earlier months) and pay R, V (payroll run, payslip view). Rounds 9b, 11 and 13c gave
 # those months "No data in this range.", which the old site doesn't have, so they match only a reference tree with the new wording
@@ -105,7 +105,7 @@ def run_react():
         if only:
             env["ONLY"] = only
         shots = os.path.join(OUT, "react-shots", h[:-4])
-        args = [dist, ROOT] if h == "smoke.mjs" else [dist, shots] if h == "gallery.mjs" else [dist, ROOT, shots]
+        args = [dist, ROOT] if h == "smoke.mjs" else [dist, shots] if h in ("gallery.mjs", "design.mjs") else [dist, ROOT, shots]
         t0 = time.time()
         r = subprocess.run(["node", os.path.join(TESTS, "live", "react", h), *args], cwd=os.path.join(TESTS, "live", "react"), env=env,
                            capture_output=True, text=True, encoding="utf-8", errors="replace")

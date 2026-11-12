@@ -4,6 +4,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import "../../assets/css/style.css";
+import "./design/tokens.css";   // D2a: the design system's tokens, after the old css so they win where names overlap
+import "./design/shell.css";
 import { loadTheme } from "../../assets/js/ui/theme.js";
 import { ToastProvider } from "./ui/Toast.jsx";
 import { ConfirmProvider } from "./components/Confirm.jsx";

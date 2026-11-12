@@ -18,6 +18,7 @@ import { Badge, badgeOf, NO_DATA } from "../components/Basics.jsx";
 import { KeepWhole, rupees } from "../ui/payroll.jsx";
 import { useData, useSession } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
+import { COMPANY, companyInitial } from "../data/company.js";   // D2a: the company's details from one module
 
 const PAGE = "payroll/payslip-view.html";
 const STATUS = {
@@ -145,8 +146,8 @@ export default function PayslipView() {
           <>
             <header className="payslip__head">
               <div className="payslip__brand">
-                <span className="payslip__logo">N</span>
-                <div className="payslip__company"><strong>Northwind Technologies Pvt. Ltd.</strong><span>Sector 44, Gurugram, Haryana 122003</span></div>
+                <span className="payslip__logo">{companyInitial()}</span>
+                <div className="payslip__company"><strong>{COMPANY.name}</strong><span>{COMPANY.address}</span></div>
               </div>
               <div className="payslip__period">
                 <span>Payslip for</span>

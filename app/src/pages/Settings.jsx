@@ -14,6 +14,7 @@ import { NotBuilt, Reason } from "../components/Basics.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { usePerm } from "../ui/perm.js";
 import { pageUrl } from "../routes.js";
+import { COMPANY } from "../data/company.js";   // D2a: the company's details live in one module, read by the shell and About too
 
 const PAGE = "system/settings.html";
 const APPEARANCE_CHANGED = "officeos:appearance";   // theme.js announces a change on document under this name
@@ -62,11 +63,11 @@ export default function Settings() {
             <form action="settings.html">
               <div className="card__body">
                 <div className="form-grid">
-                  <div className="form-field form-field--full"><label className="form-label form-label--required" htmlFor="c-name">Company name</label>{" "}<input className="input" id="c-name" type="text" defaultValue="Northwind Technologies Pvt. Ltd." /></div>
+                  <div className="form-field form-field--full"><label className="form-label form-label--required" htmlFor="c-name">Company name</label>{" "}<input className="input" id="c-name" type="text" defaultValue={COMPANY.name} /></div>
                   <div className="form-field form-field--full">
                     <label className="form-label" htmlFor="c-addr">Address</label>
                     {" "}
-                    <textarea defaultValue="Sector 44, Gurugram, Haryana 122003" className="textarea" id="c-addr" />
+                    <textarea defaultValue={COMPANY.address} className="textarea" id="c-addr" />
                   </div>
                   <div className="form-field">
                     <label className="form-label" htmlFor="c-tz">Time zone</label>

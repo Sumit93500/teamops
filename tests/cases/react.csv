@@ -68,6 +68,24 @@ react-dash.M.finance,react-dash,fin on dashboard/finance.html at 412: the same c
 react-dash.Z1,react-dash,"dashboard/admin.html: ""No data in this range."" in the chart's place, the range and note kept, the other cards still drawn",x1
 react-dash.Z2,react-dash,"dashboard/employee.html: ""No data in this range."" in the chart's place, the range and note kept, the other cards still drawn",x1
 react-dash.S1,react-dash,shots written,x1
+react-design.B.1280.light,react-design,"branding: company links (rail + header) to About, footer last, tab title",x5 (5 roles)
+react-design.B.go.1280.light,react-design,the company link opens About,x2 (2 roles)
+react-design.B.1280.dark,react-design,"branding: company links (rail + header) to About, footer last, tab title",x5 (5 roles)
+react-design.B.412.light,react-design,"branding: company link (header mark) to About, footer last, tab title",x5 (5 roles)
+react-design.B.go.412.light,react-design,the company link opens About,x2 (2 roles)
+react-design.B.412.dark,react-design,"branding: company link (header mark) to About, footer last, tab title",x5 (5 roles)
+react-design.A,react-design,"About: Settings' details, the store's counts, Not added yet, offices later",x5 (5 roles)
+react-design.A#2,react-design,About signed out: sign-in,x1
+react-design.P.auth/login.html.1280,react-design,"auth/login.html: company brand, footer after main, tab title",x1
+react-design.P.auth/login.html.412,react-design,"auth/login.html: company brand, footer after main, tab title",x1
+react-design.P.auth/forgot-password.html.1280,react-design,"auth/forgot-password.html: company brand, footer after main, tab title",x1
+react-design.P.auth/forgot-password.html.412,react-design,"auth/forgot-password.html: company brand, footer after main, tab title",x1
+react-design.P.errors/403.html.1280,react-design,"errors/403.html: company brand, footer after main, tab title",x1
+react-design.P.errors/403.html.412,react-design,"errors/403.html: company brand, footer after main, tab title",x1
+react-design.P.errors/404.html.1280,react-design,"errors/404.html: company brand, footer after main, tab title",x1
+react-design.P.errors/404.html.412,react-design,"errors/404.html: company brand, footer after main, tab title",x1
+react-design.R,react-design,reduced motion: transitions finish at once; without it they run,x1
+react-design.E,react-design,no page or console errors,x1
 react-fin.G1,react-fin,admin on payroll/salary-structure.html: as it opens,x2 (2 roles)
 react-fin.G2,react-fin,"admin: search, department, no matches; Breakdown on the third row",x2 (2 roles)
 react-fin.G3,react-fin,admin: Export: both files byte for byte,x2 (2 roles)
@@ -97,6 +115,12 @@ react-gallery.D1.1280.light,react-gallery,"confirm: words, role, focus on Cancel
 react-gallery.D2.1280.light,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
 react-gallery.B.1280.light,react-gallery,tabs switch; not-built and success toasts,x1
 react-gallery.E.1280.light,react-gallery,no page or console errors,x1
+react-gallery.N.1280.light,react-gallery,"design foundation drawn: header, 4 KPIs (arrow + words), hero (pills, hatched band named), filters, segmented, toggle, pills, select field, icon buttons",x1
+react-gallery.K1.1280.light,react-gallery,"FilterBar by keyboard: tab order, a preset in words, Custom's dates, Clear All resets",x1
+react-gallery.K2.1280.light,react-gallery,"Tabs: arrows, Home and End move and open",x1
+react-gallery.K3.1280.light,react-gallery,"Segmented: arrows choose (wrapping), one Tab stop; Toggle: Space switches, says Off",x1
+react-gallery.K4.1280.light,react-gallery,"DownloadMenu: Enter opens on the first item, arrows move, Esc closes back on the button, a choice runs",x1
+react-gallery.K5.1280.light,react-gallery,"SelectField: the status line follows the choice, in words, and the field points at it",x1
 react-gallery.G.1280.dark,react-gallery,everything drawn at 1280 dark,x1
 react-gallery.K.1280.dark,react-gallery,"the readout: hint, click, focus; a pattern on every colour-only bar",x1
 react-gallery.T.1280.dark,react-gallery,"sort both ways, search, no matches, export",x1
@@ -104,6 +128,12 @@ react-gallery.D1.1280.dark,react-gallery,"confirm: words, role, focus on Cancel;
 react-gallery.D2.1280.dark,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
 react-gallery.B.1280.dark,react-gallery,tabs switch; not-built and success toasts,x1
 react-gallery.E.1280.dark,react-gallery,no page or console errors,x1
+react-gallery.N.1280.dark,react-gallery,"design foundation drawn: header, 4 KPIs (arrow + words), hero (pills, hatched band named), filters, segmented, toggle, pills, select field, icon buttons",x1
+react-gallery.K1.1280.dark,react-gallery,"FilterBar by keyboard: tab order, a preset in words, Custom's dates, Clear All resets",x1
+react-gallery.K2.1280.dark,react-gallery,"Tabs: arrows, Home and End move and open",x1
+react-gallery.K3.1280.dark,react-gallery,"Segmented: arrows choose (wrapping), one Tab stop; Toggle: Space switches, says Off",x1
+react-gallery.K4.1280.dark,react-gallery,"DownloadMenu: Enter opens on the first item, arrows move, Esc closes back on the button, a choice runs",x1
+react-gallery.K5.1280.dark,react-gallery,"SelectField: the status line follows the choice, in words, and the field points at it",x1
 react-gallery.G.412.light,react-gallery,everything drawn at 412 light,x1
 react-gallery.K.412.light,react-gallery,"the readout: hint, click, focus; a pattern on every colour-only bar",x1
 react-gallery.T.412.light,react-gallery,"sort both ways, search, no matches, export",x1
@@ -111,6 +141,12 @@ react-gallery.D1.412.light,react-gallery,"confirm: words, role, focus on Cancel;
 react-gallery.D2.412.light,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
 react-gallery.B.412.light,react-gallery,tabs switch; not-built and success toasts,x1
 react-gallery.E.412.light,react-gallery,no page or console errors,x1
+react-gallery.N.412.light,react-gallery,"design foundation drawn: header, 4 KPIs (arrow + words), hero (pills, hatched band named), filters, segmented, toggle, pills, select field, icon buttons",x1
+react-gallery.K1.412.light,react-gallery,"FilterBar by keyboard: tab order, a preset in words, Custom's dates, Clear All resets",x1
+react-gallery.K2.412.light,react-gallery,"Tabs: arrows, Home and End move and open",x1
+react-gallery.K3.412.light,react-gallery,"Segmented: arrows choose (wrapping), one Tab stop; Toggle: Space switches, says Off",x1
+react-gallery.K4.412.light,react-gallery,"DownloadMenu: Enter opens on the first item, arrows move, Esc closes back on the button, a choice runs",x1
+react-gallery.K5.412.light,react-gallery,"SelectField: the status line follows the choice, in words, and the field points at it",x1
 react-gallery.G.412.dark,react-gallery,everything drawn at 412 dark,x1
 react-gallery.K.412.dark,react-gallery,"the readout: hint, click, focus; a pattern on every colour-only bar",x1
 react-gallery.T.412.dark,react-gallery,"sort both ways, search, no matches, export",x1
@@ -118,6 +154,12 @@ react-gallery.D1.412.dark,react-gallery,"confirm: words, role, focus on Cancel; 
 react-gallery.D2.412.dark,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
 react-gallery.B.412.dark,react-gallery,tabs switch; not-built and success toasts,x1
 react-gallery.E.412.dark,react-gallery,no page or console errors,x1
+react-gallery.N.412.dark,react-gallery,"design foundation drawn: header, 4 KPIs (arrow + words), hero (pills, hatched band named), filters, segmented, toggle, pills, select field, icon buttons",x1
+react-gallery.K1.412.dark,react-gallery,"FilterBar by keyboard: tab order, a preset in words, Custom's dates, Clear All resets",x1
+react-gallery.K2.412.dark,react-gallery,"Tabs: arrows, Home and End move and open",x1
+react-gallery.K3.412.dark,react-gallery,"Segmented: arrows choose (wrapping), one Tab stop; Toggle: Space switches, says Off",x1
+react-gallery.K4.412.dark,react-gallery,"DownloadMenu: Enter opens on the first item, arrows move, Esc closes back on the button, a choice runs",x1
+react-gallery.K5.412.dark,react-gallery,"SelectField: the status line follows the choice, in words, and the field points at it",x1
 react-leave.A1,react-leave,admin on leave/apply-leave.html: as it opens,x5 (5 roles)
 react-leave.A2,react-leave,"admin: Sick, a range, a half day over two dates refused live; too many casual days refused under the field; a valid request sent: toasts, button, landing",x5 (5 roles)
 react-leave.L1,react-leave,admin on leave/leave-approvals.html: as it opens,x2 (2 roles)

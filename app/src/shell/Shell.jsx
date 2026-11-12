@@ -12,6 +12,7 @@ import { CardHost, closeBellPanel, closeApprovalCard } from "../ui/ApprovalCard.
 // Closes the bell's list and the card (round 13b: ui/ApprovalCard.jsx, mounted below).
 const closeCards = () => { closeBellPanel(false); closeApprovalCard(); };
 import Topbar from "./Topbar.jsx";
+import { PoweredBy } from "./Brand.jsx";
 import "./solid-header.css";
 
 // The pages that are a step inside another page (ui/phone.js DETAIL_PAGES): at 560px and under the back arrow takes the
@@ -50,7 +51,7 @@ export default function Shell({ page, title, back, children }) {
 
   useEffect(() => {
     if (!drawerOpen) return undefined;
-    document.querySelector("#sidebar a")?.focus();
+    document.querySelector("#sidebar .sidebar__nav a")?.focus();   // the first page link (D2a: the brand link before it is hidden in the drawer)
     const onClick = (e) => {
       if (document.getElementById("sidebar").contains(e.target) || toggleRef.current.contains(e.target)) return;
       setDrawerOpen(false);
@@ -69,6 +70,7 @@ export default function Shell({ page, title, back, children }) {
       <div className="main">
         <Topbar title={title} back={backTo} drawerOpen={drawerOpen} toggleDrawer={() => setDrawerOpen((o) => !o)} toggleRef={toggleRef} />
         <main className="content" id="main" data-page={page}>{children}</main>
+        <PoweredBy />
       </div>
       <CardHost />
     </div>

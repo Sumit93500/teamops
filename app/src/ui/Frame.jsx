@@ -2,6 +2,7 @@
 // topbar title the old page's HTML gives; the sign-in and error pages are their main content only, as before.
 import META from "virtual:page-meta";
 import Shell from "../shell/Shell.jsx";
+import { PoweredBy } from "../shell/Brand.jsx";
 
 export default function Frame({ page, children }) {
   const meta = META[page];
@@ -10,6 +11,7 @@ export default function Frame({ page, children }) {
     <div className="app">
       <div className="main">
         <main className="content" id="main" data-page={page}>{children}</main>
+        <PoweredBy />
       </div>
     </div>
   );

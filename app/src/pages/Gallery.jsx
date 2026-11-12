@@ -11,6 +11,11 @@ import { useConfirm } from "../components/Confirm.jsx";
 import Table from "../components/Table.jsx";
 import { ColumnChart, BarRows } from "../components/Charts.jsx";
 import { StatStrip, StatCard, EmptyState, Badge, PersonCell, Stepper, NotBuilt, Tabs } from "../components/Basics.jsx";
+import { todayIso } from "../../../assets/js/ui/leave-view.js";
+import { PageHeader, Card as DsCard, HeroCard, KpiCard, Pill } from "../components/Layout.jsx";
+import { FilterBar, DateRange, FilterSelect, FilterSearch, SelectField, Segmented, Toggle, IconButton, DownloadMenu, rangeWords } from "../components/Controls.jsx";
+import { ICON as DSICON } from "../components/icons.jsx";
+import { tabTitle } from "../data/company.js";
 
 const DAYS = [52, 91, 93, 0, 92, 94, 90, 53, 48, 89, 95, 70, 88, 93].map((h, i) => ({
   date: `2026-09-${String(14 + i).padStart(2, "0")}`, height: h,
@@ -24,6 +29,61 @@ function Card({ title, children }) {
     <section className="card">
       <div className="card__header"><h3 className="card__title">{title}</h3></div>
       <div className="card__body gallery__section">{children}</div>
+    </section>
+  );
+}
+
+// D2a: the design system's new components, with demo values (the gallery isn't a product page; nothing here is saved).
+const TREND = [32, 30, 36, 36, 36, 41, 48, 45, 44, 55, 55, 57, 60];
+const OTHER = [16, 20, 31, 32, 47, 44, 37, 39, 52, 43, 45, 56, 57];
+function Foundation() {
+  const showToast = useToast();
+  const today = todayIso();
+  const [range, setRange] = useState({ preset: "", from: "", to: "" });
+  const [dept, setDept] = useState("");
+  const [query, setQuery] = useState("");
+  const [view, setView] = useState("volume");
+  const [live, setLive] = useState(true);
+  const [where, setWhere] = useState("head");
+  const active = Boolean(range.preset || dept || query);
+  const STATUS = { head: { tone: "success", text: "Online, 47 m from the office" }, home: { tone: "info", text: "Working from home" }, client: { tone: "warning", text: "At a client site: location not checked yet" } };
+  return (
+    <section className="ds-stack gallery__foundation" aria-labelledby="g-foundation">
+      <PageHeader title="Design foundation" level={2} id="g-foundation" subtitle="The new components, light and dark, at every width"
+        breadcrumb={[{ label: "Gallery", to: "/gallery" }, { label: "Design foundation" }]}
+        actions={<><IconButton label="Refresh" icon={DSICON.progress} onClick={() => showToast("Refreshed (nothing changes in the gallery).", "info")} /><DownloadMenu items={[{ label: "Download as CSV", onSelect: () => showToast("Downloaded: CSV (gallery sample).", "success") }, { label: "Download as PDF", onSelect: () => showToast("Downloaded: PDF (gallery sample).", "success") }]} /></>} />
+      <FilterBar label="Gallery filters" active={active} onClearAll={() => { setRange({ preset: "", from: "", to: "" }); setDept(""); setQuery(""); }}>
+        <DateRange value={range} onChange={setRange} today={today} />
+        <FilterSelect label="Department" value={dept} onChange={setDept} options={["Engineering", "Finance", "Human Resources"]} allLabel="All departments" />
+        <FilterSearch label="Search people" value={query} onChange={setQuery} placeholder="Name or ID" />
+      </FilterBar>
+      <p className="text-sm text-muted" id="g-filter-state">{`Filters: ${range.preset ? rangeWords(range) : "all dates"}; ${dept || "all departments"}; ${query ? `"${query}"` : "no search"}`}</p>
+      <div className="ds-grid">
+        <KpiCard id="present" label="Present today" value="41" icon={DSICON.users} change={{ direction: "up", text: "3.4% vs last month" }} trend={TREND} trendLabel="Trend over 13 weeks: rising" />
+        <KpiCard id="late" label="Late check-ins" value="6" icon={DSICON.clock} change={{ direction: "up", text: "2 more than last week", good: false }} trend={[3, 4, 2, 5, 4, 6]} trendLabel="Trend over 6 weeks: rising" />
+        <KpiCard id="leave" label="On leave" value="3" icon={DSICON.calendar} change={{ direction: "down", text: "1 fewer than yesterday", good: true }} />
+        <KpiCard id="open" label="Open requests" value="12" icon={DSICON.layers} change={{ direction: "flat", text: "Same as last week" }} />
+      </div>
+      <HeroCard icon={DSICON.pulse} title="Performance" pills={[{ label: "In progress", icon: DSICON.progress }, { label: "Due in 3 days", icon: DSICON.clock }]}
+        value="67%" caption="Efficiency, from 8 key indicators (sample)" series={[{ name: "This quarter", values: TREND }, { name: "Last quarter", values: OTHER, dashed: true }]}
+        band={{ from: 5, to: 7, label: "Holiday week" }} plotLabel="This quarter against last quarter, 13 weeks; a holiday week is marked" />
+      <div className="grid grid-main-aside">
+        <DsCard id="g-controls" title="Segmented, toggle, pills" meta="Controls">
+          <div className="ds-stack">
+            <Segmented label="Show by" value={view} onChange={setView} options={[{ value: "volume", label: "Volume" }, { value: "value", label: "Value" }, { value: "count", label: "Count" }]} />
+            <p className="text-sm text-muted" id="g-seg-state">{`Showing by ${view}`}</p>
+            <Toggle label="Live updates" checked={live} onChange={setLive} />
+            <div className="gallery__row">
+              <Pill tone="success">Live</Pill><Pill tone="warning">Pending</Pill><Pill tone="danger">Overdue</Pill><Pill tone="info">New</Pill><Pill icon={DSICON.calendar}>This month</Pill>
+            </div>
+          </div>
+        </DsCard>
+        <DsCard id="g-checkin" title="Check-in from" meta="SelectField">
+          <SelectField label="Check-In From" icon={DSICON.home} value={where} onChange={setWhere}
+            options={[{ value: "head", label: "Head Office" }, { value: "home", label: "Home" }, { value: "client", label: "Client site" }]}
+            helper="Where you're working today (sample: the location rules come later)" status={STATUS[where]} />
+        </DsCard>
+      </div>
     </section>
   );
 }
@@ -88,6 +148,7 @@ function Content() {
           <EmptyState text="Pick another period to see its numbers." />
           <EmptyState title="No leave requests yet" text="Requests you send show here." to="/pages/leave/apply-leave.html" linkText="Apply for leave" icon={ICON} />
         </Card>
+        <Foundation />
       </div>
       <Modal open={modal} onClose={() => setModal(false)} title="Add department" desc="A department groups people for reports and approvals."
         footer={<><button className="btn" type="button" onClick={() => setModal(false)}>Cancel</button><button className="btn btn--primary" type="button" onClick={() => { setModal(false); showToast("Nothing was saved: this is the gallery.", "info"); }}>Save</button></>}>
@@ -100,7 +161,7 @@ function Content() {
 
 export default function Gallery() {
   const { user, role } = useSession();
-  useLayoutEffect(() => { document.documentElement.dataset.role = role?.key ?? "admin"; document.title = "Component gallery | OfficeOS"; }, [role]);
+  useLayoutEffect(() => { document.documentElement.dataset.role = role?.key ?? "admin"; document.title = tabTitle("Component gallery"); }, [role]);
   if (user) return <Shell page="gallery" title="Component gallery"><Content /></Shell>;
   return <div className="app"><div className="main"><main className="content" id="main" data-page="gallery"><Content /></main></div></div>;
 }

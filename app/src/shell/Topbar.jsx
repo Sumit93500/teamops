@@ -13,7 +13,9 @@ import { canOpenPage } from "../../../assets/js/core/guard.js";
 import { waitingCount } from "../../../assets/js/ui/waiting.js";
 import { load } from "../../../assets/js/core/storage.js";
 import { useData, useSession, signOutNow } from "../data/hooks.js";
-import { pageUrl } from "../routes.js";
+import { pageUrl, ABOUT } from "../routes.js";
+import { COMPANY } from "../data/company.js";
+import { CompanyMark } from "./Brand.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { SearchBox, SearchOpener } from "./Search.jsx";
 import { initialsFrom } from "./media.js";
@@ -115,8 +117,10 @@ export default function Topbar({ title, back, drawerOpen, toggleDrawer, toggleRe
         aria-expanded={String(drawerOpen)} ref={toggleRef} onClick={toggleDrawer}>
         <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
       </button>
+      {/* D2a: the company's name (data/company.js) in the place "Workspace" had, a link to About; on a phone, its mark */}
+      <Link className="topbar__brand" to={pageUrl(ABOUT)} aria-label={`About ${COMPANY.name}`}><CompanyMark /></Link>
       <div className="topbar__left">
-        <span>Workspace</span><span>/</span><strong>{title}</strong>
+        <span className="topbar__company-crumb"><Link className="topbar__company" to={pageUrl(ABOUT)}>{COMPANY.name}</Link></span><span>/</span><strong>{title}</strong>
       </div>
       <SearchBox searching={searching} setSearching={setSearching} openerRef={openerRef} inputRef={inputRef} />
       <div className="topbar__actions">

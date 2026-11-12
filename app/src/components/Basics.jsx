@@ -93,9 +93,19 @@ export function NotBuilt({ what, className = "btn", children, ...props }) {
 export function Tabs({ tabs, pill = false, active: activeProp, onChange }) {
   const [own, setOwn] = useState(0);
   const active = activeProp ?? own, setActive = onChange ?? setOwn;
+  // D2a: the arrow keys, Home and End move to a tab and open it (each tab stays in the Tab order, as before).
+  const onKeyDown = (e) => {
+    const tabs2 = [...e.currentTarget.querySelectorAll('[role="tab"]')], i = tabs2.indexOf(document.activeElement);
+    if (i < 0) return;
+    const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs2.length - 1 }[e.key];
+    if (to === undefined) return;
+    e.preventDefault();
+    const j = (to + tabs2.length) % tabs2.length;
+    tabs2[j].focus(); setActive(j);
+  };
   return (
     <>
-      <div className={`tabs${pill ? " tabs--pill" : ""}`} role="tablist">
+      <div className={`tabs${pill ? " tabs--pill" : ""}`} role="tablist" onKeyDown={onKeyDown}>
         {tabs.map((t, i) => (
           <button key={t.label} className={`tabs__tab${i === active ? " is-active" : ""}`} type="button" role="tab" aria-selected={String(i === active)}
             onClick={() => setActive(i)}>{t.label}{t.count != null && <>{" "}<span className="badge badge--count">{t.count}</span></>}</button>

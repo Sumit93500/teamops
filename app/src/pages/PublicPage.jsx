@@ -15,6 +15,8 @@ import { ROLES } from "../../../assets/js/config/roles.js";
 import { signInAs, useSession } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
 import { useToast } from "../ui/Toast.jsx";
+import { COMPANY, companyInitial } from "../data/company.js";
+import { PoweredBy } from "../shell/Brand.jsx";
 
 const RAW = import.meta.glob(["../../../pages/auth/*.html", "../../../pages/errors/*.html"], { query: "?raw", import: "default", eager: true });
 const MAIN = Object.fromEntries(Object.entries(RAW).map(([file, html]) => {
@@ -25,6 +27,17 @@ const styleObject = (css) => (css ? Object.fromEntries(css.split(";").filter((s)
   const [k, v] = s.split(":").map((x) => x.trim());
   return [k.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), v];
 })) : undefined);
+
+// D2a branding: the brand panel's mark and name are the company's (data/company.js), not the product's; "Powered by OfficeOS"
+// ends the page instead. Only the logo block changes; the rest of the old markup is as it was.
+const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function withCompanyBrand(html) {
+  const name = escapeHtml(COMPANY.name);
+  const mark = COMPANY.logo ? `<img class="brand-mark brand-mark--img" src="${escapeHtml(COMPANY.logo)}" alt="">` : `<span class="brand-mark" aria-hidden="true">${companyInitial()}</span>`;
+  return html
+    .replace(/<div class="auth__logo">[\s\S]*?<\/div>/, `<div class="auth__logo">${mark}${name}</div>`)
+    .replace('aria-label="About OfficeOS"', `aria-label="About ${name}"`);
+}
 
 const DEMO_USERS = {
   admin: { name: "Aarav Mehta", id: "EMP-1001" },
@@ -50,7 +63,8 @@ export default function PublicPage({ page }) {
   const { role, user } = useSession();
   const { style, html } = MAIN[page];
   const landing = role && user ? role.landing : null;
-  const markup = page.startsWith("errors/") && landing ? html.replace('href="../dashboard/admin.html"', `href="../${landing}"`) : html;
+  const own = page.startsWith("errors/") && landing ? html.replace('href="../dashboard/admin.html"', `href="../${landing}"`) : html;
+  const markup = withCompanyBrand(own);
 
   useEffect(() => {
     const root = ref.current;
@@ -111,5 +125,10 @@ export default function PublicPage({ page }) {
     return () => cleanups.forEach((c) => c());
   }, [page, navigate, showToast]);
 
-  return <main className="auth" style={styleObject(style)} ref={ref} key={page} dangerouslySetInnerHTML={{ __html: markup }} />;
+  return (
+    <>
+      <main className="auth" style={styleObject(style)} ref={ref} key={page} dangerouslySetInnerHTML={{ __html: markup }} />
+      <PoweredBy className="app-footer--auth" />
+    </>
+  );
 }

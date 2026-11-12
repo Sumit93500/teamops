@@ -45,3 +45,8 @@ One line per decision: date, round, decision, why. Newest last. Every round appe
 | 2026-11-12 | D1 | Docs, a code graph and test records live in the repo; app/, assets/, pages/ untouched | one place to read the project |
 | 2026-11-12 | D1 | tests/live holds suites that run on today's code; guards and static chrome go to one archive file | small repo, nothing stored twice |
 | 2026-11-12 | D1 | The repo run leaves out React att Y and pay R, V (the ruled "No data in this range." months) | they match only the rertree reference, not the old pages |
+| 2026-11-12 | D2a | Design tokens in app/src/design/tokens.css, after the old css; old --color-*/--radius-* names point at them | one system now, without rewriting old page css |
+| 2026-11-12 | D2a | Company details in app/src/data/company.js (Settings' sample values); shell, About, tab title, payslip read it | ruled: no stored settings yet |
+| 2026-11-12 | D2a | The company's name, a link to About, replaces "OfficeOS" at the top (shell, sign-in brand panel) | white-label shell; "Powered by OfficeOS" ends every page |
+| 2026-11-12 | D2a | From D2 on, pixel parity with the old site isn't required; text, behaviour and role access are | the design is new; the pixel reference is xbase's D2a baseline |
+| 2026-11-12 | D2a | No bottom nav added on phones (the brief said "stays"; there was none) | a new navigation pattern needs its own ruling |

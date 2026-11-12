@@ -1,0 +1,47 @@
+/* The shell in the design system (D2a): the rail and drawer, the solid header (its colour stays the role's, ruled in 14D),
+   the company's brand (a link to About) and the footer. Only how they look changes; the shell's behaviour is the same. */
+
+/* ---------- The company's mark: a round badge with the initial (or the logo) ---------- */
+.brand-mark { display: inline-grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; background: #ffffff; color: var(--primary-base); font-size: 15px; font-weight: var(--ds-weight-semibold); line-height: 1; box-shadow: 0 0 0 1px rgb(15 23 42 / 0.08); }
+.brand-mark--img { object-fit: contain; background: #ffffff; }
+
+/* ---------- Sidebar: the brand is a link to About ---------- */
+.sidebar__brand { color: #ffffff; text-decoration: none; border-radius: var(--ds-radius-md); min-width: 0; }
+.sidebar__brand .brand-mark { font-size: 15px; }
+.sidebar__brand-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar__brand:hover .sidebar__brand-name { text-decoration: underline; text-underline-offset: 3px; }
+.sidebar__brand:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+@media (min-width: 821px) {
+  [data-nav-drawn] .sidebar__brand { justify-content: center; margin: 0 auto var(--space-4); padding: var(--space-1); }
+  [data-nav-drawn] .sidebar__brand-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+}
+.sidebar { box-shadow: 1px 0 0 rgb(255 255 255 / 0.04); }
+.nav__trigger, .nav__section--single .nav__item { border-radius: var(--ds-radius-md); }
+.nav__panel { border-radius: var(--ds-radius-lg); box-shadow: var(--ds-shadow-float); }
+
+/* ---------- The header: the company's name (a link to About) / the page ---------- */
+.topbar { box-shadow: 0 1px 0 rgb(15 23 42 / 0.06), 0 2px 8px rgb(15 23 42 / 0.06); }
+.topbar .topbar__left { min-width: 0; gap: var(--space-2); }
+.topbar .topbar__company-crumb { min-width: 0; display: inline-flex; }
+.topbar .topbar__company { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--bar-text); font-weight: var(--ds-weight-medium); text-decoration: none; border-radius: var(--ds-radius-sm); }
+.topbar .topbar__company:hover { text-decoration: underline; text-underline-offset: 3px; }
+.topbar .topbar__company:focus-visible { outline: 2px solid var(--bar-text); outline-offset: 2px; }
+.topbar .topbar__left strong { font-weight: var(--ds-weight-semibold); white-space: nowrap; }
+.topbar__brand { display: none; }
+@media (max-width: 560px) {
+  .topbar__brand { display: grid; place-items: center; flex: none; width: 40px; height: 44px; border-radius: var(--ds-radius-md); }
+  .topbar__brand .brand-mark { width: 28px; height: 28px; font-size: 13px; }
+  .topbar__brand:focus-visible { outline: 2px solid var(--bar-text, #ffffff); outline-offset: -2px; }
+  [data-has-back] .topbar__brand { display: none; }
+  .topbar .topbar__left > span { display: none; }   /* as phone.css: only the page's title; the mark is the link to About */
+}
+
+/* ---------- Content and the footer that ends every page ---------- */
+.main { min-height: 100vh; }
+.main > .content { flex: 1 0 auto; }
+.app-footer { padding: var(--ds-space-4) var(--ds-space-6) var(--ds-space-6); text-align: center; font-size: var(--ds-text-xs); color: var(--ds-text-3); }
+.app-footer--auth { background: var(--ds-bg); }
+@media print { .app-footer { display: none; } }   /* a printed payslip is the payslip alone (print.css) */
+
+/* ---------- Sign-in and error pages: the company's mark in the brand panel ---------- */
+.auth__logo .brand-mark { width: 34px; height: 34px; font-size: 16px; }

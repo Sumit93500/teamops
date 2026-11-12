@@ -14,6 +14,10 @@
 //      Keep editing keeps it open with the text, Discard closes it.
 //   B  tabs switch their panel; the not-built button's toast; a success toast.
 //   S  shots: the whole gallery at each width and theme, the form modal with the discard question, the chart's readout.
+//   N  (D2a) the design foundation's components drawn: page header, 4 KPI cards (arrow AND words), the hero (pills, a hatched
+//      band named in words, a dashed second line), the filter bar, segmented, toggle, pills, the check-in select field, icon buttons
+//   K  (D2a) the keyboard: FilterBar tab order, presets, Custom, Clear All; Tabs arrows/Home/End; Segmented; Toggle; DownloadMenu;
+//      SelectField's status line
 import { createRequire } from "node:module";
 import { spawn } from "node:child_process";
 import path from "node:path";
@@ -147,6 +151,94 @@ for (const width of [1280, 412]) for (const theme of ["light", "dark"]) {
   const toasts = await t.evaluate(() => [...document.querySelectorAll(".toast")].map((e) => e.className + " | " + e.querySelector(".toast__text").textContent));
   check(`B.${tag}`, "tabs switch; not-built and success toasts", j(tabs) === j([false, true, false]) && toasts.includes("toast toast--info | Bulk upload isn't available in this demo.") && toasts.includes("toast toast--success | Saved."), j([tabs, toasts]));
   check(`E.${tag}`, "no page or console errors", !errs.length, j(errs));
+
+  // N (D2a): the design foundation's components, drawn
+  await t.evaluate(() => document.querySelectorAll(".toast").forEach((x) => x.remove()));
+  const nd = await t.evaluate(() => {
+    const q = (s) => document.querySelector(s), qa = (s) => [...document.querySelectorAll(s)];
+    const txt = (e) => e?.innerText.replace(/\s+/g, " ").trim() ?? null;
+    return {
+      header: q("#g-foundation")?.textContent, crumbs: qa(".gallery__foundation .ds-breadcrumb li").map((l) => l.textContent),
+      kpis: qa(".ds-kpi").length, changes: qa(".ds-kpi__change").map((c) => [txt(c), c.className.replace("ds-kpi__change", "").trim()]),
+      trends: qa(".ds-kpi__trend").map((s) => s.getAttribute("aria-label")),
+      hero: { title: q(".ds-hero__title")?.textContent, pills: qa(".ds-hero .ds-pill").map((p) => p.textContent), value: q(".ds-hero__value")?.textContent,
+        band: q(".ds-hero__band-label")?.textContent, legend: qa(".ds-hero__legend li").map((l) => l.textContent), plot: q(".ds-hero__plot")?.getAttribute("aria-label"),
+        hatch: getComputedStyle(q(".ds-hero__band")).backgroundImage.includes("repeating-linear-gradient"), dashed: q(".ds-hero__plot path:nth-of-type(2)")?.getAttribute("stroke-dasharray") },
+      filters: qa(".ds-filterbar label").map((l) => l.textContent), clear: [q(".ds-filterbar .ds-btn")?.textContent, q(".ds-filterbar .ds-btn")?.disabled],
+      summary: q(".ds-date-range__summary")?.textContent, pills: qa(".gallery__foundation .gallery__row .ds-pill").map((p) => p.textContent),
+      seg: [q(".ds-segmented")?.getAttribute("role"), qa(".ds-segmented__option").map((o) => `${o.textContent}:${o.getAttribute("aria-checked")}:${o.tabIndex}`)],
+      toggle: [q(".ds-toggle")?.getAttribute("role"), q(".ds-toggle")?.getAttribute("aria-checked"), txt(q(".ds-toggle"))],
+      field: [q(".ds-select-field label")?.textContent, q(".ds-select-field select")?.selectedOptions[0]?.textContent, q(".ds-select-field .ds-field__helper")?.textContent, q(".ds-select-field .ds-status")?.textContent,
+        (q(".ds-select-field select")?.getAttribute("aria-describedby") ?? "").split(" ").length],
+      icons: qa(".gallery__foundation .ds-page-header .ds-icon-btn").map((b) => `${b.getAttribute("aria-label")}:${b.title}`),
+      scroll: document.documentElement.scrollWidth <= innerWidth,
+    };
+  });
+  const nOk = nd.header === "Design foundation" && j(nd.crumbs) === j(["Gallery", "Design foundation"]) && nd.kpis === 4
+    && j(nd.changes) === j([["▲ Up: 3.4% vs last month", "ds-kpi__change--good"], ["▲ Up: 2 more than last week", "ds-kpi__change--bad"], ["▼ Down: 1 fewer than yesterday", "ds-kpi__change--good"], ["■ No change: Same as last week", ""]])
+    && j(nd.trends) === j(["Trend over 13 weeks: rising", "Trend over 6 weeks: rising"])
+    && nd.hero.title === "Performance" && j(nd.hero.pills) === j(["In progress", "Due in 3 days"]) && nd.hero.value === "67%" && nd.hero.band === "Holiday week" && j(nd.hero.legend) === j(["This quarter", "Last quarter"]) && nd.hero.hatch && nd.hero.dashed === "6 4" && /holiday week is marked/.test(nd.hero.plot)
+    && j(nd.filters) === j(["Date range", "Department", "Search people"]) && j(nd.clear) === j(["Clear All", true]) && nd.summary === "Showing all dates"
+    && j(nd.pills) === j(["Live", "Pending", "Overdue", "New", "This month"]) && nd.seg[0] === "radiogroup" && j(nd.seg[1]) === j(["Volume:true:0", "Value:false:-1", "Count:false:-1"])
+    && j(nd.toggle) === j(["switch", "true", "Live updates On"]) && j(nd.field) === j(["Check-In From", "Head Office", "Where you're working today (sample: the location rules come later)", "Online, 47 m from the office", 2])
+    && j(nd.icons) === j(["Refresh:Refresh", "Download:Download"]) && nd.scroll;
+  check(`N.${tag}`, "design foundation drawn: header, 4 KPIs (arrow + words), hero (pills, hatched band named), filters, segmented, toggle, pills, select field, icon buttons", nOk, j(nd));
+
+  // K (D2a): the keyboard. FilterBar: Tab goes date range -> department -> search (Clear All skipped while disabled, then reached);
+  // a preset says its dates; Custom shows two labelled dates; Clear All resets everything. Tabs: arrows / Home / End. Segmented:
+  // one Tab stop, arrows choose. Toggle: Space. DownloadMenu: Enter opens on its first item, arrows move, Esc closes back on the
+  // button, a choice runs. SelectField: the status line follows the choice.
+  const active = () => t.evaluate(() => { const a = document.activeElement; return a.id ? (document.querySelector(`label[for="${a.id}"]`)?.textContent ?? a.id) : (a.getAttribute("aria-label") ?? a.textContent.trim()); });
+  await t.focus(".ds-filterbar select");
+  const order = [await active()];
+  for (let i = 0; i < 3; i++) { await t.keyboard.press("Tab"); order.push(await active()); }
+  await t.selectOption(".ds-filterbar select", "7d"); await t.waitForTimeout(80);
+  const k7 = await t.evaluate(() => [document.querySelector(".ds-date-range__summary").textContent, document.querySelector(".ds-filterbar .ds-btn").disabled, document.getElementById("g-filter-state").textContent]);
+  await t.focus(".ds-field--search input"); await t.keyboard.press("Tab");
+  const toClear = await active();
+  await t.selectOption(".ds-filterbar select", "custom"); await t.waitForTimeout(80);
+  const kc = await t.evaluate(() => [[...document.querySelectorAll(".ds-date-range__custom label")].map((l) => l.textContent), [...document.querySelectorAll(".ds-date-range__custom input")].map((i) => i.value), document.querySelector(".ds-date-range__summary").textContent]);
+  await t.fill(".ds-field--search input", "Arjun");
+  await t.focus(".ds-filterbar .ds-btn"); await t.keyboard.press("Enter"); await t.waitForTimeout(80);
+  const kx = await t.evaluate(() => [document.querySelector(".ds-filterbar select").value, document.querySelector(".ds-field--search input").value, document.querySelector(".ds-date-range__summary").textContent, document.querySelector(".ds-filterbar .ds-btn").disabled, document.getElementById("g-filter-state").textContent]);
+  check(`K1.${tag}`, "FilterBar by keyboard: tab order, a preset in words, Custom's dates, Clear All resets", j(order) === j(["Date range", "Department", "Search people", "Volume"]) && j(k7) === j(["22 Sep to 28 Sep 2026", false, "Filters: 22 Sep to 28 Sep 2026; all departments; no search"])
+    && toClear === "Clear All" && j(kc) === j([["From", "To"], ["2026-09-22", "2026-09-28"], "22 Sep to 28 Sep 2026"]) && j(kx) === j(["", "", "Showing all dates", true, "Filters: all dates; all departments; no search"]), j({ order, k7, toClear, kc, kx }));
+
+  await t.focus(".tabs__tab:nth-child(1)");
+  const tabState = () => t.evaluate(() => [[...document.querySelectorAll(".tabs__tab")].findIndex((b) => b === document.activeElement), [...document.querySelectorAll(".tabs__tab")].findIndex((b) => b.getAttribute("aria-selected") === "true"), [...document.querySelectorAll(".tab-panel")].findIndex((p) => !p.hidden)]);
+  const ks = [];
+  for (const key of ["ArrowRight", "End", "ArrowRight", "Home", "ArrowLeft"]) { await t.keyboard.press(key); ks.push(await tabState()); }
+  check(`K2.${tag}`, "Tabs: arrows, Home and End move and open", j(ks) === j([[1, 1, 1], [2, 2, 2], [0, 0, 0], [0, 0, 0], [2, 2, 2]]), j(ks));
+
+  await t.focus(".ds-segmented__option[aria-checked='true']");
+  await t.keyboard.press("ArrowRight"); await t.waitForTimeout(50);
+  const s1 = await t.evaluate(() => [document.activeElement.textContent, document.activeElement.getAttribute("aria-checked"), document.getElementById("g-seg-state").textContent]);
+  await t.keyboard.press("End"); await t.keyboard.press("ArrowRight"); await t.waitForTimeout(50);
+  const s2 = await t.evaluate(() => [document.activeElement.textContent, document.getElementById("g-seg-state").textContent]);
+  await t.keyboard.press("Tab");
+  const s3 = await t.evaluate(() => document.activeElement.getAttribute("role"));
+  await t.keyboard.press("Space"); await t.waitForTimeout(50);
+  const s4 = await t.evaluate(() => [document.activeElement.getAttribute("aria-checked"), document.activeElement.innerText.replace(/\s+/g, " ").trim()]);
+  check(`K3.${tag}`, "Segmented: arrows choose (wrapping), one Tab stop; Toggle: Space switches, says Off", j(s1) === j(["Value", "true", "Showing by value"]) && j(s2) === j(["Volume", "Showing by volume"]) && s3 === "switch" && j(s4) === j(["false", "Live updates Off"]), j([s1, s2, s3, s4]));
+
+  {   // its own scope: m1..m4 are also D2's names above
+  await t.focus(".gallery__foundation .ds-menu > button"); await t.keyboard.press("Enter"); await t.waitForTimeout(80);
+  const m1 = await t.evaluate(() => [document.querySelector(".ds-menu > button").getAttribute("aria-expanded"), document.activeElement.textContent]);
+  await t.keyboard.press("ArrowDown");
+  const m2 = await active();
+  await t.keyboard.press("Escape"); await t.waitForTimeout(50);
+  const m3 = await t.evaluate(() => [document.querySelector(".ds-menu > button").getAttribute("aria-expanded"), Boolean(document.querySelector(".ds-menu__list")), document.activeElement.getAttribute("aria-label")]);
+  await t.keyboard.press("Enter"); await t.waitForTimeout(80); await t.keyboard.press("Enter"); await t.waitForTimeout(120);
+  const m4 = await t.evaluate(() => [[...document.querySelectorAll(".toast .toast__text")].map((x) => x.textContent), Boolean(document.querySelector(".ds-menu__list")), document.activeElement.getAttribute("aria-label")]);
+  check(`K4.${tag}`, "DownloadMenu: Enter opens on the first item, arrows move, Esc closes back on the button, a choice runs", j(m1) === j(["true", "Download as CSV"]) && m2 === "Download as PDF" && j(m3) === j(["false", false, "Download"])
+    && j(m4) === j([["Downloaded: CSV (gallery sample)."], false, "Download"]), j([m1, m2, m3, m4]));
+  }
+
+  await t.selectOption(".ds-select-field select", "client"); await t.waitForTimeout(50);
+  const f1 = await t.evaluate(() => { const s = document.querySelector(".ds-select-field .ds-status"); return [s.textContent, s.className, document.querySelector(".ds-select-field select").getAttribute("aria-describedby").includes(s.id)]; });
+  check(`K5.${tag}`, "SelectField: the status line follows the choice, in words, and the field points at it", j(f1) === j(["At a client site: location not checked yet", "ds-status ds-status--warning", true]), j(f1));
+  await t.selectOption(".ds-select-field select", "head");
+  if (theme === "light") await t.locator(".gallery__foundation").screenshot({ path: path.join(SHOTS, `foundation-${width}-${theme}.png`) });
 
   await t.evaluate(() => document.querySelectorAll(".toast").forEach((x) => x.remove()));
   await t.click(".chart__col:nth-child(4)");

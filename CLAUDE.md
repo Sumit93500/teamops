@@ -38,7 +38,8 @@ Read [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) first. The de
   - smoke for every route × role;
   - the round's parity harness as every role that sees its pages;
   - the traced gate (it should select no suite);
-  - screenshots at 412 and 1280, light and dark, looked at by eye.
+  - screenshots at 412 and 1280, light and dark, looked at by eye;
+  - from D2a on, pixels against the app's own baseline, not the old site: `node Target/tools/react/xbase.mjs compare <dist> <repo> Target/baselines/D2a <out>` (ALLOW = the round's pages). Text, behaviour and role access still match the old pages.
 
   No mutants.
 - **Data rounds:** the lean order. That is the traced gate (only the suites whose inputs changed, 9 shards), the changed rules' mutants, then one full run in 3 time zones after apply.

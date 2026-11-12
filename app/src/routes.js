@@ -11,5 +11,8 @@ export const PUBLIC_PAGES = [
 // All 55 pages: the 48 routed ones and the 7 public ones.
 export const ALL_PAGES = [...Object.keys(ROUTES), ...PUBLIC_PAGES];
 
+// The About page (D2a): the app's own, not one of the 55 old pages; anyone signed in may open it.
+export const ABOUT = "company/about.html";
+
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

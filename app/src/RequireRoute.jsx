@@ -8,6 +8,7 @@ import { Navigate } from "react-router-dom";
 import { canOpenPage } from "../../assets/js/core/guard.js";
 import { useSession, signOutNow } from "./data/hooks.js";
 import { PUBLIC_PAGES, pageUrl } from "./routes.js";
+import { tabTitle } from "./data/company.js";
 
 export default function RequireRoute({ page, children }) {
   const { session, user, role } = useSession();
@@ -18,7 +19,8 @@ export default function RequireRoute({ page, children }) {
   // (a public page's colours when nobody is signed in). Set before the first paint, so no other role's colour ever shows.
   useLayoutEffect(() => { document.documentElement.dataset.role = role?.key ?? META[page]?.role ?? "admin"; }, [role, page]);
   // A new page starts at the top with its own tab title, as a full load of the old page did.
-  useLayoutEffect(() => { document.title = META[page]?.docTitle ?? "OfficeOS"; window.scrollTo(0, 0); }, [page]);
+  // D2a: "<page> | <company>" (data/company.js) in place of "<page> | OfficeOS".
+  useLayoutEffect(() => { document.title = tabTitle(META[page]?.docTitle); window.scrollTo(0, 0); }, [page]);
 
   if (isPublic) return children;
   if (!session || !user) return <Navigate to={pageUrl("auth/login.html")} replace />;
