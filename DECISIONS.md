@@ -71,3 +71,8 @@ One line per decision: date, round, decision, why. Newest last. Every round appe
 | 2026-11-12 | P0 | Haryana professional tax = 0, flagged unverified (the sample ₹200 stops for new calculations); no Maharashtra gender rule now | ruled (E7, E8) |
 | 2026-11-12 | P0 | Cess 4% and old-regime slabs ship with commonly used values flagged "unverified"; payslips show an "unverified rates" label; no refusal to compute | ruled (E9) |
 | 2026-11-12 | P0 | Gratuity is an employer accrual only; an Admin "verify rates" action (name + date per row) is required before any real use | ruled (E10, E11) |
+| 2026-11-12 | L1 | The four users pages are built straight in the design system; parity is on text, behaviour and role access, read by meaning (tools/react/users.mjs) | ruled in the L brief: no old-CSS look for new screens |
+| 2026-11-12 | L1 | Offices is the app's own page (/pages/company/offices.html), open to everyone, managed by the Admin; linked from About, the profile and Settings, not the sidebar | config/nav.js is the old site's; no new nav entry without a ruling |
+| 2026-11-12 | L1 | Settings gains a saved Company profile section (Admin, as Settings is); About shows the overview, mission and offices | the profile store from round 14 |
+| 2026-11-12 | L1 | Public pages' footer: "© <year> <company> · Powered by OfficeOS"; the brand panel's old "© 2026 OfficeOS" line removed | parking-lot item, said once |
+| 2026-11-12 | L1 | The profile's Tenure says "—" with no joining date (the old page kept its static sample "5 years, 6 months") | no invented figures |

@@ -120,7 +120,7 @@ for (const who of ["admin", "hr", "fin", "emp", "mgr"]) {
   });
   const ok = a.h1 === "About" && a.h1count === 1 && j(a.crumbs) === j(["Company", "About"]) && j(a.details) === j(DETAILS) && a.employees === a.storeEmployees && a.departments === a.storeDepartments
     && a.sidebarCount === `${a.storeEmployees} employees` && a.hero.includes(`${a.storeEmployees} employees`) && a.hero.includes(`across ${a.storeDepartments} departments`)
-    && a.overview === "Not added yet." && a.mission === "Not added yet." && a.offices === "Offices arrive with the offices round." && a.note === "OfficeOS doesn't store company settings yet, so these are the Settings page's sample values.";
+    && a.overview === "Not added yet." && a.mission === "Not added yet." && a.offices?.replace(/\s+/g, " ") === "Head office Head office Haryana · Sector 44, Gurugram, Haryana 122003" && a.note === "The name, overview and mission are saved in Settings; the other details are the Settings page's sample values.";   // L1 (behaviour): the offices list and the profile store
   check(`A.${who}`, "About: Settings' details, the store's counts, Not added yet, offices later", ok, j(a));
   await ctx.close();
 }
@@ -141,7 +141,7 @@ for (const [who, p, title] of [["out", "auth/login.html", "Sign in"], ["out", "a
         topOfficeOS: logo ? /OfficeOS/.test(logo.innerText) : false, scroll: document.documentElement.scrollWidth <= innerWidth };
     });
     const brandOk = p.startsWith("auth/") ? s.logo === `N ${COMPANY}` && s.mark === "N" && s.label === `About ${COMPANY}` : s.logo === null;
-    check(`P.${p}.${width}`, `${p}: company brand, footer after main, tab title`, brandOk && !s.topOfficeOS && s.footer === "Powered by OfficeOS" && s.after && s.title === `${title} | ${COMPANY}` && s.scroll, j(s));
+    check(`P.${p}.${width}`, `${p}: company brand, footer after main, tab title`, brandOk && !s.topOfficeOS && s.footer === `© 2026 ${COMPANY} · Powered by OfficeOS` /* L1 (behaviour): the company in the public pages' footer */ && s.after && s.title === `${title} | ${COMPANY}` && s.scroll, j(s));
     if (width === 1280 && p === "auth/login.html") await t.screenshot({ path: path.join(SHOTS, "login-1280.png"), fullPage: true });
     await ctx.close();
   }

@@ -36,7 +36,9 @@ function withCompanyBrand(html) {
   const mark = COMPANY.logo ? `<img class="brand-mark brand-mark--img" src="${escapeHtml(COMPANY.logo)}" alt="">` : `<span class="brand-mark" aria-hidden="true">${companyInitial()}</span>`;
   return html
     .replace(/<div class="auth__logo">[\s\S]*?<\/div>/, `<div class="auth__logo">${mark}${name}</div>`)
-    .replace('aria-label="About OfficeOS"', `aria-label="About ${name}"`);
+    .replace('aria-label="About OfficeOS"', `aria-label="About ${name}"`)
+    // L1: the footer says "© <year> <company> · Powered by OfficeOS", so the panel's own "© 2026 OfficeOS" line goes
+    .replace(/\s*<p class="auth__copy">[\s\S]*?<\/p>/, "");
 }
 
 const DEMO_USERS = {
@@ -128,7 +130,7 @@ export default function PublicPage({ page }) {
   return (
     <>
       <main className="auth" style={styleObject(style)} ref={ref} key={page} dangerouslySetInnerHTML={{ __html: markup }} />
-      <PoweredBy className="app-footer--auth" />
+      <PoweredBy className="app-footer--auth" withCompany />
     </>
   );
 }

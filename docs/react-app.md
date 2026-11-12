@@ -7,7 +7,8 @@
 ```text
 app/src/main.jsx          imports assets/css/style.css, then design/tokens.css + design/shell.css (D2a), mounts the router
 app/src/router.jsx        every page on its old URL behind RequireRoute; PORTED maps a page to its component, else NotPorted;
-                          /pages/company/about.html (About, D2a) and /gallery are the app's own
+                          /pages/company/about.html (About, D2a), /pages/company/offices.html (Offices, L1) and /gallery
+                          are the app's own
 app/src/routes.js         ALL_PAGES from config/routes.js + the 7 public pages; ABOUT; pageUrl("leave/holidays.html")
 app/src/design/           tokens.css (the design system's tokens, see design.md), shell.css
 app/src/data/             bus.js (version counter), hooks.js (useData, useAction, useSession, useCan), company.js (the
@@ -35,9 +36,14 @@ app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (b
 
 ## Status (2026-11-12)
 
-- **Ported:** 46 of 55 pages.
-- **Left:** users (round 15) and inventory (rounds 21–22, after the data rounds 17–20).
-- **Bundle:** what loads first is one 1,013 kB file (D2b); the charts' drawing (Recharts, 418 kB) and the map (179 kB) load on first use. Route-level code splitting is planned for round 27.
+- **Ported:** 50 of 55 pages. L1 ported the four users pages (list, form, profile, departments) straight into the design system:
+  same text, behaviour and role access as the old pages, new look. The form adds the employee's office and home check-in; the
+  profile adds check-in places and devices (Admin reset).
+- **New screens (L1):** Offices (everyone reads; an Admin adds branches, edits, deactivates, moves people; the position from
+  this device or typed), Settings' Company profile (Admin), About with the overview, mission and offices; the sign-in and
+  error pages end with "© <year> <company> · Powered by OfficeOS".
+- **Left:** inventory (rounds 21–22, after the data rounds 17–20).
+- **Bundle:** what loads first is one 1,090 kB file (L1; 1,013 kB at D2b); the charts' drawing (Recharts, 418 kB) and the map (179 kB) load on first use. Route-level code splitting is planned for round 27.
 
 ## Checks
 
@@ -47,6 +53,8 @@ See [../tests/TEST-CATALOG.md](../tests/TEST-CATALOG.md).
 - **gallery:** the components in both themes, with the design foundation's components and their keyboard use.
 - **design:** the company branding, About, the sign-in and error pages, and reduced motion.
 - **charts:** the D2b charts and map in the gallery (cases, keyboard, phone taps, zoom, table) and the Admin headcount chart.
+- **users:** L1's users pages against the old ones (role access, every cell, field and flow, read by meaning, not by CSS), and the
+  new screens: offices (with a mocked device location), company profile, About, the public pages' footer, keyboard, 412 / 1280.
 
 They live in `tests/live/react/` and run with `python tools/run-tests.py --react`, which needs Microsoft Edge.
 

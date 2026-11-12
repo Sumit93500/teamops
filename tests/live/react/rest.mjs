@@ -88,9 +88,18 @@ async function ask(x, selector, yes) {
   x.msg = q;
   await x.t.click(yes ? ".confirm-dialog [data-confirm-ok]" : ".confirm-dialog [data-confirm-cancel]"); await x.t.waitForTimeout(300);
 }
+// L1 (ruled): Settings gains a saved Company profile section, its link, and a notice saying which parts now save. The new
+// page is compared without them: the section and its link removed and the notice's old words put back, before reading.
+const L1_OLD_NOTICE = "Sample, not built yet: company settings aren't part of OfficeOS yet. This page shows how they could look; apart from the Appearance theme, which saves on this device, nothing here is saved or applied, and the rules and values listed are examples.";
+const withoutL1 = (t) => t.evaluate((notice) => {
+  document.getElementById("company-profile")?.remove();
+  document.querySelector('.settings__nav a[href="#company-profile"]')?.remove();
+  const alert = document.querySelector(".settings .alert--info"); if (alert) alert.textContent = notice;
+}, L1_OLD_NOTICE);
 async function pages(letter, page, rolesFn) {
   for (const who of ROLES) {
     const x = await both(who, page);
+    if (page === "system/settings.html" && x.n.at.endsWith(page)) await withoutL1(x.n.t);
     if (x.o.at !== x.n.at || !x.o.at.endsWith(page)) {
       check(`${letter}.${who}`, `${who} on ${page}: lands where the old site does`, x.o.at === x.n.at, `${x.o.at} | ${x.n.at}`);
     } else {

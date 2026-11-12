@@ -8,7 +8,7 @@ import { Navigate } from "react-router-dom";
 import { canOpenPage } from "../../assets/js/core/guard.js";
 import { useSession, signOutNow } from "./data/hooks.js";
 import { PUBLIC_PAGES, pageUrl } from "./routes.js";
-import { tabTitle } from "./data/company.js";
+import { tabTitle, COMPANY } from "./data/company.js";
 
 export default function RequireRoute({ page, children }) {
   const { session, user, role } = useSession();
@@ -20,7 +20,10 @@ export default function RequireRoute({ page, children }) {
   useLayoutEffect(() => { document.documentElement.dataset.role = role?.key ?? META[page]?.role ?? "admin"; }, [role, page]);
   // A new page starts at the top with its own tab title, as a full load of the old page did.
   // D2a: "<page> | <company>" (data/company.js) in place of "<page> | OfficeOS".
-  useLayoutEffect(() => { document.title = tabTitle(META[page]?.docTitle); window.scrollTo(0, 0); }, [page]);
+  // L1: and again when the company's name changes (Settings' Company profile), so the tab follows at once.
+  const companyName = COMPANY.name;
+  useLayoutEffect(() => { document.title = tabTitle(META[page]?.docTitle); }, [page, companyName]);
+  useLayoutEffect(() => { window.scrollTo(0, 0); }, [page]);
 
   if (isPublic) return children;
   if (!session || !user) return <Navigate to={pageUrl("auth/login.html")} replace />;

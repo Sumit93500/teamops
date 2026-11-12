@@ -316,3 +316,133 @@ react-shell.A.flow.two-factor,react-shell,auth/two-factor.html: the page's own b
 react-shell.A.flow.forgot-password,react-shell,auth/forgot-password.html: the page's own behaviour,x1
 react-shell.A.flow.login,react-shell,auth/login.html: the page's own behaviour,x1
 react-shell.S1,react-shell,shots written,x1
+react-users.R.users-list,react-users,admin opens users/users-list.html: the same outcome,x5 (5 roles)
+react-users.R.user-form,react-users,admin opens users/user-form.html: the same outcome,x5 (5 roles)
+react-users.R.user-profile,react-users,admin opens users/user-profile.html?id=EMP-1042: the same outcome,x5 (5 roles)
+react-users.R.departments,react-users,admin opens users/departments.html: the same outcome,x5 (5 roles)
+react-users.L1,react-users,"admin: heading, subtitle, actions shown (Reset demo data, Export, Add employee)",x2 (2 roles)
+react-users.L2,react-users,"admin: tabs with counts, the table (every cell), Edit links, profile links, the filters' options",x2 (2 roles)
+react-users.L3.1,react-users,"admin: step 1 of Active, Inactive, search ""ka"", Engineering, Employee, ""zzz"" (No employees match these filters.)",x2 (2 roles)
+react-users.L3.2,react-users,"admin: step 2 of Active, Inactive, search ""ka"", Engineering, Employee, ""zzz"" (No employees match these filters.)",x2 (2 roles)
+react-users.L3.3,react-users,"admin: step 3 of Active, Inactive, search ""ka"", Engineering, Employee, ""zzz"" (No employees match these filters.)",x2 (2 roles)
+react-users.L3.4,react-users,"admin: step 4 of Active, Inactive, search ""ka"", Engineering, Employee, ""zzz"" (No employees match these filters.)",x2 (2 roles)
+react-users.L3.5,react-users,"admin: step 5 of Active, Inactive, search ""ka"", Engineering, Employee, ""zzz"" (No employees match these filters.)",x2 (2 roles)
+react-users.L3.6,react-users,"admin: step 6 of Active, Inactive, search ""ka"", Engineering, Employee, ""zzz"" (No employees match these filters.)",x2 (2 roles)
+react-users.L4,react-users,?dept=FIN (Departments' View people): the Finance filter is set,x1
+react-users.L5,react-users,"Export: the same file, name and bytes",x1
+react-users.L6,react-users,Reset demo data asks the same question (answered no: nothing reset),x1
+react-users.F1,react-users,"admin (add): heading, crumbs, tab title",x2 (2 roles)
+react-users.F2,react-users,"admin (add): every field, access summary, effective permissions, overrides and their lock, Account, the submit button",x2 (2 roles)
+react-users.F1.admin?id=EMP-1105,react-users,"admin ?id=EMP-1105: heading, crumbs, tab title",x1
+react-users.F2.admin?id=EMP-1105,react-users,"admin ?id=EMP-1105: every field, access summary, effective permissions, overrides and their lock, Account, the submit button",x1
+react-users.F1.admin?id=EMP-1003,react-users,"admin ?id=EMP-1003: heading, crumbs, tab title",x1
+react-users.F2.admin?id=EMP-1003,react-users,"admin ?id=EMP-1003: every field, access summary, effective permissions, overrides and their lock, Account, the submit button",x1
+react-users.F1.admin?id=EMP-1001,react-users,"admin ?id=EMP-1001: heading, crumbs, tab title",x1
+react-users.F2.admin?id=EMP-1001,react-users,"admin ?id=EMP-1001: every field, access summary, effective permissions, overrides and their lock, Account, the submit button",x1
+react-users.F1.admin?id=EMP-1008,react-users,"admin ?id=EMP-1008: heading, crumbs, tab title",x1
+react-users.F2.admin?id=EMP-1008,react-users,"admin ?id=EMP-1008: every field, access summary, effective permissions, overrides and their lock, Account, the submit button",x1
+react-users.F1.hr?id=EMP-1105,react-users,"hr ?id=EMP-1105: heading, crumbs, tab title",x1
+react-users.F2.hr?id=EMP-1105,react-users,"hr ?id=EMP-1105: every field, access summary, effective permissions, overrides and their lock, Account, the submit button",x1
+react-users.F1.hr?id=EMP-1042,react-users,"hr ?id=EMP-1042: heading, crumbs, tab title",x1
+react-users.F2.hr?id=EMP-1042,react-users,"hr ?id=EMP-1042: every field, access summary, effective permissions, overrides and their lock, Account, the submit button",x1
+react-users.F3.1,react-users,"designation HR Manager, manager Sneha, then an extra and a denied permission: step 1",x1
+react-users.F3.2,react-users,"designation HR Manager, manager Sneha, then an extra and a denied permission: step 2",x1
+react-users.F3.3,react-users,"designation HR Manager, manager Sneha, then an extra and a denied permission: step 3",x1
+react-users.F4,react-users,"not found: heading, crumb, the empty state and its link",x1
+react-users.F5,react-users,"an email already used: the store's words at the email field, focus there",x1
+react-users.F6,react-users,"saved: ""Employee saved."", then the list",x1
+react-users.F7,react-users,"the new employee in the list, as on the old page",x1
+react-users.F8,react-users,New: the Admin picks Arjun's office (offices listed with their state) and turns on home check-in; both saved with the employee,x1
+react-users.F9,react-users,"New: HR can't change the office (Admin only, said under it) but can turn home check-in on or off",x1
+react-users.P1.EMP-1042,react-users,"admin on EMP-1042: heading, crumbs, actions shown, tab title",x2 (2 roles)
+react-users.P2.EMP-1042,react-users,"admin on EMP-1042: every detail, sensitive and access row (tenure: no joining date, ruled)",x2 (2 roles)
+react-users.P3.EMP-1042,react-users,"admin on EMP-1042: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x2 (2 roles)
+react-users.P1.EMP-1105,react-users,"admin on EMP-1105: heading, crumbs, actions shown, tab title",x1
+react-users.P2.EMP-1105,react-users,"admin on EMP-1105: every detail, sensitive and access row",x1
+react-users.P3.EMP-1105,react-users,"admin on EMP-1105: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x1
+react-users.P1.EMP-1061,react-users,"admin on EMP-1061: heading, crumbs, actions shown, tab title",x1
+react-users.P2.EMP-1061,react-users,"admin on EMP-1061: every detail, sensitive and access row (tenure: no joining date, ruled)",x1
+react-users.P3.EMP-1061,react-users,"admin on EMP-1061: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x1
+react-users.P1.EMP-1001,react-users,"admin on EMP-1001: heading, crumbs, actions shown, tab title",x1
+react-users.P2.EMP-1001,react-users,"admin on EMP-1001: every detail, sensitive and access row",x1
+react-users.P3.EMP-1001,react-users,"admin on EMP-1001: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x1
+react-users.P1.EMP-1088,react-users,"admin on EMP-1088: heading, crumbs, actions shown, tab title",x1
+react-users.P2.EMP-1088,react-users,"admin on EMP-1088: every detail, sensitive and access row (tenure: no joining date, ruled)",x1
+react-users.P3.EMP-1088,react-users,"admin on EMP-1088: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x1
+react-users.P1.EMP-1003,react-users,"hr on EMP-1003: heading, crumbs, actions shown, tab title",x1
+react-users.P2.EMP-1003,react-users,"hr on EMP-1003: every detail, sensitive and access row",x1
+react-users.P3.EMP-1003,react-users,"hr on EMP-1003: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x1
+react-users.P4,react-users,"Reveal shows the whole account, Hide masks it again",x1
+react-users.P5,react-users,Reset password: the toast (nothing is sent),x1
+react-users.P6,react-users,Delete Rohan: refused at once with the reason (his open leave request),x1
+react-users.P7,react-users,"Deactivate Vikram: the dialog's words, a later date refused in the store's words, then done (toast, last working day shown)",x1
+react-users.P8,react-users,"Reactivate Divya: the same question, then the toast",x1
+react-users.P9,react-users,not found: the crumb and the empty state,x1
+react-users.P10,react-users,"New: Check-in places for Arjun: head office in Haryana, home check-in allowed, his permanent home, no temporary, none waiting",x1
+react-users.P11,react-users,"New: Devices: 2 of 2, each named; the honest note",x1
+react-users.P12,react-users,"New: Reset devices asks first, then clears them (toast; 0 of 2)",x1
+react-users.P13,react-users,New: HR sees why devices aren't shown (Admin only) and no Reset button,x1
+react-users.D1,react-users,"admin: heading, crumbs, actions shown",x2 (2 roles)
+react-users.D2,react-users,"admin: the four numbers, every card, the note",x2 (2 roles)
+react-users.D3,react-users,"Add department: the dialog, a code already used (ENG) refused in the store's words, then MKT added (toast, card)",x1
+react-users.D4,react-users,"Edit Sales: the dialog (code fixed), renamed, saved",x1
+react-users.D5,react-users,"deactivating Engineering (people in it) asks first; answered no, nothing saved",x1
+react-users.O1,react-users,"admin: opens Offices; the head office (Haryana, 150 m, 9 people, sample location marked); Add branch, Edit and the office pickers; the privacy line",x1
+react-users.O1#2,react-users,"hr: opens Offices; the head office (Haryana, 150 m, 9 people, sample location marked); no Add, Edit or pickers; the privacy line",x4 (4 roles)
+react-users.O2,react-users,"this device's location fills latitude and longitude, says how accurate, and the privacy line is beside it",x1
+react-users.O3,react-users,no state chosen: refused at the field in the store's words,x1
+react-users.O4,react-users,"added: Pune branch, Maharashtra, 300 m (toast)",x1
+react-users.O5,react-users,"Arjun moved to Pune from Who works where: toast, the people counts follow (8 and 1)",x1
+react-users.O6,react-users,"deactivating Pune asks first, naming who works there; then inactive and Arjun back on the head office",x1
+react-users.O7,react-users,editing the head office says its coordinates are a sample; a denied location says what to do instead,x1
+react-users.O8,react-users,setting the real position clears the sample mark,x1
+react-users.C1,react-users,"Admin: the profile's name, empty overview and mission, editable",x1
+react-users.C2,react-users,"the store's checks at their fields: no name, an overview of 1,001 characters",x1
+react-users.C3,react-users,saved: toast; the shell's brand and the tab title follow at once,x1
+react-users.C4,react-users,"About shows the overview, mission and new name",x1
+react-users.C5,react-users,the sign-in page's footer names the saved company,x1
+react-users.C6,react-users,"HR opening Settings gets the 403 page (Settings is Admin-only, as before)",x1
+react-users.A1,react-users,"an employee: Not added yet. (nothing saved), the head office with type, state and address, counts 9 / 6 / 1, a link to Offices",x1
+react-users.X.auth/login.html,react-users,"auth/login.html: ""© 2026 Northwind Technologies Pvt. Ltd. · Powered by OfficeOS"" after the page, the panel's old line gone",x1
+react-users.X.auth/forgot-password.html,react-users,"auth/forgot-password.html: ""© 2026 Northwind Technologies Pvt. Ltd. · Powered by OfficeOS"" after the page, the panel's old line gone",x1
+react-users.X.auth/reset-password.html,react-users,"auth/reset-password.html: ""© 2026 Northwind Technologies Pvt. Ltd. · Powered by OfficeOS"" after the page, the panel's old line gone",x1
+react-users.X.auth/two-factor.html,react-users,"auth/two-factor.html: ""© 2026 Northwind Technologies Pvt. Ltd. · Powered by OfficeOS"" after the page, the panel's old line gone",x1
+react-users.X.errors/403.html,react-users,"errors/403.html: ""© 2026 Northwind Technologies Pvt. Ltd. · Powered by OfficeOS"" after the page, the panel's old line gone",x1
+react-users.X.errors/404.html,react-users,"errors/404.html: ""© 2026 Northwind Technologies Pvt. Ltd. · Powered by OfficeOS"" after the page, the panel's old line gone",x1
+react-users.X.errors/500.html,react-users,"errors/500.html: ""© 2026 Northwind Technologies Pvt. Ltd. · Powered by OfficeOS"" after the page, the panel's old line gone",x1
+react-users.K1,react-users,"users list: search, Department, Role, then the table (Clear All is off and skipped while nothing is set); with a search typed, Tab reaches Clear All and Enter clears",x1
+react-users.K2,react-users,a status tab works from the keyboard (Inactive: 1 row),x1
+react-users.K3,react-users,the offices dialog opens on its first field and Esc closes it,x1
+react-users.W.users/users-list.html.1280.light,react-users,"users/users-list.html at 1280, light: no sideways scroll",x1
+react-users.W.users/users-list.html.1280.dark,react-users,"users/users-list.html at 1280, dark: no sideways scroll",x1
+react-users.W.users/users-list.html.412.light,react-users,"users/users-list.html at 412, light: no sideways scroll",x1
+react-users.W.users/users-list.html.412.dark,react-users,"users/users-list.html at 412, dark: no sideways scroll",x1
+react-users.W.users/user-form.html.1280.light,react-users,"users/user-form.html?id=EMP-1105 at 1280, light: no sideways scroll",x1
+react-users.W.users/user-form.html.1280.dark,react-users,"users/user-form.html?id=EMP-1105 at 1280, dark: no sideways scroll",x1
+react-users.W.users/user-form.html.412.light,react-users,"users/user-form.html?id=EMP-1105 at 412, light: no sideways scroll",x1
+react-users.W.users/user-form.html.412.dark,react-users,"users/user-form.html?id=EMP-1105 at 412, dark: no sideways scroll",x1
+react-users.W.users/user-profile.html.1280.light,react-users,"users/user-profile.html?id=EMP-1042 at 1280, light: no sideways scroll",x1
+react-users.W.users/user-profile.html.1280.dark,react-users,"users/user-profile.html?id=EMP-1042 at 1280, dark: no sideways scroll",x1
+react-users.W.users/user-profile.html.412.light,react-users,"users/user-profile.html?id=EMP-1042 at 412, light: no sideways scroll",x1
+react-users.W.users/user-profile.html.412.dark,react-users,"users/user-profile.html?id=EMP-1042 at 412, dark: no sideways scroll",x1
+react-users.W.users/departments.html.1280.light,react-users,"users/departments.html at 1280, light: no sideways scroll",x1
+react-users.W.users/departments.html.1280.dark,react-users,"users/departments.html at 1280, dark: no sideways scroll",x1
+react-users.W.users/departments.html.412.light,react-users,"users/departments.html at 412, light: no sideways scroll",x1
+react-users.W.users/departments.html.412.dark,react-users,"users/departments.html at 412, dark: no sideways scroll",x1
+react-users.W.company/offices.html.1280.light,react-users,"company/offices.html at 1280, light: no sideways scroll",x1
+react-users.W.company/offices.html.1280.dark,react-users,"company/offices.html at 1280, dark: no sideways scroll",x1
+react-users.W.company/offices.html.412.light,react-users,"company/offices.html at 412, light: no sideways scroll",x1
+react-users.W.company/offices.html.412.dark,react-users,"company/offices.html at 412, dark: no sideways scroll",x1
+react-users.W.system/settings.html.1280.light,react-users,"system/settings.html at 1280, light: no sideways scroll",x1
+react-users.W.system/settings.html.1280.dark,react-users,"system/settings.html at 1280, dark: no sideways scroll",x1
+react-users.W.system/settings.html.412.light,react-users,"system/settings.html at 412, light: no sideways scroll",x1
+react-users.W.system/settings.html.412.dark,react-users,"system/settings.html at 412, dark: no sideways scroll",x1
+react-users.W.company/about.html.1280.light,react-users,"company/about.html at 1280, light: no sideways scroll",x1
+react-users.W.company/about.html.1280.dark,react-users,"company/about.html at 1280, dark: no sideways scroll",x1
+react-users.W.company/about.html.412.light,react-users,"company/about.html at 412, light: no sideways scroll",x1
+react-users.W.company/about.html.412.dark,react-users,"company/about.html at 412, dark: no sideways scroll",x1
+react-users.W.auth/login.html.1280.light,react-users,"auth/login.html at 1280, light: no sideways scroll",x1
+react-users.W.auth/login.html.1280.dark,react-users,"auth/login.html at 1280, dark: no sideways scroll",x1
+react-users.W.auth/login.html.412.light,react-users,"auth/login.html at 412, light: no sideways scroll",x1
+react-users.W.auth/login.html.412.dark,react-users,"auth/login.html at 412, dark: no sideways scroll",x1
+react-users.E,react-users,no page or console errors on the new side,x1

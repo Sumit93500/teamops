@@ -46,7 +46,12 @@ import JobOpenings from "./pages/JobOpenings.jsx";
 import Candidates from "./pages/Candidates.jsx";
 import Announcements from "./pages/Announcements.jsx";
 import About from "./pages/About.jsx";
-import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT } from "./routes.js";
+import Offices from "./pages/Offices.jsx";
+import UsersList from "./pages/UsersList.jsx";
+import UserForm from "./pages/UserForm.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
+import Departments from "./pages/Departments.jsx";
+import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT, OFFICES } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
 const PORTED = {
@@ -89,6 +94,11 @@ const PORTED = {
   "recruitment/job-openings.html": JobOpenings,
   "recruitment/candidates.html": Candidates,
   "announcements/announcements.html": Announcements,
+  // L1: the users pages, built in the design system
+  "users/users-list.html": UsersList,
+  "users/user-form.html": UserForm,
+  "users/user-profile.html": UserProfile,
+  "users/departments.html": Departments,
 };
 
 function Home() {
@@ -106,6 +116,7 @@ export const router = createBrowserRouter([
   { path: "/", element: <Home /> },
   { path: "/gallery", element: <Gallery /> },   // round 4's component gallery (not a product page)
   { path: pageUrl(ABOUT), element: <About /> },   // D2a: the company's About page, for anyone signed in
+  { path: pageUrl(OFFICES), element: <Offices /> },   // L1: the offices, for anyone signed in
   ...ALL_PAGES.map((page) => ({ path: pageUrl(page), element: <RequireRoute page={page}>{pageElement(page)}</RequireRoute> })),
   { path: "*", element: <Navigate to={pageUrl("errors/404.html")} replace /> },
 ]);

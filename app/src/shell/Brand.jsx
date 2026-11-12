@@ -7,6 +7,13 @@ export function CompanyMark({ className = "brand-mark" }) {
   return <span className={className} aria-hidden="true">{companyInitial()}</span>;
 }
 
-export function PoweredBy({ className = "" }) {
-  return <footer className={`app-footer${className ? ` ${className}` : ""}`}><span>Powered by {PRODUCT}</span></footer>;
+// L1: the sign-in and error pages' footer names the company too: "© <year> <company> · Powered by OfficeOS" (the company
+// from the profile store, through COMPANY.name); inside the app it stays "Powered by OfficeOS".
+export function PoweredBy({ className = "", withCompany = false }) {
+  // (the in-app footer keeps its markup exactly, two text nodes, so its pixels don't move)
+  return (
+    <footer className={`app-footer${className ? ` ${className}` : ""}`}>
+      {withCompany ? <span>{`© ${new Date().getFullYear()} ${COMPANY.name} · Powered by ${PRODUCT}`}</span> : <span>Powered by {PRODUCT}</span>}
+    </footer>
+  );
 }

@@ -15,6 +15,7 @@ import { useToast } from "../ui/Toast.jsx";
 import { usePerm } from "../ui/perm.js";
 import { pageUrl } from "../routes.js";
 import { COMPANY } from "../data/company.js";   // D2a: the company's details live in one module, read by the shell and About too
+import CompanyProfile from "./CompanyProfile.jsx";   // L1: the company profile (name, overview, mission), saved
 
 const PAGE = "system/settings.html";
 const APPEARANCE_CHANGED = "officeos:appearance";   // theme.js announces a change on document under this name
@@ -46,6 +47,8 @@ export default function Settings() {
       </div>
       <div className="settings">
         <nav className="settings__nav" aria-label="Settings sections">
+          <a className={`settings__link${section === "company-profile" ? " is-active" : ""}`} href="#company-profile" onClick={go}>Company profile</a>
+          {" "}
           <a className={`settings__link${section === "company" ? " is-active" : ""}`} href="#company" onClick={go}>Company</a>
           {" "}
           <a className={`settings__link${section === "hours" ? " is-active" : ""}`} href="#hours" onClick={go}>Working hours</a>
@@ -57,7 +60,8 @@ export default function Settings() {
           <a className={`settings__link${section === "appearance" ? " is-active" : ""}`} href="#appearance" onClick={go}>Appearance</a>
         </nav>
         <div className="stack">
-          <div className="alert alert--info">Sample, not built yet: company settings aren't part of OfficeOS yet. This page shows how they could look; apart from the Appearance theme, which saves on this device, nothing here is saved or applied, and the rules and values listed are examples.</div>
+          <div className="alert alert--info">Sample, not built yet: most company settings aren't part of OfficeOS yet. This page shows how they could look; apart from the Company profile (saved for everyone in this browser) and the Appearance theme (saved on this device), nothing here is saved or applied, and the rules and values listed are examples.</div>
+          <CompanyProfile />
           <section className="card" id="company">
             <div className="card__header"><h3 className="card__title">Company</h3></div>
             <form action="settings.html">

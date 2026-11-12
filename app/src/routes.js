@@ -14,5 +14,8 @@ export const ALL_PAGES = [...Object.keys(ROUTES), ...PUBLIC_PAGES];
 // The About page (D2a): the app's own, not one of the 55 old pages; anyone signed in may open it.
 export const ABOUT = "company/about.html";
 
+// The Offices page (L1): also the app's own; everyone signed in may open it (offices:view is everyone's self-service).
+export const OFFICES = "company/offices.html";
+
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

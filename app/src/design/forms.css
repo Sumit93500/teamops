@@ -1,0 +1,76 @@
+/* L1: forms, buttons and detail lists in the design system (tokens only), for the pages built in it: offices, users,
+   departments, the Settings company section. */
+.ds-btn--primary { background: var(--ds-primary); border-color: var(--ds-primary); color: var(--ds-on-primary); }
+.ds-btn--primary:hover:not(:disabled) { background: color-mix(in srgb, var(--ds-primary) 88%, #000); }
+.ds-btn--danger { color: var(--ds-danger); border-color: color-mix(in srgb, var(--ds-danger) 45%, var(--ds-border-strong)); }
+.ds-btn--danger:hover:not(:disabled) { background: var(--ds-danger-soft); }
+.ds-btn--ghost { border-color: transparent; background: transparent; }
+.ds-btn--sm { min-height: 32px; padding: 0 10px; font-size: var(--ds-text-sm); }
+a.ds-btn { text-decoration: none; color: var(--ds-text); }
+a.ds-btn--primary { color: var(--ds-on-primary); }
+.ds-btn[hidden], .ds-field[hidden] { display: none; }
+
+.ds-form { display: grid; gap: var(--ds-space-6); }
+.ds-form-section { display: grid; gap: var(--ds-space-4); }
+.ds-form-section__title { margin: 0; font-size: var(--ds-text-md); font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+.ds-form-section__desc { margin: 2px 0 0; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.ds-form-grid > .ds-field, .ds-form .ds-field { align-content: start; }
+.ds-form-grid { display: grid; gap: var(--ds-space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.ds-field--full { grid-column: 1 / -1; }
+.ds-field__label--required::after { content: " *"; color: var(--ds-danger); }
+.ds-field__error { font-size: var(--ds-text-sm); color: var(--ds-danger); }
+.ds-control input:disabled, .ds-control select:disabled { color: var(--ds-text-2); cursor: not-allowed; }
+.ds-control textarea { flex: 1; min-width: 0; min-height: 96px; padding: 10px 12px; border: 0; background: transparent; color: inherit; font: inherit; font-size: var(--ds-text-base); outline: none; resize: vertical; }
+.ds-control--invalid { border-color: var(--ds-danger); }
+.ds-form-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--ds-space-3); }
+.ds-form-actions__buttons { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
+.ds-hint { margin: 0; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.ds-note { margin: 0; padding: var(--ds-space-3) var(--ds-space-4); border-radius: var(--ds-radius-md); background: var(--ds-info-soft); color: var(--ds-info); font-size: var(--ds-text-sm); }
+.ds-note--warning { background: var(--ds-warning-soft); color: var(--ds-warning); }
+
+/* a switch: a native checkbox drawn as a track; its label beside it */
+.ds-switch { display: inline-flex; align-items: center; gap: var(--ds-space-2); font-size: var(--ds-text-sm); color: var(--ds-text); cursor: pointer; }
+.ds-switch input { appearance: none; width: 36px; height: 20px; margin: 0; border-radius: 999px; background: var(--ds-border-control); position: relative; cursor: pointer; transition: background var(--ds-fast) var(--ds-ease); flex: none; }
+.ds-switch input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform var(--ds-fast) var(--ds-ease); }
+.ds-switch input:checked { background: var(--primary-base); }
+.ds-switch input:checked::after { transform: translateX(16px); }
+.ds-switch input:disabled { opacity: 0.5; cursor: not-allowed; }
+.ds-switch input:focus-visible { outline: 2px solid var(--ds-focus-color); outline-offset: 2px; }
+
+/* checkbox lists (permission overrides, people) */
+.ds-checks { display: flex; flex-wrap: wrap; gap: var(--ds-space-2) var(--ds-space-4); }
+.ds-check { display: inline-flex; align-items: center; gap: 6px; font-size: var(--ds-text-sm); color: var(--ds-text); }
+.ds-check input { width: 16px; height: 16px; accent-color: var(--primary-base); }
+
+/* definition lists: label, value */
+.ds-kv { display: grid; gap: var(--ds-space-2); margin: 0; }
+.ds-kv > div { display: grid; grid-template-columns: minmax(120px, 40%) 1fr; gap: var(--ds-space-3); padding: 6px 0; border-bottom: 1px solid var(--ds-border); }
+.ds-kv > div:last-child { border-bottom: 0; }
+.ds-kv dt { color: var(--ds-text-2); font-size: var(--ds-text-sm); }
+.ds-kv dd { margin: 0; color: var(--ds-text); font-size: var(--ds-text-sm); overflow-wrap: anywhere; }
+.ds-kv dd.is-muted { color: var(--ds-text-2); }
+@media (max-width: 560px) { .ds-kv > div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+.ds-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ds-chip { display: inline-flex; padding: 2px 8px; border-radius: var(--ds-radius-pill); background: var(--ds-surface-3); color: var(--ds-text); font-size: var(--ds-text-xs); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+.ds-chip--granted { background: var(--ds-success-soft); color: var(--ds-success); }
+
+/* status tabs with counts (users list) */
+.ds-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: var(--ds-radius-md); background: var(--ds-surface-2); width: fit-content; max-width: 100%; }
+.ds-tabs__tab { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 0; border-radius: var(--ds-radius-sm); background: transparent; color: var(--ds-text-2); font: inherit; font-size: var(--ds-text-sm); font-weight: var(--ds-weight-medium); cursor: pointer; }
+.ds-tabs__tab[aria-selected="true"] { background: var(--ds-surface-1); color: var(--ds-text); box-shadow: var(--ds-shadow-1); }
+.ds-tabs__count { min-width: 20px; padding: 0 6px; border-radius: var(--ds-radius-pill); background: var(--ds-surface-3); color: var(--ds-text); font-size: var(--ds-text-xs); text-align: center; }
+
+/* a person: avatar initials + name */
+.ds-person { display: flex; align-items: center; gap: var(--ds-space-3); min-width: 0; }
+.ds-avatar { display: inline-grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--ds-primary-soft); color: var(--ds-primary); font-size: var(--ds-text-sm); font-weight: var(--ds-weight-semibold); }
+.ds-avatar--xl { width: 64px; height: 64px; font-size: var(--ds-text-xl); }
+.ds-person__name { font-weight: var(--ds-weight-medium); color: var(--ds-text); text-decoration: none; }
+a.ds-person__name:hover { text-decoration: underline; }
+.ds-person__sub { display: block; font-size: var(--ds-text-xs); color: var(--ds-text-2); }
+
+/* page layouts */
+.ds-two-col { display: grid; gap: var(--ds-space-4); grid-template-columns: minmax(0, 1fr) minmax(0, 340px); align-items: start; }
+@media (max-width: 1000px) { .ds-two-col { grid-template-columns: minmax(0, 1fr); } }
+.ds-cards { display: grid; gap: var(--ds-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+.ds-privacy { margin: 0; font-size: var(--ds-text-xs); color: var(--ds-text-3); }
