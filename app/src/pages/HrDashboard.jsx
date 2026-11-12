@@ -17,7 +17,7 @@ import {
 } from "../../../assets/js/ui/leave-view.js";
 import { leaveRequestsChart, valuesOf } from "../../../assets/js/data/chart-data.js";
 import { correctionDetails } from "../../../assets/js/ui/attendance-view.js";
-import { cardOpener } from "../../../assets/js/ui/approval-card.js";
+import { cardOpener } from "../ui/ApprovalCard.jsx";
 import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";

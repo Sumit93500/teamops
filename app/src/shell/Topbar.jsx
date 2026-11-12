@@ -18,6 +18,7 @@ import { useToast } from "../ui/Toast.jsx";
 import { SearchBox, SearchOpener } from "./Search.jsx";
 import { initialsFrom } from "./media.js";
 import { SIGN_OUT_ICON } from "./Sidebar.jsx";
+import { toggleBellPanel } from "../ui/ApprovalCard.jsx";
 
 const INBOX = "requests/approvals-inbox.html";
 const PALETTE = "M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.2 0-1.1.9-2 2-2h2.5a4.5 4.5 0 0 0 4.5-4.5C22 6.1 17.5 3 12 3M7.5 12h.01M9.5 7.5h.01M14.5 7.5h.01";
@@ -63,9 +64,7 @@ const BELL = "M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 0 1-3.4
 
 function Bell() {
   const { userId, role } = useSession();
-  const navigate = useNavigate();
   const showToast = useToast();
-  const loading = useRef(false);
   const inbox = useData(() => canOpenPage(INBOX), [userId, role?.key]);
   const n = useData(() => waitingCount(userId, role?.key), [userId, role?.key]);
   if (!inbox) {
@@ -74,18 +73,9 @@ function Bell() {
         onClick={(e) => { e.preventDefault(); showToast("Notifications isn't available in this demo.", "info"); }}><Icon d={BELL} /></button>
     );
   }
-  // The list of what waits, and each item's read-only card: the old ui/approval-card.js, unchanged, loaded on the first
-  // click as before; it draws outside the React tree (on <body>) and only sets the bell's aria-expanded/-controls.
-  // If it can't load, the inbox (its old fallback). A second click while it loads is ignored.
-  const onClick = (e) => {
-    const bell = e.currentTarget;
-    if (loading.current) return;
-    loading.current = true;
-    import("../../../assets/js/ui/approval-card.js")
-      .then((card) => card.toggleBellPanel(bell))
-      .catch(() => navigate(pageUrl(INBOX)))
-      .finally(() => { loading.current = false; });
-  };
+  // The list of what waits, and each item's card (ui/ApprovalCard.jsx, round 13b: drawn on <body> by the shell's CardHost,
+  // which sets the bell's aria-expanded/-controls as the old module did).
+  const onClick = (e) => toggleBellPanel(e.currentTarget);
   return (
     <button className="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-haspopup="dialog" aria-expanded="false"
       aria-label={`Waiting for you: ${n}`} title={`Waiting for you: ${n}`} data-waiting={n > 0 ? "" : undefined}

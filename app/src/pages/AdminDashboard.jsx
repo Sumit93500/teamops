@@ -28,7 +28,7 @@ import { attendanceRateChart, headcountChart, valuesOf } from "../../../assets/j
 import { rupees } from "../../../assets/js/ui/money.js";
 import { csvColumns, csvRows, csvStat, initExports } from "../../../assets/js/ui/csv-export.js";
 import { waitingFor } from "../../../assets/js/ui/waiting.js";
-import { cardLink } from "../../../assets/js/ui/approval-card.js";
+import { cardLink } from "../ui/ApprovalCard.jsx";
 import { can } from "../../../assets/js/core/rbac.js";
 import { resolvePageLink } from "../../../assets/js/core/paths.js";
 import Frame from "../ui/Frame.jsx";

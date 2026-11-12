@@ -7,12 +7,10 @@ import { useNavigate } from "react-router-dom";
 import { useMedia } from "./media.js";
 import Sidebar from "./Sidebar.jsx";
 
-// Closes the bell's list and the card if the old module has been loaded (it is only loaded by the bell's first click).
-let cardModule = null;
-const closeCards = () => {
-  if (!document.getElementById("bell-panel") && !document.getElementById("approval-card")) return;
-  (cardModule ??= import("../../../assets/js/ui/approval-card.js")).then((m) => { m.closeBellPanel(false); m.closeApprovalCard(); });
-};
+import { CardHost, closeBellPanel, closeApprovalCard } from "../ui/ApprovalCard.jsx";
+
+// Closes the bell's list and the card (round 13b: ui/ApprovalCard.jsx, mounted below).
+const closeCards = () => { closeBellPanel(false); closeApprovalCard(); };
 import Topbar from "./Topbar.jsx";
 import "./solid-header.css";
 
@@ -72,6 +70,7 @@ export default function Shell({ page, title, back, children }) {
         <Topbar title={title} back={backTo} drawerOpen={drawerOpen} toggleDrawer={() => setDrawerOpen((o) => !o)} toggleRef={toggleRef} />
         <main className="content" id="main" data-page={page}>{children}</main>
       </div>
+      <CardHost />
     </div>
   );
 }

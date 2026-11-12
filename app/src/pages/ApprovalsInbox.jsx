@@ -22,7 +22,7 @@ import { salaryFor, salaryProposals } from "../../../assets/js/data/payroll-stor
 import { todayIso, formatDay, formatDays, requestDates, typeLabel, initials, avatarClass, decisionOf, localDateOf, nameOf } from "../../../assets/js/ui/leave-view.js";
 import { correctionDetails } from "../../../assets/js/ui/attendance-view.js";
 import { waitingFor, waitingCount } from "../../../assets/js/ui/waiting.js";
-import { openApprovalCard } from "../../../assets/js/ui/approval-card.js";
+import { openApprovalCard } from "../ui/ApprovalCard.jsx";
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
 import { StatStrip, StatCard, Badge, Tabs, NotBuilt } from "../components/Basics.jsx";

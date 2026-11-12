@@ -13,7 +13,7 @@ import { getUser } from "../../../assets/js/data/store.js";
 import { allExpenses, pendingFor, expenseTotals } from "../../../assets/js/data/expenses-store.js";
 import { resolvePageLink } from "../../../assets/js/core/paths.js";
 import { STAGE_NAME, categoryLabel } from "../../../assets/js/ui/expense-view.js";
-import { cardLink } from "../../../assets/js/ui/approval-card.js";
+import { cardLink } from "../ui/ApprovalCard.jsx";
 import { el, plural, departmentName, personCell, nameOf, initials, avatarClass, formatDay, localDateOf, todayIso, monthShort, showReason } from "../../../assets/js/ui/leave-view.js";
 import { barRow } from "../../../assets/js/ui/chart.js";
 import { payrollByDepartmentChart, valuesOf } from "../../../assets/js/data/chart-data.js";
