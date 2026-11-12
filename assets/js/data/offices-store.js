@@ -25,13 +25,22 @@ const KEY = "offices";
 export const OFFICE_RADIUS = { min: 20, max: 1000, default: 150 };
 export const OFFICE_TYPES = ["head", "branch"];
 export const SAMPLE_NOTE = "Sample coordinates: set the real location.";
+// L0: the office's state or union territory, from this fixed list (28 states, 8 union territories). Required when an
+// office is created; an office saved before L0 has none and reads as state null ("Not set") until it's edited.
+export const OFFICE_STATES = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan",
+  "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh",
+  "Lakshadweep", "Puducherry",
+];
 const NAME_MAX = 80;
 
 const seed = () => ({
   nextNum: 2,
   records: [{
     id: "OFF-1", name: "Head office", type: "head", address: "Sector 44, Gurugram, Haryana 122003",
-    lat: 28.4523, lng: 77.0723, radiusM: OFFICE_RADIUS.default, active: true, sample: true, note: SAMPLE_NOTE,
+    state: "Haryana", lat: 28.4523, lng: 77.0723, radiusM: OFFICE_RADIUS.default, active: true, sample: true, note: SAMPLE_NOTE,
   }],
   assignments: {},
 });
@@ -47,15 +56,18 @@ const manager = (actorUserId) => {
 const NOT_ALLOWED = "Only an Admin can change offices.";
 
 // ---------- reads ----------
+// An office saved before L0 has no state: it reads as null.
+const withState = (o) => ({ ...o, state: o.state ?? null });
 export function getOffices({ includeInactive = false } = {}) {
-  return copy(store.read().records.filter((o) => includeInactive || o.active));
+  return copy(store.read().records.filter((o) => includeInactive || o.active).map(withState));
 }
 export function getOffice(id) {
   const o = store.read().records.find((r) => r.id === id);
-  return o ? copy(o) : null;
+  return o ? copy(withState(o)) : null;
 }
 export function headOffice() {
-  return copy(store.read().records.find((o) => o.type === "head") ?? null);
+  const o = store.read().records.find((r) => r.type === "head");
+  return o ? copy(withState(o)) : null;
 }
 export function officeIdOf(userId) {
   const box = store.read();
@@ -80,13 +92,15 @@ function officeProblem(fields, current, all) {
   const address = typeof merged.address === "string" ? merged.address.trim() : "";
   if (!address) return fail("Enter the address.", "address");
   if (address.length > ADDRESS_MAX) return fail(`The address can be at most ${ADDRESS_MAX} characters.`, "address");
+  // L0: a new office needs its state; an edit keeps a valid one (or none, for an office saved before L0, unless one is given)
+  if ((!current || "state" in fields || current.state != null) && !OFFICE_STATES.includes(merged.state)) return fail("Choose the office's state or union territory.", "state");
   const coords = coordsProblem(merged.lat, merged.lng);
   if (coords) return fail(coords, Number.isFinite(merged.lat) && merged.lat >= -90 && merged.lat <= 90 ? "lng" : "lat");
   const r = merged.radiusM;
   if (!Number.isInteger(r) || r < OFFICE_RADIUS.min || r > OFFICE_RADIUS.max) return fail(`The radius must be a whole number of metres from ${OFFICE_RADIUS.min} to ${OFFICE_RADIUS.max}.`, "radiusM");
   return null;
 }
-const EDITABLE = ["name", "type", "address", "lat", "lng", "radiusM"];
+const EDITABLE = ["name", "type", "address", "state", "lat", "lng", "radiusM"];
 const onlyEditable = (fields) => Object.keys(fields ?? {}).find((k) => !EDITABLE.includes(k));
 
 // ---------- writes ----------
@@ -98,7 +112,7 @@ export function createOffice(actorUserId, fields = {}) {
   const draft = { type: "branch", radiusM: OFFICE_RADIUS.default, ...fields };
   const problem = officeProblem(draft, null, box.records);
   if (problem) return problem;
-  const record = { id: `OFF-${box.nextNum}`, name: draft.name.trim(), type: draft.type, address: draft.address.trim(), lat: draft.lat, lng: draft.lng,
+  const record = { id: `OFF-${box.nextNum}`, name: draft.name.trim(), type: draft.type, address: draft.address.trim(), state: draft.state, lat: draft.lat, lng: draft.lng,
     radiusM: draft.radiusM, active: true, sample: false, note: "" };
   box.records.push(record);
   box.nextNum += 1;

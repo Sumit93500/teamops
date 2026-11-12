@@ -85,7 +85,7 @@ const out = { lat: 0, lng: 700 / M_PER_DEG, accuracyM: 5 };
 check("D9", "outside both: the nearest is named (home, 400 m)", L.judgePlace(out, near).reason === "400 m from your permanent home");
 
 section("E. Branch vs head office");
-const pune = O.createOffice(AARAV, { name: "Pune branch", address: "Hinjewadi, Pune", lat: 18.5913, lng: 73.7389, radiusM: 300 }).record;
+const pune = O.createOffice(AARAV, { name: "Pune branch", address: "Hinjewadi, Pune", state: "Maharashtra", lat: 18.5913, lng: 73.7389, radiusM: 300 }).record;
 O.setEmployeeOffice(AARAV, SNEHA, pune.id);
 check("E1", "Sneha (Pune branch) at Pune: ok, branch", j(pick(L.checkPlace(reading(pune), SNEHA))) === j([true, "ok", "branch", "Pune branch", 0, ""]));
 check("E2", "Sneha at the head office: outside, measured from Pune", (() => { const r = L.checkPlace(reading(HQ), SNEHA); return !r.ok && r.code === "outside" && r.placeName === "Pune branch" && r.reason.endsWith(" m from Pune branch") && r.distanceM > 1000000; })());

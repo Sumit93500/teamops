@@ -17,6 +17,8 @@ const SELF_SERVICE = [
   "assets:view-own", "assets:request", "assets:report",
   "announcements:view",
   "profile:edit-own", "password:change-own", "sessions:end-own", "notifications:edit-own",
+  // L0: see the offices, your own devices, and set your own home places (HR's home-eligible flag still decides that)
+  "offices:view", "devices:view-own", "locations:set-own",
 ];
 
 export const ROLES = {
@@ -126,23 +128,15 @@ export function permissionsOf(user) {
   return [...new Set([...role.permissions, ...grants])].filter((p) => !denies.includes(p));
 }
 
-// ---------- offices, locations, devices, company profile (round 14, data only) ----------
-// Each role's share of config/permissions.js's LOCATION_PERMISSIONS. Separate from ROLES[...].permissions until the page
-// round (the role pages count and draw those). Not overridable. A manager gets nothing extra: managing people is a
-// relationship, not a permission (the manager rule is unchanged). locations:set-own isn't any role's: it follows the
-// person's homeEligible flag, which HR sets (data/locations-store.js).
-const EVERYONE_LOCATION = ["offices:view", "devices:view-own"];
-export const LOCATION_GRANTS = {
-  admin: ALL_LOCATION_PERMISSIONS.filter((p) => p !== "locations:set-own"),
-  hr: [...EVERYONE_LOCATION],
-  fin: [...EVERYONE_LOCATION],
-  emp: [...EVERYONE_LOCATION],
-};
+// ---------- offices, locations, devices, company profile ----------
+// Since L0 (2026-11-12) the seven round-14 permissions are ordinary ones: in PERMISSIONS, held through each role's
+// permissions (everyone's self-service: offices:view, devices:view-own, locations:set-own; the Admin: all). Not
+// overridable. A manager gets nothing extra: managing people is a relationship, not a permission (unchanged).
+// LOCATION_GRANTS: each role's share of them, read from ROLES (kept for round 14's callers).
+export const LOCATION_GRANTS = Object.fromEntries(ROLE_KEYS.map((k) => [k, ROLES[k].permissions.filter((p) => ALL_LOCATION_PERMISSIONS.includes(p))]));
 
-// Whether this person (a user record) holds a permission: the old ones through permissionsOf(), the round 14 ones
-// through their role's LOCATION_GRANTS. Whether they're active is the caller's check, as with permissionsOf().
+// Whether this person (a user record) holds a permission: permissionsOf() (role + overrides). Kept as round 14's name.
+// Whether they're active is the caller's check, as with permissionsOf().
 export function hasPermission(user, permission) {
-  if (permissionsOf(user).includes(permission)) return true;
-  const role = user && Object.hasOwn(LOCATION_GRANTS, user.role) ? user.role : null;
-  return Boolean(role && LOCATION_GRANTS[role].includes(permission));
+  return permissionsOf(user).includes(permission);
 }

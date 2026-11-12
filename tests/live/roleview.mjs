@@ -80,7 +80,7 @@ const sameSet = (a, b) => a.length === b.length && new Set(a).size === a.length 
 
 // =====================================================================
 section("A. Each role via ?role=");
-const GROUP_ORDER = ["Overview", "People", "Time", "Requests & approvals", "Finance", "Operations", "System", "Your own account"];
+const GROUP_ORDER = ["Overview", "People", "Time", "Requests & approvals", "Finance", "Operations", "Offices & locations", "System", "Your own account"];   // L0 (behaviour): the new group
 for (const key of Object.keys(ROLES)) {
   const role = ROLES[key];
   fresh(); await open(EDITOR, "aarav", `?role=${key}`);
@@ -109,20 +109,20 @@ for (const key of Object.keys(ROLES)) {
 fresh(); await open(EDITOR, "aarav", "?role=hr");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 45 of 78: dashboard:finance is a 79th permission)
-check("A7", "HR today: 45 of 79, Priya Nair alone ('held by 1 person'); no Anil Verma, no 'Custom role', no 'hr-manager' anywhere",
-  txt($("permission-count")) === "45 of 79" && j(holders().map((h) => h[0])) === j(["Priya Nair"]) && txt($("role-subtitle")) === "System role, held by 1 person"
+check("A7", "HR today: 48 of 86 (L0: was 45 of 79), Priya Nair alone ('held by 1 person'); no Anil Verma, no 'Custom role', no 'hr-manager' anywhere",
+  txt($("permission-count")) === "48 of 86" && j(holders().map((h) => h[0])) === j(["Priya Nair"]) && txt($("role-subtitle")) === "System role, held by 1 person"
   && !/Anil Verma|Custom role|hr-manager|Leave approvals|two-factor/i.test(main().outerHTML));
 const hrNot = ALL_PERMISSIONS.filter((p) => !ROLES.hr.permissions.includes(p));
 // Round 11N (behaviour; was 32: HR doesn't hold users:delete (round 11N, Admin only))
 // Round Manager scoping part 1 (behaviour; was 33: HR doesn't hold dashboard:finance)
-check("A8", "HR: none of the 34 permissions HR lacks is ticked (e.g. payroll:view, roles:manage, assets:view, users:delete, dashboard:finance)", hrNot.length === 34 && hrNot.includes("dashboard:finance") && hrNot.every((p) => !heldKeys().includes(p)) && ["payroll:view", "roles:manage", "assets:view", "users:delete"].every((p) => hrNot.includes(p)));
+check("A8", "HR: none of the 38 permissions HR lacks is ticked (L0: was 34) (e.g. payroll:view, roles:manage, assets:view, users:delete, dashboard:finance)", hrNot.length === 38 && hrNot.includes("dashboard:finance") && hrNot.every((p) => !heldKeys().includes(p)) && ["payroll:view", "roles:manage", "assets:view", "users:delete"].every((p) => hrNot.includes(p)));
 await open(EDITOR, "aarav", "?role=emp");
-check("A9", "Employee: the 20 self-service permissions, spread over their modules (Attendance ticks view-own / mark / regularize, not view-all / approve)",
-  heldKeys().length === 20 && j([...rowOf("attendance").querySelectorAll(".perm-tick")].map((t) => `${txt(t)}${t.querySelector(".matrix__yes") ? "+" : ""}`)) === j(["view-all", "view-own+", "mark+", "regularize+", "approve"]));
+check("A9", "Employee: the 23 self-service permissions (L0: was 20), spread over their modules (Attendance ticks view-own / mark / regularize, not view-all / approve)",
+  heldKeys().length === 23 && j([...rowOf("attendance").querySelectorAll(".perm-tick")].map((t) => `${txt(t)}${t.querySelector(".matrix__yes") ? "+" : ""}`)) === j(["view-all", "view-own+", "mark+", "regularize+", "approve"]));
 await open(EDITOR, "aarav", "?role=admin");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 78: dashboard:finance)
-check("A10", "Admin: all 79 ticked, nothing unticked", heldKeys().length === 79 && !d.querySelector("#matrix-rows .matrix__no"));
+check("A10", "Admin: all 86 ticked, nothing unticked (L0: was 79)", heldKeys().length === 86 && !d.querySelector("#matrix-rows .matrix__no"));
 
 // =====================================================================
 section("B. Default and unknown roles");
@@ -158,12 +158,13 @@ check("D2", "a module with no name in the page's map appears under 'Other', name
   groups().at(-1) === "Other" && txt(rowOf("newmodule")?.querySelector(".matrix__module-name")) === "newmodule" && heldKeys().includes("newmodule:run") && !heldKeys().includes("newmodule:view")
   // Round 11N (behaviour; was 80: 78 since round 11N, plus the three added here)
   // Round Manager scoping part 1 (behaviour; was 46 of 81: 79 since Manager scoping part 1, plus the three added here)
-  && sameSet(drawnKeys(), ALL_PERMISSIONS) && txt($("permission-count")) === `46 of 82`, `${groups().at(-1)} ${txt($("permission-count"))}`);
+  && sameSet(drawnKeys(), ALL_PERMISSIONS) && txt($("permission-count")) === `49 of 89`   // L0 (behaviour; was 46 of 82: 86 since L0, plus the three added here)
+  , `${groups().at(-1)} ${txt($("permission-count"))}`);
 PERMISSIONS.users.pop(); delete PERMISSIONS.newmodule; ROLES.hr.permissions.pop(); ALL_PERMISSIONS.splice(-3, 3);
 fresh(); await open(EDITOR, "aarav", "?role=hr");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 78: dashboard:finance)
-check("D3", "(restored: 79 again, no Other)", drawnKeys().length === 79 && !groups().includes("Other"));
+check("D3", "(restored: 86 again, no Other; L0: was 79)", drawnKeys().length === 86 && !groups().includes("Other"));
 
 // =====================================================================
 section("E. Holders follow the store");
@@ -187,7 +188,8 @@ const buttons = [...d.querySelectorAll(".table tbody tr[data-role]")].map((tr) =
 check("F1", "each role's row has one 'View' button opening role-editor.html?role=<its key>", j(buttons) === j(Object.keys(ROLES).map((k) => [k, "View", `role-editor.html?role=${k}`])), j(buttons));
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 45 / 78: dashboard:finance)
-check("F2", "roles-list still fills its counts (unchanged script)", txt(d.querySelector('tr[data-role="hr"] [data-cell="permissions"]')) === "45 / 79" && jsErrors.length === 0);
+check("F2", "roles-list still fills its counts (unchanged script)", txt(d.querySelector('tr[data-role="hr"] [data-cell="permissions"]')) === "48 / 86" &&   // L0 (behaviour; was 45 / 79)
+   jsErrors.length === 0);
 
 // =====================================================================
 section("G. Who can open it");

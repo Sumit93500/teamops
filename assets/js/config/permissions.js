@@ -37,6 +37,11 @@ export const PERMISSIONS = {
   password:      ["change-own"],
   sessions:      ["end-own"],
   notifications: ["edit-own"],
+  // Round 14's, moved here in L0 (2026-11-12): the role editor and roles list now show and count them
+  offices:       ["view", "manage"],          // view: everyone; manage: create, edit, deactivate offices, assign people (Admin)
+  company:       ["edit"],                    // the company profile: name, overview, mission (Admin)
+  locations:     ["set-own", "review"],       // set-own: everyone holds it, the HR home-eligible flag decides; review: decide changes (Admin)
+  devices:       ["view-own", "reset"],       // view-own: everyone; reset: list and reset anyone's devices (Admin)
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.
@@ -44,24 +49,17 @@ export const ALL_PERMISSIONS = Object.entries(PERMISSIONS).flatMap(
   ([module, actions]) => actions.map((action) => `${module}:${action}`)
 );
 
-// ---------- offices, locations, devices and the company profile (round 14, data only) ----------
-// Kept apart from PERMISSIONS until the page round that gives them screens: the role editor and roles list draw their
-// matrix and their "N of M" counts from PERMISSIONS / ALL_PERMISSIONS, and this round changes no screen. The data layer
-// checks these through hasPermission() in config/roles.js (each role's grants: LOCATION_GRANTS there). The page round
-// moves them into PERMISSIONS.
-//   offices:view       see the offices                               every role
+// ---------- offices, locations, devices and the company profile ----------
+// Round 14 kept these seven apart; L0 (2026-11-12) moved them into PERMISSIONS above, so ALL_PERMISSIONS has them and
+// the role pages count them (79 -> 86). This list stays as the round-14 subset, for the data layer's own references.
+//   offices:view       see the offices                               every role (self-service)
 //   offices:manage     create, edit, deactivate offices; assign      Admin
 //   company:edit       the company profile (name, overview, mission) Admin
-//   locations:set-own  set your own home places once                 anyone HR marked home-eligible (a flag, not a role)
+//   locations:set-own  set your own home places once                 every role holds it; HR's home-eligible flag decides
 //   locations:review   approve / reject home location changes        Admin
-//   devices:view-own   see your own registered devices               every role
+//   devices:view-own   see your own registered devices               every role (self-service)
 //   devices:reset      list and reset anyone's devices               Admin
-export const LOCATION_PERMISSIONS = {
-  offices:   ["view", "manage"],
-  company:   ["edit"],
-  locations: ["set-own", "review"],
-  devices:   ["view-own", "reset"],
-};
+export const LOCATION_PERMISSIONS = Object.fromEntries(["offices", "company", "locations", "devices"].map((m) => [m, PERMISSIONS[m]]));
 export const ALL_LOCATION_PERMISSIONS = Object.entries(LOCATION_PERMISSIONS).flatMap(
   ([module, actions]) => actions.map((action) => `${module}:${action}`)
 );

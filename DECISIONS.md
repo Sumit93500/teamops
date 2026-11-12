@@ -62,3 +62,12 @@ One line per decision: date, round, decision, why. Newest last. Every round appe
 | 2026-11-12 | 14 | Place check: whole metres, exactly the radius is inside, accuracy over 100 m refused, homes 150 m, the nearest place inside wins | stated rules, tested at the edges |
 | 2026-11-12 | 14 | Location changes aren't in ui/waiting.js yet; an Admin's own change is approved at once | inbox, sidebar and dashboard card learn the kind together (page round); as with leave |
 | 2026-11-12 | 14 | COMPANY.name in app/src/data/company.js reads the company profile store (a getter, same selector) | the one file outside the data layer, as item 1 asked |
+| 2026-11-12 | L0 | The 7 location permissions join PERMISSIONS (79 -> 86); everyone's self-service gains offices:view, devices:view-own, locations:set-own; Admin all | ruled: the role pages show and count them now; HR's home-eligible flag still decides set-own |
+| 2026-11-12 | L0 | Offices have a state from a fixed list of 36; required on create; head office Haryana; old offices read state null | ruled; payroll's state rules (PT, LWF) need it |
+| 2026-11-12 | L0 | Reset demo data also clears the company profile, offices, home locations, change requests and devices (not the browser's device token) | ruled |
+| 2026-11-12 | P0 | Head office Haryana, no branches; leave bands = the scoping defaults as Admin-editable samples; new tax regime by default | ruled (payroll-rules-scoping.md E1-E3) |
+| 2026-11-12 | P0 | Interns: a separate stipend template, no PF / ESI / gratuity; PF capped at the wage ceiling, with a company switch for full wages | ruled (E4, E5) |
+| 2026-11-12 | P0 | Standard template basic = 50% of gross for new calculations; payslips already issued unchanged | ruled (E6) |
+| 2026-11-12 | P0 | Haryana professional tax = 0, flagged unverified (the sample ₹200 stops for new calculations); no Maharashtra gender rule now | ruled (E7, E8) |
+| 2026-11-12 | P0 | Cess 4% and old-regime slabs ship with commonly used values flagged "unverified"; payslips show an "unverified rates" label; no refusal to compute | ruled (E9) |
+| 2026-11-12 | P0 | Gratuity is an employer accrual only; an Admin "verify rates" action (name + date per row) is required before any real use | ruled (E10, E11) |

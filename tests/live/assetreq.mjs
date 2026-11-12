@@ -601,7 +601,8 @@ R.submitAssetRequest(ROHAN, { assetType: "laptop", reason: "x" });
 const resetBtn = btn(d, "Reset demo data");
 resetBtn.click();
 // Round 13N (behaviour; M1.3: the list goes on to deleted people's names, so asset requests are no longer last)
-check("J4", "Reset demo data also resets asset requests (and says so)", /expense claims, inventory, asset requests and /.test(confirms[0]) && R.allAssetRequests().length === 2);
+check("J4", "Reset demo data also resets asset requests (and says so)", /expense claims, inventory, asset requests(,| and) /.test(confirms[0])   // L0 (layout): the list goes on after asset requests
+   && R.allAssetRequests().length === 2);
 
 // =====================================================================
 section("K. Access");

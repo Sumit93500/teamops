@@ -11,6 +11,7 @@ import { resetPayrollData } from "../data/payroll-store.js";
 import { resetExpenseData } from "../data/expenses-store.js";
 import { resetInventoryData } from "../data/inventory-store.js";
 import { resetAssetRequestData } from "../data/asset-requests-store.js";
+import { resetLocationData } from "../data/locations-store.js";
 import { DEPARTMENTS } from "../data/users.js";
 import { ROLES } from "../config/roles.js";
 import { renderPagination } from "../ui/pagination.js";
@@ -260,7 +261,7 @@ if (["admin", "hr"].includes(getCurrentRole()?.key) && exportBtn) {
   const resetBtn = el("button", "btn btn--ghost", "Reset demo data");
   resetBtn.type = "button";
   resetBtn.addEventListener("click", () => {
-    if (!window.confirm("This discards every change made to users, departments, leave, holidays, attendance, salaries, salary changes, payroll runs, expense claims, inventory, asset requests and deleted people's names in this browser. Continue?")) return;
+    if (!window.confirm("This discards every change made to users, departments, leave, holidays, attendance, salaries, salary changes, payroll runs, expense claims, inventory, asset requests, deleted people's names, the company profile, offices, home locations and registered devices in this browser. Continue?")) return;
     resetDemoData();
     resetLeaveData();
     resetAttendanceData();
@@ -268,6 +269,7 @@ if (["admin", "hr"].includes(getCurrentRole()?.key) && exportBtn) {
     resetExpenseData();
     resetInventoryData();
     resetAssetRequestData();
+    resetLocationData();   // L0: company, offices, home locations, devices
     window.location.reload();
   });
   exportBtn.before(resetBtn);

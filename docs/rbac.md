@@ -6,34 +6,35 @@
 
 | key | label | permissions | landing page | Data scope (as the pages word it) |
 |---|---|---|---|---|
-| admin | Admin | all 79 | dashboard/admin.html | All records |
-| hr | HR Manager | 45 | dashboard/hr.html | All records |
-| fin | Finance Manager | 37 | dashboard/finance.html | All finance records |
-| emp | Employee | 20 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
+| admin | Admin | all 86 | dashboard/admin.html | All records |
+| hr | HR Manager | 48 | dashboard/hr.html | All records |
+| fin | Finance Manager | 40 | dashboard/finance.html | All finance records |
+| emp | Employee | 23 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
 
 Roles come from the configuration: they can't be created, edited or deleted in the app (the roles pages say so).
 
 ## Permissions
 
-- `module:action` strings, 33 modules, 79 in all.
+- `module:action` strings, 37 modules, 86 in all (79 before L0, 2026-11-12).
 - Examples: `payroll:create` (prepare a run), `payroll:approve`, `salary:view`, `dashboard:finance`, `users:delete` (Admin only), `pii:view` (bank account and PAN).
 - A page needs one permission (`config/routes.js`). A control on a page needs its own, through `data-permission="..."` on the static pages and `perm()` / `useCan()` in the React app.
 
-## Round 14's permissions (data only, kept apart for now)
+## Offices and locations (round 14, in the main list since L0)
 
-Seven new permissions are checked by the data layer through `hasPermission(user, permission)` (`config/roles.js`). They live in `LOCATION_PERMISSIONS` (`config/permissions.js`), each role's share in `LOCATION_GRANTS`:
+Round 14 added seven permissions for its data layer. L0 moved them into `PERMISSIONS`, so the role editor shows them (group "Offices & locations") and the roles list counts them:
 
 | permission | who |
 |---|---|
-| `offices:view` | everyone |
+| `offices:view` | everyone (self-service) |
 | `offices:manage` | Admin |
 | `company:edit` | Admin |
-| `locations:set-own` | whoever HR marked home-eligible (a flag, not a role) |
+| `locations:set-own` | everyone holds it (self-service); HR's home-eligible flag decides whether it can be used |
 | `locations:review` | Admin |
-| `devices:view-own` | everyone |
+| `devices:view-own` | everyone (self-service) |
 | `devices:reset` | Admin |
 
-They aren't in `PERMISSIONS` / `ALL_PERMISSIONS` or any role's `permissions` yet. The role editor and roles list draw their matrix and "N of M" counts from those, and this round changes no screen, so the counts above still hold. They aren't overridable. Managers get nothing extra. The page round that adds the screens moves them into `PERMISSIONS`.
+- `hasPermission(user, permission)` (`config/roles.js`) is now the same check as `permissionsOf(user).includes(permission)`. `LOCATION_PERMISSIONS` and `LOCATION_GRANTS` remain as the round-14 subset.
+- None is overridable. Managers get nothing extra.
 
 ## The check
 

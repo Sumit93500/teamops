@@ -3,8 +3,8 @@
 // hasPermission) and the stores that check them, for all four roles and a manager. ./js is the build.
 //   A  the matrix: hasPermission for admin, hr, fin, emp and a manager (Sneha), for each of the seven
 //   B  the same through the stores' own gates (what each person can actually do)
-//   C  nothing old moved: PERMISSIONS, ALL_PERMISSIONS, each role's permissions and permissionsOf() don't include them;
-//      overrides can't grant them; an inactive Admin holds none in practice
+//   C  since L0 they're ordinary permissions: in PERMISSIONS (86 in all), held through each role's list (Admin all;
+//      everyone offices:view, devices:view-own, locations:set-own); not overridable; an inactive Admin holds none in practice
 let NOW = 0;
 const RealDate = Date;
 globalThis.Date = class extends RealDate { constructor(...a) { super(...(a.length ? a : [NOW])); } static now() { return NOW; } };
@@ -27,12 +27,13 @@ const j = JSON.stringify;
 const PEOPLE = { admin: "EMP-1001", hr: "EMP-1003", fin: "EMP-1008", emp: "EMP-1105", manager: "EMP-1029" };
 const NEW = ["offices:view", "offices:manage", "company:edit", "locations:set-own", "locations:review", "devices:view-own", "devices:reset"];
 //                 view   manage company set-own review view-own reset
+// L0: set-own is everyone's self-service (HR's home-eligible flag still decides, see B7); the Admin holds all seven
 const WANT = {
-  admin:   [true,  true,  true,  false, true,  true,  true],
-  hr:      [true,  false, false, false, false, true,  false],
-  fin:     [true,  false, false, false, false, true,  false],
-  emp:     [true,  false, false, false, false, true,  false],
-  manager: [true,  false, false, false, false, true,  false],
+  admin:   [true,  true,  true,  true,  true,  true,  true],
+  hr:      [true,  false, false, true,  false, true,  false],
+  fin:     [true,  false, false, true,  false, true,  false],
+  emp:     [true,  false, false, true,  false, true,  false],
+  manager: [true,  false, false, true,  false, true,  false],
 };
 
 section("A. The matrix (hasPermission)");
@@ -48,7 +49,7 @@ check("A8", "the old permissions answer as permissionsOf() does", Object.values(
 
 section("B. Through the stores");
 const HQ = O.headOffice();
-const BR = { name: "", address: "Hinjewadi, Pune", lat: 18.59, lng: 73.73 };
+const BR = { name: "", address: "Hinjewadi, Pune", state: "Maharashtra", lat: 18.59, lng: 73.73 };
 let n = 0;
 for (const [who, id] of Object.entries(PEOPLE)) {
   const can = WANT[who];
@@ -67,12 +68,14 @@ check("B7", "locations:set-own follows the flag, not the role: HR (not eligible)
   && (L.setHomeEligible(PEOPLE.hr, PEOPLE.emp, true), L.setOwnHome(PEOPLE.emp, "permanent", { address: "x", lat: 1, lng: 1 }).ok));
 check("B8", "setting the flag needs users:edit (HR, Admin), not a new permission", L.setHomeEligible(PEOPLE.fin, PEOPLE.manager, true).ok === false && L.setHomeEligible(PEOPLE.admin, PEOPLE.manager, true).ok);
 
-section("C. Nothing old moved");
-check("C1", "PERMISSIONS has none of the new modules (the role matrix draws from it)", ["offices", "company", "locations", "devices"].every((m) => !(m in P.PERMISSIONS)));
-check("C2", "ALL_PERMISSIONS has none of them, and still 79 entries (HEAD e226b93 has 79)", NEW.every((p) => !P.ALL_PERMISSIONS.includes(p)) && P.ALL_PERMISSIONS.length === 79, P.ALL_PERMISSIONS.length);
-check("C3", "no role's permissions list has them (the roles list counts these)", Object.values(R.ROLES).every((r) => NEW.every((p) => !r.permissions.includes(p))));
-check("C4", "the roles' permission counts are as before (HEAD e226b93): admin 79, hr 45, fin 37, emp 20", j(Object.values(R.ROLES).map((r) => r.permissions.length)) === j([79, 45, 37, 20]), j(Object.values(R.ROLES).map((r) => r.permissions.length)));
-check("C5", "permissionsOf() doesn't include them for anyone", Object.values(PEOPLE).every((id) => NEW.every((p) => !R.permissionsOf(S.getUser(id)).includes(p))));
+section("C. Ordinary permissions since L0");
+check("C1", "PERMISSIONS has the four modules (the role matrix draws from it)", j(["offices", "company", "locations", "devices"].map((m) => P.PERMISSIONS[m])) === j([["view", "manage"], ["edit"], ["set-own", "review"], ["view-own", "reset"]]));
+check("C2", "ALL_PERMISSIONS has all seven: 86 entries (79 before L0)", NEW.every((p) => P.ALL_PERMISSIONS.includes(p)) && P.ALL_PERMISSIONS.length === 86, P.ALL_PERMISSIONS.length);
+const SELF = ["offices:view", "locations:set-own", "devices:view-own"];
+check("C3", "the Admin's list has all seven; HR's, Finance's and Employee's have exactly the three self-service ones", NEW.every((p) => R.ROLES.admin.permissions.includes(p)) && ["hr", "fin", "emp"].every((k) => j(NEW.filter((p) => R.ROLES[k].permissions.includes(p)).sort()) === j([...SELF].sort())));
+check("C4", "the roles' permission counts on purpose: admin 86, hr 48, fin 40, emp 23 (were 79, 45, 37, 20)", j(Object.values(R.ROLES).map((r) => r.permissions.length)) === j([86, 48, 40, 23]), j(Object.values(R.ROLES).map((r) => r.permissions.length)));
+check("C5", "permissionsOf() and hasPermission() agree for everyone, on all 86", Object.values(PEOPLE).every((id) => { const u = S.getUser(id); return P.ALL_PERMISSIONS.every((p) => R.hasPermission(u, p) === R.permissionsOf(u).includes(p)); }));
+check("C5b", "LOCATION_GRANTS reads from the roles", j(R.LOCATION_GRANTS.emp.slice().sort()) === j([...SELF].sort()) && R.LOCATION_GRANTS.admin.length === 7);
 check("C6", "none is overridable", NEW.every((p) => !R.OVERRIDABLE.includes(p)));
 const arjun = { ...S.getUser(PEOPLE.emp), grantPermissions: ["offices:manage", "devices:reset"] };
 check("C7", "a stored grant of one is ignored", !R.hasPermission(arjun, "offices:manage") && !R.hasPermission(arjun, "devices:reset"));

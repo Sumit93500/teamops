@@ -62,7 +62,9 @@ const E = await import("./js/data/expenses-store.js");
 const P = await import("./js/data/payroll-store.js");
 const AARAV = "EMP-1001", KABIR = "EMP-1008", MEERA = "EMP-1023", ROHAN = "EMP-1042";
 const OLD_CONFIRM = "This discards every change made to users, departments, leave, holidays, attendance, salaries, payroll runs, expense claims, inventory and asset requests in this browser. Continue?";
-const NEW_CONFIRM = "This discards every change made to users, departments, leave, holidays, attendance, salaries, salary changes, payroll runs, expense claims, inventory, asset requests and deleted people's names in this browser. Continue?";
+// L0 (behaviour): the reset also clears the company profile, offices, home locations and registered devices, and says so
+const NEW_CONFIRM_13N = "This discards every change made to users, departments, leave, holidays, attendance, salaries, salary changes, payroll runs, expense claims, inventory, asset requests and deleted people's names in this browser. Continue?";   // L0: round 13N's wording, for X3 (13N's change between two frozen copies)
+const NEW_CONFIRM = "This discards every change made to users, departments, leave, holidays, attendance, salaries, salary changes, payroll runs, expense claims, inventory, asset requests, deleted people's names, the company profile, offices, home locations and registered devices in this browser. Continue?";
 const OLD_LABEL = "Income tax (TDS), sample tax rates";
 const NEW_LABEL = "Income tax (TDS), sample tax rates, spread evenly over the year";
 const source = (root, f) => fs.readFileSync(path.join(HERE, root, f), "utf8");
@@ -146,7 +148,7 @@ const crlf = (s) => !/[^\r]\n/.test(s) && !s.endsWith("\n");
 const UL = [source("js-pre13Z", "pages/users-list.js"), source("js-pre13N", "pages/users-list.js")];   // Round 13Z (scope; was the live js)
 const ul = oneLine(UL[1], UL[0]);
 check("X3", "users-list.js: CRLF, no final newline; only the confirm() line replaced, old wording for new",
-  crlf(UL[0]) && ul?.length === 1 && ul[0][0].trim() === `if (!window.confirm(${j(OLD_CONFIRM)})) return;` && ul[0][1].trim() === `if (!window.confirm(${j(NEW_CONFIRM)})) return;`, j(ul));
+  crlf(UL[0]) && ul?.length === 1 && ul[0][0].trim() === `if (!window.confirm(${j(OLD_CONFIRM)})) return;` && ul[0][1].trim() === `if (!window.confirm(${j(NEW_CONFIRM_13N)})) return;`, j(ul));
 const SS = [fs.readFileSync(path.join(HERE, "html-pre14A", "payroll", "salary-structure.html"), "utf8") /* Round 14A (layout; was the live page): 9c7423e's, frozen; the live pages: pagefreeze.mjs */, fs.readFileSync(path.join(PRE, "payroll", "salary-structure.html"), "utf8")];
 const ss = oneLine(SS[1], SS[0]);
 check("X4", "salary-structure.html: CRLF, no final newline; only the example's TDS line replaced, the label alone",

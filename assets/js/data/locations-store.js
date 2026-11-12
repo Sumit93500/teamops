@@ -31,9 +31,10 @@ import { remove } from "../core/storage.js";
 import { getUser } from "./store.js";
 import { hasPermission } from "../config/roles.js";
 import { pureBox, distanceM, placeProblem, cleanPlace } from "./places.js";
-import { officeOf } from "./offices-store.js";
+import { officeOf, resetOffices } from "./offices-store.js";
 import { checkIn, checkOut, checkInRefusal, checkOutRefusal } from "./attendance-store.js";
-import { deviceToken, deviceLabel, peekDevice, useDevice, sharedWith } from "./devices-store.js";
+import { deviceToken, deviceLabel, peekDevice, useDevice, sharedWith, resetAllDevices } from "./devices-store.js";
+import { resetCompanyProfile } from "./company-store.js";
 
 export const HOME_KINDS = ["permanent", "temporary"];
 export const HOME_RADIUS_M = 150;
@@ -95,7 +96,7 @@ export function setOwnHome(actorUserId, kind, place) {
   if (!HOME_KINDS.includes(kind)) return fail("Choose your permanent or temporary home.", "kind");
   const box = homes.read();
   const person = box.people[actor.id] ?? blank();
-  if (!person.homeEligible) return fail("You can't check in from home: HR hasn't turned it on for you.");
+  if (!person.homeEligible || !hasPermission(actor, "locations:set-own")) return fail("You can't check in from home: HR hasn't turned it on for you.");
   if (person[kind]) return fail(`Your ${kind} home is already set. To change it, send a location change request.`, "kind");
   const problem = placeProblem(place);
   if (problem) return fail(problem, "place");
@@ -123,7 +124,7 @@ export function requestLocationChange(actorUserId, kind, place, reason) {
   if (!actor) return fail("Sign in to ask for a location change.");
   if (!HOME_KINDS.includes(kind)) return fail("Choose your permanent or temporary home.", "kind");
   const person = homes.read().people[actor.id] ?? blank();
-  if (!person.homeEligible) return fail("You can't check in from home: HR hasn't turned it on for you.");
+  if (!person.homeEligible || !hasPermission(actor, "locations:set-own")) return fail("You can't check in from home: HR hasn't turned it on for you.");
   if (!person[kind]) return fail(`Your ${kind} home isn't set yet. Set it first; that needs no approval.`, "kind");
   const problem = placeProblem(place);
   if (problem) return fail(problem, "place");
@@ -259,4 +260,14 @@ export function checkOutAt(userId, reading, token = deviceToken()) {
 export function resetLocations() {
   remove("home-locations");
   remove("location-changes");
+}
+
+// L0: the users page's Reset demo data clears every round-14 store back to its seed: the company profile, offices (and
+// who works where), home places and their change requests, and registered devices. This browser's own device token
+// stays (it isn't demo data: a fresh token would only look like a new device).
+export function resetLocationData() {
+  resetCompanyProfile();
+  resetOffices();
+  resetLocations();
+  resetAllDevices();
 }

@@ -23,6 +23,7 @@ const GROUPS = [
   ["Requests & approvals", { approvals: "Approvals", requests: "Requests", workflows: "Approval workflows", delegation: "Delegation" }],
   ["Finance", { payroll: "Payroll", payslips: "Everyone's payslips", payslip: "Own payslip", salary: "Salaries", expenses: "Expenses", tax: "Tax" }],
   ["Operations", { inventory: "Inventory", assets: "Assets", vendors: "Vendors" }],
+  ["Offices & locations", { offices: "Offices", company: "Company profile", locations: "Home locations", devices: "Devices" }],   // L0
   ["System", { reports: "Reports", audit: "Audit log", settings: "Settings", backup: "Backup" }],
   ["Your own account", { profile: "Profile", password: "Password", sessions: "Sessions", notifications: "Notifications" }],
 ];

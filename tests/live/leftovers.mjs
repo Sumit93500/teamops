@@ -151,7 +151,8 @@ check("B9", "routes.js: payslips.html still needs no single permission; its comm
 section("C. (role change) Finance no longer holds pii:view");
 check("C1", "roles.js: Finance doesn't hold pii:view; HR and Admin still do; Employee never did",
   !ROLES.fin.permissions.includes("pii:view") && ROLES.hr.permissions.includes("pii:view") && ROLES.admin.permissions.includes("pii:view") && !ROLES.emp.permissions.includes("pii:view"));
-const without = (list, p) => list.filter((x) => x !== p);
+const without = (list, p) => list.filter((x) => x !== p && !L0_PERMS.includes(x));   // L0 (behaviour): the seven moved into PERMISSIONS are compared without
+const L0_PERMS = ["offices:view", "offices:manage", "company:edit", "locations:set-own", "locations:review", "devices:view-own", "devices:reset"];   // L0: the seven moved into PERMISSIONS
 check("C2", "the only change to any role: Finance's list is the old one minus pii:view, in order; HR, Admin, Employee identical",
   // Round Manager scoping part 1 (layout; Finance also holds dashboard:finance, financeperm.mjs P2: compared without it)
   j(without(ROLES.fin.permissions, "dashboard:finance")) === j(without(PRE.ROLES.fin.permissions, "pii:view")) && PRE.ROLES.fin.permissions.includes("pii:view")
@@ -162,11 +163,11 @@ const permMeta = () => txt(d.querySelector(".matrix")?.closest(".card")?.querySe
 await open("access/role-editor.html", "aarav", "?role=fin");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 36 of 78: dashboard:finance, the 79th, held by Finance)
-check("C3", "role editor, Finance: pii:view not ticked; '37 of 79'", !ticked().includes("pii:view") && permMeta() === "37 of 79", permMeta());
+check("C3", "role editor, Finance: pii:view not ticked; '40 of 86' (L0: was 37 of 79)", !ticked().includes("pii:view") && permMeta() === "40 of 86", permMeta());
 await open("access/role-editor.html", "aarav", "?role=hr");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 45 of 78: dashboard:finance is a 79th permission)
-check("C4", "role editor, HR: pii:view still ticked; '45 of 79'", ticked().includes("pii:view") && permMeta() === "45 of 79", permMeta());
+check("C4", "role editor, HR: pii:view still ticked; '48 of 86' (L0: was 45 of 79)", ticked().includes("pii:view") && permMeta() === "48 of 86", permMeta());
 const dd = (label) => [...d.querySelectorAll(".kv__row")].find((r) => txt(r.querySelector("dt")) === label)?.querySelector("dd");
 const reveal = () => ["Bank account", "PAN"].map((l) => dd(l)?.querySelector("button")?.hidden);
 await open("users/user-profile.html", "kabir", "?id=EMP-1105");

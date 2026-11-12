@@ -1,6 +1,6 @@
 # Offices, locations, devices and the company profile
 
-Built in round 14 (2026-11-12) as **data only**: stores, rules and tests, with no screens yet. The old site and the React app look and behave as before. A later page round adds the screens.
+Built in round 14 (2026-11-12) as **data only**: stores, rules and tests. The location page rounds (L0–L3) add the screens. L0 moved the seven permissions into the main list (see [rbac.md](rbac.md)), gave offices a state, and made "Reset demo data" clear these stores.
 
 **Files:** `assets/js/data/company-store.js`, `offices-store.js`, `locations-store.js`, `devices-store.js`, `places.js`; `config/permissions.js` and `config/roles.js` (the permissions, see [rbac.md](rbac.md)); `data/attendance-store.js` (the optional check-in stamp, see [attendance.md](attendance.md)).
 
@@ -24,7 +24,8 @@ The React app's shared name `COMPANY.name` (`app/src/data/company.js`) now reads
 
 ## Offices (`offices-store.js`)
 
-- **An office:** `{ id, name, type: head | branch, address, lat, lng, radiusM, active, sample, note }`.
+- **An office:** `{ id, name, type: head | branch, address, state, lat, lng, radiusM, active, sample, note }`.
+- **State (L0):** one of `OFFICE_STATES` (28 states and 8 union territories), required when an office is created. The seeded head office is in Haryana. An office saved before L0 reads `state: null` ("Not set") until edited; editing its other fields doesn't require one.
 - **The seed:** one head office at the company's address. Its coordinates are a sample, marked `sample: true` with "Sample coordinates: set the real location." Setting real coordinates clears the mark. There is no branch.
 - **Rules:**
   - names are unique, ignoring case and spaces;
@@ -99,7 +100,7 @@ Each store writes its key on its first change. Reading never writes, so a page t
 | `officeos:devices` | registered devices |
 | `officeos:device-token` | this browser's token |
 
-The users page's "Reset demo data" doesn't clear these yet (its reset is unchanged). `resetCompanyProfile`, `resetOffices`, `resetLocations` and `resetAllDevices` exist for the page round.
+The users page's "Reset demo data" clears all of these back to the seed (L0): `resetLocationData()` calls `resetCompanyProfile`, `resetOffices`, `resetLocations` and `resetAllDevices`. This browser's own device token stays; it isn't demo data.
 
 ## Tests
 

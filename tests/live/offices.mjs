@@ -5,7 +5,8 @@
 //   C  checks: name, duplicates, one head office, type, latitude / longitude ranges, radius 20-1000, address, unknown fields
 //   D  edit: duplicates, the head stays head, a moved office loses its sample mark
 //   E  deactivate / reactivate: never the head office; people on an inactive branch work from the head office
-//   F  assignments: Admin only; active offices only; back to the head office clears it
+//   F  assignments: Admin only; active offices only; back to the head office clears it; offices saved before L0 (no state)
+//   G  L0: Reset demo data clears every round-14 store (resetLocationData), and the users page calls it
 let NOW = 0;
 const RealDate = Date;
 globalThis.Date = class extends RealDate { constructor(...a) { super(...(a.length ? a : [NOW])); } static now() { return NOW; } };
@@ -21,7 +22,7 @@ const section = (t) => console.log(`\n--- ${t} ---`);
 const j = JSON.stringify;
 const AARAV = "EMP-1001", PRIYA = "EMP-1003", KABIR = "EMP-1008", SNEHA = "EMP-1029", ARJUN = "EMP-1105", ROHAN = "EMP-1042";
 const KEY = "officeos:offices";
-const BRANCH = { name: "Pune branch", address: "Hinjewadi Phase 1, Pune 411057", lat: 18.5913, lng: 73.7389 };
+const BRANCH = { name: "Pune branch", address: "Hinjewadi Phase 1, Pune 411057", state: "Maharashtra", lat: 18.5913, lng: 73.7389 };
 
 section("A. The seed");
 const all0 = O.getOffices();
@@ -30,6 +31,7 @@ check("A1", "one office, the head office, active, radius 150, at the company's a
 check("A2", "its coordinates are a sample, marked so: \"Sample coordinates: set the real location.\"", head.sample === true && head.note === "Sample coordinates: set the real location." && head.note === O.SAMPLE_NOTE && Number.isFinite(head.lat) && Number.isFinite(head.lng), j(head));
 check("A3", "everyone works from the head office (officeId defaults to it), unknown ids too", [AARAV, ARJUN, SNEHA, "EMP-9999"].every((id) => O.officeIdOf(id) === "OFF-1" && O.officeOf(id).id === "OFF-1"));
 check("A4", "reads wrote nothing to storage", !mem.has(KEY), j([...mem.keys()]));
+check("A6", "L0: the head office's state is Haryana; 36 states and union territories to choose from", head.state === "Haryana" && O.OFFICE_STATES.length === 36 && O.OFFICE_STATES.includes("Delhi") && O.OFFICE_STATES.includes("Ladakh"), j([head.state, O.OFFICE_STATES.length]));
 check("A5", "the radius limits", j(O.OFFICE_RADIUS) === j({ min: 20, max: 1000, default: 150 }) && j(O.OFFICE_TYPES) === j(["head", "branch"]));
 
 section("B. Create (Admin only)");
@@ -61,6 +63,9 @@ const bad = [
   ["C16", { ...BRANCH, name: "X11", address: "a".repeat(201) }, "The address can be at most 200 characters.", "address"],
   ["C17", { ...BRANCH, name: "X12", active: false }, "\"active\" can't be set on an office.", "active"],
   ["C18", { ...BRANCH, name: "X13", id: "OFF-99" }, "\"id\" can't be set on an office.", "id"],
+  ["C20", { ...BRANCH, name: "X14", state: undefined }, "Choose the office's state or union territory.", "state"],
+  ["C21", { ...BRANCH, name: "X15", state: "Bombay" }, "Choose the office's state or union territory.", "state"],
+  ["C22", { ...BRANCH, name: "X16", state: "haryana" }, "Choose the office's state or union territory.", "state"],
 ];
 for (const [n, f, error, field] of bad) {
   const r = O.createOffice(AARAV, f);
@@ -97,6 +102,8 @@ const re = O.reactivateOffice(AARAV, "OFF-2");
 check("E8", "reactivated: Arjun is back on Pune", re.ok && re.record.active && O.officeIdOf(ARJUN) === "OFF-2");
 check("E9", "reactivating an active office is refused", O.reactivateOffice(AARAV, "OFF-2").error === "Pune branch is already active.");
 
+check("D11", "L0: the state can be changed to another valid one, not to one off the list", O.updateOffice(AARAV, "OFF-2", { state: "Karnataka" }).record?.state === "Karnataka" && O.updateOffice(AARAV, "OFF-2", { state: "" }).field === "state" && O.updateOffice(AARAV, "OFF-2", { state: "Maharashtra" }).ok);
+
 section("F. Assignments");
 check("F1", "HR can't move people", O.setEmployeeOffice(PRIYA, ROHAN, "OFF-2").error === "Only an Admin can change offices." && O.officeIdOf(ROHAN) === "OFF-1");
 check("F2", "an unknown employee", O.setEmployeeOffice(AARAV, "EMP-9999", "OFF-2").error === "No employee with id EMP-9999.");
@@ -107,10 +114,40 @@ const back = O.setEmployeeOffice(AARAV, ARJUN, "OFF-1");
 const box = JSON.parse(mem.get(KEY));
 check("F5", "moving back to the head office clears the assignment (it's the default)", back.ok && O.officeIdOf(ARJUN) === "OFF-1" && !(ARJUN in box.assignments), j(box.assignments));
 check("F6", "the users box is untouched: no officeId on any user record", !(mem.get("officeos:users") ?? "").includes("officeId"));
+{
+  // L0: an office saved before L0 has no state: it reads as null, an edit of another field is fine, and setting one works
+  const saved = JSON.parse(mem.get(KEY));
+  saved.records.forEach((o) => delete o.state);
+  mem.set(KEY, JSON.stringify(saved));
+  check("F9", "an office saved before L0 reads state null", O.headOffice().state === null && O.getOffices().every((o) => o.state === null) && O.getOffice("OFF-2").state === null);
+  check("F10", "editing its radius doesn't ask for a state; giving one sets it", O.updateOffice(AARAV, "OFF-1", { radiusM: 160 }).ok && O.updateOffice(AARAV, "OFF-1", { state: "Haryana" }).record.state === "Haryana");
+}
 mem.set(KEY, JSON.stringify({ version: 1, nextNum: 2, records: "broken", assignments: {} }));
 check("F7", "a broken saved copy reads as the seed", O.getOffices().length === 1 && O.headOffice().sample === true);
 O.resetOffices();
 check("F8", "reset: the key is gone", !mem.has(KEY) && O.getOffices().length === 1);
+
+section("G. Reset demo data (L0)");
+{
+  const L = await import("./js/data/locations-store.js");
+  const C = await import("./js/data/company-store.js");
+  const D = await import("./js/data/devices-store.js");
+  O.createOffice(AARAV, BRANCH);
+  C.updateCompanyProfile(AARAV, { mission: "Do good work." });
+  L.setHomeEligible(PRIYA, ARJUN, true);
+  L.setOwnHome(ARJUN, "permanent", { address: "12 MG Road", lat: 28.48, lng: 77.08 });
+  L.requestLocationChange(ARJUN, "permanent", { address: "7 DLF", lat: 28.49, lng: 77.09 }, "Moved");
+  D.useDevice(ARJUN, "a".repeat(32));
+  const token = D.deviceToken();
+  const keys = ["officeos:offices", "officeos:company-profile", "officeos:home-locations", "officeos:location-changes", "officeos:devices"];
+  check("G1", "the five round-14 keys are filled", keys.every((k) => mem.has(k)), j(keys.filter((k) => !mem.has(k))));
+  L.resetLocationData();
+  check("G2", "resetLocationData() clears them all back to the seed", keys.every((k) => !mem.has(k)) && O.getOffices().length === 1 && C.getCompanyProfile().mission === "" && !L.isHomeEligible(ARJUN) && L.allLocationChanges().length === 0 && D.devicesFor(ARJUN, ARJUN).records.length === 0);
+  check("G3", "this browser's own device token stays (it isn't demo data)", D.deviceToken() === token);
+  const fs = await import("fs");
+  const src = fs.readFileSync(new URL("./js/pages/users-list.js", import.meta.url), "utf8");
+  check("G4", "the users page's Reset demo data calls it, and its confirm names what it clears", /resetAssetRequestData\(\);\s*resetLocationData\(\);/.test(src) && src.includes("the company profile, offices, home locations and registered devices"));
+}
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
