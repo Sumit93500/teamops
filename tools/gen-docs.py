@@ -41,7 +41,7 @@ NAMED = {
     "requests": "approvals chain decision forward closing deferred delask delopen cardbell bellphone accesscard resetcard",
     "charts": "admdash hrdash findash dash boards chartdata emptyrange legend dots findsort",
     "guards": "cssguard jsguard pagefreeze noflash contrast phone shell rail",
-    "react": "smoke gallery parity att leave-react pay fin req access rest c13 design charts users locs",
+    "react": "smoke gallery parity att leave-react pay fin req access rest c13 design charts users locs att3",
 }
 AREA_OF = {s: a for a, names in NAMED.items() for s in names.split()}
 

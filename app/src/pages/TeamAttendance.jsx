@@ -3,6 +3,7 @@
 // counts, search by name, department, the Employee sort, 10 a page, the week's dots, Export (none for a manager's team, as
 // ruled), attendance by department, who needs attention with Message, and the Regularization link's pending count. Admin and
 // HR see everyone; a manager sees their direct reports (data/reporting.js teamScope).
+// L3: a Place column (where each check-in came from), a Flagged badge beside the status, and a Flagged filter.
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { can } from "../../../assets/js/core/rbac.js";
@@ -10,6 +11,8 @@ import { getAllUsers, getAllDepartments } from "../../../assets/js/data/store.js
 import { isValidDate } from "../../../assets/js/data/holidays.js";
 import { allRequests } from "../../../assets/js/data/leave-store.js";
 import { teamWeekFor, summaryFor, pendingRegularizations, recordsStart } from "../../../assets/js/data/attendance-store.js";
+import { stampsBy, stampKey } from "../data/stamps.js";
+import { placeNode, flagNode } from "../ui/attendance.jsx";
 import { teamScope } from "../../../assets/js/data/reporting.js";
 import { csvColumns, csvRows, initExports } from "../../../assets/js/ui/csv-export.js";
 import { el, weekdayName, todayIso, formatDay, initials, avatarClass, departmentName, shortDate, plural, personCell, showReason } from "../../../assets/js/ui/leave-view.js";
@@ -63,10 +66,13 @@ function row(r) {
   const badge = dayBadge(r.day);
   status.append(badge);
   showReason(badge, badge.title);
-  tr.append(personCell(r.day.userId, r.user, r.day.userId), el("td", "", departmentName(r.user?.department)), checkInCell(r.day), hoursCell(r.day), weekCell(r.week), status);
+  if (r.stamp?.flagged) status.append(" ", flagNode(r.stamp.reasons));
+  const place = el("td");
+  place.append(placeNode(r.stamp));
+  tr.append(personCell(r.day.userId, r.user, r.day.userId), el("td", "", departmentName(r.user?.department)), checkInCell(r.day), place, hoursCell(r.day), weekCell(r.week), status);
   return tr;
 }
-function emptyRow(text) { const td = el("td", "text-muted", text); td.colSpan = 6; const tr = el("tr"); tr.append(td); return tr; }
+function emptyRow(text) { const td = el("td", "text-muted", text); td.colSpan = 7; const tr = el("tr"); tr.append(td); return tr; }
 function attentionNote(day, pendingLeave) {
   if (day.regularization?.status === "pending" && day.regularization.issue === "missed-check-in") return "correction pending";
   if (pendingLeave.has(day.userId)) return "leave request pending";
@@ -105,6 +111,7 @@ export default function TeamAttendance() {
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
   const [dept, setDept] = useState("");
+  const [flag, setFlag] = useState("");
   const [ascending, setAscending] = useState(true);
   const [page, setPage] = useState(1);
   const phone = usePhone();   // "Sort by" before the sortable heading on a phone, as ui/phone.js (round 9b)
@@ -113,7 +120,8 @@ export default function TeamAttendance() {
 
   const d = useData(() => {
     const people = new Map(getAllUsers().map((u) => [u.id, u]));
-    const rows = teamWeekFor(date).filter(({ day }) => scope === null || scope.has(day.userId)).map(({ day, week }) => ({ day, week, user: people.get(day.userId) }));
+    const stamps = stampsBy();
+    const rows = teamWeekFor(date).filter(({ day }) => scope === null || scope.has(day.userId)).map(({ day, week }) => ({ day, week, user: people.get(day.userId), stamp: stamps.get(stampKey(day.userId, date)) ?? null }));
     return { rows, summary: summaryFor(date, scope), chart: departmentPresenceChart(date, rows, scope), departments: getAllDepartments(), regCount: canApprove ? pendingRegularizations(userId, role?.key).length : 0 };
   }, [date, scope, userId, role?.key, canApprove]);
 
@@ -121,7 +129,7 @@ export default function TeamAttendance() {
   const query = search.trim().toLowerCase();
   // a date with no data (round 9b, as rer): people, but nobody's day has a record; it lists nobody and one row says so
   const noData = d.rows.length > 0 && d.rows.every((r) => NO_RECORD.includes(r.day.status));
-  const narrowed = (noData ? [] : d.rows).filter((r) => (!dept || r.user?.department === dept) && (!query || (r.user?.name ?? "").toLowerCase().includes(query)));
+  const narrowed = (noData ? [] : d.rows).filter((r) => (!dept || r.user?.department === dept) && (!flag || r.stamp?.flagged) && (!query || (r.user?.name ?? "").toLowerCase().includes(query)));
   const byName = (a, b) => (a.user?.name ?? "").localeCompare(b.user?.name ?? "") || a.day.userId.localeCompare(b.day.userId);
   const shown = narrowed.filter((r) => TABS[tab](r.day)).sort((a, b) => (ascending ? byName(a, b) : byName(b, a)));
   const totalPages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
@@ -129,7 +137,7 @@ export default function TeamAttendance() {
   const pageRows = shown.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
   let empty = "Nobody matches these filters.";
   if (!d.rows.length) empty = "No active employees.";
-  else if (!search.trim() && !dept) empty = "Nobody in this group on this date.";
+  else if (!search.trim() && !dept && !flag) empty = "Nobody in this group on this date.";
   // the stats
   const s = d.summary;
   const absent = s.absent + s.overdue, waiting = s.notYet - s.overdue;
@@ -197,6 +205,10 @@ export default function TeamAttendance() {
                   <option value="">All departments</option>
                   {d.departments.map((x) => <option key={x.code} value={x.code}>{x.name}</option>)}
                 </select>
+                <select className="select select--sm" id="team-flag" aria-label="Filter by flag" value={flag} onChange={(e) => { setFlag(e.target.value); setPage(1); }}>
+                  <option value="">All check-ins</option>
+                  <option value="flagged">{`Flagged only (${d.rows.filter((r) => r.stamp?.flagged).length})`}</option>
+                </select>
               </div>
             </div>
             <div className="table-wrap">
@@ -204,10 +216,10 @@ export default function TeamAttendance() {
                 <thead>
                   <tr>
                     <th className="is-sortable" aria-sort={ascending ? "ascending" : "descending"}>{phone && <span className="table__sort-label" aria-hidden="true">Sort by</span>}<button className="sort-btn" id="team-sort" type="button" onClick={() => setAscending(!ascending)}>Employee <span aria-hidden="true">{ascending ? "▲" : "▼"}</span></button></th>
-                    <th>Department</th><th>Check-in</th><th className="table__num">Hours</th><th>This week</th><th>Status</th>
+                    <th>Department</th><th>Check-in</th><th>Place</th><th className="table__num">Hours</th><th>This week</th><th>Status</th>
                   </tr>
                 </thead>
-                <Nodes as="tbody" id="team-rows" build={() => (pageRows.length ? pageRows.map(row) : [emptyRow(noData ? NO_DATA : empty)])} deps={[d, tab, search, dept, ascending, current]} />
+                <Nodes as="tbody" id="team-rows" build={() => (pageRows.length ? pageRows.map(row) : [emptyRow(noData ? NO_DATA : empty)])} deps={[d, tab, search, dept, flag, ascending, current]} />
               </table>
             </div>
             <Pagination totalItems={shown.length} pageSize={PAGE_SIZE} currentPage={current} onPageChange={setPage} />

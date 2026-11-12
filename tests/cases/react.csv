@@ -33,15 +33,77 @@ react-access.P.role-editor?role=hr,react-access,admin on access/role-editor.html
 react-access.P.approval-workflows,react-access,admin on access/approval-workflows.html at 412: the same cards,x1
 react-access.P.delegation,react-access,admin on access/delegation.html at 412: the same cards,x1
 react-access.X1,react-access,shots written,x1
-react-att.M1,react-att,admin on attendance/mark-attendance.html: as it opens,x5 (5 roles)
-react-att.M2,react-att,"admin: Work from home, Check in, Check out: the same toasts and page after each",x3 (4 roles)
 react-att.S1,react-att,admin on attendance/shifts.html: as it opens,x2 (2 roles)
 react-att.S2,react-att,admin: a placeholder's toast,x2 (2 roles)
 react-att.S,react-att,fin on attendance/shifts.html: lands where the old site does,x3 (3 roles)
-react-att.P.mark-attendance,react-att,emp on attendance/mark-attendance.html at 412: the same cards,x1
-react-att.P.my-attendance,react-att,emp on attendance/my-attendance.html at 412: the same cards,x1
 react-att.P.shifts,react-att,admin on attendance/shifts.html at 412: the same cards,x1
 react-att.X1,react-att,shots written,x1
+react-att3.M1,react-att3,employee: not checked in yet; Check-In From lists only the head office (with its radius); Use my location; the line says to press it; a new device (0 of 2); Check in off; the privacy line,x1
+react-att3.M2,react-att3,nothing was read or written by opening the page (no device token made),x1
+react-att3.G1.Kolkata.inside,react-att3,"Asia/Kolkata, inside (40 m, accuracy 20 m): the line, the button on",x1
+react-att3.G1.Kolkata.edge,react-att3,"Asia/Kolkata, edge (150 m, accuracy 20 m): the line, the button on",x1
+react-att3.G1.Kolkata.just-out,react-att3,"Asia/Kolkata, just-out (151 m, accuracy 20 m): the line, the button off",x1
+react-att3.G1.Kolkata.far,react-att3,"Asia/Kolkata, far (5000 m, accuracy 20 m): the line, the button off",x1
+react-att3.G1.Kolkata.inaccurate,react-att3,"Asia/Kolkata, inaccurate (10 m, accuracy 180 m): the line, the button off",x1
+react-att3.G2.Kolkata.denied,react-att3,Asia/Kolkata: permission denied says how to allow it; button off,x1
+react-att3.G3.Kolkata.unsupported,react-att3,Asia/Kolkata: a browser without location says to use another; button off,x1
+react-att3.G4.Kolkata.checkin,react-att3,"Asia/Kolkata: checked in from inside at 09:20 local: the toast, ""Checked in at 09:20"", from Head office 40 m; the record has the place and distance; this browser registered; now Check out",x1
+react-att3.G1.UTC.inside,react-att3,"UTC, inside (40 m, accuracy 20 m): the line, the button on",x1
+react-att3.G1.UTC.edge,react-att3,"UTC, edge (150 m, accuracy 20 m): the line, the button on",x1
+react-att3.G1.UTC.just-out,react-att3,"UTC, just-out (151 m, accuracy 20 m): the line, the button off",x1
+react-att3.G1.UTC.far,react-att3,"UTC, far (5000 m, accuracy 20 m): the line, the button off",x1
+react-att3.G1.UTC.inaccurate,react-att3,"UTC, inaccurate (10 m, accuracy 180 m): the line, the button off",x1
+react-att3.G2.UTC.denied,react-att3,UTC: permission denied says how to allow it; button off,x1
+react-att3.G3.UTC.unsupported,react-att3,UTC: a browser without location says to use another; button off,x1
+react-att3.G4.UTC.checkin,react-att3,"UTC: checked in from inside at 09:20 local: the toast, ""Checked in at 09:20"", from Head office 40 m; the record has the place and distance; this browser registered; now Check out",x1
+react-att3.G1.Los_Angeles.inside,react-att3,"America/Los_Angeles, inside (40 m, accuracy 20 m): the line, the button on",x1
+react-att3.G1.Los_Angeles.edge,react-att3,"America/Los_Angeles, edge (150 m, accuracy 20 m): the line, the button on",x1
+react-att3.G1.Los_Angeles.just-out,react-att3,"America/Los_Angeles, just-out (151 m, accuracy 20 m): the line, the button off",x1
+react-att3.G1.Los_Angeles.far,react-att3,"America/Los_Angeles, far (5000 m, accuracy 20 m): the line, the button off",x1
+react-att3.G1.Los_Angeles.inaccurate,react-att3,"America/Los_Angeles, inaccurate (10 m, accuracy 180 m): the line, the button off",x1
+react-att3.G2.Los_Angeles.denied,react-att3,America/Los_Angeles: permission denied says how to allow it; button off,x1
+react-att3.G3.Los_Angeles.unsupported,react-att3,America/Los_Angeles: a browser without location says to use another; button off,x1
+react-att3.G4.Los_Angeles.checkin,react-att3,"America/Los_Angeles: checked in from inside at 09:20 local: the toast, ""Checked in at 09:20"", from Head office 40 m; the record has the place and distance; this browser registered; now Check out",x1
+react-att3.D1,react-att3,the limit reached: the device line says so and whom to ask; Check in stays off though the place is fine,x1
+react-att3.D2,react-att3,"a registered device: ""Registered device. This browser is one of your devices.""",x1
+react-att3.D3,react-att3,"a device registered to someone else: the line warns; the check-in goes through, flagged ""shared-device"" (toast says so)",x1
+react-att3.P1,react-att3,"home-eligible, no home set: only the office is listed",x1
+react-att3.P2,react-att3,home set: the office and your permanent home,x1
+react-att3.P3,react-att3,"from home: ""30 m from your permanent home""; checked in as work from home, the place stamped",x1
+react-att3.P4,react-att3,"a branch employee: only the Pune branch is listed; at the head office they're far outside it, Check in off",x1
+react-att3.P5,react-att3,"at the branch: inside its 200 m radius, Check in on",x1
+react-att3.T1,react-att3,"same place: no flagged notice, Check out on",x1
+react-att3.T2,react-att3,"checked out: ""Checked out."", not flagged, the check-out place stamped",x1
+react-att3.T3,react-att3,from home after an office check-in: the flagged notice before confirming,x1
+react-att3.T4,react-att3,"Check out asks first (the places, flagged for HR); No leaves it checked in",x1
+react-att3.T5,react-att3,"Yes: checked out, flagged ""place-changed""; the toast says why",x1
+react-att3.H0,react-att3,the flagged day from T is there to read,x1
+react-att3.H1,react-att3,"My attendance: a Place column after Check-in; today's row: Head office 40 m, out at your permanent home; Flagged beside the status",x1
+react-att3.H2,react-att3,My attendance: Flagged only narrows the log to the flagged day,x1
+react-att3.H3,react-att3,hr: Team attendance has a Place column; Arjun's row shows Head office and Flagged,x3 (3 roles)
+react-att3.H4,react-att3,hr: the Flagged filter leaves Arjun only,x3 (3 roles)
+react-att3.H8,react-att3,"My attendance at 412: the card shows Date, Check-in and Place up front, the status, Check-out and Hours in Details",x1
+react-att3.H5,react-att3,someone without reports or attendance:view-all can't open Team attendance (the manager rule),x1
+react-att3.H6,react-att3,HR dashboard: Flagged check-ins lists Arjun's day with both places and why,x1
+react-att3.H7,react-att3,HR dashboard with nothing flagged: the empty words,x1
+react-att3.K1,react-att3,"Check-In From, then Use my location; after a reading, Tab reaches Check in and Enter checks in",x1
+react-att3.W.mark.1280.light,react-att3,"attendance/mark-attendance.html at 1280, light: no sideways scroll",x1
+react-att3.W.mark.1280.dark,react-att3,"attendance/mark-attendance.html at 1280, dark: no sideways scroll",x1
+react-att3.W.mark.412.light,react-att3,"attendance/mark-attendance.html at 412, light: no sideways scroll",x1
+react-att3.W.mark.412.dark,react-att3,"attendance/mark-attendance.html at 412, dark: no sideways scroll",x1
+react-att3.W.my.1280.light,react-att3,"attendance/my-attendance.html at 1280, light: no sideways scroll",x1
+react-att3.W.my.1280.dark,react-att3,"attendance/my-attendance.html at 1280, dark: no sideways scroll",x1
+react-att3.W.my.412.light,react-att3,"attendance/my-attendance.html at 412, light: no sideways scroll",x1
+react-att3.W.my.412.dark,react-att3,"attendance/my-attendance.html at 412, dark: no sideways scroll",x1
+react-att3.W.team.1280.light,react-att3,"attendance/team-attendance.html at 1280, light: no sideways scroll",x1
+react-att3.W.team.1280.dark,react-att3,"attendance/team-attendance.html at 1280, dark: no sideways scroll",x1
+react-att3.W.team.412.light,react-att3,"attendance/team-attendance.html at 412, light: no sideways scroll",x1
+react-att3.W.team.412.dark,react-att3,"attendance/team-attendance.html at 412, dark: no sideways scroll",x1
+react-att3.W.1280.light,react-att3,"dashboard/hr.html at 1280, light: no sideways scroll",x1
+react-att3.W.1280.dark,react-att3,"dashboard/hr.html at 1280, dark: no sideways scroll",x1
+react-att3.W.412.light,react-att3,"dashboard/hr.html at 412, light: no sideways scroll",x1
+react-att3.W.412.dark,react-att3,"dashboard/hr.html at 412, dark: no sideways scroll",x1
+react-att3.E,react-att3,no page or console errors,x1
 react-charts.L.1280.light,react-charts,"every chart and the map drawn, named, read out, tabled; no sideways scroll",x1
 react-charts.L.1280.dark,react-charts,"every chart and the map drawn, named, read out, tabled; no sideways scroll",x1
 react-charts.D.1280,react-charts,dark: series 1 is the dark token (#6ea8ff),x1

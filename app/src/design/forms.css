@@ -76,3 +76,10 @@ a.ds-person__name:hover { text-decoration: underline; }
 .ds-privacy { margin: 0; font-size: var(--ds-text-xs); color: var(--ds-text-3); }
 /* L2: My locations, two home cards side by side (one column on a phone) */
 .ds-cards--wide { grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
+/* L3: check-in with a place. The big button, the place cell (icon, name, distance; the check-out's place when it differs). */
+.ds-btn--lg { min-height: 48px; padding: 0 28px; font-size: var(--ds-text-md); font-weight: var(--ds-weight-semibold); }
+.punch .punch__actions .ds-btn--lg { min-width: min(100%, 220px); }
+.ds-place { display: inline-flex; align-items: flex-start; gap: 6px; }
+.ds-place > .icon { flex: none; width: 16px; height: 16px; margin-top: 2px; color: var(--ds-text-2); }
+.ds-place__sub { display: block; font-size: var(--ds-text-xs); color: var(--ds-text-2); }
+.ds-status { overflow-wrap: anywhere; }

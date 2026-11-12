@@ -2,6 +2,8 @@
 // and the three before it): the stats, the calendar, the month summary, the late-mark alert and the daily log (10 a page) with
 // Request fix and Cancel; the "Request regularization" modal sends a correction through the store (its errors under their
 // fields). Cancel asks in the in-app dialog (round 4) instead of window.confirm; the words are the old ones.
+// L3: the daily log has a Place column (where each check-in came from: icon, name, distance; the check-out's place when it
+// differs), a Flagged badge beside the status, and "Flagged only" to narrow the log to flagged days.
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getUser } from "../../../assets/js/data/store.js";
@@ -23,6 +25,8 @@ import { NoData, NO_DATA } from "../components/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
+import { stampsBy, stampKey } from "../data/stamps.js";
+import { placeNode, flagNode } from "../ui/attendance.jsx";
 
 const PAGE = "attendance/my-attendance.html";
 const PAGE_SIZE = 10, MONTHS_BACK = 3;
@@ -67,13 +71,14 @@ function fixableIssue(day, today) {
   return "";
 }
 // my-attendance.js logRow; its buttons call the page's current handlers (on.current)
-function logRow(day, today, on, canFix) {
+function logRow(day, today, on, canFix, stamp) {
   const tr = el("tr");
   tr.dataset.date = day.date;
   const status = el("td");
   const badge = dayBadge(day);
   status.append(badge);
   showReason(badge, badge.title);
+  if (stamp?.flagged) status.append(" ", flagNode(stamp.reasons));
   const actions = el("td", "table__actions");
   const pending = day.regularization?.status === "pending" ? day.regularization : null;
   const issue = fixableIssue(day, today);
@@ -91,7 +96,9 @@ function logRow(day, today, on, canFix) {
     fix.addEventListener("click", () => on.current.open(day.date, issue));
     actions.append(fix);
   }
-  tr.append(el("td", "", shortDate(day.date)), el("td", "", day.checkIn ? `${day.checkIn}${day.mode === "wfh" ? " (WFH)" : ""}` : "–"),
+  const place = el("td");
+  place.append(placeNode(stamp));
+  tr.append(el("td", "", shortDate(day.date)), el("td", "", day.checkIn ? `${day.checkIn}${day.mode === "wfh" ? " (WFH)" : ""}` : "–"), place,
     el("td", "", day.incomplete ? "Not recorded" : (day.checkOut ?? "–")), el("td", "table__num", day.minutesWorked === null ? "–" : hoursText(day.minutesWorked)), status, actions);
   return tr;
 }
@@ -111,7 +118,8 @@ export default function MyAttendance() {
   const [page, setPage] = useState(1);
   const [modal, setModal] = useState(null);   // the form while open
   const [error, setError] = useState(null);   // { field, message }
-  const d = useData(() => ({ summary: monthFor(userId, year, month), requests: regularizationsFor(userId), user: getUser(userId) }), [userId, year, month]);
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
+  const d = useData(() => ({ summary: monthFor(userId, year, month), requests: regularizationsFor(userId), user: getUser(userId), stamps: stampsBy() }), [userId, year, month]);
 
   const on = useRef({});
   on.current.cancel = async (id, date) => {
@@ -159,8 +167,11 @@ export default function MyAttendance() {
   const inMonth = d.requests.filter((r) => r.date.startsWith(`${year}-${pad(month)}-`)).sort((a, b) => b.appliedOn.localeCompare(a.appliedOn) || b.id.localeCompare(a.id, "en", { numeric: true }));
   const s3 = [String(inMonth.length), inMonth.length ? latestNote(inMonth[0]) : "None this month"];
   // a month with no logged day has no data (round 9b, as rer's renderStats): every stat "–" and the message
-  const logDays = summary.days.filter((x) => x.date <= today && !isOffOrEmpty(x)).reverse();
-  const noData = !logDays.length;
+  const allLogDays = summary.days.filter((x) => x.date <= today && !isOffOrEmpty(x)).reverse();
+  const stampOf = (x) => d.stamps.get(stampKey(userId, x.date)) ?? null;
+  const flaggedCount = allLogDays.filter((x) => stampOf(x)?.flagged).length;
+  const logDays = flaggedOnly ? allLogDays.filter((x) => stampOf(x)?.flagged) : allLogDays;
+  const noData = !allLogDays.length;
   const stats = [["Days present", ...s0], ["Late marks", ...s1], ["Average hours", ...s2], ["Correction requests", ...s3]]
     .map(([label, value, note]) => (noData ? [label, "–", NO_DATA] : [label, value, note]));
   // calendar
@@ -242,14 +253,15 @@ export default function MyAttendance() {
         <section className="card" id="daily-log">
           <div className="card__header">
             <h3 className="card__title">Daily log</h3>
-            <span className="card__meta">{`${monthName(month)}, ${plural(logDays.length, "working day", "working days")} so far`}</span>
+            <span className="card__meta">{`${monthName(month)}, ${plural(allLogDays.length, "working day", "working days")} so far`}</span>
+            <label className="ds-check" htmlFor="log-flagged"><input type="checkbox" id="log-flagged" checked={flaggedOnly} onChange={(e) => { setFlaggedOnly(e.target.checked); setPage(1); }} />{`Flagged only (${flaggedCount})`}</label>
           </div>
           <div className="table-wrap">
             <table className="table">
-              <thead><tr><th>Date</th><th>Check-in</th><th>Check-out</th><th className="table__num">Hours</th><th>Status</th><th className="table__actions">Actions</th></tr></thead>
-              <Nodes as="tbody" deps={[d, year, month, current, canFix]} build={() => {
-                if (pageDays.length) return pageDays.map((x) => logRow(x, today, on, canFix));
-                const td = el("td", "text-muted", NO_DATA); td.colSpan = 6;
+              <thead><tr><th>Date</th><th>Check-in</th><th>Place</th><th>Check-out</th><th className="table__num">Hours</th><th>Status</th><th className="table__actions">Actions</th></tr></thead>
+              <Nodes as="tbody" deps={[d, year, month, current, canFix, flaggedOnly]} build={() => {
+                if (pageDays.length) return pageDays.map((x) => logRow(x, today, on, canFix, stampOf(x)));
+                const td = el("td", "text-muted", flaggedOnly && allLogDays.length ? "No flagged days this month." : NO_DATA); td.colSpan = 7;
                 const tr = el("tr"); tr.append(td); return [tr];
               }} />
             </table>

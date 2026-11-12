@@ -3,6 +3,7 @@
 // "No data in this range." when none was sent, round 5's rule), what waits for your decision with working Approve / Reject
 // (components/Decision.jsx: the in-app question, the reject modal), the approval card from each title, recent decisions with
 // the page's static sample line, the recruitment sample card, and every leave request (search, status, the first 10, Export).
+// L3: Flagged check-ins, the last 7 days (with attendance:view-all): who, the day, where they checked in and out, and why.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import pageHtml from "../../../pages/dashboard/hr.html?raw";
@@ -26,6 +27,9 @@ import { useDecision, DecisionButtons, LEAVE_FLOW, CORRECTION_FLOW } from "../co
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
+import { stampsBy, flagText } from "../data/stamps.js";
+import { PlaceCell } from "../ui/attendance.jsx";
+import { dayNumber, isoFromDayNumber } from "../../../assets/js/data/holidays.js";
 
 csvColumns("hr-dashboard-leave-requests", { Days: { number: true } });   // Round Data export
 
@@ -80,9 +84,15 @@ function CardTitle({ kind, id, children }) {
 }
 const Icon = ({ d }) => <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg>;
 
+// Flagged check-ins from..to (ISO dates), newest first: [{ userId, date, stamp }].
+function flaggedSince(from, to) {
+  return [...stampsBy()].map(([key, stamp]) => { const [userId, date] = key.split("|"); return { userId, date, stamp }; })
+    .filter((x) => x.stamp.flagged && x.date >= from && x.date <= to).sort((a, b) => b.date.localeCompare(a.date) || nameOf(a.userId).localeCompare(nameOf(b.userId)));
+}
+
 export default function HrDashboard() {
   const { userId, role } = useSession();
-  const canExport = useCan("reports:export"), canPost = useCan("recruitment:create"), canLeave = useCan("leave:approve"), canCorrect = useCan("attendance:approve");
+  const canExport = useCan("reports:export"), canPost = useCan("recruitment:create"), canLeave = useCan("leave:approve"), canCorrect = useCan("attendance:approve"), canAll = useCan("attendance:view-all");
   const today = todayIso();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -94,8 +104,9 @@ export default function HrDashboard() {
     const dates = people.map((u) => joiningDate(u.dateOfJoining));
     const pendingLeave = pendingFor(userId, role?.key);
     return { summary: summaryFor(today), pendingLeave, waiting: [...pendingLeave, ...(canCorrect ? pendingRegularizations(userId, role?.key) : [])].sort(newestSent),
-      people, dates, month, chart: leaveRequestsChart(today, CHART_DAYS), all: allRequests(), decided: [...allRequests(), ...(canCorrect ? allRegularizations() : [])] };
-  }, [userId, role?.key, today, canCorrect]);
+      people, dates, month, chart: leaveRequestsChart(today, CHART_DAYS), all: allRequests(), decided: [...allRequests(), ...(canCorrect ? allRegularizations() : [])],
+      flagged: canAll ? flaggedSince(isoFromDayNumber(dayNumber(today) - 6), today) : [] };
+  }, [userId, role?.key, today, canCorrect, canAll]);
 
   // stats (hr-dashboard.js renderStats, renderJoiners)
   const joiners = d.dates.filter((date) => date?.startsWith(d.month));
@@ -206,6 +217,24 @@ export default function HrDashboard() {
           </section>
         </div>
 
+        {canAll && (
+          <section className="card" id="flagged-card">
+            <div className="card__header">
+              <h3 className="card__title">Flagged check-ins</h3>
+              <span className="card__meta">Last 7 days</span>
+            </div>
+            <div className="table-wrap">
+              <table className="table">
+                <thead><tr><th>Employee</th><th>Date</th><th>Place</th><th>Why</th></tr></thead>
+                <tbody>
+                  {d.flagged.length ? d.flagged.map((x) => (
+                    <tr key={`${x.userId}-${x.date}`}><td>{nameOf(x.userId)}</td><td>{formatDay(x.date)}</td><td><PlaceCell stamp={x.stamp} /></td><td>{flagText(x.stamp.reasons)}</td></tr>
+                  )) : <tr><td className="text-muted" colSpan={4}>No flagged check-ins in the last 7 days.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
         <section className="card">
           <div className="table__toolbar">
             <h3 className="card__title">Leave requests</h3>

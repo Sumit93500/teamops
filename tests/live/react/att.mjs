@@ -3,7 +3,10 @@
 // the visible text (innerText), every control (buttons and links shown, their disabled state; inputs, radios, selects and their
 // values), each table's rows, and the toasts. A question before an action is window.confirm on the old page, the in-app dialog on
 // the new one (round 4); both are answered.
-//   M  mark attendance, as each role: as opened; Work from home picked, Check in; Check out
+//   M  mark attendance, as each role: as opened; Work from home picked, Check in; Check out. Retired in L3 (ruled): Mark attendance
+//      is redesigned with the place check (no work-mode radios, a location step), so it no longer matches the old page; att3.mjs
+//      checks it. run-tests runs att with SPX. P leaves out My attendance since L3 too: its new Place cell takes a key slot on
+//      the phone card, so Check-out moves to Details (att3.mjs H8 checks the new card).
 //   Y  my attendance, as each role: as opened; each earlier month; Request fix (filled in; time missing refused; sent); Cancel (Sneha's)
 //   S  shifts (a sample page), as each role: as opened; a placeholder's toast
 //   P  phone cards at 412 on every table of these pages
@@ -318,14 +321,16 @@ async function phoneCards(letter, list) {
     await o.t.waitForTimeout(700);
     const cards = (t) => t.evaluate(() => [...document.querySelectorAll("main table")].map((tb) => ({ cards: tb.hasAttribute("data-cards"),
       rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`)) })));
-    const [a, b] = [await cards(o.t), await cards(n.t)];
+    // L3 (ruled): the new Place cell (My attendance's daily log) is read past; the rest of the cards still match the old page.
+    const noPlace = (x) => x.map((tb) => ({ ...tb, rows: tb.rows.map((r) => r.filter((c) => !c.startsWith("Place|"))) }));
+    const [a, b] = [await cards(o.t), noPlace(await cards(n.t))];
     check(`${letter}.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page} at 412: the same cards`, j(a) === j(b), j(a) === j(b) ? `${a.length} tables, ${a.map((x) => x.rows.length).join("+")} rows` : `old ${j(a).slice(0, 400)} new ${j(b).slice(0, 400)}`);
     await o.ctx.close(); await n.ctx.close();
   }
 }
 if (ONLY.includes("P")) {
   console.log("\n--- P. Phone cards at 412 ---");
-  await phoneCards("P", (process.env.PHONE_PAGES ?? "emp:attendance/mark-attendance.html,emp:attendance/my-attendance.html,admin:attendance/shifts.html").split(",").map((s) => s.split(":")));
+  await phoneCards("P", (process.env.PHONE_PAGES ?? "admin:attendance/shifts.html").split(",").map((s) => s.split(":")));
 }
 
 if (ONLY.includes("X")) {

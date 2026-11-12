@@ -3,7 +3,8 @@
 Built in round 14 (2026-11-12) as **data only**: stores, rules and tests. The location page rounds (L0–L3) add the screens:
 L1 the Offices page (`/pages/company/offices.html`), Settings' Company profile, About's offices, and on the users pages the
 employee's office, home check-in switch, check-in places and devices; L2 and L3 the employee's own homes, devices and
-check-in (L2 built My locations, the location changes in the inbox and My devices). L0 moved the seven permissions into the main list (see [rbac.md](rbac.md)), gave offices a state, and made "Reset demo data" clear these stores.
+check-in (L2 built My locations, the location changes in the inbox and My devices; L3 Mark attendance with the place check and
+the place column on the attendance views, see [attendance.md](attendance.md)). L0 moved the seven permissions into the main list (see [rbac.md](rbac.md)), gave offices a state, and made "Reset demo data" clear these stores.
 
 **Files:** `assets/js/data/company-store.js`, `offices-store.js`, `locations-store.js`, `devices-store.js`, `places.js`; `config/permissions.js` and `config/roles.js` (the permissions, see [rbac.md](rbac.md)); `data/attendance-store.js` (the optional check-in stamp, see [attendance.md](attendance.md)).
 
@@ -131,5 +132,7 @@ The users page's "Reset demo data" clears all of these back to the seed (L0): `r
 - `places`: the place check;
 - `punch14`: check-in and check-out, flags, old data;
 - `perms14`: the permissions matrix for all four roles and a manager.
+
+The React harness `tests/live/react/att3.mjs` (L3) checks in and out with a mocked location: inside, at the radius, just outside, far, bad accuracy, denied, no location, in India, UTC and Los Angeles time; home not set, not home-eligible, a branch, a shared device, the device limit, a flagged check-out; and the place column, Flagged badge and filters on the views.
 
 The React harness `tests/live/react/locs.mjs` (L2) covers My locations, the location changes in the inbox, card, bell, counts and Admin dashboard, My devices, Offices in the sidebar, keyboard, and 412 / 1280 in both themes.

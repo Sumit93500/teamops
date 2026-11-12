@@ -29,7 +29,7 @@ Everyone sees their own attendance. HR and Admin see everyone's (`attendance:vie
 
 ## Where a check-in comes from (round 14, data only)
 
-`checkIn(userId, mode, stamp)` and `checkOut(userId, stamp)` take an optional stamp. Without it they write exactly what they wrote before; no page passes one yet. `checkInAt()` / `checkOutAt()` in `data/locations-store.js` make the stamp after two checks:
+`checkIn(userId, mode, stamp)` and `checkOut(userId, stamp)` take an optional stamp. Without it they write exactly what they wrote before. Since L3 the React Mark attendance always checks in and out through `checkInAt()` / `checkOutAt()` in `data/locations-store.js`, which make the stamp after two checks:
 
 1. **The place:** `checkPlace()` must say ok (the employee's office, or a home if they're allowed one).
 2. **The device:** at most 2 per employee.
@@ -42,7 +42,24 @@ The record then carries `checkInPlace`, `checkInDistanceM`, `checkInDeviceId` (a
 
 `checkInRefusal()` / `checkOutRefusal()` answer "would this be refused?" without writing. See [locations.md](locations.md).
 
+## Mark attendance with a place (L3, the React app)
+
+- **Check-In From:** only the places this person may check in from (`placesFor`): their office (head office or branch) and, when HR turned home check-in on, the homes they've set. A home means work from home; the office means office.
+- **Use my location:** the browser's position, read once when pressed. The line under it says the distance to the chosen place and its radius ("You're 40 m from Head office, inside its 150 m radius."). A reading less accurate than 100 m asks to try again; a denied permission and a browser without location say what to do.
+- **The device:** "Registered device", "New device" (checking in registers it, N of 2 used), or "Device limit reached" (ask an Admin). A device registered to someone else too checks in, flagged.
+- **The button:** one big Check in (or Check out), enabled only when the reading is inside the chosen place and the device is allowed. Every refusal the store gives is said in plain words.
+- **Check-out from another place:** a "Flagged" notice before pressing, and a question before it's done; the day is flagged `place-changed`.
+- Today's card shows where you checked in and out from, with the distance; the recent punches show the place.
+- The privacy line: "Your location is read only when you check in or out, never in the background."
+
+## Where check-ins came from, in the views (L3)
+
+- **My attendance:** a Place column (icon and name, the distance, the check-out's place when it differs), a Flagged badge beside the status, and "Flagged only".
+- **Team attendance:** the same column and badge, and a "Flagged only" filter. A manager still sees only their direct reports (`teamScope`).
+- **HR dashboard:** Flagged check-ins, the last 7 days (with `attendance:view-all`): who, the day, the places and why.
+- The stamps are read from the saved records (`app/src/data/stamps.js`); a day without one says "Not recorded".
+
 ## Not built yet
 
 - Shifts (the page is a sample).
-- Screens for offices, home locations and devices (a later page round).
+- The old site's Mark attendance has no place check (the React app does).
