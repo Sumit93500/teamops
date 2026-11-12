@@ -66,7 +66,7 @@ const brandState = (t) => t.evaluate(() => {
   const footer = document.querySelector(".app-footer"), main = document.querySelector("main");
   const name = (el) => el ? (el.getAttribute("aria-label") || el.innerText || el.textContent).trim() : null;
   const topText = [...document.querySelectorAll(".sidebar__brand, .topbar")].map((e) => e.innerText).join(" ");
-  const last = [...document.body.querySelectorAll("*")].filter((e) => vis(e) && e.innerText?.trim() && !e.closest("#root > div > .sidebar, .card-host, [id^='approval'], [id^='bell'], .toast-region")).at(-1);
+  const last = [...document.body.querySelectorAll("*")].filter((e) => vis(e) && e.innerText?.trim() && !e.closest("#root > div > .sidebar, .card-host, [id^='approval'], [id^='bell'], .toast-region, #recharts_measurement_span")).at(-1);   // D2b: Recharts measures label widths in a span at top -20000px
   return {
     brand: brand && { tag: brand.tagName, href: brand.getAttribute("href"), name: brand.textContent.trim(), title: brand.title, vis: vis(brand) },
     crumb: crumb && { href: crumb.getAttribute("href"), text: crumb.textContent, vis: vis(crumb) },

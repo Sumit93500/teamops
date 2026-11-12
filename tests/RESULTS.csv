@@ -37,3 +37,4 @@ React 16,2026-11-12,0cbd36f,437,0,437,round checks: access 79; smoke 330; galler
 React 23,2026-11-12,740c40e,518,0,518,round checks: rest 115; dash 45; smoke 330; gallery 28. Traced gate 0 of 151
 D1,2026-11-12,740c40e,17902,0,17902,docs round on top of 740c40e: tests/run 424 suite runs in 3 zones (17045) + 11 React harnesses (857)
 D2a,2026-11-12,d66d1a4,927,0,927,design foundation on top of d66d1a4: 12 React harnesses (smoke 336; gallery 52; shell 64; design 40; others unchanged). Traced gate 0 of 151
+D2b,2026-11-12,af88307,948,0,948,charts on top of af88307: 13 React harnesses (charts 21 new; gallery 52; dash 45; design 40; smoke 336). Traced gate 0 of 151; pixels vs D2a baseline 192 identical + 8 allowed

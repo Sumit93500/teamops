@@ -12,9 +12,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@svg-maps/india": "2.0.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "react-router-dom": "7.18.5"
+    "react-is": "19.3.1",
+    "react-router-dom": "7.18.5",
+    "recharts": "3.10.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "6.3.0",

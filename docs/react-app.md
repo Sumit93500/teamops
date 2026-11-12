@@ -17,7 +17,8 @@ app/src/shell/            Shell, Sidebar (rail + flyouts), Topbar (search, bell,
 app/src/components/       the round 4 components: Table, Basics (StatCard, Badge, PersonCell, Stepper, EmptyState,
                           NotBuilt, Tabs, Reason), Charts (ColumnChart, BarRows, NoData), Modal, Confirm, Decision;
                           D2a's: Layout (PageHeader, Card, HeroCard, KpiCard, Pill), Controls (FilterBar, DateRange,
-                          FilterSelect, FilterSearch, SelectField, Segmented, Toggle, IconButton, DownloadMenu), icons
+                          FilterSelect, FilterSearch, SelectField, Segmented, Toggle, IconButton, DownloadMenu), icons;
+                          D2b's charts/ (AreaChart, BarChart, DonutChart, IndiaMap; drawing in lazy chunks, see charts.md)
 app/src/pages/            one component per page
 app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (bell + card), perm.js, sample.js,
                           Nodes.jsx (the old-helper bridge, still used on the round 6-9 pages until round 23b)
@@ -36,7 +37,7 @@ app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (b
 
 - **Ported:** 46 of 55 pages.
 - **Left:** users (round 15) and inventory (rounds 21–22, after the data rounds 17–20).
-- **Bundle:** one 997 kB file (D2a). Route-level code splitting is planned for round 27.
+- **Bundle:** what loads first is one 1,013 kB file (D2b); the charts' drawing (Recharts, 418 kB) and the map (179 kB) load on first use. Route-level code splitting is planned for round 27.
 
 ## Checks
 
@@ -45,6 +46,7 @@ See [../tests/TEST-CATALOG.md](../tests/TEST-CATALOG.md).
 - **parity harnesses:** one per page group, old page against new route (text, controls, behaviour).
 - **gallery:** the components in both themes, with the design foundation's components and their keyboard use.
 - **design:** the company branding, About, the sign-in and error pages, and reduced motion.
+- **charts:** the D2b charts and map in the gallery (cases, keyboard, phone taps, zoom, table) and the Admin headcount chart.
 
 They live in `tests/live/react/` and run with `python tools/run-tests.py --react`, which needs Microsoft Edge.
 

@@ -164,7 +164,7 @@ for (const width of [1280, 412]) for (const theme of ["light", "dark"]) {
       hero: { title: q(".ds-hero__title")?.textContent, pills: qa(".ds-hero .ds-pill").map((p) => p.textContent), value: q(".ds-hero__value")?.textContent,
         band: q(".ds-hero__band-label")?.textContent, legend: qa(".ds-hero__legend li").map((l) => l.textContent), plot: q(".ds-hero__plot")?.getAttribute("aria-label"),
         hatch: getComputedStyle(q(".ds-hero__band")).backgroundImage.includes("repeating-linear-gradient"), dashed: q(".ds-hero__plot path:nth-of-type(2)")?.getAttribute("stroke-dasharray") },
-      filters: qa(".ds-filterbar label").map((l) => l.textContent), clear: [q(".ds-filterbar .ds-btn")?.textContent, q(".ds-filterbar .ds-btn")?.disabled],
+      filters: qa(".gallery__foundation .ds-filterbar label").map((l) => l.textContent), clear: [q(".ds-filterbar .ds-btn")?.textContent, q(".ds-filterbar .ds-btn")?.disabled],
       summary: q(".ds-date-range__summary")?.textContent, pills: qa(".gallery__foundation .gallery__row .ds-pill").map((p) => p.textContent),
       seg: [q(".ds-segmented")?.getAttribute("role"), qa(".ds-segmented__option").map((o) => `${o.textContent}:${o.getAttribute("aria-checked")}:${o.tabIndex}`)],
       toggle: [q(".ds-toggle")?.getAttribute("role"), q(".ds-toggle")?.getAttribute("aria-checked"), txt(q(".ds-toggle"))],

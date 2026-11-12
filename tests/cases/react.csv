@@ -42,6 +42,27 @@ react-att.P.mark-attendance,react-att,emp on attendance/mark-attendance.html at 
 react-att.P.my-attendance,react-att,emp on attendance/my-attendance.html at 412: the same cards,x1
 react-att.P.shifts,react-att,admin on attendance/shifts.html at 412: the same cards,x1
 react-att.X1,react-att,shots written,x1
+react-charts.L.1280.light,react-charts,"every chart and the map drawn, named, read out, tabled; no sideways scroll",x1
+react-charts.L.1280.dark,react-charts,"every chart and the map drawn, named, read out, tabled; no sideways scroll",x1
+react-charts.D.1280,react-charts,dark: series 1 is the dark token (#6ea8ff),x1
+react-charts.L.412.light,react-charts,"every chart and the map drawn, named, read out, tabled; no sideways scroll",x1
+react-charts.T.bar,react-charts,412: a tapped bar is read out,x1
+react-charts.T.donut,react-charts,412: a tapped donut part is read out,x1
+react-charts.T.map,react-charts,"412: a tapped state is read out, with its tooltip",x1
+react-charts.L.412.dark,react-charts,"every chart and the map drawn, named, read out, tabled; no sideways scroll",x1
+react-charts.D.412,react-charts,dark: series 1 is the dark token (#6ea8ff),x1
+react-charts.C1,react-charts,"empty: ""No data in this range."", no plot, no table",x1
+react-charts.C2,react-charts,"one point: one bar, read out",x1
+react-charts.C3,react-charts,many points: 365; Last 7 days: 7 (22 to 28 Sep); Clear All: 365 and off,x1
+react-charts.C4,react-charts,"long labels: cut with … on the axis, whole in the table, inside the card",x1
+react-charts.C5,react-charts,"negative values: a zero line, a negative tick, -3 in the table",x1
+react-charts.K,react-charts,"keyboard: one Tab stop; arrows, Home and End move the readout",x1
+react-charts.S,react-charts,Show as table shows the table and hides it again,x1
+react-charts.M.zoom,react-charts,"map: zoom in 1.5x, out, reset",x1
+react-charts.M.states,react-charts,"map: 36 named states, one Tab stop, hatched No data, credit; arrows move focus and readout",x1
+react-charts.P.1280,react-charts,Admin dashboard headcount: BarChart of the store's active headcount per department,x1
+react-charts.P.412,react-charts,Admin dashboard headcount: BarChart of the store's active headcount per department,x1
+react-charts.E,react-charts,no page or console errors,x1
 react-dash.A1,react-dash,admin: the page as it opens,x2 (2 roles)
 react-dash.A2,react-dash,"admin: search, department, Next",x2 (2 roles)
 react-dash.A3,react-dash,"Export: the same two files, byte for byte",x1

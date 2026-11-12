@@ -18,6 +18,7 @@ Imported after `assets/css/style.css`. Where a name overlaps (`--color-*`, `--ra
 | shadow | `--ds-shadow-1` (cards), `-2` (hero), `--ds-shadow-float` (menus) |
 | motion | `--ds-fast` 120 ms, `--ds-normal` 200 ms. With `prefers-reduced-motion` both are 0 and every transition finishes at once |
 | focus | a 2 px ring in the role colour (`--ds-focus-color`), with a 2 px gap |
+| charts (D2b) | `--ds-chart-1` to `-6` (series; each 3:1 or more on every surface), `--ds-chart-ink` (pattern marks), `--ds-chart-grid`, `--ds-seq-1` to `-5` (the map's steps, light to dark), `--ds-map-none`, `--ds-map-edge` (3:1). See [charts.md](charts.md) |
 
 **Contrast:** every text pair is at least 4.5:1, and every field edge, focus ring, knob and chart line at least 3:1 (WCAG AA). That holds in both themes, for every role and accent. It is measured in Edge on the built app by `Target/tools/react/contrast.mjs`; D2a's table is in `Target/shots-D2a/contrast.md`.
 
@@ -34,6 +35,7 @@ Imported after `assets/css/style.css`. Where a name overlaps (`--color-*`, `--ra
 | SelectField | Controls.jsx | a labelled select with an icon, a helper line and a status line (a dot and words) |
 | Segmented, Toggle | Controls.jsx | a radio group (one Tab stop, arrow keys) and a switch that says On / Off |
 | IconButton, DownloadMenu | Controls.jsx | icon-only, named by `aria-label`. The menu opens on its first item; arrows move, Esc closes |
+| AreaChart, BarChart, DonutChart, IndiaMap | charts/Charts.jsx | D2b's charts; the drawing loads on first use. See [charts.md](charts.md) |
 
 The old Tabs, Badge, Table, Modal, Toast and EmptyState keep their behaviour and take the tokens. Tabs gain the arrow, Home and End keys.
 

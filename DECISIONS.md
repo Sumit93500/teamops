@@ -50,3 +50,8 @@ One line per decision: date, round, decision, why. Newest last. Every round appe
 | 2026-11-12 | D2a | The company's name, a link to About, replaces "OfficeOS" at the top (shell, sign-in brand panel) | white-label shell; "Powered by OfficeOS" ends every page |
 | 2026-11-12 | D2a | From D2 on, pixel parity with the old site isn't required; text, behaviour and role access are | the design is new; the pixel reference is xbase's D2a baseline |
 | 2026-11-12 | D2a | No bottom nav added on phones (the brief said "stays"; there was none) | a new navigation pattern needs its own ruling |
+| 2026-11-12 | D2b | Charts on Recharts 3.10.1 (MIT), the map on @svg-maps/india 2.0.0 (CC BY 4.0, credited under the map); both load lazily in their own chunks | the first screen grows 15.8 kB, not 600 kB |
+| 2026-11-12 | D2b | The lazy chunks import no app module but patterns.jsx (formatters come as props, the map draws its own buttons) | an import made the bundler split ds.css into a chunk loaded before the old css; D2a's pixel baseline caught it |
+| 2026-11-12 | D2b | Every chart: readout line, data table ("Show as table"), patterns or dashes per series, no animation | meaning never by colour alone; calm; reduced motion for free |
+| 2026-11-12 | D2b | Only the Admin dashboard's headcount moved to the new BarChart; the rest wait for the restyle sweep | one proof, parity on text (department and count pairs) |
+| 2026-11-12 | D2b | IndiaMap is gallery-only: no employee or office has a state yet | no invented data; the need is in the parking lot |

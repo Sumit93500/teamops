@@ -60,6 +60,15 @@
   --ds-shadow-2: 0 2px 6px rgb(15 23 42 / 0.06), 0 8px 24px rgb(15 23 42 / 0.07);
   --ds-shadow-float: 0 10px 30px rgb(15 23 42 / 0.14);
 
+  /* ---------- Charts (D2b): six series colours, each 3:1 or more on every surface; a pattern per series as well, so colour is
+     never the only cue. The map's five steps run light to dark (states are outlined at 3:1; values are in words too) ---------- */
+  --ds-chart-1: #2563eb;  --ds-chart-2: #b25e00;  --ds-chart-3: #0b7a5c;
+  --ds-chart-4: #7c3aed;  --ds-chart-5: #c8382a;  --ds-chart-6: #0e7490;
+  --ds-chart-ink: rgb(255 255 255 / 0.7);  /* a pattern's marks over a series colour */
+  --ds-chart-grid: #e2e7ef;
+  --ds-seq-1: #dbe8fb;  --ds-seq-2: #a9c7f5;  --ds-seq-3: #6fa1ec;  --ds-seq-4: #3a78d8;  --ds-seq-5: #1d4fa8;
+  --ds-map-none: #eef1f5;  --ds-map-edge: #7d8794;
+
   /* ---------- Motion ---------- */
   --ds-fast: 120ms;  --ds-normal: 200ms;  --ds-ease: cubic-bezier(0.2, 0, 0, 1);
 
@@ -109,6 +118,13 @@
   --ds-hero-bg-solid: #121b2e;
   --ds-hero-bg-top: #1b263c;
   --ds-hero-line: rgb(255 255 255 / 0.12);
+
+  --ds-chart-1: #6ea8ff;  --ds-chart-2: #f5b25c;  --ds-chart-3: #4fd1a5;
+  --ds-chart-4: #b597ff;  --ds-chart-5: #ff8a75;  --ds-chart-6: #5cc8e6;
+  --ds-chart-ink: rgb(10 16 28 / 0.6);
+  --ds-chart-grid: #233047;
+  --ds-seq-1: #1c2d4a;  --ds-seq-2: #24477a;  --ds-seq-3: #2f66b0;  --ds-seq-4: #4f8ee0;  --ds-seq-5: #8ab8f5;
+  --ds-map-none: #182132;  --ds-map-edge: #6f7a8c;
 
   --ds-shadow-1: 0 1px 2px rgb(0 0 0 / 0.35);
   --ds-shadow-2: 0 2px 8px rgb(0 0 0 / 0.4), 0 10px 28px rgb(0 0 0 / 0.35);

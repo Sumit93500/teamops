@@ -16,6 +16,8 @@ import { PageHeader, Card as DsCard, HeroCard, KpiCard, Pill } from "../componen
 import { FilterBar, DateRange, FilterSelect, FilterSearch, SelectField, Segmented, Toggle, IconButton, DownloadMenu, rangeWords } from "../components/Controls.jsx";
 import { ICON as DSICON } from "../components/icons.jsx";
 import { tabTitle } from "../data/company.js";
+import { AreaChart, BarChart, DonutChart, IndiaMap } from "../components/charts/Charts.jsx";
+import { addDays } from "../../../assets/js/data/holidays.js";
 
 const DAYS = [52, 91, 93, 0, 92, 94, 90, 53, 48, 89, 95, 70, 88, 93].map((h, i) => ({
   date: `2026-09-${String(14 + i).padStart(2, "0")}`, height: h,
@@ -88,6 +90,56 @@ function Foundation() {
   );
 }
 
+// D2b: the charts and the map, with sample data in the chart-data contract (nothing here is the store's), and the cases the chart
+// checks use: empty, one point, many points, long labels, negative values.
+const chartOf = (title, unit, labels, series, extra = {}) => ({ title, unit, labels, series: series.map(([name, values]) => ({ name, values })), empty: false, emptyReason: null, ...extra });
+function sampleCharts(today) {
+  const days = (n) => Array.from({ length: n }, (_, i) => addDays(today, i - n + 1));
+  const d90 = days(90);
+  const wave = (i, a, b, c) => Math.round(a + b * Math.sin(i / 7) + c * Math.cos(i / 3.1));
+  const d365 = days(365);
+  const LONG = ["Engineering and Platform Reliability", "Finance", "Human Resources and People Operations", "Sales", "Customer Success and Support (India and APAC)", "Operations"];
+  return {
+    area: chartOf("Requests opened and closed (sample)", "requests", d90, [["Opened", d90.map((_, i) => wave(i, 42, 12, 5))], ["Closed", d90.map((_, i) => wave(i + 4, 36, 10, 4))]]),
+    donut: chartOf("Leave taken by type (sample)", "days", ["Casual", "Sick", "Earned", "Work from home", "Unpaid", "Comp off"], [["Days", [42, 26, 31, 18, 5, 2]]]),
+    grouped: chartOf("Check-ins, planned and actual (sample)", "check-ins", days(7), [["Planned", [176, 170, 166, 12, 194, 172, 169]], ["Actual", [103, 109, 103, 0, 104, 107, 105]]]),
+    stacked: chartOf("Requests by status, by month (sample)", "requests", ["Apr", "May", "Jun", "Jul", "Aug", "Sep"], [["Approved", [38, 42, 35, 47, 51, 44]], ["Pending", [6, 4, 9, 5, 7, 12]], ["Rejected", [3, 5, 2, 4, 3, 6]]]),
+    map: chartOf("Employees by state (sample)", "employees", ["Maharashtra", "Karnataka", "Haryana", "Delhi", "Tamil Nadu", "Telangana", "Uttar Pradesh", "Gujarat", "West Bengal", "Kerala", "Rajasthan", "Punjab"],
+      [["Employees", [42, 38, 31, 27, 22, 18, 15, 12, 9, 6, 4, 3]]]),
+    empty: chartOf("Attendance rate (sample, empty)", "%", days(7), [["Rate", days(7).map(() => null)]], { empty: true, emptyReason: "nobody-expected" }),
+    one: chartOf("Headcount, one department (sample)", "employees", ["Engineering"], [["Employees", [4]]]),
+    many: chartOf("Daily sign-ins over a year (sample)", "sign-ins", d365, [["Sign-ins", d365.map((_, i) => wave(i, 160, 40, 18))]]),
+    long: chartOf("Headcount by department, long names (sample)", "employees", LONG, [["Employees", [14, 3, 5, 9, 11, 4]]]),
+    negative: chartOf("Net change in headcount, by month (sample)", "employees", ["Apr", "May", "Jun", "Jul", "Aug", "Sep"], [["Change", [-3, 5, -1, 2, 0, 4]]]),
+  };
+}
+function ChartsGallery() {
+  const today = todayIso();
+  const c = sampleCharts(today);
+  return (
+    <section className="ds-stack gallery__charts-section" aria-labelledby="g-charts">
+      <PageHeader title="Charts and map" level={2} id="g-charts" subtitle="Sample data in the chart-data contract; the drawing loads on first use"
+        breadcrumb={[{ label: "Gallery", to: "/gallery" }, { label: "Charts and map" }]} />
+      <div className="gallery__charts">
+        <DsCard id="g-area" title={c.area.title} meta="AreaChart"><AreaChart id="g-area-chart" chart={c.area} dateFilter today={today} /></DsCard>
+        <DsCard id="g-donut" title={c.donut.title} meta="DonutChart"><DonutChart id="g-donut-chart" chart={c.donut} labelHeader="Leave type" /></DsCard>
+        <DsCard id="g-grouped" title={c.grouped.title} meta="BarChart, grouped"><BarChart id="g-grouped-chart" chart={c.grouped} labelHeader="Day" /></DsCard>
+        <DsCard id="g-stacked" title={c.stacked.title} meta="BarChart, stacked"><BarChart id="g-stacked-chart" chart={c.stacked} stacked labelHeader="Month" /></DsCard>
+      </div>
+      <DsCard id="g-map" title={c.map.title} meta="IndiaMap"><IndiaMap id="g-map-chart" chart={c.map} /></DsCard>
+      <h3 className="gallery__subhead">Chart cases</h3>
+      <div className="gallery__charts">
+        <DsCard id="g-empty" title={c.empty.title} meta="Empty"><AreaChart id="g-empty-chart" chart={c.empty} /></DsCard>
+        <DsCard id="g-one" title={c.one.title} meta="One point"><BarChart id="g-one-chart" chart={c.one} labelHeader="Department" /></DsCard>
+        <DsCard id="g-many" title={c.many.title} meta="Many points"><AreaChart id="g-many-chart" chart={c.many} dateFilter today={today} /></DsCard>
+        <DsCard id="g-negative" title={c.negative.title} meta="Negative values"><BarChart id="g-negative-chart" chart={c.negative} labelHeader="Month" /></DsCard>
+        <DsCard id="g-long" title={c.long.title} meta="Long labels, bars"><BarChart id="g-long-chart" chart={c.long} horizontal labelHeader="Department" /></DsCard>
+        <DsCard id="g-long-cols" title={c.long.title} meta="Long labels, columns"><BarChart id="g-long-cols-chart" chart={c.long} labelHeader="Department" /></DsCard>
+      </div>
+    </section>
+  );
+}
+
 function Content() {
   const showToast = useToast();
   const confirm = useConfirm();
@@ -149,6 +201,7 @@ function Content() {
           <EmptyState title="No leave requests yet" text="Requests you send show here." to="/pages/leave/apply-leave.html" linkText="Apply for leave" icon={ICON} />
         </Card>
         <Foundation />
+        <ChartsGallery />
       </div>
       <Modal open={modal} onClose={() => setModal(false)} title="Add department" desc="A department groups people for reports and approvals."
         footer={<><button className="btn" type="button" onClick={() => setModal(false)}>Cancel</button><button className="btn btn--primary" type="button" onClick={() => { setModal(false); showToast("Nothing was saved: this is the gallery.", "info"); }}>Save</button></>}>

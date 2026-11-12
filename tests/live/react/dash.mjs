@@ -64,9 +64,13 @@ const read = (t) => t.evaluate(() => {
     bars: chart ? [...chart.querySelectorAll(".chart__bar")].map((b) => [b.title, b.className.replace("chart__bar", "").trim().replace("chart__bar--", ""), b.style.getPropertyValue("--h")]) : null,
     labels: chart ? [...chart.querySelectorAll(".chart__label")].map(tx) : null,
     metas: [...m.querySelectorAll(".card__meta")].map(tx), notes: [...m.querySelectorAll(".card__body > p.text-xs")].map(tx),
-    cards: [...m.querySelectorAll(".list, .activity, #headcount-bars, #balance-card")].map((c) => [c.id || c.className, tx(c)]),
+    // D2b: the headcount card is the design system's BarChart on the new side; both sides are read as "<department> <count>"
+    // pairs (old: the bar rows; new: the chart's data table), so the text compares exactly and the drawing doesn't
+    cards: [...m.querySelectorAll(".list, .activity, #headcount-bars, #balance-card")].map((c) => [c.id || c.className, c.id !== "headcount-bars" ? tx(c)
+      : c.querySelector(".bar-row") ? [...c.querySelectorAll(".bar-row")].map((r) => `${tx(r.firstElementChild)} ${tx(r.querySelector(".bar-row__value"))}`).join(" ")
+      : [...c.querySelectorAll(".ds-chart__table tbody tr")].map((r) => [...r.cells].map(tx).join(" ")).join(" ")]),
     links: [...m.querySelectorAll(".card__header a, .list__item a")].map((a) => [tx(a), new URL(a.href).pathname]),
-    tables: [...m.querySelectorAll("table")].map((tb) => [[...tb.querySelectorAll("thead th")].map(tx), [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map(tx))]),
+    tables: [...m.querySelectorAll("table:not(.ds-chart__table)")].map((tb) => [[...tb.querySelectorAll("thead th")].map(tx), [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map(tx))]),
     footer: tx(m.querySelector(".card__footer .card__meta")),
     noData: [...m.querySelectorAll("[data-no-data]")].map(tx),
   };
@@ -235,13 +239,14 @@ if (ONLY.includes("M")) {
   for (const [who, page] of [["admin", "dashboard/admin.html"], ["emp", "dashboard/employee.html"], ["mgr", "dashboard/employee.html"], ["hr", "dashboard/hr.html"], ["fin", "dashboard/finance.html"]]) {
     const o = await open(O, who, page, { width: 412 }), n = await open(N, who, page, { width: 412 });
     await o.t.waitForTimeout(700);
-    const cards = (t) => t.evaluate(() => [...document.querySelectorAll("main table")].map((tb) => ({ cards: tb.hasAttribute("data-cards"), role: tb.getAttribute("role"),
+    // D2b: a chart's data table (.ds-chart__table) isn't one of the page's tables
+    const cards = (t) => t.evaluate(() => [...document.querySelectorAll("main table:not(.ds-chart__table)")].map((tb) => ({ cards: tb.hasAttribute("data-cards"), role: tb.getAttribute("role"),
       rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.getAttribute("role")}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`)) })));
     const [a, b] = [await cards(o.t), await cards(n.t)];
     let opened = "no Details";
     if (await o.t.$("main .table__more")) {
       for (const x of [o, n]) { await x.t.click("main tbody tr:first-child .table__more"); await x.t.waitForTimeout(150); }
-      const st = (t) => t.evaluate(() => { const r = document.querySelector("main tbody tr:first-child"); return [r.classList.contains("is-open"), r.querySelector(".table__more").getAttribute("aria-expanded")]; });
+      const st = (t) => t.evaluate(() => { const r = document.querySelector("main table:not(.ds-chart__table) tbody tr:first-child"); return [r.classList.contains("is-open"), r.querySelector(".table__more").getAttribute("aria-expanded")]; });
       opened = j([await st(o.t), await st(n.t)]);
     }
     check(`M.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page} at 412: the same cards`, j(a) === j(b) && a.every((x) => x.cards) && (opened === "no Details" || (() => { const [p, q] = JSON.parse(opened); return p[0] === true && j(p) === j(q); })()),

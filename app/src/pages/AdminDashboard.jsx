@@ -23,7 +23,6 @@ import { dayBadge, presentNote, checkInCell, hoursCell, correctionDetails } from
 import { STAGE_NAME as EXPENSE_STAGE, categoryLabel } from "../../../assets/js/ui/expense-view.js";
 import { STAGE_NAME as ASSET_STAGE, requestTitle as assetRequestTitle } from "../../../assets/js/ui/asset-request-view.js";
 import { assetTypeLabel, movementTypeLabel, officeDate } from "../../../assets/js/ui/inventory-view.js";
-import { barRow } from "../../../assets/js/ui/chart.js";
 import { attendanceRateChart, headcountChart, valuesOf } from "../../../assets/js/data/chart-data.js";
 import { rupees } from "../../../assets/js/ui/money.js";
 import { csvColumns, csvRows, csvStat, initExports } from "../../../assets/js/ui/csv-export.js";
@@ -35,6 +34,7 @@ import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
 import { ColumnChart } from "../components/Charts.jsx";
+import { BarChart } from "../components/charts/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
 
@@ -173,7 +173,6 @@ export default function AdminDashboard() {
   const rateLabel = rates.length
     ? `Attendance rate, ${formatRange(from, to)}: between ${Math.min(...rates)} and ${Math.max(...rates)} percent on working days`
     : `Attendance rate, ${formatRange(from, to)}: no finished working days`;
-  const counts = valuesOf(d.heads, "Employees"), top = Math.max(1, ...counts);
   const inactive = d.users - d.active;
   const todaySummary = d.range[d.range.length - 1];
   const stockNote = d.alerts && (d.alerts.length
@@ -243,7 +242,8 @@ export default function AdminDashboard() {
                 <h3 className="card__title">Headcount by department</h3>
                 <span className="card__meta" id="headcount-meta">{`${d.heads.total} total`}</span>
               </div>
-              <Nodes className="card__body" id="headcount-bars" build={() => d.heads.labels.map((name, i) => barRow(name, String(counts[i]), Math.round((counts[i] / top) * 100)))} deps={[d]} />
+              {/* D2b's proof chart: the same headcountChart() numbers, drawn by the design system's BarChart */}
+              <div className="card__body"><BarChart id="headcount-bars" chart={d.heads} horizontal labelHeader="Department" /></div>
             </section>
             <section className="card">
               <div className="card__header">

@@ -1,0 +1,62 @@
+/* The design system's charts (D2b): the frame around each plot, the legend, the readout, the table, the map. Tokens only. */
+.ds-chart { display: grid; gap: var(--ds-space-3); min-width: 0; }
+.ds-chart__plot { position: relative; min-width: 0; border-radius: var(--ds-radius-md); }
+.ds-chart__plot[tabindex]:focus-visible { outline: 2px solid var(--ds-focus-color); outline-offset: 4px; }
+.ds-chart__plot svg { overflow: visible; }
+.ds-chart__plot .recharts-surface:focus, .ds-chart__plot .recharts-wrapper:focus { outline: none; }
+.ds-chart__defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.ds-chart__loading { display: grid; place-items: center; min-height: 160px; color: var(--ds-text-2); font-size: var(--ds-text-sm); }
+
+.ds-chart__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-3); flex-wrap: wrap; }
+.ds-chart__readout { margin: 0; min-height: 1.5em; font-size: var(--ds-text-sm); color: var(--ds-text); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; flex: 1 1 200px; }
+.ds-chart__toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-pill);
+  background: var(--ds-surface-1); color: var(--ds-text-2); font: inherit; font-size: var(--ds-text-xs); font-weight: var(--ds-weight-medium); cursor: pointer;
+  transition: background var(--ds-fast) var(--ds-ease), color var(--ds-fast) var(--ds-ease); }
+.ds-chart__toggle:hover { background: var(--ds-surface-3); color: var(--ds-text); }
+.ds-chart__toggle[aria-pressed="true"] { background: var(--ds-primary-soft); color: var(--ds-primary); border-color: transparent; }
+.ds-chart__toggle .icon { width: 14px; height: 14px; }
+
+.ds-chart__legend { display: flex; flex-wrap: wrap; gap: var(--ds-space-2) var(--ds-space-4); margin: 0; padding: 0; list-style: none; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.ds-chart__legend li { display: inline-flex; align-items: center; gap: var(--ds-space-2); }
+.ds-chart__legend-num { color: var(--ds-text); font-weight: var(--ds-weight-medium); font-variant-numeric: tabular-nums; }
+.ds-chart__swatch { width: 16px; height: 12px; flex: none; }
+.ds-chart__band { width: 18px; height: 12px; border-radius: 3px; border: 1px solid var(--ds-map-edge); flex: none; }
+.ds-chart__band--none { background: repeating-linear-gradient(45deg, var(--ds-map-none) 0 3px, color-mix(in srgb, var(--ds-map-edge) 55%, var(--ds-map-none)) 3px 4px); }
+.ds-chart__credit { margin: 0; font-size: var(--ds-text-xs); color: var(--ds-text-3); }
+
+.ds-chart__table-wrap { overflow-x: auto; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); }
+.ds-chart__table { width: 100%; border-collapse: collapse; font-size: var(--ds-text-sm); font-variant-numeric: tabular-nums; }
+.ds-chart__table caption { padding: var(--ds-space-2) var(--ds-space-3); text-align: left; font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+.ds-chart__table th, .ds-chart__table td { padding: 6px var(--ds-space-3); border-top: 1px solid var(--ds-border); text-align: left; color: var(--ds-text); }
+.ds-chart__table thead th { background: var(--ds-surface-2); color: var(--ds-text-2); font-weight: var(--ds-weight-medium); }
+.ds-chart__table td { text-align: right; }
+.ds-chart__table tbody th { font-weight: var(--ds-weight); }
+
+.ds-chart__empty { display: flex; align-items: center; justify-content: center; gap: var(--ds-space-2); min-height: 140px; padding: var(--ds-space-4);
+  border: 1px dashed var(--ds-border-strong); border-radius: var(--ds-radius-md); color: var(--ds-text-2); font-size: var(--ds-text-sm); text-align: center; }
+.ds-chart__empty .icon { width: 18px; height: 18px; }
+
+/* the donut's total, in the ring's middle */
+.ds-chart__donut { position: relative; }
+.ds-chart__center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; }
+.ds-chart__center strong { font-size: var(--ds-text-xl); font-weight: var(--ds-weight-semibold); color: var(--ds-text); line-height: 1.1; }
+.ds-chart__center span { font-size: var(--ds-text-xs); color: var(--ds-text-2); }
+
+/* /gallery's chart section */
+.gallery__charts { display: grid; gap: var(--ds-space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+.gallery__subhead { margin: var(--ds-space-2) 0 0; font-size: var(--ds-text-lg); font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+
+/* the map */
+.ds-map { position: relative; max-width: 560px; margin: 0 auto; overflow: hidden; }
+.ds-map__tip--below { transform: translate(-50%, 8px); }
+.ds-map__svg { display: block; width: 100%; height: auto; max-height: 560px; touch-action: auto; user-select: none; }
+.ds-map--zoomed .ds-map__svg { touch-action: none; cursor: grab; }
+.ds-map__state { stroke: var(--ds-map-edge); stroke-width: 0.7; vector-effect: non-scaling-stroke; cursor: pointer; transition: opacity var(--ds-fast) var(--ds-ease); }
+.ds-map__state:hover { opacity: 0.85; }
+.ds-map__state.is-active { stroke: var(--ds-text); stroke-width: 2; }
+.ds-map__state:focus { outline: none; }
+.ds-map__state:focus-visible { stroke: var(--ds-focus-color); stroke-width: 3; }
+.ds-map__zoom { position: absolute; top: 6px; right: 6px; z-index: 1; display: grid; gap: 6px; }
+.ds-map__zoom .ds-icon-btn:disabled { opacity: 0.45; cursor: default; }
+.ds-map__tip { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - 8px)); padding: 4px 10px; border-radius: var(--ds-radius-sm);
+  background: var(--ds-text); color: var(--ds-surface-1); font-size: var(--ds-text-xs); font-weight: var(--ds-weight-medium); white-space: nowrap; pointer-events: none; box-shadow: var(--ds-shadow-float); }
