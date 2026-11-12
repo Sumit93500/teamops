@@ -23,6 +23,9 @@ import Holidays from "./pages/Holidays.jsx";
 import PayrollRun from "./pages/PayrollRun.jsx";
 import Payslips from "./pages/Payslips.jsx";
 import PayslipView from "./pages/PayslipView.jsx";
+import SalaryStructure from "./pages/SalaryStructure.jsx";
+import Expenses from "./pages/Expenses.jsx";
+import TaxDeductions from "./pages/TaxDeductions.jsx";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
@@ -44,6 +47,9 @@ const PORTED = {
   "payroll/payroll-run.html": PayrollRun,
   "payroll/payslips.html": Payslips,
   "payroll/payslip-view.html": PayslipView,
+  "payroll/salary-structure.html": SalaryStructure,
+  "finance/expenses.html": Expenses,
+  "finance/tax-deductions.html": TaxDeductions,
 };
 
 function Home() {

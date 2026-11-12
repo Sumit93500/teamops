@@ -10,6 +10,10 @@ import { decideLeave } from "../../../assets/js/data/leave-store.js";
 import { decideRegularization } from "../../../assets/js/data/attendance-store.js";
 import { requestTitle, formatDay, nameOf } from "../../../assets/js/ui/leave-view.js";
 import { issueLabel } from "../../../assets/js/ui/attendance-view.js";
+import { decideSalaryProposal } from "../../../assets/js/data/payroll-store.js";
+import { describeChange } from "../../../assets/js/ui/salary-change-view.js";
+import { decideExpense } from "../../../assets/js/data/expenses-store.js";
+import { describeClaim } from "../../../assets/js/ui/expense-view.js";
 import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
 import { bump } from "../data/bus.js";
 import { useToast } from "../ui/Toast.jsx";
@@ -36,6 +40,32 @@ export const CORRECTION_FLOW = {
     rejected: "Correction request rejected.",
     approveFailed: "Couldn't approve the request. It may already have been decided, or the attendance record has changed.",
     rejectFailed: "Couldn't reject the request. It may already have been decided.",
+  },
+};
+
+// A salary change waiting for an Admin (ui/salary-change-view.js salaryChangeFlow, round 12): salary structure and the inbox.
+export const SALARY_FLOW = {
+  decide: (proposalId, actorUserId, _role, decision, note) => decideSalaryProposal(actorUserId, proposalId, decision, note),
+  describe: describeChange,
+  noteId: "reject-salary-note",
+  labels: {
+    title: "Reject salary change",
+    approved: "Salary change approved.",
+    rejected: "Salary change rejected.",
+    submit: "Reject change",
+    placeholder: "Kept with the salary change; the employee doesn't see it",
+  },
+};
+
+// An expense claim at the Finance or Admin stage (ui/expense-view.js expenseFlow, round 12): expenses and the inbox.
+export const EXPENSE_FLOW = {
+  decide: decideExpense,
+  describe: describeClaim,
+  noteId: "reject-expense-note",
+  labels: {
+    title: "Reject expense claim",
+    approved: (result) => (result.record.status === "approved" ? "Claim approved. It's ready to be paid." : `Claim approved. It goes to ${result.record.stage === "admin" ? "an Admin" : "Finance"} next.`),
+    rejected: "Claim rejected.",
   },
 };
 

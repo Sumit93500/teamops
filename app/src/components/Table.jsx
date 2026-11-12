@@ -48,7 +48,7 @@ function detachedRows(list, columns, rowKey, rowProps) {
 }
 
 export default function Table({ title, columns, rows, rowKey = (r) => r.id, filter, exportName, pageSize = 10, empty = "Nothing to show.", tools, initialSort = null,
-  bare = false, page: pageProp, onPageChange, rowProps, oldExport = false, pager = true, extraRows = null, tbodyId }) {
+  bare = false, page: pageProp, onPageChange, rowProps, oldExport = false, pager = true, extraRows = null, tbodyId, tableClass = "table" }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState(initialSort);   // { key, dir: "ascending" | "descending" }
   const [ownPage, setOwnPage] = useState(1);
@@ -87,7 +87,7 @@ export default function Table({ title, columns, rows, rowKey = (r) => r.id, filt
   const body = (
     <>
       <div className="table-wrap">
-        <table className="table" ref={tableRef} data-export-name={oldExport ? exportName : undefined} {...cols.table}>
+        <table className={tableClass} ref={tableRef} data-export-name={oldExport ? exportName : undefined} {...cols.table}>
           <thead>
             <tr>
               {columns.map((c) => {

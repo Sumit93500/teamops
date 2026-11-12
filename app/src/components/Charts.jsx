@@ -41,9 +41,10 @@ export function ColumnChart({ days, label, id, empty = false }) {
   );
 }
 
-export function BarRows({ rows }) {
+// id / className (round 12): a page whose old container was a plain div (tax deductions' #regime-bars) passes className={null}.
+export function BarRows({ rows, id, className = "bar-rows" }) {
   return (
-    <div className="bar-rows">
+    <div className={className ?? undefined} id={id}>
       {rows.map((r) => (
         <div className="bar-row" key={r.label}>
           <span>{r.label}</span>
