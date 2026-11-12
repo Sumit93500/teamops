@@ -29,6 +29,11 @@ import TaxDeductions from "./pages/TaxDeductions.jsx";
 import ApprovalsInbox from "./pages/ApprovalsInbox.jsx";
 import MyRequests from "./pages/MyRequests.jsx";
 import ClaimExpense from "./pages/ClaimExpense.jsx";
+import RolesList from "./pages/RolesList.jsx";
+import RoleEditor from "./pages/RoleEditor.jsx";
+import ApprovalWorkflows from "./pages/ApprovalWorkflows.jsx";
+import Designations from "./pages/Designations.jsx";
+import Delegation from "./pages/Delegation.jsx";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
@@ -56,6 +61,11 @@ const PORTED = {
   "requests/approvals-inbox.html": ApprovalsInbox,
   "requests/my-requests.html": MyRequests,
   "requests/claim-expense.html": ClaimExpense,
+  "access/roles-list.html": RolesList,
+  "access/role-editor.html": RoleEditor,
+  "access/approval-workflows.html": ApprovalWorkflows,
+  "access/designations.html": Designations,
+  "access/delegation.html": Delegation,
 };
 
 function Home() {
