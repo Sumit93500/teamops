@@ -43,3 +43,25 @@ export const PERMISSIONS = {
 export const ALL_PERMISSIONS = Object.entries(PERMISSIONS).flatMap(
   ([module, actions]) => actions.map((action) => `${module}:${action}`)
 );
+
+// ---------- offices, locations, devices and the company profile (round 14, data only) ----------
+// Kept apart from PERMISSIONS until the page round that gives them screens: the role editor and roles list draw their
+// matrix and their "N of M" counts from PERMISSIONS / ALL_PERMISSIONS, and this round changes no screen. The data layer
+// checks these through hasPermission() in config/roles.js (each role's grants: LOCATION_GRANTS there). The page round
+// moves them into PERMISSIONS.
+//   offices:view       see the offices                               every role
+//   offices:manage     create, edit, deactivate offices; assign      Admin
+//   company:edit       the company profile (name, overview, mission) Admin
+//   locations:set-own  set your own home places once                 anyone HR marked home-eligible (a flag, not a role)
+//   locations:review   approve / reject home location changes        Admin
+//   devices:view-own   see your own registered devices               every role
+//   devices:reset      list and reset anyone's devices               Admin
+export const LOCATION_PERMISSIONS = {
+  offices:   ["view", "manage"],
+  company:   ["edit"],
+  locations: ["set-own", "review"],
+  devices:   ["view-own", "reset"],
+};
+export const ALL_LOCATION_PERMISSIONS = Object.entries(LOCATION_PERMISSIONS).flatMap(
+  ([module, actions]) => actions.map((action) => `${module}:${action}`)
+);

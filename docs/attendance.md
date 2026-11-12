@@ -27,6 +27,22 @@ A correction goes to the person's manager, then HR (`approval-chain.js`). With n
 
 Everyone sees their own attendance. HR and Admin see everyone's (`attendance:view-all`); managers see their direct reports'.
 
+## Where a check-in comes from (round 14, data only)
+
+`checkIn(userId, mode, stamp)` and `checkOut(userId, stamp)` take an optional stamp. Without it they write exactly what they wrote before; no page passes one yet. `checkInAt()` / `checkOutAt()` in `data/locations-store.js` make the stamp after two checks:
+
+1. **The place:** `checkPlace()` must say ok (the employee's office, or a home if they're allowed one).
+2. **The device:** at most 2 per employee.
+
+The record then carries `checkInPlace`, `checkInDistanceM`, `checkInDeviceId` (and the same three for the check-out), plus `flagged` / `flagReasons`:
+
+- `place-changed`: checked out somewhere other than where they checked in;
+- `device-changed`: checked out on another device;
+- `shared-device`: the device is registered to someone else too.
+
+`checkInRefusal()` / `checkOutRefusal()` answer "would this be refused?" without writing. See [locations.md](locations.md).
+
 ## Not built yet
 
-Shifts (the page is a sample) and offices and locations (round 14).
+- Shifts (the page is a sample).
+- Screens for offices, home locations and devices (a later page round).

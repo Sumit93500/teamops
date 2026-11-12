@@ -162,6 +162,14 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "dash.mjs") { Run "dash-$t" @("dash.mjs", $Pages) }
   if (Test-Path "hrdash.mjs") { Run "hrdash-$t" @("hrdash.mjs", $Pages) }
   if (Test-Path "admdash.mjs") { Run "admdash-$t" @("admdash.mjs", $Pages) }
+  # Round 14: offices, locations, devices and the company profile (data only)
+  if (Test-Path "company.mjs") { Run "company-$t" @("company.mjs") }
+  if (Test-Path "offices.mjs") { Run "offices-$t" @("offices.mjs") }
+  if (Test-Path "homes.mjs") { Run "homes-$t" @("homes.mjs") }
+  if (Test-Path "devices.mjs") { Run "devices-$t" @("devices.mjs") }
+  if (Test-Path "places.mjs") { Run "places-$t" @("places.mjs") }
+  if (Test-Path "punch14.mjs") { Run "punch14-$t" @("punch14.mjs") }
+  if (Test-Path "perms14.mjs") { Run "perms14-$t" @("perms14.mjs") }
   Run "leave-$t" @("leave.mjs")
   Run "pages-$t" @("pages.mjs", $Pages)
   Run "approvals-$t" @("approvals.mjs", $Pages)

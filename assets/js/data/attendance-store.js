@@ -614,9 +614,28 @@ export function checkInWindow(day) {
   return { opens: toMinutes(R.earliestCheckIn), closes: toMinutes(day?.halfDayLeave === "second-half" ? R.halfSplit : R.shiftEnd) };
 }
 
+// Round 14: where a check-in or check-out came from, as optional fields on the record. Only written when a stamp
+// { place, distanceM, deviceId, flagReasons? } is given (data/locations-store.js checkInAt / checkOutAt make it after
+// the place and device checks); without one, checkIn() and checkOut() write exactly what they wrote before.
+//   check-in:  checkInPlace, checkInDistanceM, checkInDeviceId, flagged, flagReasons
+//   check-out: checkOutPlace, checkOutDistanceM, checkOutDeviceId, flagged, flagReasons; flagged when the check-out's
+//              place or device differs from the check-in's ("place-changed", "device-changed"), or a stamp says so
+//              (e.g. "shared-device"). Compared only when the check-in had a stamp too.
+function stampFields(side, stamp, record = null) {
+  if (!stamp) return {};
+  const reasons = [...(record?.flagReasons ?? []), ...(Array.isArray(stamp.flagReasons) ? stamp.flagReasons : [])];
+  if (side === "checkOut" && record?.checkInPlace) {
+    if (stamp.place !== record.checkInPlace) reasons.push("place-changed");
+    if (stamp.deviceId !== record.checkInDeviceId) reasons.push("device-changed");
+  }
+  const flagReasons = [...new Set(reasons)];
+  return { [`${side}Place`]: stamp.place ?? null, [`${side}DistanceM`]: stamp.distanceM ?? null, [`${side}DeviceId`]: stamp.deviceId ?? null, flagged: flagReasons.length > 0, flagReasons };
+}
+
 // mode: "office" | "wfh"; left out, it's "wfh" on an approved work-from-home day, else "office".
-// Success: { ok: true, record, day }.
-export function checkIn(userId, mode) {
+// checkIn()'s checks, in its order with its words (round 14 moved them here unchanged, so checkInRefusal() can ask
+// without writing): a refusal, or { ok: true, user, ctx, chosen }.
+function checkInPlan(userId, mode) {
   const user = getUser(userId);
   if (!user) return fail(`No employee with id ${userId}.`);
   if (!isTracked(user)) return fail(`${user.name} is inactive and can't check in.`);
@@ -633,18 +652,33 @@ export function checkIn(userId, mode) {
   const { opens, closes } = checkInWindow(day);
   if (ctx.now < opens) return fail(`Check-in opens at ${clockLabel(opens)}.`);
   if (ctx.now >= closes) return fail(`Check-in closed at ${clockLabel(closes)}.`);
+  return { ok: true, user, ctx, chosen };
+}
+// Round 14: why checkIn() would refuse right now (its fail()), or null. Writes nothing.
+export function checkInRefusal(userId, mode) {
+  const plan = checkInPlan(userId, mode);
+  return plan.ok ? null : plan;
+}
+
+// stamp (round 14, optional): see stampFields().
+// Success: { ok: true, record, day }.
+export function checkIn(userId, mode, stamp) {
+  const plan = checkInPlan(userId, mode);
+  if (!plan.ok) return plan;
+  const { user, ctx, chosen } = plan;
 
   const checkInAt = fromMinutes(ctx.now);
   const result = attendance.add({
     userId: user.id, date: ctx.today, checkIn: checkInAt, checkOut: null, mode: chosen, source: "punch",
     originalCheckIn: null, originalCheckOut: null,
     history: [{ at: new Date().toISOString(), byUserId: user.id, action: "checked-in", note: "" }],
+    ...stampFields("checkIn", stamp),
   });
   return result.ok ? { ...result, day: dayFor(user.id, ctx.today) } : result;
 }
 
-// Success: { ok: true, record, day }.
-export function checkOut(userId) {
+// checkOut()'s checks, unchanged (round 14 moved them here): a refusal, or { ok: true, user, ctx, record }.
+function checkOutPlan(userId) {
   const user = getUser(userId);
   if (!user) return fail(`No employee with id ${userId}.`);
   if (!isTracked(user)) return fail(`${user.name} is inactive and can't check out.`);
@@ -653,9 +687,24 @@ export function checkOut(userId) {
   if (!record?.checkIn) return fail("Check in first.");
   if (record.checkOut) return fail(`You already checked out today at ${record.checkOut}.`);
   if (ctx.now < toMinutes(record.checkIn)) return fail("Check-out can't be earlier than your check-in.");
+  return { ok: true, user, ctx, record };
+}
+// Round 14: why checkOut() would refuse right now, or null. Writes nothing.
+export function checkOutRefusal(userId) {
+  const plan = checkOutPlan(userId);
+  return plan.ok ? null : plan;
+}
+
+// stamp (round 14, optional): see stampFields().
+// Success: { ok: true, record, day }.
+export function checkOut(userId, stamp) {
+  const plan = checkOutPlan(userId);
+  if (!plan.ok) return plan;
+  const { user, ctx, record } = plan;
   const result = attendance.update(record.id, {
     checkOut: fromMinutes(ctx.now),
     history: [...record.history, { at: new Date().toISOString(), byUserId: user.id, action: "checked-out", note: "" }],
+    ...stampFields("checkOut", stamp, record),
   });
   return result.ok ? { ...result, day: dayFor(user.id, ctx.today) } : result;
 }

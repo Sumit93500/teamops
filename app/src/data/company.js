@@ -2,9 +2,13 @@
 // the shell's brand, the tab title, the About page and the payslip read them. OfficeOS doesn't store company settings yet, so
 // these are the Settings page's sample values; a data round that adds stored settings replaces this module's source.
 //   logo: an image URL, or null (the shell then shows the name's initial in a round badge)
+import { companyName } from "../../../assets/js/data/company-store.js";
+// Round 14: the name comes from the company profile store (assets/js/data/company-store.js, seeded with this same
+// sample), so COMPANY.name stays the selector everything reads; the short name follows a changed name.
+const SEED_NAME = "Northwind Technologies Pvt. Ltd.";
 export const COMPANY = {
-  name: "Northwind Technologies Pvt. Ltd.",
-  shortName: "Northwind Technologies",
+  get name() { return companyName(); },
+  get shortName() { const n = companyName(); return n === SEED_NAME ? "Northwind Technologies" : n; },
   address: "Sector 44, Gurugram, Haryana 122003",
   timeZone: "India Standard Time (UTC+5:30)",
   currency: "Indian rupee (₹)",

@@ -3,7 +3,7 @@
 // The key ("admin", "hr", "fin", "emp") is also the value used in <html data-role="...">,
 // which is what recolors the page in tokens.css.
 
-import { ALL_PERMISSIONS } from "./permissions.js";
+import { ALL_PERMISSIONS, ALL_LOCATION_PERMISSIONS } from "./permissions.js";
 
 // What EVERY signed-in person can do with their own data.
 // Written once here, then reused by the roles below.
@@ -124,4 +124,25 @@ export function permissionsOf(user) {
   if (!role) return [];
   const { grants, denies } = overridesOf(user);
   return [...new Set([...role.permissions, ...grants])].filter((p) => !denies.includes(p));
+}
+
+// ---------- offices, locations, devices, company profile (round 14, data only) ----------
+// Each role's share of config/permissions.js's LOCATION_PERMISSIONS. Separate from ROLES[...].permissions until the page
+// round (the role pages count and draw those). Not overridable. A manager gets nothing extra: managing people is a
+// relationship, not a permission (the manager rule is unchanged). locations:set-own isn't any role's: it follows the
+// person's homeEligible flag, which HR sets (data/locations-store.js).
+const EVERYONE_LOCATION = ["offices:view", "devices:view-own"];
+export const LOCATION_GRANTS = {
+  admin: ALL_LOCATION_PERMISSIONS.filter((p) => p !== "locations:set-own"),
+  hr: [...EVERYONE_LOCATION],
+  fin: [...EVERYONE_LOCATION],
+  emp: [...EVERYONE_LOCATION],
+};
+
+// Whether this person (a user record) holds a permission: the old ones through permissionsOf(), the round 14 ones
+// through their role's LOCATION_GRANTS. Whether they're active is the caller's check, as with permissionsOf().
+export function hasPermission(user, permission) {
+  if (permissionsOf(user).includes(permission)) return true;
+  const role = user && Object.hasOwn(LOCATION_GRANTS, user.role) ? user.role : null;
+  return Boolean(role && LOCATION_GRANTS[role].includes(permission));
 }

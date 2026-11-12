@@ -19,6 +19,22 @@ Roles come from the configuration: they can't be created, edited or deleted in t
 - Examples: `payroll:create` (prepare a run), `payroll:approve`, `salary:view`, `dashboard:finance`, `users:delete` (Admin only), `pii:view` (bank account and PAN).
 - A page needs one permission (`config/routes.js`). A control on a page needs its own, through `data-permission="..."` on the static pages and `perm()` / `useCan()` in the React app.
 
+## Round 14's permissions (data only, kept apart for now)
+
+Seven new permissions are checked by the data layer through `hasPermission(user, permission)` (`config/roles.js`). They live in `LOCATION_PERMISSIONS` (`config/permissions.js`), each role's share in `LOCATION_GRANTS`:
+
+| permission | who |
+|---|---|
+| `offices:view` | everyone |
+| `offices:manage` | Admin |
+| `company:edit` | Admin |
+| `locations:set-own` | whoever HR marked home-eligible (a flag, not a role) |
+| `locations:review` | Admin |
+| `devices:view-own` | everyone |
+| `devices:reset` | Admin |
+
+They aren't in `PERMISSIONS` / `ALL_PERMISSIONS` or any role's `permissions` yet. The role editor and roles list draw their matrix and "N of M" counts from those, and this round changes no screen, so the counts above still hold. They aren't overridable. Managers get nothing extra. The page round that adds the screens moves them into `PERMISSIONS`.
+
 ## The check
 
 - `can(permission)` checks the signed-in person's record: their role's permissions with their per-person overrides (round 11R).

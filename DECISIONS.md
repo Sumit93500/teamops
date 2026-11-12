@@ -55,3 +55,10 @@ One line per decision: date, round, decision, why. Newest last. Every round appe
 | 2026-11-12 | D2b | Every chart: readout line, data table ("Show as table"), patterns or dashes per series, no animation | meaning never by colour alone; calm; reduced motion for free |
 | 2026-11-12 | D2b | Only the Admin dashboard's headcount moved to the new BarChart; the rest wait for the restyle sweep | one proof, parity on text (department and count pairs) |
 | 2026-11-12 | D2b | IndiaMap is gallery-only: no employee or office has a state yet | no invented data; the need is in the parking lot |
+| 2026-11-12 | 14 | Round 14's seven permissions live in LOCATION_PERMISSIONS / LOCATION_GRANTS, checked by hasPermission(); not in PERMISSIONS until the page round | the role editor and roles list draw from PERMISSIONS; no screen may change in a data round |
+| 2026-11-12 | 14 | An employee's office and home-eligible flag are kept in the new stores (head office / false by default), not on the user record | the users box and every page reading it stay byte-identical |
+| 2026-11-12 | 14 | The new stores' reads never write; a key appears on the first change | a page that only reads adds nothing to storage |
+| 2026-11-12 | 14 | checkIn / checkOut take an optional stamp; checkInAt / checkOutAt check place, device and attendance before writing anything | without the new input nothing changes; a refusal writes nothing |
+| 2026-11-12 | 14 | Place check: whole metres, exactly the radius is inside, accuracy over 100 m refused, homes 150 m, the nearest place inside wins | stated rules, tested at the edges |
+| 2026-11-12 | 14 | Location changes aren't in ui/waiting.js yet; an Admin's own change is approved at once | inbox, sidebar and dashboard card learn the kind together (page round); as with leave |
+| 2026-11-12 | 14 | COMPANY.name in app/src/data/company.js reads the company profile store (a getter, same selector) | the one file outside the data layer, as item 1 asked |

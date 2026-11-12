@@ -1,6 +1,6 @@
 God nodes (most connected):
   1. el() - 253 edges
-  2. getUser() - 162 edges
+  2. getUser() - 176 edges
   3. formatDay() - 153 edges
   4. nameOf() - 136 edges
   5. todayIso() - 94 edges
