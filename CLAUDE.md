@@ -55,4 +55,4 @@ Read [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) first. The de
 | test records | `tests/TEST-CATALOG.md`, `tests/cases/*.csv`, `tests/index.html`, `tests/RESULTS.csv` |
 | the code graph | `docs/graph.md` (how to regenerate), `docs/graph/` |
 | the round tooling (outside the repo) | the workspace's `tools/speed` (select.py, mk-shards, parN), `tools/edge` (Edge checks, xmap), `tools/react` (harness builder, html2jsx.py), and `tools/round-recipe.md` |
-| round notes (outside the repo) | `overnight-summary*.md`, `react-stage-scoping.md`, `react-parking-lot.md` |
+| round notes (outside the repo) | the workspace's `notes/` (`overnight-summary*.md`, `react-stage-scoping.md`, `react-parking-lot.md`); older rounds in `archive/js-stage/`; a folder map in the workspace's `README.md` |

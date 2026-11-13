@@ -53,6 +53,10 @@ app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (b
   Flagged columns.
 - **S1:** the desktop sidebar collapses and expands (expanded from 1280 px by default, collapsed below; the choice is
   remembered and applied before the first paint). See [design.md](design.md#shell-and-branding).
+- **The repo's layout (O1, 2026-11-13):** unchanged. `assets/`, `pages/`, `app/`, `tests/`, `tools/`, `docs/`, `_templates/` and
+  the root `index.html` stay where they are: the harnesses, the gate, the baselines and the live site read these paths. The
+  old static site retires at cutover (round 28); the final layout is decided then. Notes, shots and the round tooling
+  live outside the repo, in the workspace (its `README.md` maps the folders).
 - **Left:** inventory (rounds 21–22, after the data rounds 17–20).
 - **Bundle:** what loads first is one 1,090 kB file (L1; 1,013 kB at D2b); the charts' drawing (Recharts, 418 kB) and the map (179 kB) load on first use. Route-level code splitting is planned for round 27.
 

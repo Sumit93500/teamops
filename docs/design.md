@@ -20,7 +20,7 @@ Imported after `assets/css/style.css`. Where a name overlaps (`--color-*`, `--ra
 | focus | a 2 px ring in the role colour (`--ds-focus-color`), with a 2 px gap |
 | charts (D2b) | `--ds-chart-1` to `-6` (series; each 3:1 or more on every surface), `--ds-chart-ink` (pattern marks), `--ds-chart-grid`, `--ds-seq-1` to `-5` (the map's steps, light to dark), `--ds-map-none`, `--ds-map-edge` (3:1). See [charts.md](charts.md) |
 
-**Contrast:** every text pair is at least 4.5:1, and every field edge, focus ring, knob and chart line at least 3:1 (WCAG AA). That holds in both themes, for every role and accent. It is measured in Edge on the built app by `Target/tools/react/contrast.mjs`; D2a's table is in `Target/shots-D2a/contrast.md`.
+**Contrast:** every text pair is at least 4.5:1, and every field edge, focus ring, knob and chart line at least 3:1 (WCAG AA). That holds in both themes, for every role and accent. It is measured in Edge on the built app by `Target/tools/react/contrast.mjs`; D2a's table is in `Target/shots/shots-D2a/contrast.md`.
 
 ## Components: `app/src/components`
 
