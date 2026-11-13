@@ -59,8 +59,9 @@ const read = (t) => t.evaluate(() => {
   return {
     // L2 (ruled): the inbox's type filter gains "Location" and Who approves what gains "Home location changes: An Admin" (the
     // React app's sixth kind, checked in locs.mjs); read without them so the rest still matches the old page.
-    text: tx(m.innerText).replace(" Asset Salary Location ", " Asset Salary ").replace(" Home location changes An Admin", ""),
-    controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.tagName === "SELECT" ? c.textContent.replace(/SalaryLocation$/, "Salary") : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
+    // L4 (the brief): HR's inbox gains a read-only "Location changes" tab (checked in locs.mjs V); read without it too.
+    text: tx(m.innerText).replace(" Asset Salary Location ", " Asset Salary ").replace(" Home location changes An Admin", "").replace(/(Rejected \d+) Location changes/, "$1"),
+    controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).filter((c) => !(c.tagName === "BUTTON" && c.getAttribute("role") === "tab" && tx(c.textContent) === "Location changes")).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.tagName === "SELECT" ? c.textContent.replace(/SalaryLocation$/, "Salary") : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
     tables: [...m.querySelectorAll("table")].map((tb) => [...tb.querySelectorAll("tbody tr")].filter(vis).map((r) => [...r.cells].map((c) => tx(c.innerText)))),
     hiddenIds: [...m.querySelectorAll("[id]")].filter((e) => e.hidden).map((e) => (/^reason-\d+$|^_r_\w*_$/.test(e.id) ? "reason" : e.id)).sort(),
     cal: [...m.querySelectorAll(".calendar__day")].map((c) => c.className.replace("calendar__day ", "")).join("|"),

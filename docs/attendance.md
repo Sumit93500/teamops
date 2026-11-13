@@ -49,6 +49,7 @@ The record then carries `checkInPlace`, `checkInDistanceM`, `checkInDeviceId` (a
 - **The device:** "Registered device", "New device" (checking in registers it, N of 2 used), or "Device limit reached" (ask an Admin). A device registered to someone else too checks in, flagged.
 - **The button:** one big Check in (or Check out), enabled only when the reading is inside the chosen place and the device is allowed. Every refusal the store gives is said in plain words.
 - **Check-out from another place:** a "Flagged" notice before pressing, and a question before it's done; the day is flagged `place-changed`.
+- **The chosen place is enforced (L4):** the page passes the chosen place to `checkInAt()`, which checks that place only, and the record names it. With an office and a home that overlap, the place chosen is the one stamped. Check-Out From shows the check-in's place; a check-out inside it counts there and isn't flagged, one outside it is judged at the nearest of your places (flagged when it differs, asked first).
 - Today's card shows where you checked in and out from, with the distance; the recent punches show the place.
 - The privacy line: "Your location is read only when you check in or out, never in the background."
 
@@ -56,6 +57,7 @@ The record then carries `checkInPlace`, `checkInDistanceM`, `checkInDeviceId` (a
 
 - **My attendance:** a Place column (icon and name, the distance, the check-out's place when it differs), a Flagged badge beside the status, and "Flagged only".
 - **Team attendance:** the same column and badge, and a "Flagged only" filter. A manager still sees only their direct reports (`teamScope`).
+- **Team attendance's Export (L4):** the file has the Place in words ("Head office, 40 m; out: Permanent home, 0 m", empty when none was recorded), the Status without the flag, and a Flagged column ("Yes" / "No") after it. It follows the page's filters and tab, every page of them. The file is made from a copy of the table with that extra column, so the page's table and phone cards are unchanged.
 - **HR dashboard:** Flagged check-ins, the last 7 days (with `attendance:view-all`): who, the day, the places and why.
 - The stamps are read from the saved records (`app/src/data/stamps.js`); a day without one says "Not recorded".
 

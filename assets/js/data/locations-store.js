@@ -19,9 +19,16 @@
 //   place inside wins. A reading with accuracyM over 100 (or none) isn't judged: "location not accurate enough, try
 //   again". Outside every place: the nearest one, "<N> m from <place>". judgePlace(reading, places) is the pure part.
 //   codes: "ok", "no-location", "inaccurate", "no-place", "outside"
+//   L4, the chosen place: checkPlace(reading, employee, now, placeId) / judgePlace(reading, places, placeId). With a placeId
+//   (a placesFor() `place`: "head", "branch", "homePermanent", "homeTemporary") the reading is judged against THAT place only,
+//   so two overlapping places can't name the other one; a placeId that isn't one of the employee's places is refused
+//   ("not-allowed"). Without one (undefined or null) it is exactly as before: the nearest place inside wins.
+//   codes (with a placeId): "ok", "no-location", "inaccurate", "no-place", "not-allowed", "outside"
 //
 // Check-in / check-out with a place (the only new way; checkIn()/checkOut() without it are unchanged):
-//   checkInAt(userId, mode, reading, token?)   checkOutAt(userId, reading, token?)
+//   checkInAt(userId, mode, reading, token?, placeId?)   checkOutAt(userId, reading, token?, placeId?)
+//   (L4) placeId: the place the person chose; the check is made against it only and the record names it. Left out, the
+//   nearest place inside is used, as before.
 //   -> attendance's result, or a refusal with a code: the place check's, or the device check's ("device-limit",
 //      "no-token"). On success the record carries the place, distance and device (data/attendance-store.js stampFields)
 //      and `flagged` (check-out place or device differs from the check-in's, or the device is registered to someone else:
@@ -202,12 +209,18 @@ export function placesFor(employee) {
 const isNum = (v) => typeof v === "number" && Number.isFinite(v);
 const answer = (ok, code, reason, p = null, d = null) => ({ ok, place: p?.place ?? null, placeName: p?.name ?? null, distanceM: d, reason, code });
 
-// The pure part: a reading against a list of places (placesFor()'s shape).
-export function judgePlace(reading, places) {
+// The pure part: a reading against a list of places (placesFor()'s shape); placeId (L4, optional): judge only that place.
+export function judgePlace(reading, places, placeId) {
   const { lat, lng, accuracyM } = reading ?? {};
   if (!isNum(lat) || !isNum(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) return answer(false, "no-location", "No location from this browser. Allow location and try again.");
   if (!isNum(accuracyM) || accuracyM < 0 || accuracyM > ACCURACY_LIMIT_M) return answer(false, "inaccurate", "location not accurate enough, try again");
   if (!places?.length) return answer(false, "no-place", "No office is set for you. Ask an Admin.");
+  if (placeId !== undefined && placeId !== null) {
+    const chosen = places.find((p) => p.place === placeId);
+    if (!chosen) return answer(false, "not-allowed", "That place isn't one you may check in from. Choose one of your places.");
+    const d = Math.round(distanceM({ lat, lng }, chosen));
+    return d <= chosen.radiusM ? answer(true, "ok", "", chosen, d) : answer(false, "outside", `${d} m from ${chosen.name}`, chosen, d);
+  }
   const measured = places.map((p) => ({ p, d: Math.round(distanceM({ lat, lng }, p)) })).sort((a, b) => a.d - b.d);
   const inside = measured.find(({ p, d }) => d <= p.radiusM);
   if (inside) return answer(true, "ok", "", inside.p, inside.d);
@@ -215,15 +228,15 @@ export function judgePlace(reading, places) {
   return answer(false, "outside", `${nearest.d} m from ${nearest.p.name}`, nearest.p, nearest.d);
 }
 
-// employee: a user record or id; now: when (kept on the answer as `at`, ISO).
-export function checkPlace(reading, employee, nowDate = new Date()) {
-  return { ...judgePlace(reading, placesFor(employee)), at: new Date(nowDate).toISOString() };
+// employee: a user record or id; now: when (kept on the answer as `at`, ISO); placeId (L4, optional): the chosen place.
+export function checkPlace(reading, employee, nowDate = new Date(), placeId) {
+  return { ...judgePlace(reading, placesFor(employee), placeId), at: new Date(nowDate).toISOString() };
 }
 
 // ---------- check in / out with a place ----------
-function where(userId, reading, token) {
+function where(userId, reading, token, placeId) {
   if (!getUser(userId)) return { refusal: { ...fail(`No employee with id ${userId}.`), code: "no-employee" } };
-  const place = checkPlace(reading, userId);
+  const place = checkPlace(reading, userId, new Date(), placeId);
   if (!place.ok) return { refusal: { ok: false, error: place.reason, code: place.code, place } };
   const device = peekDevice(userId, token);
   if (!device.ok) return { refusal: device };
@@ -237,8 +250,8 @@ function stampAfter(userId, place, token) {
 
 // The attendance checks run first (nothing is written when they refuse); the device is registered or touched only
 // after the place and device are fine, then the record is written with the stamp.
-export function checkInAt(userId, mode, reading, token = deviceToken()) {
-  const w = where(userId, reading, token);
+export function checkInAt(userId, mode, reading, token = deviceToken(), placeId) {
+  const w = where(userId, reading, token, placeId);
   if (w.refusal) return w.refusal;
   const refused = checkInRefusal(userId, mode);
   if (refused) return refused;
@@ -246,8 +259,8 @@ export function checkInAt(userId, mode, reading, token = deviceToken()) {
   if (!stamp) return { ...fail(SAVE_FAILED), code: "storage" };
   return checkIn(userId, mode, stamp);
 }
-export function checkOutAt(userId, reading, token = deviceToken()) {
-  const w = where(userId, reading, token);
+export function checkOutAt(userId, reading, token = deviceToken(), placeId) {
+  const w = where(userId, reading, token, placeId);
   if (w.refusal) return w.refusal;
   const refused = checkOutRefusal(userId);
   if (refused) return refused;

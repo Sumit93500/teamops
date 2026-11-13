@@ -86,6 +86,21 @@ react-att3.H8,react-att3,"My attendance at 412: the card shows Date, Check-in an
 react-att3.H5,react-att3,someone without reports or attendance:view-all can't open Team attendance (the manager rule),x1
 react-att3.H6,react-att3,HR dashboard: Flagged check-ins lists Arjun's day with both places and why,x1
 react-att3.H7,react-att3,HR dashboard with nothing flagged: the empty words,x1
+react-att3.C1,react-att3,"inside both, the office chosen: the line measures the office (60 m)",x1
+react-att3.C2,react-att3,"checked in: the record names the chosen office (60 m), not the nearer home; office work; the toast says Head office",x1
+react-att3.C3,react-att3,"check-out in the overlap: Check-Out From shows the check-in's place, no flagged notice, Check out on",x1
+react-att3.C4,react-att3,"checked out at the office, not flagged (the nearer home isn't taken for a move)",x1
+react-att3.C5,react-att3,"inside both, home chosen: the line measures home (40 m)",x1
+react-att3.C6,react-att3,"checked in: the record names home (40 m), work from home",x1
+react-att3.C7,react-att3,"then at the office only: Check-Out From shows home, 200 m away; the flagged notice names the office",x1
+react-att3.C8,react-att3,"a check-out at another of your places still works when asked: the office named, flagged place-changed",x1
+react-att3.X0,react-att3,the flagged day from T is there to read,x1
+react-att3.X1,react-att3,"hr: one file; its columns: Employee, Employee ID, Department, Check-in, Place, Hours, This week, Status, Flagged",x2 (2 roles)
+react-att3.X2,react-att3,"hr: Arjun's row: Place in words (in at the office, out at home), Status without the flag (Absent: in and out at 09:20), Flagged Yes",x2 (3 roles)
+react-att3.X3,react-att3,"hr: everyone else: Flagged No, Place empty (no place recorded)",x2 (2 roles)
+react-att3.X4,react-att3,"hr: the page's own table is unchanged (7 columns, no Flagged column)",x2 (2 roles)
+react-att3.X5,react-att3,"hr: with Flagged only, the file has Arjun's row only",x2 (2 roles)
+react-att3.X6,react-att3,a manager's team view has no Export (as before),x1
 react-att3.K1,react-att3,"Check-In From, then Use my location; after a reading, Tab reaches Check in and Enter checks in",x1
 react-att3.W.mark.1280.light,react-att3,"attendance/mark-attendance.html at 1280, light: no sideways scroll",x1
 react-att3.W.mark.1280.dark,react-att3,"attendance/mark-attendance.html at 1280, dark: no sideways scroll",x1
@@ -287,6 +302,15 @@ react-locs.A8,react-locs,Rejected tab: the row's details carry the note,x1
 react-locs.A9,react-locs,the Admin dashboard's Waiting for you list has it,x1
 react-locs.A10,react-locs,the bell's list has it,x1
 react-locs.H1,react-locs,hr: no location change rows (only an Admin decides them),x2 (2 roles)
+react-locs.V1,react-locs,"HR: a fourth tab, ""Location changes"", with no count badge",x1
+react-locs.V2,react-locs,"HR's bell, sidebar count and ""Waiting for you"" don't count the waiting location change",x1
+react-locs.V3,react-locs,HR's Pending tab lists no location change,x1
+react-locs.V4,react-locs,"the tab: Request, Requested by, Details, Status, Requested, Decided; newest request first",x1
+react-locs.V5,react-locs,"each row says the status, who and when (and who decided)",x1
+react-locs.V6,react-locs,"read-only: no buttons or card links, the note says only an Admin decides, no type filter, the footer says read-only",x1
+react-locs.V7,react-locs,looking changed nothing,x1
+react-locs.V8,react-locs,back on Pending: the inbox table and the filter again,x1
+react-locs.V9,react-locs,admin: no Location changes tab (an Admin decides in the usual tabs; others don't see them),x4 (4 roles)
 react-locs.D1,react-locs,"none yet: ""0 of 2"", what registers one, the honest note; no token is made by looking",x1
 react-locs.D2,react-locs,"Check-in places on My profile: the office, home check-in off, a link to My locations",x1
 react-locs.D3,react-locs,"two devices, this one marked, ""2 of 2"", no limit warning (this one is registered)",x1

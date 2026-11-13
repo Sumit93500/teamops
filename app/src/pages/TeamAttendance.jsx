@@ -4,7 +4,10 @@
 // ruled), attendance by department, who needs attention with Message, and the Regularization link's pending count. Admin and
 // HR see everyone; a manager sees their direct reports (data/reporting.js teamScope).
 // L3: a Place column (where each check-in came from), a Flagged badge beside the status, and a Flagged filter.
-import { useEffect, useMemo, useState } from "react";
+// L4: Export writes Place as words ("Head office, 40 m; out: Permanent home, 30 m", "" when not recorded), Status without the
+// flag, and a Flagged column ("Yes" / "No") after it. The file is made from a copy of the table with that extra column, by
+// the same exporter (csv-export.js), so the page's own table, its phone cards and its look don't change.
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { can } from "../../../assets/js/core/rbac.js";
 import { getAllUsers, getAllDepartments } from "../../../assets/js/data/store.js";
@@ -14,7 +17,8 @@ import { teamWeekFor, summaryFor, pendingRegularizations, recordsStart } from ".
 import { stampsBy, stampKey } from "../data/stamps.js";
 import { placeNode, flagNode } from "../ui/attendance.jsx";
 import { teamScope } from "../../../assets/js/data/reporting.js";
-import { csvColumns, csvRows, initExports } from "../../../assets/js/ui/csv-export.js";
+import { csvColumns, csvValue, exportTableAsCsv } from "../../../assets/js/ui/csv-export.js";
+import { PLACE_LABEL } from "../data/stamps.js";
 import { el, weekdayName, todayIso, formatDay, initials, avatarClass, departmentName, shortDate, plural, personCell, showReason } from "../../../assets/js/ui/leave-view.js";
 import { dayBadge, presentNote, checkInCell, hoursCell } from "../../../assets/js/ui/attendance-view.js";
 import { barRow } from "../../../assets/js/ui/chart.js";
@@ -60,14 +64,21 @@ function weekCell(week) {
   td.append(strip);
   return td;
 }
+// The Place column's words in the file (L4).
+function placeWords(stamp) {
+  const words = (place, distance) => `${PLACE_LABEL[place] ?? place}${distance ? `, ${distance}` : ""}`;
+  if (!stamp?.inPlace && !stamp?.outPlace) return "";
+  const first = stamp.inPlace ? words(stamp.inPlace, stamp.inDistance) : words(stamp.outPlace, stamp.outDistance);
+  return stamp.inPlace && stamp.outPlace && stamp.outPlace !== stamp.inPlace ? `${first}; out: ${words(stamp.outPlace, stamp.outDistance)}` : first;
+}
 function row(r) {
   const tr = el("tr");
   const status = el("td");
   const badge = dayBadge(r.day);
   status.append(badge);
   showReason(badge, badge.title);
-  if (r.stamp?.flagged) status.append(" ", flagNode(r.stamp.reasons));
-  const place = el("td");
+  if (r.stamp?.flagged) { status.append(" ", flagNode(r.stamp.reasons)); csvValue(status, badge.textContent); }
+  const place = csvValue(el("td"), placeWords(r.stamp));
   place.append(placeNode(r.stamp));
   tr.append(personCell(r.day.userId, r.user, r.day.userId), el("td", "", departmentName(r.user?.department)), checkInCell(r.day), place, hoursCell(r.day), weekCell(r.week), status);
   return tr;
@@ -147,8 +158,17 @@ export default function TeamAttendance() {
   const [rate, present, expected] = ["Rate", "Present", "Expected"].map((name) => valuesOf(d.chart, name));
   const attention = d.rows.filter((r) => isMissing(r.day)).length;
 
-  useEffect(() => { if (scope === null) initExports(document.getElementById("main")); }, [scope]);
-  useEffect(() => { csvRows("team-attendance", () => shown.map(row)); });
+  // Export (L4): a copy of the table's headings and every filtered row, with the Flagged column added after Status.
+  const exportFile = () => {
+    const live = document.querySelector('table[data-export-name="team-attendance"]');
+    const copy = live.cloneNode(false);
+    const head = live.tHead.cloneNode(true);
+    head.rows[head.rows.length - 1].append(el("th", "", "Flagged"));
+    const body = el("tbody");
+    for (const r of shown) { const tr = row(r); tr.append(el("td", "", r.stamp?.flagged ? "Yes" : "No")); body.append(tr); }
+    copy.append(head, body);
+    exportTableAsCsv(copy, "team-attendance");
+  };
 
   const pick = (picked) => {
     setDateField(picked);
@@ -173,7 +193,7 @@ export default function TeamAttendance() {
           <Link className="btn" id="team-reg-link" to={pageUrl("attendance/regularization.html")} data-permission="attendance:approve" hidden={!canApprove || undefined}>
             Regularization{d.regCount ? <>{" "}<span className="badge badge--count">{String(d.regCount)}<span className="sr-only"> pending</span></span></> : null}
           </Link>
-          {scope === null && <button className="btn btn--primary" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export>Export</button>}
+          {scope === null && <button className="btn btn--primary" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export onClick={exportFile}>Export</button>}
         </div>
       </div>
       <div className="stack">

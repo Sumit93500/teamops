@@ -1,6 +1,6 @@
 // L3's harness (msedge, headless): Mark attendance with the place check, and where check-ins came from on My attendance, Team
 // attendance and the HR dashboard. New screens, read by meaning (ids, labels, words, cells, dialogs, toasts), never by CSS.
-// usage: node att3.mjs <app dist> <pristine tree> <shots dir>   [ONLY=MGDPTHKWE]
+// usage: node att3.mjs <app dist> <pristine tree> <shots dir>   [ONLY=MGDPTCHXKWE]
 // Geolocation is mocked per context; the clock is fixed at Mon 28 Sep 2026 09:20 local (check-in open, not late) in each zone.
 //   M  the page as it opens: status, Check-In From (only allowed places), Use my location, the status line, the device line, the
 //      button off until a reading allows it, the privacy line
@@ -14,6 +14,10 @@
 //   T  check-out: same place (not flagged); a different place shows the flagged notice and asks first, then flags the day
 //   H  the views: My attendance's Place column and Flagged badge, its flagged filter; Team attendance's Place column, Flagged
 //      badge and filter (HR sees everyone, a manager only their reports); the HR dashboard's flagged check-ins
+//   C  (L4) the chosen place with an office and a home that overlap: the record names the place chosen, not the nearer one;
+//      Check-Out From shows the check-in's place and a check-out there isn't flagged; a check-out elsewhere still asks and flags
+//   X  (L4) Team attendance's Export: Place in words and a Flagged column (Yes / No), Status without the flag; the page's own
+//      table unchanged; the Flagged filter narrows the file; a manager has no Export
 //   K  keyboard: Check-In From, Use my location and Check in in order; Enter checks in
 //   W  412 and 1280, light and dark: Mark attendance (ready to check in, and flagged check-out), My attendance, Team attendance:
 //      no sideways scroll; shots
@@ -27,7 +31,7 @@ const EDGE = path.join(HERE, "..", "edge");
 const { chromium } = createRequire(path.join(EDGE, "x.js"))("playwright-core");
 const { useLocalFonts } = await import(new URL("file:///" + path.join(EDGE, "lib", "local-fonts.mjs").replace(/\\/g, "/")).href);
 const [DIST, , SHOTS] = process.argv.slice(2);
-const ONLY = process.env.ONLY ?? "MGDPTHKWE";
+const ONLY = process.env.ONLY ?? "MGDPTCHXKWE";
 fs.mkdirSync(SHOTS, { recursive: true });
 const t0 = Date.now();
 const srvN = spawn("python", [path.join(HERE, "spa-serve.py"), "9988", DIST], { stdio: "ignore" });
@@ -268,6 +272,79 @@ if (ONLY.includes("H")) {
   n = await open("hr", "dashboard/hr.html", { at: "18:00" });
   check("H7", "HR dashboard with nothing flagged: the empty words", (await text(n.t, "#flagged-card tbody")) === "No flagged check-ins in the last 7 days.", await text(n.t, "#flagged-card tbody"));
   await n.ctx.close();
+}
+
+// ---------- C (L4) ----------
+if (ONLY.includes("C")) {
+  console.log("\n--- C. The chosen place (overlapping places) ---");
+  const NEAR = { address: "Next to the office, Gurugram", lat: HEAD.lat + 100 / M_PER_DEG, lng: HEAD.lng, setAt: "2026-09-01T04:00:00.000Z", setBy: "EMP-1105" };   // 100 m north: overlaps the office
+  const store = [HOMES({ "EMP-1105": person(true, NEAR) })];
+  const today = async (t) => (await stored(t, "officeos:attendance")).records.find((r) => r.userId === "EMP-1105" && r.date === "2026-09-28");
+  let n = await open("emp", PAGE, { store, geo: north(HEAD, 60) });   // 60 m from the office, 40 m from home
+  let s = await locate(n.t);
+  check("C1", "inside both, the office chosen: the line measures the office (60 m)", s.value === "head" && s.line === "You're 60 m from Head office, inside its 150 m radius." && !s.button[2], j(s));
+  await n.t.click("#check-in-btn"); await settle(n.t, 400);
+  let rec = await today(n.t);
+  check("C2", "checked in: the record names the chosen office (60 m), not the nearer home; office work; the toast says Head office",
+    rec?.checkInPlace === "head" && rec.checkInDistanceM === 60 && rec.mode === "office" && (await toast(n.t)) === "Checked in from Head office.", j(rec));
+  s = await locate(n.t);
+  check("C3", "check-out in the overlap: Check-Out From shows the check-in's place, no flagged notice, Check out on",
+    s.label === "Check-Out From" && s.value === "head" && s.flag === null && s.line === "You're 60 m from Head office, inside its 150 m radius." && !s.button[2], j(s));
+  await n.t.click("#check-out-btn"); await settle(n.t, 400);
+  rec = await today(n.t);
+  check("C4", "checked out at the office, not flagged (the nearer home isn't taken for a move)", rec?.checkOutPlace === "head" && rec.flagged === false && (await toast(n.t)) === "Checked out.", j(rec));
+  await n.ctx.close();
+  n = await open("emp", PAGE, { store, geo: north(HEAD, 60) });
+  await n.t.selectOption("#checkin-from", "homePermanent"); s = await locate(n.t);
+  check("C5", "inside both, home chosen: the line measures home (40 m)", s.line === "You're 40 m from your permanent home, inside its 150 m radius." && !s.button[2], j(s));
+  await n.t.click("#check-in-btn"); await settle(n.t, 400);
+  rec = await today(n.t);
+  check("C6", "checked in: the record names home (40 m), work from home", rec?.checkInPlace === "homePermanent" && rec.checkInDistanceM === 40 && rec.mode === "wfh", j(rec));
+  await n.ctx.setGeolocation({ ...north(HEAD, -100), accuracy: 15 });   // 100 m south: the office only (home is 200 m away)
+  s = await locate(n.t);
+  check("C7", "then at the office only: Check-Out From shows home, 200 m away; the flagged notice names the office",
+    s.value === "homePermanent" && s.line === "You're 200 m from your permanent home. Check-in needs you within 150 m." && s.flag === "Flagged: you checked in at Permanent home and you're at Head office now. Checking out here flags the day for HR." && !s.button[2], j(s));
+  await n.t.click("#check-out-btn"); await asked(n.t, true);
+  rec = await today(n.t);
+  check("C8", "a check-out at another of your places still works when asked: the office named, flagged place-changed", rec?.checkOutPlace === "head" && rec.flagged && rec.flagReasons.includes("place-changed"), j(rec));
+  await n.ctx.close();
+}
+
+// ---------- X (L4) ----------
+if (ONLY.includes("X")) {
+  console.log("\n--- X. Team attendance Export: Place and Flagged ---");
+  const keepFile = path.join(SHOTS, "flagged-store.json");
+  const keep = fs.existsSync(keepFile) ? JSON.parse(fs.readFileSync(keepFile, "utf8")) : null;
+  const store = keep ? [["officeos:attendance", keep[0]], ["officeos:home-locations", keep[1]], ["officeos:devices", keep[2]]] : [];
+  check("X0", "the flagged day from T is there to read", Boolean(keep));
+  const csv = (s) => s.replace(/^﻿/, "").split("\r\n").map((line) => { const out = []; let cur = "", q = false;
+    for (let i = 0; i < line.length; i++) { const c = line[i]; if (q) { if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; } else if (c === '"') q = false; else cur += c; } else if (c === '"') q = true; else if (c === ",") { out.push(cur); cur = ""; } else cur += c; }
+    out.push(cur); return out; });
+  const grab = async (t) => { const got = []; t.on("download", async (dl) => got.push([dl.suggestedFilename(), fs.readFileSync(await dl.path(), "utf8")])); await t.click("main button[data-export]"); await t.waitForTimeout(1500); return got; };
+  for (const who of ["hr", "admin"]) {
+    const n = await open(who, "attendance/team-attendance.html", { store, at: "18:00" });
+    const files = await grab(n.t);
+    const rows = files.length === 1 ? csv(files[0][1]) : [];
+    const head = rows[0] ?? [];
+    const col = (name) => head.indexOf(name);
+    const arjun = rows.find((r) => r[0] === "Arjun Kapoor");
+    check(`X1.${who}`, `${who}: one file; its columns: Employee, Employee ID, Department, Check-in, Place, Hours, This week, Status, Flagged`,
+      files.length === 1 && /^team-attendance-\d{4}-\d{2}-\d{2}\.csv$/.test(files[0][0]) && j(head) === j(["Employee", "Employee ID", "Department", "Check-in", "Place", "Hours", "This week", "Status", "Flagged"]), j([files.map((f) => f[0]), head]));
+    check(`X2.${who}`, `${who}: Arjun's row: Place in words (in at the office, out at home), Status without the flag (Absent: in and out at 09:20), Flagged Yes`,
+      arjun && /^Head office, 40 m; out: Permanent home(, \d+ m)?$/.test(arjun[col("Place")]) && arjun[col("Status")] === "Absent" && arjun[col("Flagged")] === "Yes", j(arjun));
+    const others = rows.slice(1).filter((r) => r[0] !== "Arjun Kapoor");
+    check(`X3.${who}`, `${who}: everyone else: Flagged No, Place empty (no place recorded)`, others.length > 5 && others.every((r) => r[col("Flagged")] === "No" && r[col("Place")] === ""), j(others.slice(0, 3)));
+    const screen = await n.t.evaluate(() => [...document.querySelectorAll('table[data-export-name="team-attendance"] thead th')].map((h) => h.innerText.replace(/[▲▼]/g, "").replace(/\s+/g, " ").trim()));
+    check(`X4.${who}`, `${who}: the page's own table is unchanged (7 columns, no Flagged column)`, screen.length === 7 && !screen.includes("Flagged"), j(screen));
+    await n.t.selectOption("#team-flag", "flagged"); await settle(n.t);
+    const only = await grab(n.t);
+    const fr = only.length ? csv(only.at(-1)[1]) : [];
+    check(`X5.${who}`, `${who}: with Flagged only, the file has Arjun's row only`, fr.length === 2 && fr[1][0] === "Arjun Kapoor" && fr[1][fr[0].indexOf("Flagged")] === "Yes", j(fr.slice(0, 3)));
+    await n.ctx.close();
+  }
+  const m = await open("mgr", "attendance/team-attendance.html", { store, at: "18:00" });
+  check("X6", "a manager's team view has no Export (as before)", (await m.t.locator("main button[data-export]").count()) === 0);
+  await m.ctx.close();
 }
 
 // ---------- K ----------

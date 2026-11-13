@@ -5,6 +5,9 @@
 // counts, the type filter, the stats, who approves what, and Recently decided. A pending row's title opens the approval card
 // (without More); Approve / Reject go through the same flows as the other pages (Decision.jsx). Components: Table, Tabs,
 // StatCard, Badge, DecisionButtons, NotBuilt; the card is still ui/approval-card.js (its React rewrite is round 13b).
+// L4: HR (users:edit, without locations:review) also gets a read-only Location changes tab: every home location change,
+// its status, who asked, when, and who decided. No buttons and no count: only an Admin decides them, so nothing there is
+// counted as waiting for HR (the stat, the sidebar count and the bell stay as they were).
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { can } from "../../../assets/js/core/rbac.js";
@@ -37,6 +40,7 @@ import { pageUrl } from "../routes.js";
 const PAGE = "requests/approvals-inbox.html";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TABS = [["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]];
+const LOC_TAB = ["locations-view", "Location changes"];   // L4: HR's read-only tab
 const TYPES = ["Access", "Purchase", "System", "Leave", "Attendance", "Expense", "Asset", "Salary", "Location"];
 const STATS = [["Waiting for you", 3, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"], ["Approved this week", 2, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"],
   ["Rejected this week", 4, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M9 9l6 6M15 9l-6 6"], ["Average response", 1, "M4 20V10M10 20V4M16 20v-7M22 20H2"]];
@@ -182,7 +186,10 @@ function readInbox(userId, role) {
     ...[...salaryByMe("approved"), ...salaryByMe("rejected")].map((p) => ({ title: salaryTitle(p), badge: "Salary", by: nameOf(p.enteredBy), status: p.status, date: localDateOf(p.decidedAt) })).filter((x) => x.date >= since),
     ...[...locDecided("approved"), ...locDecided("rejected")].map((r) => ({ title: locationTitle(r), badge: "Location", by: nameOf(r.userId), status: r.status, date: localDateOf(r.decidedAt) })).filter((x) => x.date >= since),
   ].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
-  return { user, lists, stats, recent };
+  // L4: HR's read-only view of every home location change, newest request first
+  const locView = user && can("users:edit") && !can("locations:review")
+    ? allLocationChanges().sort((a, b) => b.requestedAt.localeCompare(a.requestedAt) || b.id.localeCompare(a.id, "en", { numeric: true })) : null;
+  return { user, lists, stats, recent, locView };
 }
 
 export default function ApprovalsInbox() {
@@ -192,8 +199,10 @@ export default function ApprovalsInbox() {
   const [tab, setTab] = useState(0);
   const [type, setType] = useState("");
   const d = useData(() => readInbox(userId, role?.key), [userId, role?.key]);
-  const which = TABS[tab][0];
-  const all = d.lists[which];
+  const tabs = d.locView ? [...TABS, LOC_TAB] : TABS;
+  const which = tabs[Math.min(tab, tabs.length - 1)][0];
+  const viewing = which === LOC_TAB[0];
+  const all = viewing ? [] : d.lists[which];
   const shown = all.filter((r) => !type || r.type === type);
   const chain = chainText();
   const sampleButtons = <div className="btn-group">
@@ -234,6 +243,14 @@ export default function ApprovalsInbox() {
     { key: "decision", label: "Decision", render: (r) => <StatusBadge status={r.status} /> },
     { key: "date", label: "Date", render: (r) => r.dateText ?? formatDay(r.date) },
   ];
+  const viewColumns = [
+    { key: "title", label: "Request", render: (r) => <div className="table__user"><div className={avatarClass(r.userId)}>{initials(nameOf(r.userId))}</div><span className="table__user-name">{locationTitle(r)}</span></div> },
+    { key: "by", label: "Requested by", render: (r) => nameOf(r.userId) },
+    { key: "details", label: "Details", render: (r) => (r.status === "rejected" && r.note ? `${r.place.address}: ${r.note}` : r.place.address) },
+    { key: "status", label: "Status", render: (r) => <StatusBadge status={r.status} /> },
+    { key: "asked", label: "Requested", render: (r) => formatDay(localDateOf(r.requestedAt)) },
+    { key: "decided", label: "Decided", render: (r) => (r.decidedAt ? `${formatDay(localDateOf(r.decidedAt))}, ${r.decidedBy === r.userId ? "cancelled by them" : nameOf(r.decidedBy)}` : "—") },
+  ];
   const WHO = [["Expense claims", chain.always], ["", `Then ${chain.extra} too, above ${rupees(EXPENSE_POLICY.adminAbove)}`], ["Leave requests", "Manager, then HR or an Admin"],
     ["Attendance corrections", "Manager, then HR or an Admin"], ["Purchase orders", "Not built yet"], ["Role changes", "Not built yet"], ["Salary revisions", "Finance, then an Admin"],
     ["Backup restore", "Not built yet"], ["Asset requests", "Manager, then an Admin"], ["Home location changes", "An Admin"]];
@@ -256,15 +273,22 @@ export default function ApprovalsInbox() {
         <div className="grid grid-main-aside grid-main-aside--wide">
           <section className="card">
             <div className="table__toolbar">
-              <Tabs pill active={tab} onChange={setTab} tabs={TABS.map(([k, label]) => ({ label, count: String(d.lists[k].length) }))} />
-              <select className="select select--sm" aria-label="Filter by type" value={type} onChange={(e) => setType(e.target.value)}>
+              <Tabs pill active={tabs.indexOf(tabs.find((t) => t[0] === which))} onChange={setTab} tabs={tabs.map(([k, label]) => ({ label, count: k === LOC_TAB[0] ? null : String(d.lists[k].length) }))} />
+              <select className="select select--sm" aria-label="Filter by type" value={type} onChange={(e) => setType(e.target.value)} hidden={viewing || undefined}>
                 <option value="">All types</option>
                 {TYPES.map((t) => <option key={t} value={t.toLowerCase()}>{t}</option>)}
               </select>
             </div>
+            {viewing ? <>
+              <div className="card__body"><p className="text-muted" id="location-view-note">Read-only: only an Admin approves or rejects home location changes.</p></div>
+              <Table bare pager={false} tableClass="table table--fit" tableId="location-view-table" columns={viewColumns} rows={d.locView} rowKey={(r) => r.id}
+                rowProps={(r) => ({ "data-change-id": r.id, "data-status": r.status })} empty="No home location changes yet." />
+              <div className="card__footer"><span className="card__meta">{`${d.locView.length} location ${d.locView.length === 1 ? "change" : "changes"}, read-only`}</span></div>
+            </> : <>
             <Table bare pager={false} tableClass="table table--fit" tableId="inbox-table" columns={columns} rows={shown} rowKey={(r) => `${r.kind ?? r.type}-${r.id ?? r.title}`}
               rowProps={(r) => ({ "data-type": r.type, ...(r.attrs ?? {}) })} empty={which === "pending" && !type ? "Nothing is waiting for you." : "Nothing here for these filters."} />
             <div className="card__footer"><span className="card__meta">{`Showing ${shown.length} of ${all.length} ${which} requests`}</span></div>
+            </>}
           </section>
           <aside className="stack">
             <section className="card">

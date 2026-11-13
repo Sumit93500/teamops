@@ -170,6 +170,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "places.mjs") { Run "places-$t" @("places.mjs") }
   if (Test-Path "punch14.mjs") { Run "punch14-$t" @("punch14.mjs") }
   if (Test-Path "perms14.mjs") { Run "perms14-$t" @("perms14.mjs") }
+  # L4: the chosen place (checkInAt / checkOutAt / checkPlace placeId)
+  if (Test-Path "chosen.mjs") { Run "chosen-$t" @("chosen.mjs") }
   Run "leave-$t" @("leave.mjs")
   Run "pages-$t" @("pages.mjs", $Pages)
   Run "approvals-$t" @("approvals.mjs", $Pages)

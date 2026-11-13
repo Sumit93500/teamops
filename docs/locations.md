@@ -52,6 +52,7 @@ The React app's shared name `COMPANY.name` (`app/src/data/company.js`) now reads
 - **Requests:** `cancelLocationChange`, `pendingLocationChanges(deciderId, roleKey)`, `locationChangesFor(userId)`.
 - **History:** every set, change and eligibility switch is kept as `{ at, byUserId, action, kind, from, to, requestId }` (`homeOf(userId).history`).
 - **The inbox (L2):** location changes are a sixth kind in the React app's `app/src/data/waiting.js` (the old `ui/waiting.js` plus `pendingLocationChanges`). The approvals inbox lists them (badge "Location", type filter, Approved / Rejected tabs, Recently decided); its stat, the sidebar's Approvals count, the topbar bell and its list, the approval card and the Admin dashboard's list all count from that one function, so they never disagree. Approve and Reject go through the shared decision flow (`LOCATION_FLOW` in `components/Decision.jsx`); Reject asks for a reason, which the employee sees. There is no separate notifications store: the bell is the inbox count.
+- **HR reads them (L4):** HR (`users:edit` without `locations:review`) has a read-only "Location changes" tab in the approvals inbox: every change, newest request first, with its status, who asked, when, and who decided. It has no buttons and no count, and nothing in it counts as waiting for HR: the inbox stat, the sidebar count and the bell stay as they were. Only an Admin decides.
 
 ## My locations (L2)
 
@@ -86,6 +87,12 @@ The React app's shared name `COMPANY.name` (`app/src/data/company.js`) now reads
 
 `judgePlace(reading, places)` is the pure core; `placesFor(employee)` lists the places.
 
+**The chosen place (L4):** `checkPlace(reading, employee, now, placeId)` and `judgePlace(reading, places, placeId)` take an optional `placeId`, one of the employee's `place` values (`head`, `branch`, `homePermanent`, `homeTemporary`).
+
+- Given, the reading is judged against **that place only**. Two overlapping places (an office and a home close by) can't name the other one, and "outside" names the chosen place: "N m from <chosen place>".
+- A `placeId` that isn't one of the employee's places is refused: code `not-allowed`, "That place isn't one you may check in from. Choose one of your places." The reading's own checks (`no-location`, `inaccurate`) and `no-place` still come first.
+- Left out (`undefined` or `null`), everything is exactly as before: the nearest place inside wins.
+
 ## Devices (`devices-store.js`)
 
 - **The token:** each browser gets a random 32-hex token on first use (`deviceToken()`, kept in `officeos:device-token`).
@@ -96,7 +103,7 @@ The React app's shared name `COMPANY.name` (`app/src/data/company.js`) now reads
 
 ## Check-in and check-out with a place
 
-`checkInAt(userId, mode, reading, token?)` and `checkOutAt(userId, reading, token?)` run these steps in order. Nothing is written when one refuses.
+`checkInAt(userId, mode, reading, token?, placeId?)` and `checkOutAt(userId, reading, token?, placeId?)` run these steps in order. Nothing is written when one refuses. With a `placeId` (L4) the place check is made against the chosen place and the record names it; without one it is as before. The React Mark attendance passes the chosen place for a check-in, and for a check-out the check-in's place when the reading is inside it (else the nearest place inside, which is flagged when it differs).
 
 1. The place check.
 2. The device check.
@@ -131,8 +138,9 @@ The users page's "Reset demo data" clears all of these back to the seed (L0): `r
 - `devices`;
 - `places`: the place check;
 - `punch14`: check-in and check-out, flags, old data;
-- `perms14`: the permissions matrix for all four roles and a manager.
+- `perms14`: the permissions matrix for all four roles and a manager;
+- `chosen` (L4): the chosen place: chosen vs nearest with overlapping places, outside the chosen one, a place that isn't yours, no `placeId` as before, and the records check-in and check-out write.
 
 The React harness `tests/live/react/att3.mjs` (L3) checks in and out with a mocked location: inside, at the radius, just outside, far, bad accuracy, denied, no location, in India, UTC and Los Angeles time; home not set, not home-eligible, a branch, a shared device, the device limit, a flagged check-out; and the place column, Flagged badge and filters on the views.
 
-The React harness `tests/live/react/locs.mjs` (L2) covers My locations, the location changes in the inbox, card, bell, counts and Admin dashboard, My devices, Offices in the sidebar, keyboard, and 412 / 1280 in both themes.
+The React harness `tests/live/react/locs.mjs` (L2) covers My locations, the location changes in the inbox, card, bell, counts and Admin dashboard, My devices, Offices in the sidebar, keyboard, and 412 / 1280 in both themes. Its V section (L4) covers HR's read-only Location changes tab. att3's C and X sections (L4) cover the chosen place with overlapping places and Team attendance's Export.

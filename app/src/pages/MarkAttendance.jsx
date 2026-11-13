@@ -8,6 +8,9 @@
 // mode follows the place (a home is work from home). The store does the real checks (checkInAt / checkOutAt). The
 // privacy line is on the page. Today's times and places, the shift card, your places, and the last 5 working days with
 // where each check-in came from. It all redraws after a punch (the bus) and at the start of every minute.
+// L4: the store is told the chosen place (checkInAt / checkOutAt's placeId), so it checks that place only and the record
+// names it; overlapping places can't be mixed up. Check-Out From shows the check-in's place; a check-out inside it counts
+// there, one outside it is judged at the nearest of your places (flagged, asked first, as before).
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getUser } from "../../../assets/js/data/store.js";
@@ -122,6 +125,7 @@ function refusalText(r) {
     case "inaccurate": return `Your location isn't accurate enough (it needs to be within ${ACCURACY_LIMIT_M} m). Press Use my location to try again.`;
     case "outside": return `You're ${r.error}. Move within the place's radius, then press Use my location again.`;
     case "no-place": return "No office is set for you. Ask an Admin.";
+    case "not-allowed": return "That place isn't one you may check in from. Choose one of your places.";
     case "no-token": return "This browser can't keep a device token. Allow site storage for this site, then reload.";
     default: return r.error;
   }
@@ -159,11 +163,13 @@ export default function MarkAttendance() {
   const { day, user, month, today, places, device, stamp } = d;
   const st = statusOf(day, user);
   const fallback = day?.suggestedMode === "wfh" ? places.find((p) => isHome(p.place)) : null;
-  const place = places.find((p) => p.place === chosen) ?? fallback ?? places[0] ?? null;
+  const want = st.canOut && stamp?.inPlace ? stamp.inPlace : chosen;
+  const place = places.find((p) => p.place === want) ?? fallback ?? places[0] ?? null;
   const line = placeLine(geo, place);
   const ready = Boolean(line.inside) && device.ok;
-  // Where the store would place this check-out (the nearest place inside), against the check-in's place.
-  const outAt = st.canOut && geo.reading ? judgePlace(geo.reading, places) : null;
+  // Where this check-out counts: the check-in's place when the reading is inside it, else the nearest place inside (L4).
+  const atIn = st.canOut && geo.reading && stamp?.inPlace ? judgePlace(geo.reading, places, stamp.inPlace) : null;
+  const outAt = st.canOut && geo.reading ? (atIn?.ok ? atIn : judgePlace(geo.reading, places)) : null;
   const moved = Boolean(st.canOut && stamp?.inPlace && outAt?.ok && outAt.place !== stamp.inPlace);
   let start = toMinutes(R.shiftStart), end = toMinutes(R.shiftEnd);
   if (day?.halfDayLeave === "first-half") start = toMinutes(R.halfSplit);
@@ -181,11 +187,11 @@ export default function MarkAttendance() {
   };
   const doIn = () => {
     const mode = isHome(place.place) ? "wfh" : "office";
-    after(checkInAt(userId, mode, geo.reading, deviceToken()), (rec) => `Checked in from ${PLACE_LABEL[rec.checkInPlace] ?? place.name}.${rec.flagged ? " Flagged for HR: this device is registered to someone else too." : ""}`);
+    after(checkInAt(userId, mode, geo.reading, deviceToken(), place.place), (rec) => `Checked in from ${PLACE_LABEL[rec.checkInPlace] ?? place.name}.${rec.flagged ? " Flagged for HR: this device is registered to someone else too." : ""}`);
   };
   const doOut = async () => {
     if (moved && !(await confirm({ message: `Check out from ${outAt.placeName}?\nYou checked in at ${PLACE_LABEL[stamp.inPlace]}. A check-out from another place is flagged for HR to look at.`, confirmLabel: "Check out", danger: true }))) return;
-    after(checkOutAt(userId, geo.reading, deviceToken()), (rec) => (rec.flagged ? `Checked out. Flagged for HR: ${rec.flagReasons.includes("place-changed") ? "a different place than your check-in" : "a different device or a shared one"}.` : "Checked out."));
+    after(checkOutAt(userId, geo.reading, deviceToken(), outAt?.ok ? outAt.place : undefined), (rec) => (rec.flagged ? `Checked out. Flagged for HR: ${rec.flagReasons.includes("place-changed") ? "a different place than your check-in" : "a different device or a shared one"}.` : "Checked out."));
   };
 
   const recentColumns = [

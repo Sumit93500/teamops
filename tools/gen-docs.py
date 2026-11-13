@@ -32,7 +32,7 @@ NAMED = {
             "overrides recordrole roleview sessrole financeperm holders nottheirs reactivate rejoin joiners joindate joinguard newhire "
             "newstarts notjoined leavers firstleft tenure comeback delnames store authpages authnotes acctpages signnotes",
     "attendance": "attendance mark myatt reg team workedday bothdates cells view decidegap absence latepause relief",
-    "locations": "company offices homes devices places punch14 perms14",
+    "locations": "company offices homes devices places punch14 perms14 chosen",
     "leave": "leave leavebal holiguard holileave holipast",
     "payroll": "payroll payrun payruns payslip payclock paygate salary salchain saledit salinbox salpage salwrite wfsalary tdsyear "
                "taxlabel taxnote unpaid periods adjacent gap",

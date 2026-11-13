@@ -1,7 +1,7 @@
 // L2's harness (msedge, headless): My locations, location changes in the approvals inbox / card / bell / sidebar count /
 // Admin dashboard, My devices on My profile, and Offices in the sidebar. New screens only (no old page to compare), read by
 // meaning (ids, labels, words, table cells, dialogs, toasts), never by CSS look.
-// usage: node locs.mjs <app dist> <pristine tree> <shots dir>   [ONLY=RNSCAHDYKWE]
+// usage: node locs.mjs <app dist> <pristine tree> <shots dir>   [ONLY=RNSCAHVDYKWE]
 // Fixed clock Mon 28 Sep 2026 10:00 IST, fresh storage each, geolocation mocked per context.
 //   R  every role opens My locations; Offices is in the sidebar's Attendance section for every role; search finds My locations
 //   N  not home-eligible (employee, manager): the office, why there's no home check-in and whom to ask; no forms
@@ -14,6 +14,8 @@
 //      list; Approve asks, then applies the new place; Reject needs a reason, then keeps the old place; Approved / Rejected
 //      tabs; the employee sees the decision and the history
 //   H  HR and a manager: no location rows, no Location decisions; "Who approves what" names an Admin
+//   V  (L4) HR's read-only Location changes tab: no count, not in HR's bell / sidebar count / stat; every change with its
+//      status, who, when and who decided; no buttons; the other roles have no such tab
 //   D  My devices on My profile: none yet; two with this one marked; the limit warning; the honest note; Admin reset on the
 //      user profile reachable (asked, then the toast, none left)
 //   Y  an Admin's own change applies at once, logged ("Changed", decided by You)
@@ -29,7 +31,7 @@ const EDGE = path.join(HERE, "..", "edge");
 const { chromium } = createRequire(path.join(EDGE, "x.js"))("playwright-core");
 const { useLocalFonts } = await import(new URL("file:///" + path.join(EDGE, "lib", "local-fonts.mjs").replace(/\\/g, "/")).href);
 const [DIST, , SHOTS] = process.argv.slice(2);
-const ONLY = process.env.ONLY ?? "RNSCAHDYKWE";
+const ONLY = process.env.ONLY ?? "RNSCAHVDYKWE";
 fs.mkdirSync(SHOTS, { recursive: true });
 const t0 = Date.now();
 const srvN = spawn("python", [path.join(HERE, "spa-serve.py"), "9987", DIST], { stdio: "ignore" });
@@ -261,6 +263,47 @@ if (ONLY.includes("H")) {
     const s = await n.t.evaluate(() => ({ rows: document.querySelectorAll("#inbox-table tr[data-change-id]").length, opts: [...document.querySelectorAll('select[aria-label="Filter by type"] option')].map((o) => o.textContent) }));
     check(`H1.${who}`, `${who}: no location change rows (only an Admin decides them)`, s.rows === 0, j(s));
     await n.ctx.close();
+  }
+}
+
+// ---------- V (L4) ----------
+if (ONLY.includes("V")) {
+  console.log("\n--- V. HR's read-only Location changes tab ---");
+  const DECIDED = [HOME({ "EMP-1105": person(true, PLACE_A) }), CHANGES([CHANGE(),
+    CHANGE({ id: "LC-2", kind: "temporary", place: { address: "7 Park Street, Kolkata", lat: 22.55, lng: 88.35 }, status: "rejected", requestedAt: "2026-09-20T04:30:00.000Z", decidedAt: "2026-09-21T06:00:00.000Z", decidedBy: "EMP-1001", note: "Not a work trip" }),
+    CHANGE({ id: "LC-3", userId: "EMP-1029", place: { address: "3 Residency Road, Bengaluru", lat: 12.97, lng: 77.6 }, status: "approved", requestedAt: "2026-09-10T04:30:00.000Z", decidedAt: "2026-09-11T06:00:00.000Z", decidedBy: "EMP-1001" })])];
+  const tabs = (t) => t.evaluate(() => [...document.querySelectorAll('.table__toolbar [role="tab"]')].map((b) => b.innerText.replace(/\s+/g, " ").trim()));
+  const base = await open("hr", "requests/approvals-inbox.html", { store: [HOME({ "EMP-1105": person(true, PLACE_A) })] });
+  const before = [await bell(base.t), await navCount(base.t), await text(base.t, ".stat-card")];
+  await base.ctx.close();
+  const n = await open("hr", "requests/approvals-inbox.html", { store: DECIDED });
+  const tb = await tabs(n.t);
+  check("V1", "HR: a fourth tab, \"Location changes\", with no count badge", tb.length === 4 && tb.slice(0, 3).every((x) => /^(Pending|Approved|Rejected) \d+$/.test(x)) && tb[3] === "Location changes", j(tb));
+  const after = [await bell(n.t), await navCount(n.t), await text(n.t, ".stat-card")];
+  check("V2", "HR's bell, sidebar count and \"Waiting for you\" don't count the waiting location change", j(after) === j(before), j([before, after]));
+  check("V3", "HR's Pending tab lists no location change", (await n.t.locator("#inbox-table tr[data-change-id]").count()) === 0);
+  await n.t.click('.table__toolbar [role="tab"] >> text=Location changes'); await settle(n.t, 250);
+  const view = await n.t.evaluate(() => { const tb = document.getElementById("location-view-table");
+    return tb ? { head: [...tb.querySelectorAll("thead th")].map((h) => h.innerText.trim()), rows: [...tb.querySelectorAll("tbody tr")].map((r) => [r.dataset.changeId, ...[...r.cells].map((c) => c.innerText.replace(/\s+/g, " ").trim())]),
+      buttons: tb.querySelectorAll("button, [data-card], [role='button']").length, note: document.getElementById("location-view-note")?.textContent, filter: document.querySelector('select[aria-label="Filter by type"]')?.hidden,
+      foot: document.querySelector(".card__footer .card__meta")?.textContent } : null; });
+  check("V4", "the tab: Request, Requested by, Details, Status, Requested, Decided; newest request first", j(view?.head) === j(["Request", "Requested by", "Details", "Status", "Requested", "Decided"]) && j(view.rows.map((r) => r[0])) === j(["LC-1", "LC-2", "LC-3"]), j(view));
+  check("V5", "each row says the status, who and when (and who decided)",
+    j(view?.rows[0]) === j(["LC-1", "AK Home location: Arjun Kapoor, permanent", "Arjun Kapoor", "45 Golf Course Road, Gurugram", "Pending", "27 Sep", "—"])
+    && j(view.rows[1]) === j(["LC-2", "AK Home location: Arjun Kapoor, temporary", "Arjun Kapoor", "7 Park Street, Kolkata: Not a work trip", "Rejected", "20 Sep", "21 Sep, Aarav Mehta"])
+    && j(view.rows[2]) === j(["LC-3", "SR Home location: Sneha Rao, permanent", "Sneha Rao", "3 Residency Road, Bengaluru", "Approved", "10 Sep", "11 Sep, Aarav Mehta"]), j(view?.rows));
+  check("V6", "read-only: no buttons or card links, the note says only an Admin decides, no type filter, the footer says read-only",
+    view?.buttons === 0 && view.note === "Read-only: only an Admin approves or rejects home location changes." && view.filter === true && view.foot === "3 location changes, read-only", j(view));
+  const kept = await stored(n.t, "officeos:location-changes");
+  check("V7", "looking changed nothing", kept.records.map((r) => r.status).join() === "pending,rejected,approved");
+  await n.t.click('.table__toolbar [role="tab"] >> nth=0'); await settle(n.t, 200);
+  check("V8", "back on Pending: the inbox table and the filter again", (await n.t.locator("#inbox-table").count()) === 1 && (await n.t.evaluate(() => document.querySelector('select[aria-label="Filter by type"]').hidden)) === false);
+  await n.ctx.close();
+  for (const who of ["admin", "mgr", "fin", "emp"]) {
+    const m = await open(who, "requests/approvals-inbox.html", { store: DECIDED });
+    const tb2 = await tabs(m.t);
+    check(`V9.${who}`, `${who}: no Location changes tab (an Admin decides in the usual tabs; others don't see them)`, tb2.length === 3 && !tb2.some((x) => x.startsWith("Location")), j(tb2));
+    await m.ctx.close();
   }
 }
 
