@@ -200,6 +200,9 @@ function Profile({ initial }) {
     setTimeout(() => { bump(); navigate(LIST); }, 1200);
   };
 
+  // E0: each card's Edit opens the user form at its section (only for whoever may edit)
+  const editIn = (section, name) => (can.edit ? <Link className="ds-btn ds-btn--sm" aria-label={name} data-edit-section={section}
+    to={pageUrl(`users/user-form.html?id=${encodeURIComponent(user.id)}&section=${section}`)}>Edit</Link> : null);
   return (
     <>
       <PageHeader title="Employee profile" breadcrumb={[{ label: "Users", to: LIST }, { label: user.name }]}
@@ -234,13 +237,13 @@ function Profile({ initial }) {
         </nav>
         <div className="ds-two-col">
           <div className="ds-stack">
-            <Card id="profile-details" title="Details">
+            <Card id="profile-details" title="Details" actions={editIn("employment", "Edit employment details")}>
               <Kv rows={[["Work email", orDash(user.email)], ["Phone", orDash(user.phone)], ["Location", orDash(user.location)], ["Employment type", orDash(user.employmentType)],
                 ["Department", orDash(departmentName(user.department))], ["Reporting manager", orDash(reportingManagerName(user))], ["Date of joining", orDash(user.dateOfJoining)],
                 leavingDate(user) ? ["Last working day", formatDay(leavingDate(user), true)] : null,
                 ["Tenure", tenure ? (away ? `${tenure} (${plural(away, "day", "days")} away)` : tenure) : "—", { muted: !tenure }]]} />
             </Card>
-            <Card id="profile-sensitive" title="Sensitive details" actions={<Pill tone="info">Needs pii:view</Pill>}>
+            <Card id="profile-sensitive" title="Sensitive details" actions={<><Pill tone="info">Needs pii:view</Pill>{editIn("pay", "Edit pay and tax details")}</>}>
               <Kv rows={[Sensitive({ label: "Bank account", masked: maskAccount(user.bankAccountLast4) || "•••• ••••", full: user.bankAccount ? formatAccount(user.bankAccount) : "", canReveal: can.pii }),
                 Sensitive({ label: "PAN", masked: maskPan(user.pan), full: user.pan ?? "", canReveal: can.pii }),
                 can.salary ? ["Salary", salary ? `${rupees(salary.gross)} a month` : "Not on file", { muted: !salary }] : ["Salary", "Hidden, needs salary:view", { muted: true }]]} />
@@ -249,7 +252,7 @@ function Profile({ initial }) {
             <Card id="profile-activity" title="Recent activity" meta="This month"><p className="ds-hint">No recent activity</p></Card>
           </div>
           <aside className="ds-stack">
-            <Card id="profile-access" title="Access">
+            <Card id="profile-access" title="Access" actions={editIn("access", "Edit role and access")}>
               <Kv rows={[["Designation", orDash(user.designation)], ["Default role", <Pill tone="info">{role?.label ?? user.role}</Pill>], ["Data scope", role?.scopeLabel ?? ROLES.emp.scopeLabel],
                 ["Approval chain", approvalChainText(user.id)], ["Two-factor sign-in", "Not recorded yet", { muted: true }], ["Last sign-in", "Not recorded yet", { muted: true }]]} />
             </Card>

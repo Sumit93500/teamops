@@ -52,6 +52,17 @@ Every component is on `/gallery` under "Design foundation".
   - The width moves in 0.2 s, not at all with reduced motion; the content, charts and tables re-measure. At 820 px and below the drawer is unchanged.
   - A1: the person's "Sidebar on a computer" preference comes first (Expanded or Collapsed on every page); "Remember my last choice" (the default) is the rule above.
 
+## Forms by sections (E0)
+
+The user form (Add and Edit employee) is the first form in sections (`pages/UserForm.jsx`, `design/sections.css`):
+
+- **The sections:** Personal details, Contact details, Employment (with the office and home check-in), Pay and tax, Role and access, then Review. A section with no fields isn't shown.
+- **The section list:** on the left, with "Step n of 6", a progress bar, each section's number (a tick once it's checked and fine) and its error count. From 1000 px down it's a stepper across the top that scrolls sideways. From 1440 px the access summary sits on the right; below that, under the section.
+- **Next and Back:** Next checks the section it leaves, with the errors under the fields and focus on the first; any section opens by its name. "n sections need attention" counts the sections with errors.
+- **Review:** every value, read-only ("Not given" for blanks), each group with Edit back to its section, then Create employee. Saving checks every section and opens the first one with an error.
+- **Editing:** Save changes works from any section. `?section=<key>` opens one; the profile's cards link there.
+- **Leaving:** leaving with unsaved changes asks first ("Leave without saving?", Stay or Leave), and so does closing the tab.
+
 ## Appearance preferences (A1)
 
 One store, `app/src/data/prefs.js`, read and written by the header's Appearance menu, the Appearance page (`/pages/account/appearance.html`, everyone signed in) and Settings > Appearance (the same panel). A change shows everywhere at once, other open tabs included (the storage event).

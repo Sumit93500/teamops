@@ -560,6 +560,23 @@ react-users.F6,react-users,"saved: ""Employee saved."", then the list",x1
 react-users.F7,react-users,"the new employee in the list, as on the old page",x1
 react-users.F8,react-users,New: the Admin picks Arjun's office (offices listed with their state) and turns on home check-in; both saved with the employee,x1
 react-users.F9,react-users,"New: HR can't change the office (Admin only, said under it) but can turn home check-in on or off",x1
+react-users.S1,react-users,"admin: six sections listed, Step 1 of 6, only Personal details shown; Cancel and Next (no Create yet)",x2 (2 roles)
+react-users.S2,react-users,"Next on an empty Personal details: stays, the errors under the fields, focus on the first, ""1 section needs attention"", ""2 errors"" on the step",x1
+react-users.S3,react-users,fixed: the errors and the count go as the fields are filled,x1
+react-users.S4,react-users,"Next: Contact details (Step 2 of 6), focus on its heading; Back appears",x1
+react-users.S5,react-users,Back goes to Personal details; a section by Enter on its name (Employment) and by click (Contact details),x1
+react-users.S6,react-users,"an address that isn't one: ""Enter a valid email address, like name@northwind.com."", focus there",x1
+react-users.S7,react-users,"Create with Employment still empty: back to Employment, its errors, focus on Department, the count",x1
+react-users.S8,react-users,"Review: every value read-only (names, email, department by name, designation, joining as ""5 Oct 2026"", PAN in capitals, the role, ""Not given"" for blanks); Create employee",x1
+react-users.S9,react-users,"Review's Edit goes to its section; Create: ""Employee saved."", the list, the record saved (no leave question after saving)",x1
+react-users.S10,react-users,"the email already used: back to Contact details, the store's words under the field, focus there",x1
+react-users.S11,react-users,"Cancel with changes asks (""Leave without saving?""): Stay keeps the form, Leave goes to the list",x1
+react-users.S12,react-users,Cancel with nothing changed leaves at once,x1
+react-users.S13,react-users,"Edit at ?section=contact opens Contact details; Save changes from there saves (the phone), ""Employee saved.""",x1
+react-users.S14,react-users,"admin: the profile's Edit links open the form at Employment, Pay and tax, Role and access",x2 (2 roles)
+react-users.S15,react-users,following one opens that section,x1
+react-users.S16,react-users,"412 (a stepper across the top) and 1280, light and dark: no sideways scroll; shots",x1
+react-users.S17,react-users,"the section list, its errors and the section text at 4.5:1 or more, 2 themes x 7 accent settings",x1
 react-users.P1.EMP-1042,react-users,"admin on EMP-1042: heading, crumbs, actions shown, tab title",x2 (2 roles)
 react-users.P2.EMP-1042,react-users,"admin on EMP-1042: every detail, sensitive and access row (tenure: no joining date, ruled)",x2 (2 roles)
 react-users.P3.EMP-1042,react-users,"admin on EMP-1042: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x2 (2 roles)

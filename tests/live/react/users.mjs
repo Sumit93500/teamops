@@ -8,7 +8,12 @@
 //      Reset question's words
 //   F  user form: every field (value, disabled, options), access summary, effective permissions, overrides and their
 //      lock, for Add and Edit as Admin / HR, own record, an Admin, not found; saving (new, email taken); New: office and
-//      home check-in saved
+//      home check-in saved. E0: on the new side a field's section is opened before it's used (the reading is unchanged)
+//   S  E0, the form by sections (new): the section list and progress for Admin and HR; Next checks a section (errors under
+//      the fields, focus, the count); Back; a section by click and by keyboard; Review (every value, Edit back to a
+//      section); Create (saved, the list); Create with errors elsewhere (to the first, focus); the email taken (to Contact);
+//      Edit opens at ?section= and saves from there; leaving with changes asks (Stay / Leave), without changes doesn't;
+//      the profile's Edit links; 412 and 1280, light and dark (no sideways scroll, shots); contrast at every accent x theme
 //   P  user profile: header, details, sensitive (Reveal), access, overrides, leave, assets, activity, actions, reasons;
 //      Reset password; Deactivate (the date check, then done); Reactivate; Delete refused; not found. New: check-in places,
 //      devices (Admin reset, asked)
@@ -30,7 +35,7 @@ const EDGE = path.join(HERE, "..", "edge");
 const { chromium } = createRequire(path.join(EDGE, "x.js"))("playwright-core");
 const { useLocalFonts } = await import(new URL("file:///" + path.join(EDGE, "lib", "local-fonts.mjs").replace(/\\/g, "/")).href);
 const [DIST, PRIST, SHOTS] = process.argv.slice(2);
-const ONLY = process.env.ONLY ?? "RLFPDOCAXKWE";
+const ONLY = process.env.ONLY ?? "RLFSPDOCAXKWE";
 fs.mkdirSync(SHOTS, { recursive: true });
 const t0 = Date.now();
 const srvN = spawn("python", [path.join(HERE, "spa-serve.py"), "9985", DIST], { stdio: "ignore" });
@@ -210,10 +215,12 @@ const readForm = (t) => t.evaluate((ids) => {
     count: document.getElementById("effective-count")?.textContent.trim(), chips: chipsBox ? [...chipsBox.children].map((c) => c.textContent.trim()) : null,
     granted: chipsBox ? [...chipsBox.children].filter((c) => c.title === "Granted to this person").map((c) => c.textContent.trim()) : null,
     grant: opts("grant"), deny: opts("deny"), noneGrant: tx(document.getElementById("grant-options"))?.startsWith("None") ?? null,
-    reason: reason && !reason.hidden && reason.getClientRects().length ? reason.textContent.trim() : "",
-    account: document.getElementById("account-active")?.getClientRects().length ? document.getElementById("account-active").checked : null,
-    submit: [...document.querySelectorAll('main button[type="submit"]')].filter((b) => b.getClientRects().length).map((b) => b.textContent.trim()) };
+    // E0: on the new page a field may sit in a section that isn't open: shown there counts as shown
+    reason: reason && !reason.hidden && (reason.getClientRects().length || reason.closest(".uf-section")) ? reason.textContent.trim() : "",
+    account: (() => { const a = document.getElementById("account-active"); return a && (a.getClientRects().length || a.closest(".uf-section")) ? a.checked : null; })() };
 }, FIELDS);
+// E0: open the section a field is in (the new page's section list; nothing on the old page)
+const show = async (t, key) => { const b = await t.$(`[data-step="${key}"]`); if (b) { await b.click(); await settle(t, 120); } };
 if (ONLY.includes("F")) {
   console.log("\n--- F. User form ---");
   for (const [who, q] of [["admin", ""], ["hr", ""], ["admin", "?id=EMP-1105"], ["admin", "?id=EMP-1003"], ["admin", "?id=EMP-1001"], ["admin", "?id=EMP-1008"], ["hr", "?id=EMP-1105"], ["hr", "?id=EMP-1042"]]) {
@@ -227,9 +234,9 @@ if (ONLY.includes("F")) {
     const x = await pair("admin", "users/user-form.html");
     const steps = async (t) => {
       const out = [];
-      await t.selectOption("#designation", { label: "HR Manager" }); await settle(t, 150); out.push(await readForm(t));
+      await show(t, "employment"); await t.selectOption("#designation", { label: "HR Manager" }); await settle(t, 150); out.push(await readForm(t));
       await t.selectOption("#manager", { label: "Sneha Rao" }); await settle(t, 150); out.push(await readForm(t));
-      await t.check('#grant-options input[value="inventory:view"]'); await t.check('#deny-options input[value="audit:view"]'); await settle(t, 150); out.push(await readForm(t));
+      await show(t, "access"); await t.check('#grant-options input[value="inventory:view"]'); await t.check('#deny-options input[value="audit:view"]'); await settle(t, 150); out.push(await readForm(t));
       return out;
     };
     const [a, b] = [await steps(x.o.t), await steps(x.n.t)];
@@ -244,16 +251,16 @@ if (ONLY.includes("F")) {
   }
   // saving
   const fill = async (t, email) => {
-    await t.fill("#first-name", "Neha"); await t.fill("#last-name", "Verma"); await t.fill("#work-email", email);
-    await t.selectOption("#department", { label: "Engineering" }); await t.selectOption("#designation", { label: "Software Engineer" });
+    await show(t, "personal"); await t.fill("#first-name", "Neha"); await t.fill("#last-name", "Verma"); await show(t, "contact"); await t.fill("#work-email", email);
+    await show(t, "employment"); await t.selectOption("#department", { label: "Engineering" }); await t.selectOption("#designation", { label: "Software Engineer" });
     await t.fill("#joining", "2026-10-05");
   };
-  const submit = async (t) => { await t.click('main button[type="submit"]'); await settle(t, 300); };
+  const submit = async (t) => { await show(t, "review"); await t.click('main button[type="submit"]'); await settle(t, 300); };
   {
     const x = await pair("admin", "users/user-form.html");
     const taken = async (t) => { await fill(t, "arjun.kapoor@northwind.com"); await submit(t); return t.evaluate(() => [document.querySelector("#work-email-error, .form-error")?.textContent.trim() ?? null, document.activeElement?.id]); };
     same("F5", "an email already used: the store's words at the email field, focus there", [(await taken(x.o.t))[0]], [(await taken(x.n.t))[0]]);
-    const ok = async (t) => { await t.fill("#work-email", "neha.verma@northwind.com"); await submit(t); const tt = await toasts(t); await t.waitForURL(/users-list/, { timeout: 4000 }).catch(() => {}); return [tt.at(-1), new URL(t.url()).pathname]; };
+    const ok = async (t) => { await show(t, "contact"); await t.fill("#work-email", "neha.verma@northwind.com"); await submit(t); const tt = await toasts(t); await t.waitForURL(/users-list/, { timeout: 4000 }).catch(() => {}); return [tt.at(-1), new URL(t.url()).pathname]; };
     same("F6", "saved: \"Employee saved.\", then the list", await ok(x.o.t), await ok(x.n.t));
     const listed = async (t) => (await table(t))?.rows.find((r) => r[0].includes("Neha Verma"))?.slice(0, 6);
     same("F7", "the new employee in the list, as on the old page", await listed(x.o.t), await listed(x.n.t));
@@ -268,7 +275,7 @@ if (ONLY.includes("F")) {
       localStorage.setItem("officeos:offices", JSON.stringify(box));
     } });
     const opts = await n.t.evaluate(() => [...document.querySelectorAll("#office option")].map((o) => o.textContent));
-    await n.t.selectOption("#office", "OFF-2"); await n.t.click("#home-eligible"); await submit(n.t);
+    await show(n.t, "employment"); await n.t.selectOption("#office", "OFF-2"); await n.t.click("#home-eligible"); await submit(n.t);
     const after = await n.t.evaluate(() => [JSON.parse(localStorage.getItem("officeos:offices")).assignments["EMP-1105"], JSON.parse(localStorage.getItem("officeos:home-locations") ?? "{}").people?.["EMP-1105"]?.homeEligible]);
     check("F8", "New: the Admin picks Arjun's office (offices listed with their state) and turns on home check-in; both saved with the employee", j(opts) === j(["Head office, Haryana", "Pune branch, Maharashtra"]) && j(after) === j(["OFF-2", true]), j([opts, after]));
     await n.ctx.close();
@@ -277,6 +284,135 @@ if (ONLY.includes("F")) {
     check("F9", "New: HR can't change the office (Admin only, said under it) but can turn home check-in on or off", j(hs) === j([true, false, "Only an Admin can change someone's office."]), j(hs));
     await h.ctx.close();
   }
+}
+
+// ---------- S: the user form by sections (E0, new) ----------
+if (ONLY.includes("S")) {
+  console.log("\n--- S. The user form by sections ---");
+  const state = (t) => t.evaluate(() => ({ now: document.getElementById("uf-progress-text")?.textContent, errors: document.getElementById("uf-errors")?.textContent,
+    steps: [...document.querySelectorAll(".uf-step")].map((b) => b.innerText.replace(/\s+/g, " ").trim()), current: document.querySelector('.uf-step[aria-current="step"]')?.dataset.step,
+    shown: [...document.querySelectorAll(".uf-section")].filter((s) => !s.hidden).map((s) => s.dataset.section), focus: document.activeElement?.id,
+    fieldErrors: [...document.querySelectorAll(".uf-section:not([hidden]) .ds-field__error")].map((e) => [e.id, e.textContent]),
+    buttons: [...document.querySelectorAll(".uf-actions button, .uf-actions a")].map((b) => b.textContent.trim()) }));
+  const TITLES = ["Personal details", "Contact details", "Employment", "Pay and tax", "Role and access", "Review"];
+  for (const who of ["admin", "hr"]) {
+    const n = await open(N, who, "users/user-form.html");
+    const s = await state(n.t);
+    check(`S1.${who}`, `${who}: six sections listed, Step 1 of 6, only Personal details shown; Cancel and Next (no Create yet)`,
+      j(s.steps.map((x) => x.replace(/^\d+ /, ""))) === j(TITLES) && s.now === "Step 1 of 6: Personal details" && j(s.shown) === j(["personal"]) && j(s.buttons) === j(["Cancel", "Next"]), j(s));
+    await n.ctx.close();
+  }
+  let n = await open(N, "admin", "users/user-form.html");
+  await n.t.click("#uf-next"); await settle(n.t);
+  let s = await state(n.t);
+  check("S2", "Next on an empty Personal details: stays, the errors under the fields, focus on the first, \"1 section needs attention\", \"2 errors\" on the step",
+    s.current === "personal" && j(s.fieldErrors) === j([["first-name-error", "Enter the first name."], ["last-name-error", "Enter the last name."]]) && s.focus === "first-name"
+    && s.errors === "1 section needs attention" && s.steps[0].endsWith("2 errors"), j(s));
+  await n.t.fill("#first-name", "Neha"); await n.t.fill("#last-name", "Verma"); await settle(n.t);
+  s = await state(n.t);
+  check("S3", "fixed: the errors and the count go as the fields are filled", s.fieldErrors.length === 0 && s.errors === "" && !s.steps[0].includes("error"), j(s));
+  await n.t.click("#uf-next"); await settle(n.t);
+  s = await state(n.t);
+  check("S4", "Next: Contact details (Step 2 of 6), focus on its heading; Back appears", s.current === "contact" && s.now === "Step 2 of 6: Contact details" && s.focus === "section-contact-title" && s.buttons.includes("Back"), j(s));
+  await n.t.click("#uf-back"); await settle(n.t);
+  const back = (await state(n.t)).current;
+  await n.t.focus('[data-step="employment"]'); await n.t.keyboard.press("Enter"); await settle(n.t);
+  const kb = (await state(n.t)).current;
+  await n.t.click('[data-step="contact"]'); await settle(n.t);
+  const click = (await state(n.t)).current;
+  check("S5", "Back goes to Personal details; a section by Enter on its name (Employment) and by click (Contact details)", back === "personal" && kb === "employment" && click === "contact", j([back, kb, click]));
+  await n.t.fill("#work-email", "neha.v"); await n.t.click("#uf-next"); await settle(n.t);
+  s = await state(n.t);
+  check("S6", "an address that isn't one: \"Enter a valid email address, like name@northwind.com.\", focus there", j(s.fieldErrors) === j([["work-email-error", "Enter a valid email address, like name@northwind.com."]]) && s.focus === "work-email", j(s));
+  await n.t.fill("#work-email", "neha.verma@northwind.com"); await n.t.click('[data-step="review"]'); await settle(n.t);
+  await n.t.click('.uf-actions button[type="submit"]'); await settle(n.t);
+  s = await state(n.t);
+  check("S7", "Create with Employment still empty: back to Employment, its errors, focus on Department, the count", s.current === "employment" && s.focus === "department"
+    && j(s.fieldErrors) === j([["department-error", "Choose a department."], ["designation-error", "Choose a designation."]]) && s.errors === "1 section needs attention", j(s));
+  await n.t.selectOption("#department", { label: "Engineering" }); await n.t.selectOption("#designation", { label: "Software Engineer" }); await n.t.fill("#joining", "2026-10-05");
+  await n.t.click('[data-step="pay"]'); await n.t.fill("#pan", "abcde1234f"); await n.t.click('[data-step="review"]'); await settle(n.t);
+  const rv = await n.t.evaluate(() => Object.fromEntries([...document.querySelectorAll("#review dt")].map((dt) => [dt.textContent, dt.nextElementSibling.innerText.trim()])));
+  s = await state(n.t);
+  check("S8", "Review: every value read-only (names, email, department by name, designation, joining as \"5 Oct 2026\", PAN in capitals, the role, \"Not given\" for blanks); Create employee",
+    rv["First name"] === "Neha" && rv["Work email"] === "neha.verma@northwind.com" && rv.Department === "Engineering" && rv.Designation === "Software Engineer" && rv["Date of joining"] === "5 Oct 2026"
+    && rv.PAN === "ABCDE1234F" && rv["Default role"] === "Employee" && rv.Phone === "Not given" && s.buttons.at(-1) === "Create employee", j([rv, s.buttons]));
+  await n.t.click('#review [data-edit="contact"]'); await settle(n.t);
+  const edit = (await state(n.t)).current;
+  await n.t.click('[data-step="review"]'); await n.t.click('.uf-actions button[type="submit"]'); await settle(n.t, 300);
+  const tt = await toasts(n.t); await n.t.waitForURL(/users-list/, { timeout: 4000 }).catch(() => {});
+  const made = await n.t.evaluate(() => JSON.parse(localStorage.getItem("officeos:users")).records.find((u) => u.email === "neha.verma@northwind.com"));
+  check("S9", "Review's Edit goes to its section; Create: \"Employee saved.\", the list, the record saved (no leave question after saving)",
+    edit === "contact" && tt.at(-1) === "Employee saved." && new URL(n.t.url()).pathname.endsWith("users-list.html") && made?.name === "Neha Verma" && made.pan === "ABCDE1234F" && n.dialogs.length === 0, j([edit, tt, made?.name]));
+  await n.ctx.close();
+  // the email already used: Contact details, the store's words, focus
+  n = await open(N, "admin", "users/user-form.html");
+  await n.t.fill("#first-name", "Neha"); await n.t.fill("#last-name", "Verma"); await show(n.t, "contact"); await n.t.fill("#work-email", "arjun.kapoor@northwind.com");
+  await show(n.t, "employment"); await n.t.selectOption("#department", { label: "Engineering" }); await n.t.selectOption("#designation", { label: "Software Engineer" });
+  await show(n.t, "review"); await n.t.click('.uf-actions button[type="submit"]'); await settle(n.t, 300);
+  s = await state(n.t);
+  check("S10", "the email already used: back to Contact details, the store's words under the field, focus there", s.current === "contact" && s.focus === "work-email" && s.fieldErrors.length === 1 && s.fieldErrors[0][1].length > 5, j(s));
+  // leaving with changes (the in-app question: answered as the new page's)
+  n.isNew = true;
+  await n.t.click(".uf-actions a"); await settle(n.t, 300);
+  const q = await asked(n, false);
+  const still = n.at();
+  await n.t.click(".uf-actions a"); await settle(n.t, 300);
+  await asked(n, true); await settle(n.t, 300);
+  check("S11", "Cancel with changes asks (\"Leave without saving?\"): Stay keeps the form, Leave goes to the list", q.startsWith("Leave without saving?") && still.includes("user-form") && n.at().includes("users-list"), j([q, still, n.at()]));
+  await n.ctx.close();
+  n = await open(N, "admin", "users/user-form.html");
+  await n.t.click(".uf-actions a"); await settle(n.t, 400);
+  check("S12", "Cancel with nothing changed leaves at once", n.at().includes("users-list") && !(await n.t.$(".confirm-dialog.is-open")));
+  await n.ctx.close();
+  // editing: opens at ?section=, saves from any section
+  n = await open(N, "admin", "users/user-form.html?id=EMP-1105&section=contact");
+  s = await state(n.t);
+  await n.t.fill("#phone", "+91 90000 11111");
+  await n.t.click('.uf-actions button[type="submit"]'); await settle(n.t, 300);
+  const tt2 = await toasts(n.t);
+  const phone = await n.t.evaluate(() => JSON.parse(localStorage.getItem("officeos:users")).records.find((u) => u.id === "EMP-1105").phone);
+  check("S13", "Edit at ?section=contact opens Contact details; Save changes from there saves (the phone), \"Employee saved.\"", s.current === "contact" && s.buttons.includes("Save changes") && phone === "+91 90000 11111" && tt2.at(-1) === "Employee saved.", j([s.current, s.buttons, phone, tt2]));
+  await n.ctx.close();
+  // the profile's Edit links
+  for (const who of ["admin", "hr"]) {
+    n = await open(N, who, "users/user-profile.html?id=EMP-1105");
+    const links = await n.t.evaluate(() => [...document.querySelectorAll("[data-edit-section]")].map((a) => [a.getAttribute("aria-label"), a.getAttribute("href")]));
+    check(`S14.${who}`, `${who}: the profile's Edit links open the form at Employment, Pay and tax, Role and access`, j(links) === j([["Edit employment details", "/pages/users/user-form.html?id=EMP-1105&section=employment"],
+      ["Edit pay and tax details", "/pages/users/user-form.html?id=EMP-1105&section=pay"], ["Edit role and access", "/pages/users/user-form.html?id=EMP-1105&section=access"]]), j(links));
+    if (who === "admin") { await n.t.click('[data-edit-section="access"]'); await settle(n.t, 400); const c = (await state(n.t)).current; check("S15", "following one opens that section", c === "access", c); }
+    await n.ctx.close();
+  }
+  // 412 and 1280, light and dark
+  const bad = [];
+  for (const w of [412, 1280]) for (const theme of ["light", "dark"]) {
+    n = await open(N, "admin", "users/user-form.html", { width: w, theme });
+    await n.t.click("#uf-next"); await settle(n.t);
+    const o = await n.t.evaluate(() => [document.documentElement.scrollWidth, innerWidth, getComputedStyle(document.querySelector(".uf-steps__list")).display]);
+    if (o[0] > o[1]) bad.push([w, theme, o]);
+    if (w === 412 && o[2] !== "flex") bad.push([w, "the stepper isn't across the top", o[2]]);
+    await n.t.screenshot({ path: path.join(SHOTS, `userform-${w}-${theme}.png`), fullPage: true });
+    await n.ctx.close();
+  }
+  check("S16", "412 (a stepper across the top) and 1280, light and dark: no sideways scroll; shots", bad.length === 0, j(bad));
+  // contrast of the new pieces, every accent x theme
+  const lows = [];
+  for (const theme of ["light", "dark"]) for (const accent of ["", "indigo", "blue", "teal", "violet", "slate", "pink"]) {
+    n = await open(N, "admin", "users/user-form.html", { theme });
+    if (accent) { await n.t.evaluate((a) => localStorage.setItem("officeos:accent", JSON.stringify(a)), accent); await n.t.reload(); await settle(n.t, 400); }
+    await n.t.click("#uf-next"); await settle(n.t);
+    const r = await n.t.evaluate(() => {
+      const rgb = (s) => { const v = (s.match(/[\d.]+/g) ?? []).map(Number); return s.startsWith("color(srgb") ? v.map((x, i) => (i < 3 ? x * 255 : x)) : v; };
+      const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+      const bgOf = (e) => { for (let x = e; x; x = x.parentElement) { const c = rgb(getComputedStyle(x).backgroundColor); if (c.length === 3 || (c.length === 4 && c[3] > 0.5)) return c.slice(0, 3); } return [255, 255, 255]; };
+      const ratio = (e) => { const [a, b] = [lum(rgb(getComputedStyle(e).color).slice(0, 3)), lum(bgOf(e))].sort((x, y) => y - x); return Math.round(((a + 0.05) / (b + 0.05)) * 100) / 100; };
+      const q = (s) => document.querySelector(s);
+      return { now: ratio(q(".uf-steps__now")), step: ratio(q(".uf-step:not(.is-current) .uf-step__title")), current: ratio(q(".uf-step.is-current .uf-step__title")), stepErr: ratio(q(".uf-step__err")),
+        summary: ratio(q(".uf-steps__errors")), fieldErr: ratio(q(".ds-field__error")), desc: ratio(q(".uf-section__desc")) };
+    });
+    for (const [k, v] of Object.entries(r)) if (v < 4.5) lows.push([theme, accent || "role", k, v]);
+    await n.ctx.close();
+  }
+  check("S17", "the section list, its errors and the section text at 4.5:1 or more, 2 themes x 7 accent settings", lows.length === 0, j(lows));
 }
 
 // ---------- P: user profile ----------

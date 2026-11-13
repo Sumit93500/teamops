@@ -1,0 +1,52 @@
+/* E0: the user form by sections (pages/UserForm.jsx). A section list on the left with the progress and the sections that have
+   errors; the current section's card; the access summary beside it from 1440 px, under it below that. On a phone (820 px
+   and under) the list is a stepper across the top that scrolls sideways. */
+.uf { display: grid; gap: var(--ds-space-4); grid-template-columns: minmax(0, 230px) minmax(0, 1fr); align-items: start; }
+.uf-aside { grid-column: 2; }
+@media (min-width: 1440px) {
+  .uf { grid-template-columns: minmax(0, 230px) minmax(0, 1fr) minmax(0, 320px); }
+  .uf-aside { grid-column: auto; }
+}
+.uf-section[hidden] { display: none; }
+.uf-section__desc { margin: 0 0 var(--ds-space-4); }
+.uf-main { display: grid; gap: var(--ds-space-4); }
+.uf-main > .uf-section .ds-card__body { display: grid; gap: var(--ds-space-4); }
+.uf-main .uf-section__desc { margin: 0; }
+
+/* the section list */
+.uf-steps { position: sticky; top: calc(var(--topbar-height, 56px) + var(--ds-space-4)); padding: var(--ds-space-4); display: grid; gap: var(--ds-space-2); }
+.uf-steps__now { margin: 0; font-size: var(--ds-text-sm); font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+.uf-steps__bar { height: 6px; border-radius: var(--ds-radius-pill); background: var(--ds-surface-3); overflow: hidden; }
+.uf-steps__bar > span { display: block; height: 100%; border-radius: inherit; background: var(--ds-primary); transition: width var(--ds-normal) var(--ds-ease); }
+.uf-steps__errors { margin: 0; min-height: 0; font-size: var(--ds-text-sm); font-weight: var(--ds-weight-medium); color: var(--ds-danger); }
+.uf-steps__errors:empty { display: none; }
+.uf-steps__list { display: grid; gap: 2px; margin: var(--ds-space-1) 0 0; padding: 0; list-style: none; }
+.uf-step { display: grid; grid-template-columns: 26px minmax(0, 1fr); align-items: center; column-gap: var(--ds-space-2); width: 100%; min-height: 40px; padding: 6px var(--ds-space-2);
+  border: 0; border-radius: var(--ds-radius-md); background: none; color: var(--ds-text-2); font: inherit; font-size: var(--ds-text-sm); text-align: left; cursor: pointer; }
+.uf-step:hover { background: var(--ds-surface-3); color: var(--ds-text); }
+.uf-step.is-current { background: var(--ds-primary-soft); color: var(--ds-text); font-weight: var(--ds-weight-semibold); box-shadow: inset 3px 0 0 var(--ds-primary); }
+.uf-step__num { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--ds-border-strong); font-size: var(--ds-text-xs); font-weight: var(--ds-weight-semibold); color: var(--ds-text-2); background: var(--ds-surface-1); }
+.uf-step.is-current .uf-step__num { border-color: var(--ds-primary); color: var(--ds-primary); }
+.uf-step.is-done .uf-step__num { border-color: var(--ds-success); color: var(--ds-success); }
+.uf-step.has-errors .uf-step__num { border-color: var(--ds-danger); color: var(--ds-danger); }
+.uf-step__err { grid-column: 2; font-size: var(--ds-text-xs); font-weight: var(--ds-weight-medium); color: var(--ds-danger); }
+
+/* the buttons under the section */
+.uf-actions { padding: 0; }
+
+/* Review */
+.uf-review { display: grid; gap: var(--ds-space-5); }
+.uf-review__group { display: grid; gap: var(--ds-space-2); padding-top: var(--ds-space-4); border-top: 1px solid var(--ds-border); }
+.uf-review__group:first-child { padding-top: 0; border-top: 0; }
+.uf-review__head { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-3); }
+
+@media (max-width: 1000px) {
+  .uf { grid-template-columns: minmax(0, 1fr); }
+  .uf-aside { grid-column: auto; }
+  .uf-steps { position: static; }
+  .uf-steps__list { display: flex; gap: var(--ds-space-1); overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
+  .uf-steps__list > li { flex: none; }
+  .uf-step { width: auto; grid-template-columns: 24px auto; padding: 6px 10px; white-space: nowrap; }
+  .uf-step.is-current { box-shadow: inset 0 -3px 0 var(--ds-primary); }
+  .uf-step__err { display: none; }
+}

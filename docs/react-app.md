@@ -60,6 +60,9 @@ app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (b
 - **A1:** appearance preferences in one store (theme, accent, density, text size, sidebar default, motion), saved per
   person, synced between the header's menu, the new Appearance page (for everyone) and Settings > Appearance, and across
   tabs; applied before the first paint. See [design.md](design.md#appearance-preferences-a1).
+- **E0:** the Add / Edit employee form by sections (Personal, Contact, Employment, Pay and tax, Role and access, Review),
+  per-section checks, a leave guard, the profile's Edit links into a section. The same fields, rules and permissions; the
+  fields a complete form still needs are listed in the workspace's notes/react-parking-lot.md (E1).
 - **Left:** inventory (rounds 21–22, after the data rounds 17–20).
 - **Bundle:** what loads first is one 1,090 kB file (L1; 1,013 kB at D2b); the charts' drawing (Recharts, 418 kB) and the map (179 kB) load on first use. Route-level code splitting is planned for round 27.
 
@@ -71,7 +74,8 @@ See [../tests/TEST-CATALOG.md](../tests/TEST-CATALOG.md).
 - **gallery:** the components in both themes, with the design foundation's components and their keyboard use.
 - **design:** the company branding, About, the sign-in and error pages, and reduced motion.
 - **charts:** the D2b charts and map in the gallery (cases, keyboard, phone taps, zoom, table) and the Admin headcount chart.
-- **users:** L1's users pages against the old ones (role access, every cell, field and flow, read by meaning, not by CSS), and the
+- **users:** E0's sectioned form (S: sections, checks, Review, Create, Edit at a section, the leave guard, 412 / 1280,
+  contrast); L1's users pages against the old ones (role access, every cell, field and flow, read by meaning, not by CSS), and the
   new screens: offices (with a mocked device location), company profile, About, the public pages' footer, keyboard, 412 / 1280.
 - **att3:** L3's check-in with a place, mocked locations in three time zones, devices, places, flagged check-outs, the views;
   L4's chosen place with overlapping places (C) and Team attendance's Export (X).
