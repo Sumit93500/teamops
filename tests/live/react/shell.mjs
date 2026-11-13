@@ -63,6 +63,7 @@ async function open(base, who, page, width = 1280, theme = "light", init = null)
     sessionStorage.setItem("shell-set", "1");
     localStorage.clear();
     localStorage.setItem("officeos:theme", JSON.stringify(th));
+    localStorage.setItem("officeos:sidebar", JSON.stringify("collapsed"));   // S1: the rail (1280 opens expanded by default; side.mjs checks that)
     if (w) localStorage.setItem("officeos:session", JSON.stringify({ userLabel: w[0], employeeId: w[1], signedInAt: 1790000000000 }));
   }, [WHO[who] ?? null, theme]);
   if (init) await ctx.addInitScript(init);

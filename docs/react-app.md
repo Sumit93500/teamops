@@ -51,6 +51,8 @@ app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (b
 - **L4:** Mark attendance passes the chosen place to the store (the record names it; overlapping places no longer mislabel);
   HR's read-only Location changes tab in the approvals inbox (no buttons, no count); Team attendance's Export with Place and
   Flagged columns.
+- **S1:** the desktop sidebar collapses and expands (expanded from 1280 px by default, collapsed below; the choice is
+  remembered and applied before the first paint). See [design.md](design.md#shell-and-branding).
 - **Left:** inventory (rounds 21–22, after the data rounds 17–20).
 - **Bundle:** what loads first is one 1,090 kB file (L1; 1,013 kB at D2b); the charts' drawing (Recharts, 418 kB) and the map (179 kB) load on first use. Route-level code splitting is planned for round 27.
 
@@ -69,6 +71,7 @@ See [../tests/TEST-CATALOG.md](../tests/TEST-CATALOG.md).
 - **locs:** L2's new screens: My locations (set once, change, cancel, with a mocked location), location changes decided by an
   Admin (inbox, card, bell, counts, dashboard), HR and managers deciding none, HR's read-only Location changes tab (V, L4),
   My devices, keyboard, 412 / 1280, light and dark.
+- **side:** S1's collapsible sidebar (defaults, toggle, memory, no flash, labels on focus, roles, keyboard, layout, contrast).
 
 They live in `tests/live/react/` and run with `python tools/run-tests.py --react`, which needs Microsoft Edge.
 

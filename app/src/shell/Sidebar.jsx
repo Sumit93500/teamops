@@ -3,6 +3,8 @@
 // and the footer (one icon in the rail, its two lines in a chip). Above 820px a section's button opens a flyout beside it,
 // on hover (with delays), click, tap or the keyboard; at 820px and below the sections expand in place, one at a time, and
 // the drawer opens on the section of the page you're on. Links go through the router.
+// S1: above 820px the sidebar collapses (the rail, as above) or expands (every item with its label under its group's
+// heading, no flyouts): the toggle under the company's mark (shell/navWide.js keeps the choice; design/sidebar.css).
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { APP_NAV as NAV } from "./appNav.js";
@@ -15,11 +17,15 @@ import { pendingFor as pendingAssetRequests } from "../../../assets/js/data/asse
 import { waitingCount } from "../data/waiting.js";
 import { useData, useSession, signOutNow } from "../data/hooks.js";
 import { pageUrl, ABOUT } from "../routes.js";
-import { useMedia, RAIL, inRail, initialsFrom } from "./media.js";
+import { useMedia, RAIL, inRail as railWidth, initialsFrom } from "./media.js";
+import { useNavWide, setWide } from "./navWide.js";
 import { COMPANY } from "../data/company.js";
 import { CompanyMark } from "./Brand.jsx";
 
 const OPEN_MS = 120, CLOSE_MS = 250, EDGE = 8;
+// The flyouts work only in the collapsed rail (S1: expanded lists every item in place).
+const inRail = () => railWidth() && !document.documentElement.hasAttribute("data-nav-wide");
+const CHEVRON_LEFT = "M15 18l-6-6 6-6", CHEVRON_RIGHT = "M9 18l6-6-6-6";
 export const SIGN_OUT_ICON = "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9";
 
 // ui/sidebar.js navItemHref / navItemVisible, for the signed-in person.
@@ -39,6 +45,7 @@ export default function Sidebar({ page, drawerOpen, closeDrawer }) {
   const { user, role, userId } = useSession();
   const navigate = useNavigate();
   const rail = useMedia(RAIL);
+  const wide = useNavWide();
   const sections = useData(() => NAV.map((group, index) => {
     const items = group.items.filter((item) => navItemVisible(item, userId, role?.key));
     return { group, index, items };
@@ -55,7 +62,7 @@ export default function Sidebar({ page, drawerOpen, closeDrawer }) {
   useEffect(() => {
     const current = sections.find((s) => s.index === currentIndex);
     setOpen(!rail && current && current.items.length > 1 ? currentIndex : null);
-  }, [rail, currentIndex]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [rail, wide, currentIndex]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // An open flyout sits beside its button, moved up if it would run off the window; keyboard opening focuses its first link.
   useLayoutEffect(() => {
@@ -131,10 +138,17 @@ export default function Sidebar({ page, drawerOpen, closeDrawer }) {
     <aside className={`sidebar${drawerOpen ? " is-open" : ""}`} id="sidebar" ref={sidebarRef}
       onClick={(e) => { if (e.target.closest("a")) closeDrawer(); }}>
       {/* D2a: the company's name (data/company.js), a link to About; the rail shows its mark, the name stays its accessible name */}
-      <Link className="sidebar__brand" to={pageUrl(ABOUT)} title={COMPANY.name}>
-        <CompanyMark />
-        <span className="sidebar__brand-name">{COMPANY.name}</span>
-      </Link>
+      <div className="sidebar__head">
+        <Link className="sidebar__brand" to={pageUrl(ABOUT)} title={COMPANY.name}>
+          <CompanyMark />
+          <span className="sidebar__brand-name">{COMPANY.name}</span>
+        </Link>
+        {/* S1: collapse / expand (desktop only; hidden in the phone's drawer) */}
+        <button type="button" className="sidebar__toggle" id="sidebar-toggle" aria-label={wide ? "Collapse sidebar" : "Expand sidebar"} aria-expanded={String(wide)}
+          aria-controls="sidebar__nav" data-label={wide ? undefined : "Expand sidebar"} onClick={() => setWide(!wide)}>
+          <Icon d={wide ? CHEVRON_LEFT : CHEVRON_RIGHT} />
+        </button>
+      </div>
       {user && (
         <div className="nav__profile">
           <span className="nav__profile-avatar" aria-hidden="true">{initialsFrom(user.name)}</span>
@@ -177,7 +191,7 @@ export default function Sidebar({ page, drawerOpen, closeDrawer }) {
       <button type="button" className="nav__signout" onClick={() => { signOutNow(); navigate(pageUrl("auth/login.html")); }}>
         <Icon d={SIGN_OUT_ICON} />Sign out
       </button>
-      <div className="sidebar__footer" role="group" aria-label={footerText} tabIndex={rail ? 0 : undefined}>
+      <div className="sidebar__footer" role="group" aria-label={footerText} tabIndex={rail && !wide ? 0 : undefined}>
         <Icon d={SECTION_ICONS.company} solid />
         <span className="sidebar__footer-text">
           <strong>{COMPANY.shortName}</strong>{" "}

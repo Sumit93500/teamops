@@ -453,6 +453,45 @@ react-shell.A.flow.two-factor,react-shell,auth/two-factor.html: the page's own b
 react-shell.A.flow.forgot-password,react-shell,auth/forgot-password.html: the page's own behaviour,x1
 react-shell.A.flow.login,react-shell,auth/login.html: the page's own behaviour,x1
 react-shell.S1,react-shell,shots written,x1
+react-side.D1.1440,react-side,"1440: expanded (240 px), ""Collapse sidebar"", aria-expanded true",x1
+react-side.D1.1280,react-side,"1280: expanded (240 px), ""Collapse sidebar"", aria-expanded true",x1
+react-side.D1.1279,react-side,"1279: collapsed (64 px), ""Expand sidebar"", aria-expanded false",x1
+react-side.D1.1024,react-side,"1024: collapsed (64 px), ""Expand sidebar"", aria-expanded false",x1
+react-side.D2.none,react-side,412: no toggle; the drawer opens as before (its section labels shown),x1
+react-side.D2.expanded,react-side,"412 with ""expanded"" stored: no toggle; the drawer opens as before (its section labels shown)",x1
+react-side.T1,react-side,"1280: the toggle collapses it (64 px), says ""Expand sidebar"", aria-expanded false; stored ""collapsed""; focus on the toggle",x1
+react-side.T2,react-side,after a reload: still collapsed,x1
+react-side.T3,react-side,"the toggle expands it again; stored ""expanded""",x1
+react-side.T4,react-side,"1024 with ""expanded"" chosen: expanded (the choice wins over the width)",x1
+react-side.T5,react-side,"1440 with ""collapsed"" chosen: collapsed",x1
+react-side.T6.1440.none,react-side,"before any app js runs (1440, no choice): <html> is already expanded (no flash)",x1
+react-side.T6.1440.collapsed,react-side,"before any app js runs (1440, collapsed): <html> is already collapsed (no flash)",x1
+react-side.T6.1024.none,react-side,"before any app js runs (1024, no choice): <html> is already collapsed (no flash)",x1
+react-side.T6.1024.expanded,react-side,"before any app js runs (1024, expanded): <html> is already expanded (no flash)",x1
+react-side.T7,react-side,"no choice: the width follows the window (1100 collapsed, 1300 expanded), nothing stored",x1
+react-side.T8,react-side,"once expanded by the person, it stays expanded at 1100",x1
+react-side.A1,react-side,collapsed: every rail button and link has a name (the brand: the company's name),x1
+react-side.A2,react-side,"collapsed: the label shows as a chip on hover (""Attendance""), on keyboard focus (the first item), and on the toggle",x1
+react-side.A3,react-side,"collapsed: the active item is marked (aria-current, its own background)",x1
+react-side.A4,react-side,collapsed: no group headings; the brand is its mark only; the count is a small number on the icon; the person's avatar stays in the header,x1
+react-side.A5,react-side,expanded: every item shows its icon and label; the group headings; no section buttons; the brand's name; the avatar and name; the count; Dashboard current,x1
+react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (34), the same links as collapsed",x5 (5 roles)
+react-side.K1.expanded,react-side,"expanded: Tab goes brand, the toggle, then the first item (Dashboard)",x1
+react-side.K2.expanded,react-side,"expanded: Enter toggles, Space toggles back, focus stays on the toggle",x1
+react-side.K1.collapsed,react-side,"collapsed: Tab goes brand, the toggle, then the first item (Dashboard)",x1
+react-side.K2.collapsed,react-side,"collapsed: Enter toggles, Space toggles back, focus stays on the toggle",x1
+react-side.L1.1440.expanded,react-side,"1440, expanded: no sideways scroll on 8 wide pages",x1
+react-side.L1.1440.collapsed,react-side,"1440, collapsed: no sideways scroll on 8 wide pages",x1
+react-side.L1.1280.expanded,react-side,"1280, expanded: no sideways scroll on 8 wide pages",x1
+react-side.L1.1280.collapsed,react-side,"1280, collapsed: no sideways scroll on 8 wide pages",x1
+react-side.L1.1024.expanded,react-side,"1024, expanded: no sideways scroll on 8 wide pages",x1
+react-side.L1.1024.collapsed,react-side,"1024, collapsed: no sideways scroll on 8 wide pages",x1
+react-side.L2,react-side,"toggled at 1280: main grows by 176 px; the chart and the table re-measure to fit (wider, inside their cards)",x1
+react-side.L3,react-side,the width moves in 0.2 s; with reduced motion it doesn't animate,x1
+react-side.C1.light,react-side,"admin, light: sidebar text 4.5:1 or more, the toggle's icon 3:1 or more",x4 (4 roles)
+react-side.C1.dark,react-side,"admin, dark: sidebar text 4.5:1 or more, the toggle's icon 3:1 or more",x4 (4 roles)
+react-side.W1,react-side,shots written,x1
+react-side.E1,react-side,no page or console errors,x1
 react-users.R.users-list,react-users,admin opens users/users-list.html: the same outcome,x5 (5 roles)
 react-users.R.user-form,react-users,admin opens users/user-form.html: the same outcome,x5 (5 roles)
 react-users.R.user-profile,react-users,admin opens users/user-profile.html?id=EMP-1042: the same outcome,x5 (5 roles)

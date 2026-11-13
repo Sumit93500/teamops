@@ -1,0 +1,98 @@
+/* S1: the collapsible desktop sidebar. Collapsed is the rail (assets/css/layout/rail.css, as before) plus the toggle under
+   the company's mark; expanded (<html data-nav-wide>, app/src/shell/navWide.js) is 240 px with every item's icon and label
+   under its group's heading, the company's name beside its mark, and the person's avatar and name. Above 820 px only: the
+   phone's drawer is unchanged. The width moves smoothly unless the person asks for reduced motion. */
+
+/* ---------- The toggle (desktop only) ---------- */
+.sidebar__head { display: flex; flex-direction: column; align-items: center; flex: none; }
+.sidebar__toggle {
+  display: none; place-items: center; flex: none;
+  width: 36px; height: 36px; margin: 0 0 var(--space-3); padding: 0;
+  border: 0; border-radius: var(--ds-radius-md);
+  background: none; color: var(--color-rail-icon); cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+.sidebar__toggle .icon { width: 18px; height: 18px; }
+.sidebar__toggle:hover { background: var(--color-sidebar-hover); color: #ffffff; }
+.sidebar__toggle:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+
+@media (min-width: 821px) {
+  .sidebar__toggle { display: grid; }
+  .app { transition: grid-template-columns 200ms ease; }
+
+  /* ---------- Expanded ---------- */
+  html[data-nav-wide] { --sidebar-width: 240px; }
+  html[data-nav-wide] .sidebar { align-items: stretch; padding: var(--space-4) var(--space-3); scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / 0.25) transparent; }
+  html[data-nav-wide] .sidebar__head { flex-direction: row; align-items: center; gap: var(--space-2); padding: 0 0 var(--space-4); }
+  html[data-nav-wide] .sidebar__brand {
+    flex: 1; justify-content: flex-start; margin: 0; padding: var(--space-1);
+    font-size: var(--text-md);
+  }
+  html[data-nav-wide] .sidebar__brand-name { position: static; width: auto; height: auto; clip-path: none; }
+  html[data-nav-wide] .sidebar__toggle { margin: 0; }
+  html[data-nav-wide] [data-label]:hover::before, html[data-nav-wide] [data-label]:focus-visible::before { content: none; }
+
+  /* the person */
+  html[data-nav-wide] .nav__profile { display: flex; align-items: center; gap: var(--space-3); padding: 0 var(--space-2) var(--space-3); min-width: 0; }
+  html[data-nav-wide] .nav__profile-avatar {
+    display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%;
+    background: color-mix(in srgb, var(--color-primary) 30%, transparent); color: #ffffff;
+    font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  }
+  html[data-nav-wide] .nav__profile-text { display: flex; flex-direction: column; min-width: 0; font-size: var(--text-xs); color: var(--color-sidebar-heading); }
+  html[data-nav-wide] .nav__profile-text strong { color: #ffffff; font-size: var(--text-sm); font-weight: var(--weight-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  html[data-nav-wide] .nav__profile-text span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* every item in place: no section buttons, no flyouts */
+  html[data-nav-wide] .sidebar__nav:has(.nav__section) { align-items: stretch; gap: 2px; }
+  html[data-nav-wide] .nav__trigger { display: none; }
+  html[data-nav-wide] .nav__panel,
+  html[data-nav-wide] .nav__section.is-open > .nav__panel {
+    display: flex; flex-direction: column; gap: 2px;
+    position: static; width: auto; max-height: none; overflow: visible;
+    padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none;
+  }
+  html[data-nav-wide] .nav__section:not(.nav__section--single) .nav__group-title {
+    padding: 14px var(--space-2) 5px;
+    font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--color-sidebar-heading);
+  }
+  html[data-nav-wide] .nav__section:first-child:not(.nav__section--single) .nav__group-title { padding-top: 4px; }
+  html[data-nav-wide] .nav__section .nav__item,
+  html[data-nav-wide] .nav__section--single .nav__item {
+    display: flex; align-items: center; gap: 10px;
+    width: auto; height: auto; padding: 7px var(--space-2);
+    font-size: var(--text-sm); color: var(--color-sidebar-text); background: none; box-shadow: none;
+  }
+  html[data-nav-wide] .nav__section .nav__item .icon,
+  html[data-nav-wide] .nav__section--single .nav__item .icon { width: 18px; height: 18px; color: inherit; }
+  html[data-nav-wide] .nav__section .nav__item:hover,
+  html[data-nav-wide] .nav__section--single .nav__item:hover { background: rgba(255, 255, 255, 0.06); color: #ffffff; }
+  html[data-nav-wide] .nav__section .nav__item.is-active,
+  html[data-nav-wide] .nav__section--single .nav__item.is-active {
+    background: color-mix(in srgb, var(--color-primary) 30%, transparent); color: #ffffff;
+    box-shadow: inset 3px 0 0 var(--color-primary);
+  }
+  html[data-nav-wide] .nav__section .nav__count,
+  html[data-nav-wide] .nav__section--single .nav__count {
+    position: static; margin-left: auto; min-width: 20px; padding: 0 6px;
+    font-size: 11px; line-height: 18px; text-align: center;
+  }
+
+  /* the footer: its two lines, no chip */
+  html[data-nav-wide] .sidebar__footer {
+    display: block; width: auto; height: auto; margin-top: auto;
+    padding: var(--space-3) var(--space-2) 0; border-top: 1px solid var(--color-sidebar-line); border-radius: 0;
+    color: var(--color-sidebar-heading); overflow: visible;
+  }
+  html[data-nav-wide] .sidebar__footer > .icon { display: none; }
+  html[data-nav-wide] .sidebar__footer:hover { background: none; }
+  html[data-nav-wide] .sidebar__footer-text {
+    display: block; position: static; padding: 0; white-space: normal;
+    font-size: var(--text-sm); color: var(--color-sidebar-heading); background: none; border: 0; box-shadow: none;
+  }
+  html[data-nav-wide] .sidebar__footer-text strong { display: block; color: #e2e8f0; }
+}
+
+@media (min-width: 821px) and (prefers-reduced-motion: reduce) {
+  .app { transition: none; }
+}

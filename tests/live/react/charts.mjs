@@ -48,6 +48,7 @@ async function open(url, width = 1280, theme = "light") {
     if (sessionStorage.getItem("c-set")) return;
     sessionStorage.setItem("c-set", "1"); localStorage.clear();
     localStorage.setItem("officeos:theme", JSON.stringify(th));
+    localStorage.setItem("officeos:sidebar", JSON.stringify("collapsed"));   // S1: the layout C4's widths were set for (the rail)
     localStorage.setItem("officeos:session", JSON.stringify({ userLabel: "Aarav Mehta", employeeId: "EMP-1001", signedInAt: 1790000000000 }));
   }, theme);
   const t = await ctx.newPage();

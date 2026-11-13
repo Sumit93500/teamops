@@ -45,6 +45,11 @@ Every component is on `/gallery` under "Design foundation".
 
 - **Company details:** `app/src/data/company.js` holds them. The Settings page, the shell, About, the tab title and the payslip all read it. OfficeOS doesn't store company settings yet, so these are the Settings page's sample values (ruled 2026-11-12).
 - **Brand:** the company's name, or its mark on phones and in the rail, is a link to About (`/pages/company/about.html`). The tab title is "page | company". "Powered by OfficeOS" ends every page, including sign-in and the error pages.
+- **The sidebar collapses (S1, desktop only):** a chevron button under the company's mark ("Collapse sidebar" / "Expand sidebar", `aria-expanded`).
+  - **Expanded** (240 px): every item's icon and label under its group's heading, the company's name beside its mark, the person's avatar, name and role, and the Approvals count as a pill. A thin scrollbar shows when the list is taller than the window.
+  - **Collapsed** (64 px): the rail as before. Icons only, each label as a chip on hover and on keyboard focus, sections open as flyouts, the active item filled, the count a small number on its icon, the brand only its mark (its name stays the link's accessible name). The person's avatar stays in the header.
+  - **Default:** expanded from 1280 px, collapsed below it, following the window until the person chooses. The choice is kept in `officeos:sidebar` and applied by the page's head script before the first paint, so nothing flashes. `app/src/shell/navWide.js` and `app/src/design/sidebar.css`.
+  - The width moves in 0.2 s, not at all with reduced motion; the content, charts and tables re-measure. At 820 px and below the drawer is unchanged.
 
 ## Checks
 
@@ -52,4 +57,5 @@ Every component is on `/gallery` under "Design foundation".
 |---|---|---|
 | design | `tests/live/react/design.mjs` | branding, About, the public pages, reduced motion |
 | gallery | `tests/live/react/gallery.mjs` | sections N and K: the components and the keyboard |
+| side | `tests/live/react/side.mjs` | S1's sidebar: defaults by width, the toggle and its memory, no flash, labels on focus, every role's items, keyboard, layout at 1440 / 1280 / 1024, contrast, the drawer at 412 |
 | pixel baseline | `Target/tools/react/xbase.mjs` (outside the repo) | each round compares the app's own look with D2a's recording |
