@@ -20,5 +20,8 @@ export const OFFICES = "company/offices.html";
 // My locations (L2): the app's own; everyone signed in may open it (home places need HR's home check-in switch).
 export const MY_LOCATIONS = "account/my-locations.html";
 
+// Appearance (A1): the app's own; everyone signed in may open it (Settings, where Admins also find it, is Admins' only).
+export const APPEARANCE = "account/appearance.html";
+
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

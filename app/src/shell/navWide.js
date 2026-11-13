@@ -3,8 +3,11 @@
 // expanded; the CSS reads it only above 820 px (the phone's drawer is unchanged). The person's choice is kept in
 // "officeos:sidebar" ("expanded" | "collapsed"); with no choice, 1280 px and wider opens expanded and narrower collapsed,
 // following the window. index.html's head script applies the same rule before the first paint, so nothing flashes.
+// A1: the person's "Sidebar on a computer" preference (data/prefs.js) comes first: expanded or collapsed opens it so on
+// every page; "remember" (the default) is the rule above.
 import { useEffect, useSyncExternalStore } from "react";
 import { load, save } from "../../../assets/js/core/storage.js";
+import { readPrefs, subscribePrefs } from "../data/prefs.js";
 
 export const NAV_KEY = "sidebar";
 export const WIDE_QUERY = "(min-width: 1280px)";
@@ -15,6 +18,8 @@ export function storedChoice() {
   return v === "expanded" || v === "collapsed" ? v : null;
 }
 export function wideNow() {
+  const pref = readPrefs().sidebar;
+  if (pref === "expanded" || pref === "collapsed") return pref === "expanded";
   const choice = storedChoice();
   if (choice) return choice === "expanded";
   return window.matchMedia(WIDE_QUERY).matches;
@@ -36,10 +41,11 @@ const subscribe = (cb) => { listeners.add(cb); return () => listeners.delete(cb)
 export function useNavWide() {
   useEffect(() => {
     const m = window.matchMedia(WIDE_QUERY);
-    const onChange = () => { if (!storedChoice()) apply(); };
+    const onChange = () => { if (!storedChoice() && readPrefs().sidebar === "remember") apply(); };
     m.addEventListener("change", onChange);
+    const off = subscribePrefs(apply);
     apply();
-    return () => m.removeEventListener("change", onChange);
+    return () => { m.removeEventListener("change", onChange); off(); };
   }, []);
   return useSyncExternalStore(subscribe, read);
 }

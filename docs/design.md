@@ -50,6 +50,26 @@ Every component is on `/gallery` under "Design foundation".
   - **Collapsed** (64 px): the rail as before. Icons only, each label as a chip on hover and on keyboard focus, sections open as flyouts, the active item filled, the count a small number on its icon, the brand only its mark (its name stays the link's accessible name). The person's avatar stays in the header.
   - **Default:** expanded from 1280 px, collapsed below it, following the window until the person chooses. The choice is kept in `officeos:sidebar` and applied by the page's head script before the first paint, so nothing flashes. `app/src/shell/navWide.js` and `app/src/design/sidebar.css`.
   - The width moves in 0.2 s, not at all with reduced motion; the content, charts and tables re-measure. At 820 px and below the drawer is unchanged.
+  - A1: the person's "Sidebar on a computer" preference comes first (Expanded or Collapsed on every page); "Remember my last choice" (the default) is the rule above.
+
+## Appearance preferences (A1)
+
+One store, `app/src/data/prefs.js`, read and written by the header's Appearance menu, the Appearance page (`/pages/account/appearance.html`, everyone signed in) and Settings > Appearance (the same panel). A change shows everywhere at once, other open tabs included (the storage event).
+
+| preference | choices (default first) | how it applies |
+|---|---|---|
+| Theme | Light, Dark, Match the device | `data-theme`; Match the device follows the device's setting live |
+| Accent colour | My role's colour, Indigo, Blue, Teal, Violet, Slate, Pink | `data-accent` sets `--primary-base`: the header, buttons and links. Charts keep `--ds-chart-*` |
+| Density | Comfortable, Compact | `data-density="compact"`: the spacing scale and the padding tokens (`--ds-pad-*`, `--ds-control-h`) shrink |
+| Text size | Default, Small, Large | `data-text`: the type scale (`--text-*`, `--ds-text-*`) steps down or up; chart text follows `--ds-text-xs` |
+| Sidebar on a computer | Remember my last choice, Expanded, Collapsed | the S1 sidebar's opening state |
+| Motion | Follow the device, Always reduce | `data-motion="reduce"`: as the device's reduced-motion setting |
+
+- **Saved per person:** under `officeos:prefs:<employee id>` (before sign-in: `officeos:prefs`, this device's). The theme and accent are also written to the old keys (`officeos:theme`, `officeos:accent`). A person with nothing saved starts from them.
+- **Before the first paint:** index.html's head script sets the same attributes, so nothing flashes.
+- **Defaults look exactly as before:** at the defaults no density, text or motion attribute is set, and `design/prefs.css` applies nothing.
+- **Storage blocked:** every choice still applies for the visit (kept in memory) and the panel says so.
+- **The panel:** every choice applies and saves at once and says "Saved". There is no Save button. Reset to default puts every choice back.
 
 ## Checks
 
@@ -57,5 +77,6 @@ Every component is on `/gallery` under "Design foundation".
 |---|---|---|
 | design | `tests/live/react/design.mjs` | branding, About, the public pages, reduced motion |
 | gallery | `tests/live/react/gallery.mjs` | sections N and K: the components and the keyboard |
+| prefs | `tests/live/react/prefs.mjs` | A1's appearance store: header and Settings in sync, two tabs, per person, Match the device, density and text sizes measured, accent, reset, sidebar default, no flash, blocked storage, keyboard and names, 412 and combinations, contrast for every accent x theme |
 | side | `tests/live/react/side.mjs` | S1's sidebar: defaults by width, the toggle and its memory, no flash, labels on focus, every role's items, keyboard, layout at 1440 / 1280 / 1024, contrast, the drawer at 412 |
 | pixel baseline | `Target/tools/react/xbase.mjs` (outside the repo) | each round compares the app's own look with D2a's recording |

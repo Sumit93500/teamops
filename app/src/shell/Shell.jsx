@@ -6,6 +6,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMedia } from "./media.js";
 import Sidebar from "./Sidebar.jsx";
+import { useSession } from "../data/hooks.js";
+import { refreshPrefs } from "../data/prefs.js";
 
 import { CardHost, closeBellPanel, closeApprovalCard } from "../ui/ApprovalCard.jsx";
 
@@ -25,6 +27,8 @@ export default function Shell({ page, title, back, children }) {
   const navigate = useNavigate();
   const phone = useMedia("(max-width: 560px)");
   const backTo = phone && DETAIL_PAGES.includes(page) ? back : null;
+  const { userId } = useSession();
+  useLayoutEffect(() => { refreshPrefs(); }, [userId]);   // A1: whoever is signed in sees their own appearance
 
   useLayoutEffect(() => {
     const html = document.documentElement;

@@ -6,14 +6,13 @@
 // round 3 brings the approval card. Anyone else keeps the old placeholder ("Notifications isn't available in this demo.").
 // Round 3: the bell opens the old list of what waits and its read-only cards; the phone's back arrow (a detail page, 560px
 // and under) goes to the breadcrumb's parent, as ui/phone.js addBack.
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { THEMES, ACCENTS, applyTheme, applyAccent, savedTheme, onAppearanceChange } from "../../../assets/js/ui/theme.js";
+import { THEMES, ACCENTS, ROLE_COLOUR, usePrefs, setPref } from "../data/prefs.js";
 import { canOpenPage } from "../../../assets/js/core/guard.js";
 import { waitingCount } from "../data/waiting.js";
-import { load } from "../../../assets/js/core/storage.js";
 import { useData, useSession, signOutNow } from "../data/hooks.js";
-import { pageUrl, ABOUT } from "../routes.js";
+import { pageUrl, ABOUT, APPEARANCE } from "../routes.js";
 import { COMPANY } from "../data/company.js";
 import { CompanyMark } from "./Brand.jsx";
 import { useToast } from "../ui/Toast.jsx";
@@ -24,21 +23,13 @@ import { toggleBellPanel } from "../ui/ApprovalCard.jsx";
 
 const INBOX = "requests/approvals-inbox.html";
 const PALETTE = "M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.2 0-1.1.9-2 2-2h2.5a4.5 4.5 0 0 0 4.5-4.5C22 6.1 17.5 3 12 3M7.5 12h.01M9.5 7.5h.01M14.5 7.5h.01";
-const ROLE_COLOUR = "My role's colour";
 const Icon = ({ d }) => <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg>;
 
-// What the Appearance menu marks as chosen; it re-reads whenever theme.js announces a change.
-let appearanceVersion = 0;
-const appearanceListeners = new Set();
-onAppearanceChange(() => { appearanceVersion++; appearanceListeners.forEach((l) => l()); });
-function useAppearance() {
-  useSyncExternalStore((cb) => { appearanceListeners.add(cb); return () => appearanceListeners.delete(cb); }, () => appearanceVersion);
-  const accent = load("accent");
-  return { theme: savedTheme() ?? "light", accent: ACCENTS.some(([v]) => v === accent) ? accent : "" };
-}
+// A1: the Appearance menu reads and writes the one preference store (data/prefs.js), as the Appearance page and Settings do.
+const applyTheme = (v) => setPref("theme", v), applyAccent = (v) => setPref("accent", v);
 
 function ThemeMenu() {
-  const { theme, accent } = useAppearance();
+  const { theme, accent } = usePrefs();
   return (
     <div className="dropdown__menu theme-menu" onClick={(e) => e.stopPropagation()}>
       <div className="theme-menu__title">Theme</div>
@@ -58,6 +49,7 @@ function ThemeMenu() {
         ))}
       </div>
       <div className="theme-menu__current" aria-hidden="true">{ACCENTS.find(([v]) => v === accent)?.[1] ?? ROLE_COLOUR}</div>
+      <Link className="theme-menu__more" to={pageUrl(APPEARANCE)} id="appearance-more">All appearance settings</Link>
     </div>
   );
 }

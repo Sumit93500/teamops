@@ -1,0 +1,72 @@
+/* A1: density, text size and reduced motion, through the tokens. app/src/data/prefs.js sets the attributes on <html>; with the
+   defaults none is set, so nothing here applies and the look is exactly the default one.
+   - data-density="compact": the spacing scale (--space-*, --ds-space-*) and the padding tokens below shrink; the old
+     components' fixed paddings read those tokens only when a density is set.
+   - data-text="small" | "large": the type scale (--text-*, --ds-text-*) steps down or up; chart text follows --ds-text-xs.
+   - data-motion="reduce": as the device's reduced-motion setting (tokens.css), whatever the device says.
+   Charts keep their own series colours (--ds-chart-*): an accent changes only the chrome (--primary-base). */
+
+/* ---------- Density: the padding tokens (their default values are the components' own) ---------- */
+:root {
+  --ds-pad-cell-y: 11px;  --ds-pad-head-y: 9px;  --ds-pad-cell-x: 18px;
+  --ds-pad-card-y: 14px;  --ds-pad-card-x: 18px;  --ds-pad-foot-y: 12px;  --ds-pad-item-y: 11px;
+  --ds-pad-btn-y: 7px;  --ds-pad-btn-x: 13px;  --ds-pad-field-y: 8px;  --ds-pad-field-x: 12px;
+  --ds-control-h: 40px;
+}
+html[data-density="compact"] {
+  --space-2: 6px;  --space-3: 10px;  --space-4: 12px;  --space-5: 16px;  --space-6: 18px;  --space-8: 24px;  --space-10: 32px;  --space-12: 40px;
+  --ds-space-2: 6px;  --ds-space-3: 10px;  --ds-space-4: 12px;  --ds-space-5: 16px;  --ds-space-6: 18px;  --ds-space-8: 24px;  --ds-space-10: 32px;
+  --ds-pad-cell-y: 6px;  --ds-pad-head-y: 6px;  --ds-pad-cell-x: 12px;
+  --ds-pad-card-y: 10px;  --ds-pad-card-x: 14px;  --ds-pad-foot-y: 8px;  --ds-pad-item-y: 7px;
+  --ds-pad-btn-y: 5px;  --ds-pad-btn-x: 10px;  --ds-pad-field-y: 5px;  --ds-pad-field-x: 10px;
+  --ds-control-h: 34px;
+}
+html[data-density] .table th { padding-top: var(--ds-pad-head-y); padding-bottom: var(--ds-pad-head-y); }
+html[data-density] .table td { padding-top: var(--ds-pad-cell-y); padding-bottom: var(--ds-pad-cell-y); }
+html[data-density] .table:not(.table--fit) :is(th, td) { padding-left: var(--ds-pad-cell-x); padding-right: var(--ds-pad-cell-x); }
+html[data-density] .card__header, html[data-density] .card__body:not(.card__body--flush) { padding: var(--ds-pad-card-y) var(--ds-pad-card-x); }
+html[data-density] .card__footer { padding: var(--ds-pad-foot-y) var(--ds-pad-card-x); }
+html[data-density] .list__item { padding: var(--ds-pad-item-y) var(--ds-pad-card-x); }
+html[data-density] .btn { padding: var(--ds-pad-btn-y) var(--ds-pad-btn-x); }
+html[data-density] .input, html[data-density] .select, html[data-density] .textarea { padding-top: var(--ds-pad-field-y); padding-bottom: var(--ds-pad-field-y); }   /* sideways padding stays: icons and chevrons sit in it */
+html[data-density] .ds-control, html[data-density] .ds-btn { min-height: var(--ds-control-h); }
+
+/* ---------- Text size: the type scale ---------- */
+html[data-text="small"] {
+  --text-xs: 11px;  --text-sm: 12px;  --text-base: 13px;  --text-md: 15px;  --text-lg: 18px;  --text-xl: 22px;  --text-2xl: 27px;
+  --ds-text-xs: 11px;  --ds-text-sm: 12px;  --ds-text-base: 13px;  --ds-text-md: 15px;  --ds-text-lg: 17px;  --ds-text-xl: 20px;  --ds-text-2xl: 26px;  --ds-text-3xl: 31px;
+}
+html[data-text="large"] {
+  --text-xs: 13px;  --text-sm: 15px;  --text-base: 16px;  --text-md: 18px;  --text-lg: 22px;  --text-xl: 27px;  --text-2xl: 34px;
+  --ds-text-xs: 13px;  --ds-text-sm: 15px;  --ds-text-base: 16px;  --ds-text-md: 18px;  --ds-text-lg: 20px;  --ds-text-xl: 25px;  --ds-text-2xl: 32px;  --ds-text-3xl: 38px;
+}
+html[data-text] .recharts-wrapper svg text { font-size: var(--ds-text-xs) !important; }
+html[data-text] .badge--count, html[data-text] .nav__count { font-size: calc(var(--text-xs) - 1px); }
+
+/* ---------- Reduce motion, always ---------- */
+html[data-motion="reduce"] { --ds-fast: 0ms; --ds-normal: 0ms; scroll-behavior: auto; }
+html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important;
+}
+
+/* ---------- The Appearance panel (account/appearance.html, Settings > Appearance) ---------- */
+.ap-panel { display: grid; gap: var(--ds-space-5); }
+.ap-row { display: grid; grid-template-columns: minmax(160px, 220px) minmax(0, 1fr); gap: var(--ds-space-2) var(--ds-space-5); align-items: start; }
+.ap-row__label { margin: 0; font-size: var(--ds-text-base); font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+.ap-row__help { margin: 2px 0 0; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.ap-row .ds-segmented { flex-wrap: wrap; max-width: 100%; }
+.ap-swatches { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); align-items: center; }
+.ap-swatch { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px 0 8px; border: 1px solid var(--ds-border-strong); border-radius: var(--ds-radius-pill); background: var(--ds-surface-1); color: var(--ds-text); font: inherit; font-size: var(--ds-text-sm); cursor: pointer; }
+.ap-swatch[aria-checked="true"] { border-color: var(--ds-text); box-shadow: inset 0 0 0 1px var(--ds-text); font-weight: var(--ds-weight-semibold); }
+.ap-swatch__dot { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-base); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12); }
+.ap-swatch--role .ap-swatch__dot { background: var(--role-primary); }
+[data-theme="dark"] .ap-swatch__dot { background: color-mix(in srgb, var(--primary-base) 62%, var(--color-text)); }
+[data-theme="dark"] .ap-swatch--role .ap-swatch__dot { background: color-mix(in srgb, var(--role-primary) 62%, var(--color-text)); }
+.theme-menu__more { display: block; margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--color-border); font-size: var(--text-sm); color: var(--color-primary); font-weight: var(--weight-medium); }
+.theme-menu__more:hover { text-decoration: underline; }
+.ap-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-3); }
+.ap-saved { font-size: var(--ds-text-sm); color: var(--ds-success); font-weight: var(--ds-weight-medium); }
+.ap-saved--warn { color: var(--ds-warning); }
+@media (max-width: 560px) {
+  .ap-row { grid-template-columns: 1fr; }
+}

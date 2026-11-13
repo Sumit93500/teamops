@@ -58,7 +58,8 @@ const read = (t) => t.evaluate(() => {
   const tx = (s) => s.replace(/\s+/g, " ").trim();
   // L2 (ruled): My profile's new Check-in places and My devices cards (checked in locs.mjs) are read past, so the rest still
   // matches the old page; they're shown again after the read.
-  const added = [...m.querySelectorAll("#my-places, #my-devices")];
+  // A1 (ruled): Settings' Appearance card is the new panel (prefs.mjs), read past too.
+  const added = [...m.querySelectorAll("#my-places, #my-devices, #appearance")];
   added.forEach((e) => { e.style.display = "none"; });
   try { return read2(); } finally { added.forEach((e) => { e.style.display = ""; }); }
   function read2() { return {
@@ -203,7 +204,7 @@ if (ONLY.includes("S")) {
       await t.click('.settings__nav a[href="#security"]'); await settle(t, 600);
       out.push(await t.evaluate(() => [...document.querySelectorAll(".settings__link")].map((l) => l.className)));
       out.push(await t.evaluate(() => [...document.querySelectorAll(".reason")].map((r) => [r.textContent, r.previousElementSibling?.textContent, document.querySelector(`[aria-describedby="${r.id}"]`)?.getAttribute("aria-label")])));
-      const save = await t.$("#save-appearance:visible");
+      const save = null;   // A1: no Save appearance any more (each choice applies at once; prefs.mjs S, R and K check it)
       if (save) {
         await t.click('label.choice:has(input[value="dark"]) .choice__title'); await save.click(); await settle(t, 300);
         out.push(await toasts(t), await t.evaluate(() => [document.documentElement.dataset.theme, localStorage.getItem("officeos:theme")]));
@@ -213,7 +214,7 @@ if (ONLY.includes("S")) {
       out.push(await toastAfter(t, firstPlaceholder));
       return out;
     };
-    same(`Ss2.${who}`, `${who}: Security marked; the Always on lines; Dark + Save appearance (toast, theme, after a reload); a placeholder`, await flow(x.o.t), await flow(x.n.t));
+    same(`Ss2.${who}`, `${who}: Security marked; the Always on lines; a placeholder (A1: Appearance is checked in prefs.mjs)`, await flow(x.o.t), await flow(x.n.t));
   });
 }
 

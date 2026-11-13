@@ -57,6 +57,9 @@ app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (b
   the root `index.html` stay where they are: the harnesses, the gate, the baselines and the live site read these paths. The
   old static site retires at cutover (round 28); the final layout is decided then. Notes, shots and the round tooling
   live outside the repo, in the workspace (its `README.md` maps the folders).
+- **A1:** appearance preferences in one store (theme, accent, density, text size, sidebar default, motion), saved per
+  person, synced between the header's menu, the new Appearance page (for everyone) and Settings > Appearance, and across
+  tabs; applied before the first paint. See [design.md](design.md#appearance-preferences-a1).
 - **Left:** inventory (rounds 21–22, after the data rounds 17–20).
 - **Bundle:** what loads first is one 1,090 kB file (L1; 1,013 kB at D2b); the charts' drawing (Recharts, 418 kB) and the map (179 kB) load on first use. Route-level code splitting is planned for round 27.
 
@@ -75,6 +78,7 @@ See [../tests/TEST-CATALOG.md](../tests/TEST-CATALOG.md).
 - **locs:** L2's new screens: My locations (set once, change, cancel, with a mocked location), location changes decided by an
   Admin (inbox, card, bell, counts, dashboard), HR and managers deciding none, HR's read-only Location changes tab (V, L4),
   My devices, keyboard, 412 / 1280, light and dark.
+- **prefs:** A1's appearance preferences (sync, tabs, per person, sizes measured, reset, no flash, blocked storage, contrast).
 - **side:** S1's collapsible sidebar (defaults, toggle, memory, no flash, labels on focus, roles, keyboard, layout, contrast).
 
 They live in `tests/live/react/` and run with `python tools/run-tests.py --react`, which needs Microsoft Edge.

@@ -345,6 +345,36 @@ react-pay.P.payroll-run,react-pay,fin on payroll/payroll-run.html at 412: the sa
 react-pay.P.payslips,react-pay,emp on payroll/payslips.html at 412: the same cards,x1
 react-pay.P.payslip-view,react-pay,emp on payroll/payslip-view.html at 412: the same cards,x1
 react-pay.X1,react-pay,shots written,x1
+react-prefs.S1,react-prefs,the menu's Dark: the page turns dark and Settings > Appearance shows Dark at once,x1
+react-prefs.S2,react-prefs,Settings' Teal: the page's accent is teal and the menu marks Teal,x1
+react-prefs.S3,react-prefs,"a choice applies at once and says ""Saved"" (no Save button)",x1
+react-prefs.X1,react-prefs,"a change on the Appearance page shows in the other open tab (dark, large text)",x1
+react-prefs.X2,react-prefs,"and back: the other tab's header menu picks Pink, the Appearance page marks it",x1
+react-prefs.U1,react-prefs,"HR keeps small text, light, comfortable; Admin keeps dark + compact; switching back and forth each sees their own",x1
+react-prefs.U2,react-prefs,saved per person (officeos:prefs:<id>); the old theme key is still written,x1
+react-prefs.M1,react-prefs,"Match the device: dark on a dark device, light the moment the device turns light, dark again",x1
+react-prefs.D1,react-prefs,"compact: shorter rows, less cell padding, smaller buttons; the text size unchanged",x1
+react-prefs.D2,react-prefs,text size: small < default < large for the table text and the heading,x1
+react-prefs.D3,react-prefs,"the charts' text follows the text size (large: 13 px axis labels, 12 by default)",x1
+react-prefs.A1,react-prefs,"Teal: the primary colour, the header and the primary button change; the charts' first series colour doesn't",x1
+react-prefs.R1,react-prefs,"Reset to default: light, the role's colour, comfortable, default text, remember, follow the device; no attribute left; the button off; ""Back to the default look""",x1
+react-prefs.B1,react-prefs,"Collapsed at 1440 (even with an earlier ""expanded"" toggle stored)",x1
+react-prefs.B2,react-prefs,Expanded at 1024,x1
+react-prefs.B3,react-prefs,Remember (the default): the last toggle holds after a reload (S1); choosing Expanded opens it at once,x1
+react-prefs.F1,react-prefs,"before any app js runs, <html> already has every stored choice (dark, teal, compact, large, reduce, collapsed)",x1
+react-prefs.F2,react-prefs,someone with only the old theme / accent keys keeps them (nothing regresses),x1
+react-prefs.L1,react-prefs,writes refused: Dark still applies and the page says it's for this visit only,x1
+react-prefs.L2,react-prefs,"all storage refused: the sign-in page still opens (defaults), no page error",x1
+react-prefs.K1,react-prefs,six named radio groups,x1
+react-prefs.K2,react-prefs,"arrow keys choose (Dark, then Indigo); one Tab stop per group, in order",x1
+react-prefs.K3,react-prefs,Reset works from the keyboard,x1
+react-prefs.K4,react-prefs,"the header menu links to the page (""All appearance settings"")",x1
+react-prefs.K5,react-prefs,hr opens the Appearance page with every choice,x3 (3 roles)
+react-prefs.P1,react-prefs,412: no sideways scroll; every choice inside the screen and at least 32 px tall,x1
+react-prefs.P2,react-prefs,compact + large text + expanded sidebar: no sideways scroll on 5 pages at 412 / 1024 / 1280,x1
+react-prefs.C1,react-prefs,"the panel's text at 4.5:1 or more, 2 themes x 7 accent settings (8 pairs each)",x1
+react-prefs.W1,react-prefs,shots written,x1
+react-prefs.E1,react-prefs,no page errors,x1
 react-req.I1,react-req,admin on requests/approvals-inbox.html: as it opens,x5 (5 roles)
 react-req.I2,react-req,"admin: each tab, each type",x5 (5 roles)
 react-req.I3,react-req,"admin: a pending title opens the card (text, focus); Escape closes it, focus back to the title",x5 (5 roles)
@@ -386,7 +416,7 @@ react-rest.Sa2,react-rest,"admin: search fail, payroll, zzz, cleared",x2 (2 role
 react-rest.Sa3,react-rest,admin: the first placeholder's toast,x2 (2 roles)
 react-rest.Sa,react-rest,fin on system/audit-log.html: lands where the old site does,x3 (3 roles)
 react-rest.Ss1,react-rest,admin on system/settings.html: as it opens,x1
-react-rest.Ss2,react-rest,"admin: Security marked; the Always on lines; Dark + Save appearance (toast, theme, after a reload); a placeholder",x1
+react-rest.Ss2,react-rest,admin: Security marked; the Always on lines; a placeholder (A1: Appearance is checked in prefs.mjs),x1
 react-rest.Ss,react-rest,hr on system/settings.html: lands where the old site does,x4 (4 roles)
 react-rest.Rj1,react-rest,admin on recruitment/job-openings.html: as it opens,x2 (2 roles)
 react-rest.Rj2,react-rest,"admin: the Closed tab marked; search design, zzz, cleared; a placeholder",x2 (2 roles)

@@ -2,34 +2,25 @@
 // the Appearance card, as its notice says. Written as JSX from the old page (tools/react/html2jsx.py), with what app.js and
 // settings.js gave it: controls the person may not use hidden (perm), "isn't available in this demo" on the placeholders
 // (NotBuilt), the role colours as Table; "Always on" under the Payroll and Expenses modules (round 14E part 2, the Reason
-// line); a section link scrolls to its card and is marked; Appearance: the theme saved on this device (theme.js, the same
-// setting as the topbar's menu), shown again whenever it changes, and Save appearance applies the one picked.
+// line); a section link scrolls to its card and is marked; Appearance (A1): the Appearance page's panel (data/prefs.js, the
+// same store as the header's menu): every choice applies and saves at once.
 // The inventory settings (round 17, a data round) aren't built, so the page is as it was.
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { applyTheme, savedTheme } from "../../../assets/js/ui/theme.js";
+import { AppearancePanel } from "./Appearance.jsx";
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
 import { NotBuilt, Reason } from "../components/Basics.jsx";
-import { useToast } from "../ui/Toast.jsx";
 import { usePerm } from "../ui/perm.js";
 import { pageUrl } from "../routes.js";
 import { COMPANY } from "../data/company.js";   // D2a: the company's details live in one module, read by the shell and About too
 import CompanyProfile from "./CompanyProfile.jsx";   // L1: the company profile (name, overview, mission), saved
 
 const PAGE = "system/settings.html";
-const APPEARANCE_CHANGED = "officeos:appearance";   // theme.js announces a change on document under this name
 
 export default function Settings() {
   const perm = usePerm();
-  const showToast = useToast();
   const [section, setSection] = useState("company");
-  const [chosen, setChosen] = useState(() => savedTheme() ?? "light");
-  useEffect(() => {
-    const show = () => setChosen(savedTheme() ?? "light");
-    document.addEventListener(APPEARANCE_CHANGED, show);
-    return () => document.removeEventListener(APPEARANCE_CHANGED, show);
-  }, []);
   const go = (e) => {
     e.preventDefault();
     const id = e.currentTarget.getAttribute("href").slice(1);
@@ -60,7 +51,7 @@ export default function Settings() {
           <a className={`settings__link${section === "appearance" ? " is-active" : ""}`} href="#appearance" onClick={go}>Appearance</a>
         </nav>
         <div className="stack">
-          <div className="alert alert--info">Sample, not built yet: most company settings aren't part of OfficeOS yet. This page shows how they could look; apart from the Company profile (saved for everyone in this browser) and the Appearance theme (saved on this device), nothing here is saved or applied, and the rules and values listed are examples.</div>
+          <div className="alert alert--info">Sample, not built yet: most company settings aren't part of OfficeOS yet. This page shows how they could look; apart from the Company profile (saved for everyone in this browser) and your Appearance (saved for you in this browser), nothing here is saved or applied, and the rules and values listed are examples.</div>
           <CompanyProfile />
           <section className="card" id="company">
             <div className="card__header"><h3 className="card__title">Company</h3></div>
@@ -238,28 +229,11 @@ export default function Settings() {
           <section className="card" id="appearance">
             <div className="card__header"><h3 className="card__title">Appearance</h3></div>
             <div className="card__body">
-              <p className="form-label mb-2">Theme on this device</p>
-              <div className="choice-grid" role="radiogroup" aria-label="Theme on this device">
-                <label className="choice"><input type="radio" name="theme" value="light" checked={chosen === "light"} onChange={() => setChosen("light")} /><span className="choice__title">Light</span><span className="choice__meta">Bright background</span></label>
-                {" "}
-                <label className="choice">
-                  <input type="radio" name="theme" value="dark" checked={chosen === "dark"} onChange={() => setChosen("dark")} />
-                  <span className="choice__title">Dark</span>
-                  <span className="choice__meta">Easier on the eyes at night</span>
-                </label>
-                {" "}
-                <label className="choice">
-                  <input type="radio" name="theme" value="system" checked={chosen === "system"} onChange={() => setChosen("system")} />
-                  <span className="choice__title">Match the device</span>
-                  <span className="choice__meta">Follows this device's setting</span>
-                </label>
-              </div>
+              <AppearancePanel idPrefix="settings-ap" />
             </div>
             <Table bare pager={false} columns={T1_COLUMNS} rows={T1_ROWS(perm)} rowKey={(r) => r.key} rowProps={(r) => r.r ?? {}} empty={null} />
             <div className="card__footer">
-              <span className="card__meta">Each role's accent colour is set from its role, unless someone picks their own in the Appearance menu.</span>
-              {" "}
-              <button className="btn btn--primary btn--sm" type="button" {...perm("settings:edit")} id="save-appearance" onClick={() => { applyTheme(chosen); showToast("Appearance saved.", "success"); }}>Save appearance</button>
+              <span className="card__meta">Each role's accent colour is set from its role, unless someone picks their own accent here or in the Appearance menu.</span>
             </div>
           </section>
         </div>
