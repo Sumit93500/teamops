@@ -76,6 +76,7 @@ See [../tests/TEST-CATALOG.md](../tests/TEST-CATALOG.md).
 - **smoke:** every route plus About, as every role and signed out.
 - **parity harnesses:** one per page group, old page against new route (text, controls, behaviour).
 - **gallery:** the components in both themes, with the design foundation's components and their keyboard use.
+- **rest:** the other pages as they were ported (Settings, sessions, reports, backup, audit and the rest), with the ruled differences (the company profile, the Payroll settings card).
 - **design:** the company branding, About, the sign-in and error pages, and reduced motion.
 - **charts:** the D2b charts and map in the gallery (cases, keyboard, phone taps, zoom, table) and the Admin headcount chart.
 - **users:** E0's sectioned form (S: sections, checks, Review, Create, Edit at a section, the leave guard, 412 / 1280,

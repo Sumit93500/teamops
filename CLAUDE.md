@@ -28,7 +28,7 @@ Read [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) first. The de
 4. Apply to the repo. Commit, push, verify.
 5. Write the round into the notes.
 
-**Every round ends by appending a line to DECISIONS.md, running tools/gen-docs.py, and refreshing docs/graph only for the touched area.**
+**Every round ends by appending a line to DECISIONS.md, running tools/gen-docs.py, refreshing the graph (python tools/graph.py) and running python tools/check-docs.py, which must flag nothing (docs that name files, functions or permissions that no longer exist, test records that disagree, a graph older than the code).**
 
 ## Verification
 
@@ -55,5 +55,5 @@ Read [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) first. The de
 | static-page suites, frozen baselines | `tests/archive/old-suites.tar.gz` (unpacked into `tests/.suites` by the runner) |
 | test records | `tests/TEST-CATALOG.md`, `tests/cases/*.csv`, `tests/index.html`, `tests/RESULTS.csv` |
 | the code graph | `docs/graph.md` (how to regenerate), `docs/graph/` |
-| the round tooling (outside the repo) | the workspace's `tools/speed` (select.py, mk-shards, parN), `tools/edge` (Edge checks, xmap), `tools/react` (harness builder, html2jsx.py), and `tools/round-recipe.md` |
+| the round tooling (outside the repo) | the workspace's `tools/speed` (select.py, mk-shards, parN), `tools/edge` (Edge checks, xmap), `tools/react` (harness builder, html2jsx.py), and `Target/tools/round-recipe.md` |
 | round notes (outside the repo) | the workspace's `notes/` (`overnight-summary*.md`, `react-stage-scoping.md`, `react-parking-lot.md`); older rounds in `archive/js-stage/`; a folder map in the workspace's `README.md` |

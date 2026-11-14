@@ -38,7 +38,7 @@ Pages import the stores directly (`../../../assets/js/data/...`). Vite bundles t
 ## RBAC
 
 - **Four roles** (`config/roles.js`): Admin, HR Manager, Finance Manager and Employee.
-- **79 permissions** in 33 modules (`config/permissions.js`), each a `module:action` string. Admin holds all 79, HR 45, Finance 37 and Employee 20.
+- **88 permissions** in 39 modules (`config/permissions.js`), each a `module:action` string. Admin holds all 88, HR 48, Finance 40 and Employee 23.
 - **`can(permission)`** (`core/rbac.js`) checks the signed-in person's permissions on record: their role's, plus any per-person overrides. It is the only check pages use.
 - **Each page needs one permission** (`config/routes.js`, 48 signed-in pages). `core/guard.js` sends a person without it to 403. The React app's `RequireRoute` does the same.
 - **Being a manager is a relationship, not a role.** Someone is a manager when a request from a direct report would reach them (`data/reporting.js`, `managerFor()` in `leave-store.js`). Managers see their direct reports' attendance and leave, and decide the manager stage of their requests. Direct reports only.

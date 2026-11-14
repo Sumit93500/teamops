@@ -54,7 +54,7 @@ Every component is on `/gallery` under "Design foundation".
 
 ## Forms by sections (E0)
 
-The user form (Add and Edit employee) is the first form in sections (`pages/UserForm.jsx`, `design/sections.css`):
+The user form (Add and Edit employee) is the first form in sections (`app/src/pages/UserForm.jsx`, `design/sections.css`):
 
 - **The sections:** Personal details, Contact details, Employment (with the office and home check-in), Pay and tax, Role and access, then Review. A section with no fields isn't shown.
 - **The section list:** on the left, with "Step n of 6", a progress bar, each section's number (a tick once it's checked and fine) and its error count. From 1000 px down it's a stepper across the top that scrolls sideways. From 1440 px the access summary sits on the right; below that, under the section.
