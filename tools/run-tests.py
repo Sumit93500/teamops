@@ -21,7 +21,7 @@ ZONES = ["Asia/Kolkata", "UTC", "America/Los_Angeles"]
 COUNT = re.compile(r"(\d+) passed, (\d+) failed")
 REACT = [  # harness, ONLY letters (the harness's own default when empty)
     ("smoke.mjs", ""), ("gallery.mjs", ""), ("shell.mjs", "DRQTNFPBAS"), ("dash.mjs", "AEZHFYMS"), ("att.mjs", "SPX"), ("leave.mjs", ""),
-    ("pay.mjs", "SQPX"), ("pay4.mjs", ""), ("fin.mjs", ""), ("req.mjs", "IKMCPX"), ("access.mjs", ""), ("rest.mjs", ""), ("design.mjs", ""), ("charts.mjs", ""), ("users.mjs", ""), ("locs.mjs", ""), ("att3.mjs", ""), ("side.mjs", ""), ("prefs.mjs", ""),
+    ("pay.mjs", "SQPX"), ("pay4.mjs", ""), ("leave4.mjs", ""), ("fin.mjs", ""), ("req.mjs", "IKMCPX"), ("access.mjs", ""), ("rest.mjs", ""), ("design.mjs", ""), ("charts.mjs", ""), ("users.mjs", ""), ("locs.mjs", ""), ("att3.mjs", ""), ("side.mjs", ""), ("prefs.mjs", ""),
 ]
 # Left out on purpose: att Y (my attendance's earlier months) and pay R, V (payroll run, payslip view). Rounds 9b, 11 and 13c gave
 # those months "No data in this range.", which the old site doesn't have, so they match only a reference tree with the new wording

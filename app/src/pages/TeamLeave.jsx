@@ -16,6 +16,8 @@ import { PersonCell } from "../components/Basics.jsx";
 import { StatusBadge, OutNextWeek } from "../ui/leave.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
+import { BandBadge, leavePolicyOn } from "../ui/leaveband.jsx";
+import { leaveAccount } from "../../../assets/js/data/leave-policy.js";
 
 const PAGE = "leave/team-leave.html";
 const pad = (n) => String(n).padStart(2, "0");
@@ -77,8 +79,11 @@ export default function TeamLeave() {
     break;
   }
   const active = d.people.filter((u) => u.status !== "inactive").map((u) => ({ id: u.id, user: u, balance: balanceFor(u.id) }));
+  // P4b: from the policy's start date the band and the policy's balances (a person on a band with none of a type reads 0)
+  const policyOn = leavePolicyOn();
   const balanceColumns = [{ key: "employee", label: "Employee", render: (r) => <PersonCell userId={r.id} name={r.user.name} sub={departmentName(r.user.department)} /> },
-    ...CAPPED.map((type) => ({ key: type, label: typeLabel(type), render: (r) => `${r.balance[type].left} days left` }))];
+    ...(policyOn ? [{ key: "band", label: "Band", render: (r) => <BandBadge userId={r.id} next={false} /> }] : []),
+    ...CAPPED.map((type) => ({ key: type, label: typeLabel(type), render: (r) => { if (!policyOn) return `${r.balance[type].left} days left`; const t = leaveAccount(r.id, today)?.types[type]; return t ? `${t.left} days left${t.lop ? `, ${t.lop} loss of pay` : ""}` : "—"; } }))];
   const requests = [...d.requests].sort((a, b) => b.appliedOn.localeCompare(a.appliedOn) || b.id.localeCompare(a.id, "en", { numeric: true }));
   const requestColumns = [
     { key: "employee", label: "Employee", render: (r) => person(r.userId) },

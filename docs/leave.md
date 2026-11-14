@@ -34,6 +34,21 @@ A past day can be explained by a leave request for 7 days (`PAST_DAY_WINDOW`). A
 
 The company calendar is a store: HR and Admin add and remove holidays (`holidays:manage`). A past holiday can't be removed.
 
+## P4b (2026-11-14): the leave screens
+
+From the **leave policy's start date** (the Leave policy page; `data/pay-settings.js`; default **2026-12-01**, the first of the month after the policy shipped; never in the past) the leave pages use the P3 policy; before it every leave page, balance and history is exactly as it was, and leave already taken is never rewritten.
+
+| screen | from the start date |
+|---|---|
+| My leave | the **band badge** (Intern / Under 1 year / Over 1 year) and the next change; five cards by the policy (left, accrued so far, carried forward, used, pending, usable-from date); **carry-forward and encashment** lines; **loss of pay** shown on the card and in its own card; "How your balance is worked out" in plain words |
+| Apply for leave | "Under the leave policy": covered, or how many days are beyond the balance and would be unpaid; **Apply anyway?** is asked before such a request is sent |
+| Team leave | a Band column and the policy's balances (a manager sees only reports) |
+| Leave approvals | a Pay column on Pending: Paid, or Would be unpaid: n days |
+| Leave policy (new, app-own) | the numbers by band, marked sample; HR reads, an Admin edits through the module's checks, sets the start date, sees the history, and closes a leave year (once, with a preview of what is carried and paid out) |
+| Profile, user form | the leave band, read-only |
+
+**Limits, said on the pages:** payroll still deducts only leave applied for as Unpaid leave, and applyLeave still refuses requests above the old flat allowance (casual 12, sick 8, earned 10), so the policy's loss of pay is shown, not deducted, until a later round.
+
 ## P3 (2026-11-14): leave by tenure (data only)
 
 `assets/js/data/leave-policy.js`. Nothing here is on a page yet: `data/leave-store.js` still gives every page its flat policy (casual 12, sick 8, earned 10 a year, WFH 4 a month) and its checks, exactly as before. The page round (P4) switches over.

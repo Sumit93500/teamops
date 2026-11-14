@@ -31,6 +31,7 @@ import { EmptyState, NotBuilt } from "../components/Basics.jsx";
 import { PageHeader, Card, Pill } from "../components/Layout.jsx";
 import { Field, Input, Select, Switch, Kv, initialsOf } from "../components/Form.jsx";
 import "../design/sections.css";
+import { leavePolicyOn, bandText } from "../ui/leaveband.jsx";
 
 const PAGE = "users/user-form.html";
 const LIST = pageUrl("users/users-list.html");
@@ -274,7 +275,7 @@ function Form({ editing, editId, startAt }) {
             <Field id="designation" label="Designation" required hint="The designation sets the default role." error={err("designation")}><Select id="designation" required placeholder="Select designation" options={designationOptions} value={f.designation} hint="The designation sets the default role." error={err("designation")} onChange={set("designation")} /></Field>
             <Field id="manager" label="Reporting manager"><Select id="manager" placeholder="No reporting manager" options={managerOptions} value={f.manager} onChange={set("manager")} /></Field>
             <Field id="joining" label="Date of joining"><Input id="joining" type="date" value={f.joining} onChange={set("joining")} /></Field>
-            <Field id="emp-type" label="Employment type"><Select id="emp-type" options={empTypes} value={f.empType} onChange={set("empType")} /></Field>
+            <Field id="emp-type" label="Employment type" hint={leavePolicyOn() && editing ? `Leave band: ${bandText(editing.id)}. It follows the employment type and the joining date.` : undefined}><Select id="emp-type" options={empTypes} value={f.empType} onChange={set("empType")} /></Field>
             <Field id="location" label="Work location"><Select id="location" options={locations} value={f.location} onChange={set("location")} /></Field>
           </div>
           <h3 className="ds-form-section__title" id="s-office">Office and check-in places</h3>

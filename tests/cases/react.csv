@@ -280,6 +280,67 @@ react-leave.P.leave-approvals,react-leave,hr on leave/leave-approvals.html at 41
 react-leave.P.team-leave,react-leave,mgr on leave/team-leave.html at 412: the same cards,x1
 react-leave.P.holidays,react-leave,hr on leave/holidays.html at 412: the same cards,x1
 react-leave.X1,react-leave,shots written,x1
+react-leave4.M1,react-leave4,"Arjun (over a year): the band badge says Over 1 year, with no next change",x1
+react-leave4.M2,react-leave4,five cards: casual 12 left of 12 a year; sick 8; earned (1 per 20 days worked); work from home 4 a month; unpaid no limit,x1
+react-leave4.M3,react-leave4,the carry-forward and encashment lines: carried in 0; up to 30 days of earned leave at year end; earned leave above 30 days is paid out,x1
+react-leave4.M4,react-leave4,loss of pay: none; and the note that only Unpaid leave is deducted from pay until payroll reads the policy,x1
+react-leave4.M5,react-leave4,"'How your balance is worked out' in plain words: casual and sick a year, earned per 20 working days, carry-forward and encashment, work from home",x1
+react-leave4.M6,react-leave4,the policy's start is named in that card; the history table is still there,x1
+react-leave4.M7.1280,react-leave4,1280: no sideways scroll,x1
+react-leave4.M7.412,react-leave4,412: no sideways scroll,x1
+react-leave4.B1,react-leave4,"Rohan (joined 2 Feb 2026): Under 1 year, 'Over 1 year from 2 Feb 2027'",x1
+react-leave4.B2,react-leave4,"a full year in 2027: casual 12, sick 8; earned is usable (joined over 6 months ago)",x1
+react-leave4.B3,react-leave4,the explanation says when they move up,x1
+react-leave4.B4,react-leave4,"the exact anniversary day: 1 Feb 2027 Under 1 year; 2 Feb 2027 Over 1 year, no next change",x1
+react-leave4.B5,react-leave4,"Ananya (intern): Intern; casual 1 a month (1 in January), sick and earned not part of the intern leave, nothing carried",x1
+react-leave4.B6,react-leave4,"Meera (under a year, 9 earned days taken against 7): loss of pay shown on the card and in the Loss of pay card",x1
+react-leave4.B7,react-leave4,"before the start date the page is as it was: no band badge, no policy cards, the old balance cards",x1
+react-leave4.B8,react-leave4,on the start day itself the policy applies,x1
+react-leave4.A1,react-leave4,before dates are picked: the card says to pick them,x1
+react-leave4.A2,react-leave4,one casual day in a balance of 12: Covered,x1
+react-leave4.A3,react-leave4,an intern asking for sick leave: 'Loss of pay: 1 of these 1 days are beyond your balance and would be unpaid. 0 are covered.',x1
+react-leave4.A4,react-leave4,"Send asks first, in words, with Apply anyway and Go back",x1
+react-leave4.A5,react-leave4,"Go back sends nothing: still on the page, no request yet",x1
+react-leave4.A6,react-leave4,"Apply anyway sends it: on to My leave, the request listed",x1
+react-leave4.A7,react-leave4,a covered request sends with no question,x1
+react-leave4.A8,react-leave4,before the start date the page is as it was: no 'Under the leave policy' card,x1
+react-leave4.V1,react-leave4,HR's pending list has a Pay column,x1
+react-leave4.V2,react-leave4,Ananya's sick request: 'Would be unpaid: 1 day' (words in a badge),x1
+react-leave4.V3,react-leave4,other pending rows say Paid or name the days that would be unpaid; every pending row has one,x1
+react-leave4.V4,react-leave4,before the start date no Pay column,x1
+react-leave4.V5,react-leave4,an employee still has no approvals page (403),x1
+react-leave4.T1,react-leave4,"HR: a Band column and the policy's balances: Employee, Band, Casual leave, Sick leave, Earned leave",x1
+react-leave4.T2,react-leave4,"Arjun: Over 1 year, 12 / 8 days left; Rohan: Under 1 year; Ananya: Intern with casual 1 and no sick or earned",x1
+react-leave4.T3,react-leave4,"a manager (Sneha) sees only their reports, with the band",x1
+react-leave4.T4,react-leave4,before the start date: no Band column,x1
+react-leave4.L1,react-leave4,"the Admin's page: the sample note, the start date, the table by band, the Edit buttons",x1
+react-leave4.L2,react-leave4,"the numbers: interns casual 1 a month, none, none; under 1 year 12 and 8 a year pro-rated, earned per 20 days usable after 6 months; over 1 year with encashment above 30",x1
+react-leave4.L3,react-leave4,a quarter day is refused by the module under the field,x1
+react-leave4.L4,react-leave4,14 saves: the cell reads 14 days a year; a toast; the history says who and what,x1
+react-leave4.L5,react-leave4,days worked per earned day of 0 is refused in words,x1
+react-leave4.L6,react-leave4,a start date in the past is refused with the module's words,x1
+react-leave4.L7,react-leave4,a later start saves: 'From 1 Mar 2027'; in the history,x1
+react-leave4.L8,react-leave4,Close a leave year: 2026 and 2025 are offered (both have ended); the preview lists everyone employed by 31 Dec,x1
+react-leave4.L9,react-leave4,Arjun: Over 1 year on 31 Dec; earned left carried forward; Ananya (intern) carries and loses nothing,x1
+react-leave4.L10,react-leave4,"closing asks first and says the totals carried and paid out, once",x1
+react-leave4.L11,react-leave4,Cancel closes nothing,x1
+react-leave4.L12,react-leave4,"Close: a toast, the year is listed as closed by Aarav Mehta; the button now offers 2025 only",x1
+react-leave4.L13,react-leave4,Arjun's 2027 balance now carries what the preview said,x1
+react-leave4.L14,react-leave4,while 2026 hasn't ended: only 2025 can be closed; and 'the 2026 leave year can be closed from 1 January 2027' once everything that ended is closed,x1
+react-leave4.L15,react-leave4,"HR reads: the table and the history, no Edit, no Save start date, no Close",x1
+react-leave4.L16,react-leave4,fin: the 403 page,x3 (3 roles)
+react-leave4.L17.1280,react-leave4,1280: no sideways scroll,x1
+react-leave4.L17.412,react-leave4,412: no sideways scroll,x1
+react-leave4.P1,react-leave4,"Rohan's profile: the Leave band row, read-only: 'Under 1 year, over 1 year from 2 Feb 2027'",x1
+react-leave4.P2,react-leave4,the user form's employment type says the band under the field,x1
+react-leave4.P3,react-leave4,before the start date the profile is as it was,x1
+react-leave4.K1,react-leave4,Edit opens from the keyboard; the dialog is named,x1
+react-leave4.K2,react-leave4,Esc closes it,x1
+react-leave4.K3,react-leave4,every field has a name,x1
+react-leave4.K4,react-leave4,Close leave year from the keyboard asks first with Cancel focused,x1
+react-leave4.K5,react-leave4,the policy card is a named region of the form's aside,x1
+react-leave4.W1,react-leave4,"the band pills, the loss-of-pay and policy cards are at least 4.5:1 in both themes",x1
+react-leave4.E1,react-leave4,no page errors,x1
 react-locs.R1,react-locs,"admin: opens My locations (heading, tab title, privacy line); Offices last in the sidebar's Attendance section",x5 (5 roles)
 react-locs.R2,react-locs,the topbar search finds My locations (under Attendance),x1
 react-locs.N1,react-locs,"emp: the office (head office, 150 m), ""Home check-in isn't on for you"", whom to ask by name (HR / Admin), no forms, no request or history cards",x2 (2 roles)

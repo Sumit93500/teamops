@@ -85,8 +85,8 @@ for (const own of OWN) for (const who of Object.keys(WHO)) {
   tally[`${who} ${kind}`] = (tally[`${who} ${kind}`] ?? 0) + 1; if (n.shell) shells++;
   if (ok) passed++; else { failed++; fails.push(`FAIL  ${who.padEnd(5)} ${own}  want->${want}  new->${n.at}  main=${n.main}  shell ${n.shell}  ${n.errs.join(" | ")}`); }
 }
-// P4a: Rates and rules, the app's own page, for Admin and Finance only: everyone else is sent to the 403 page, signed out to sign-in.
-const GATED = [["payroll/rates-rules.html", ["admin", "fin"]]];
+// P4a: Rates and rules, the app's own page, for Admin and Finance only; P4b: Leave policy, for Admin and HR (it reads leave:approve): everyone else is sent to the 403 page, signed out to sign-in.
+const GATED = [["payroll/rates-rules.html", ["admin", "fin"]], ["leave/leave-policy.html", ["admin", "hr"]]];
 for (const [own, may] of GATED) for (const who of Object.keys(WHO)) {
   aboutCases++;
   const n = await open(N, who, own, true);
@@ -100,5 +100,5 @@ await browser.close();
 fails.forEach((f) => console.log(f));
 for (const who of Object.keys(WHO)) console.log(`${who.padEnd(5)} ` + ["opened", "to sign-in", "to 403", "elsewhere"].map((k) => `${k} ${tally[`${who} ${k}`] ?? 0}`).join(", "));
 const byWho = Object.keys(WHO).map((w) => `${w} ${PAGES.length + OWN.length + GATED.length}`).join(", ");
-console.log(`\nsmoke: ${PAGES.length} pages + About, Offices, My locations, Rates and rules x ${Object.keys(WHO).length} sessions (${byWho}) = ${cases.length + aboutCases} cases (${shells} inside the shell, as on the old site); passed ${passed}, failed ${failed}; ${Math.round((Date.now() - t0) / 1000)} s`);
+console.log(`\nsmoke: ${PAGES.length} pages + About, Offices, My locations, Rates and rules, Leave policy x ${Object.keys(WHO).length} sessions (${byWho}) = ${cases.length + aboutCases} cases (${shells} inside the shell, as on the old site); passed ${passed}, failed ${failed}; ${Math.round((Date.now() - t0) / 1000)} s`);
 process.exit(failed ? 1 : 0);

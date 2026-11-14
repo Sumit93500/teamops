@@ -13,6 +13,9 @@ import Frame from "../ui/Frame.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { Stepper } from "../components/Basics.jsx";
 import { useData, useSession } from "../data/hooks.js";
+import { useConfirm } from "../components/Confirm.jsx";
+import { requestOutcome } from "../../../assets/js/data/leave-policy.js";
+import { leavePolicyOn } from "../ui/leaveband.jsx";
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
 
@@ -59,6 +62,7 @@ function balanceRows(userId, type, from, to, duration, days) {
 export default function ApplyLeave() {
   const { userId } = useSession();
   const showToast = useToast();
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const [form, setForm] = useState({ type: "casual", from: "", to: "", duration: "full", reason: "", phone: "" });
   const [error, setError] = useState(null);   // { field, message }
@@ -85,9 +89,14 @@ export default function ApplyLeave() {
     chainText = `${manager.name} approves your request first, then HR or an Admin.`;
   } else { steps.push({ state: "", title: "Approval", detail: "HR or an Admin" }); chainText = "Your request goes to HR or an Admin."; }
 
-  const submit = (e) => {
+  // P4b: from the policy's start date, the days a request takes beyond the balance are said, and asked about before they are sent
+  const policyOn = leavePolicyOn();
+  const onDay = form.from && form.from > todayIso() ? form.from : todayIso();
+  const outcome = policyOn && days ? requestOutcome(user.id, form.type, days, onDay) : null;
+  const submit = async (e) => {
     e.preventDefault();
     setError(null);
+    if (outcome?.lop > 0 && !(await confirm({ message: `Apply anyway?\n${formatDays(outcome.lop)} of these ${formatDays(days)} are beyond your ${typeLabel(form.type).toLowerCase()} balance and would be unpaid (loss of pay).`, confirmLabel: "Apply anyway", cancelLabel: "Go back", danger: true }))) return;
     const result = applyLeave(user.id, { type: form.type, from: form.from, to: form.to, duration: form.duration, reason: form.reason, contactPhone: form.phone });
     if (!result.ok) {
       if (ERROR_ID[result.field]) { setError({ field: result.field, message: result.error }); setTimeout(() => FOCUS[result.field]()?.focus()); }
@@ -209,6 +218,16 @@ export default function ApplyLeave() {
               </dl>
             </div>
           </section>
+          {policyOn && (
+            <section className="card" id="leave-outcome">
+              <div className="card__header"><h3 className="card__title">Under the leave policy</h3></div>
+              <div className="card__body">
+                {outcome === null ? <p className="text-muted" id="leave-outcome-text">Pick the dates to see how this request sits against your balance.</p>
+                  : outcome.lop > 0 ? <p id="leave-outcome-text"><span className="badge badge--warning">Loss of pay</span>{` ${formatDays(outcome.lop)} of these ${formatDays(days)} are beyond your balance and would be unpaid. ${formatDays(outcome.paid)} are covered.`}</p>
+                    : <p id="leave-outcome-text"><span className="badge badge--success">Covered</span>{" All of these days are covered by your balance."}</p>}
+              </div>
+            </section>
+          )}
           <section className="card">
             <div className="card__header"><h3 className="card__title">Approval chain</h3></div>
             <div className="card__body"><Stepper id="approval-chain" steps={steps} /></div>

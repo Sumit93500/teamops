@@ -34,6 +34,7 @@ import { EmptyState, Badge, badgeOf, Reason } from "../components/Basics.jsx";
 import { PageHeader, Card, Pill } from "../components/Layout.jsx";
 import { Field, Input, Kv, initialsOf } from "../components/Form.jsx";
 import { STATUS } from "./UsersList.jsx";
+import { leavePolicyOn, bandText } from "../ui/leaveband.jsx";
 
 const PAGE = "users/user-profile.html";
 const LIST = pageUrl("users/users-list.html");
@@ -241,7 +242,8 @@ function Profile({ initial }) {
               <Kv rows={[["Work email", orDash(user.email)], ["Phone", orDash(user.phone)], ["Location", orDash(user.location)], ["Employment type", orDash(user.employmentType)],
                 ["Department", orDash(departmentName(user.department))], ["Reporting manager", orDash(reportingManagerName(user))], ["Date of joining", orDash(user.dateOfJoining)],
                 leavingDate(user) ? ["Last working day", formatDay(leavingDate(user), true)] : null,
-                ["Tenure", tenure ? (away ? `${tenure} (${plural(away, "day", "days")} away)` : tenure) : "—", { muted: !tenure }]]} />
+                ["Tenure", tenure ? (away ? `${tenure} (${plural(away, "day", "days")} away)` : tenure) : "—", { muted: !tenure }],
+                leavePolicyOn() ? ["Leave band", bandText(user.id)] : null]} />
             </Card>
             <Card id="profile-sensitive" title="Sensitive details" actions={<><Pill tone="info">Needs pii:view</Pill>{editIn("pay", "Edit pay and tax details")}</>}>
               <Kv rows={[Sensitive({ label: "Bank account", masked: maskAccount(user.bankAccountLast4) || "•••• ••••", full: user.bankAccount ? formatAccount(user.bankAccount) : "", canReveal: can.pii }),

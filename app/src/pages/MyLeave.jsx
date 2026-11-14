@@ -1,7 +1,9 @@
 // My leave (pages/leave/my-leave.html + assets/js/pages/my-leave.js), ported as is: balances, the history
 // (year filter, 10 a page, Cancel on pending rows), the newest pending request's steps and the next three
 // holidays, all for the signed-in person. The numbers come from the same stores and helpers the old page
-// calls; a cancel goes through cancelLeave() and every view re-reads (useAction bumps the bus).
+// calls; a cancel goes through cancelLeave() and every view re-reads (useAction bumps the bus). P4b: from the leave policy's start
+// date (Leave policy page) the balances are the policy's: the band badge, accrual to date, carry-forward and encashment, loss of
+// pay and how the balance is worked out (ui/leaveband.jsx); before it the page is exactly as it was.
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Frame from "../ui/Frame.jsx";
@@ -12,6 +14,7 @@ import { StatusBadge, PendingSteps } from "../ui/leave.jsx";
 import { usePhone, cardColumns, MoreButton } from "../ui/phone.jsx";
 import { useData, useAction, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
+import { PolicyBalances, BandBadge, leavePolicyOn } from "../ui/leaveband.jsx";
 import { requestsFor, cancelLeave } from "../../../assets/js/data/leave-store.js";
 import { getAllHolidays } from "../../../assets/js/data/holidays.js";
 import { leaveBalanceChart, valuesOf } from "../../../assets/js/data/chart-data.js";
@@ -119,6 +122,7 @@ export default function MyLeave() {
         <div>
           <h1>My leave</h1>
           <p className="page-header__subtitle">Your balances and every request you have made</p>
+          {leavePolicyOn() && <p className="page-header__subtitle" id="my-band"><BandBadge userId={userId} /></p>}
         </div>
         <div className="page-header__actions">
           <Link className="btn" to={pageUrl("leave/holidays.html")}>Holidays</Link>
@@ -130,7 +134,7 @@ export default function MyLeave() {
       </div>
 
       <div className="stack">
-        <Balances userId={userId} />
+        {leavePolicyOn() ? <PolicyBalances userId={userId} /> : <Balances userId={userId} />}
 
         <div className="grid grid-main-aside">
           <section className="card">

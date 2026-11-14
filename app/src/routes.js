@@ -27,5 +27,8 @@ export const APPEARANCE = "account/appearance.html";
 // rows) and Finance (reads): payroll-rules:verify or tax:view.
 export const RATES_RULES = "payroll/rates-rules.html";
 
+// Leave policy (P4b): the app's own; the tenure leave policy by band. Admin edits, HR reads (leave-policy:edit or leave:approve).
+export const LEAVE_POLICY_PAGE = "leave/leave-policy.html";
+
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;
