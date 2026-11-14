@@ -176,6 +176,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "payrules.mjs") { Run "payrules-$t" @("payrules.mjs") }
   # P2: salary templates, regime, TDS and the whole month (data/employment.js, pay-structure.js, pay-engine.js)
   if (Test-Path "paystructure.mjs") { Run "paystructure-$t" @("paystructure.mjs") }
+  # P3: leave by tenure (data/leave-policy.js)
+  if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")
   Run "pages-$t" @("pages.mjs", $Pages)
   Run "approvals-$t" @("approvals.mjs", $Pages)
