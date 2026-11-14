@@ -22,13 +22,15 @@
 //   tdsFor({ regime, paidGross, incomeSoFar, tdsSoFar, monthsBefore, monthsLeft, monthlyGross, finalMonth, deductions }, taxYearStartDate)
 //                                                  -> { tds, projected, taxable, annual, ... }     ONE month's TDS
 //   compareRegimes({ annualGross, declaration, basicAnnual, hraAnnual }, taxYearStartDate)   -> { new, old, lower }
+// A month's rules are the ones in force on its FIRST day (ruled 2026-11-14): a rule starting on the 1st applies that month,
+// one starting later in the month applies from the next month. payMonth / payFor / ctcFor say so: `rulesAsOf`.
 //   payMonth({ gross, monthlyGross, template, lta, state, year, month, regime, declaration, soFar, finalMonth, onFullWages })
 //                                                  -> the whole month, from numbers alone (no storage but the rules)
 //   payFor(userId, year, month)                    -> the same for a person on file, or null (no row that month)
 //   ctcFor(userId, year, month)                    -> the monthly and yearly cost to company at that month's rules
 
 import { ruleOn, isUnverified, payRuleSettings } from "./pay-rules.js";
-import { statutoryFor, monthEnd, rupees } from "./statutory.js";
+import { statutoryFor, monthStart, rupees } from "./statutory.js";
 import { payTemplate, componentsFor, structureOf, taxYearOf, regimeOf, declarationOf } from "./pay-structure.js";
 import { employmentOf } from "./employment.js";
 import { officeOf } from "./offices-store.js";
@@ -124,7 +126,7 @@ export function compareRegimes({ annualGross = 0, declaration = null, basicAnnua
 // left, and the ESI coverage test). template: a pay-structure template. soFar: the tax year before this month.
 export function payMonth({ gross = 0, monthlyGross = gross, template, lta = false, state = null, year, month, regime = "new", declaration = null,
   soFar = { incomeSoFar: 0, tdsSoFar: 0, monthsBefore: 0, monthsLeft: 12 }, finalMonth = false, onFullWages = payRuleSettings().pfOnFullWages } = {}) {
-  const date = monthEnd(year, month);
+  const date = monthStart(year, month);   // the month's rules are the ones in force on its first day (rulesAsOf)
   const taxYear = taxYearOf(year, month);
   const paid = Math.max(0, Math.round(money(gross)));
   const components = componentsFor(template, paid, { lta });
@@ -144,7 +146,7 @@ export function payMonth({ gross = 0, monthlyGross = gross, template, lta = fals
   const rules = [...new Set([...statutory.rules, ...tax.rules, ...(deductionsOld?.rules ?? []), ...(section ? [section.id] : [])])];
   const unverified = statutory.unverified || tax.unverified || Boolean(deductionsOld?.unverified);
   return {
-    month: `${year}-${String(month).padStart(2, "0")}`, taxYear: taxYear.label, templateId: template?.id ?? null, kind: intern ? "intern" : "employee", state, regime: tax.regime,
+    month: `${year}-${String(month).padStart(2, "0")}`, rulesAsOf: date, taxYear: taxYear.label, templateId: template?.id ?? null, kind: intern ? "intern" : "employee", state, regime: tax.regime,
     monthlyGross, gross: paid, components: components.lines, wages: statutory.wages,
     statutory: { pf: statutory.pf, esi: statutory.esi, pt: statutory.pt, lwf: statutory.lwf, gratuity: statutory.gratuity },
     tax: { ...tax, section: section?.value?.salaryTds ?? null, act: section?.value?.act ?? null, oldRegime: deductionsOld },
@@ -189,6 +191,6 @@ export function ctcFor(userId, year, month) {
   if (!row) return null;
   const structure = structureOf(userId);
   const full = payMonth({ gross: row.monthlyGross, monthlyGross: row.monthlyGross, template: payTemplate(structure.templateId), lta: structure.lta, state: row.state, year: Number(year), month: Number(month) });
-  return { userId, month: row.month, monthly: { gross: full.gross, employer: full.employer, total: full.costToCompany }, yearly: { gross: full.gross * 12, employer: full.employer.total * 12, total: full.costToCompany * 12 },
+  return { userId, month: row.month, rulesAsOf: row.rulesAsOf, monthly: { gross: full.gross, employer: full.employer, total: full.costToCompany }, yearly: { gross: full.gross * 12, employer: full.employer.total * 12, total: full.costToCompany * 12 },
     unverified: full.unverified, label: full.label };
 }

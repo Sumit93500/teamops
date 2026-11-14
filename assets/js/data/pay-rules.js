@@ -106,7 +106,7 @@ const SEED = [
   }),
   row("pf", ALL, "2026-09-17", "secondary", SRC.pfCeiling, {
     employeeRate: 0.12, employerRate: 0.12, value: { wageCeiling: 25000, epsRate: 0.0833 },
-    note: "Wage ceiling 25,000 a month from 17 Sep 2026 (EPS at most 2,083). A month uses the rule in force on its last day, so September 2026 is computed on 25,000: check how EPFO treats the part-month.",
+    note: "Wage ceiling 25,000 a month from 17 Sep 2026 (EPS at most 2,083). A payroll month uses the rules in force on its first day, so August and September 2026 are computed on 15,000 and October 2026 on 25,000 (the row keeps its published date).",
   }),
   row("pf.edli", ALL, "2014-09-01", "secondary", SRC.pfBooklet, {
     employerRate: 0.005, value: { onCeiling: true },

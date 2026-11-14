@@ -6,11 +6,12 @@
 // NOT TAX OR LEGAL ADVICE: demo values, to be checked by a Chartered Accountant (see data/pay-rules.js).
 //
 // Every amount is whole rupees a month, rounded half up (how the PF and ESI portals round is not confirmed). `date` is
-// any "YYYY-MM-DD" day: a month's pay passes the month's LAST day (monthEnd), so a rule that starts mid-month applies
-// to that whole month. Each answer names the rule rows it used (`rules`, their ids) and says whether any of them is
+// any "YYYY-MM-DD" day. A PAYROLL MONTH is looked up as of its FIRST day (monthStart; ruled 2026-11-14, P-fix): a rule that
+// starts on the 1st applies that month, one that starts later in the month (the PF ceiling's 17 Sep 2026) applies from the
+// next full month. Each answer names the rule rows it used (`rules`, their ids) and says whether any of them is
 // unverified (`unverified`: pages then show "unverified rates"), so a figure can always be traced to its row.
 //
-//   monthEnd(year, month)                                   "YYYY-MM-DD", the month's last day
+//   monthStart(year, month)                                 "YYYY-MM-DD", the month's first day: the date a month's rules are taken as of
 //   isIntern(employmentType)                                "Intern" in any case
 //   statutoryWages({ gross, basic, da, retaining }, date)   -> { wages, base, others, addBack, ... }
 //   pfFor({ wages, employmentType }, date, { onFullWages }) -> { applies, wageBase, employee, employer, eps, epfEmployer, edli, admin, employerTotal, ... }
@@ -29,8 +30,7 @@ import { ruleOn, isUnverified, payRuleSettings } from "./pay-rules.js";
 // Whole rupees, half up (the epsilon keeps 2082.5 from landing on 2082 through binary fractions).
 export const rupees = (x) => Math.floor(x + 0.5 + 1e-9);
 const two = (n) => String(n).padStart(2, "0");
-const leap = (y) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
-export const monthEnd = (year, month) => `${year}-${two(month)}-${two(month === 2 ? (leap(year) ? 29 : 28) : [4, 6, 9, 11].includes(month) ? 30 : 31)}`;
+export const monthStart = (year, month) => `${year}-${two(month)}-01`;
 const monthOf = (date) => Number(date.slice(5, 7));
 export const isIntern = (employmentType) => typeof employmentType === "string" && employmentType.trim().toLowerCase() === "intern";
 const money = (v) => (typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0);
