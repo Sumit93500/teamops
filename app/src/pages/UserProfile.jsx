@@ -6,17 +6,19 @@
 // Actions: Reset password (a toast: nothing is sent), Edit, Deactivate (asks for the last working day) / Reactivate (asks),
 // Delete (refusals first, then asks, naming held equipment), each refusal's reason under its button.
 // New (L1): Check-in places (office, home check-in, homes, open change requests) and Devices (list; Admin reset, asked first).
+// E1: the whole record in the form's five sections (ui/profile.jsx: view and edit, masked sensitive fields with Show, each
+// field only for whoever may see it), the profile's completeness and change history (HR / Admin), bank and tax change
+// requests, and the sign-in account (reset link or temporary password: accounts:reset; unlock, disable / enable:
+// accounts:unlock; the account's events for an Admin). The old Reset password toast is gone (the Account card does it).
+// Managers open their direct reports' profiles (team fields, leave) and Finance opens anyone's (team and pay fields): the
+// app's own rule (RequireRoute), so the old site's guard is unchanged.
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { getUser, getAllDepartments, deactivateUser, reactivateUser, deleteUser, deleteProblem, reportingManagerName, leavingDate, leavingPeriods } from "../../../assets/js/data/store.js";
+import { getUser, getAllDepartments, deactivateUser, reactivateUser, deleteUser, deleteProblem, leavingDate, leavingPeriods } from "../../../assets/js/data/store.js";
 import { DEPARTMENTS } from "../../../assets/js/data/users.js";
 import { ROLES, overridesOf } from "../../../assets/js/config/roles.js";
 import { formatDay, plural, todayIso } from "../../../assets/js/ui/leave-view.js";
-import { maskAccount, maskPan } from "../../../assets/js/ui/pii.js";
-import { salaryFor } from "../../../assets/js/data/payroll-store.js";
-import { approvalChainText } from "../../../assets/js/data/leave-store.js";
 import { leaveBalanceChart, valuesOf } from "../../../assets/js/data/chart-data.js";
-import { rupees } from "../../../assets/js/ui/money.js";
 import { allItems, assetsFor } from "../../../assets/js/data/inventory-store.js";
 import { conditionBadge } from "../../../assets/js/ui/inventory-view.js";
 import { officeOf } from "../../../assets/js/data/offices-store.js";
@@ -35,13 +37,14 @@ import { PageHeader, Card, Pill } from "../components/Layout.jsx";
 import { Field, Input, Kv, initialsOf } from "../components/Form.jsx";
 import { STATUS } from "./UsersList.jsx";
 import { leavePolicyOn, bandText } from "../ui/leaveband.jsx";
+import { relationOf } from "../../../assets/js/data/employee-record.js";
+import { PROFILE_SECTIONS } from "../../../assets/js/config/employee-fields.js";
+import { ProfileRecord, ChangeRequests, Completeness, History, AccountCard } from "../ui/profile.jsx";
 
 const PAGE = "users/user-profile.html";
 const LIST = pageUrl("users/users-list.html");
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const orDash = (v) => (v ? String(v) : "—");
 const departmentName = (code) => getAllDepartments().find((d) => d.code === code)?.name ?? DEPARTMENTS.find((d) => d.code === code)?.name ?? code ?? "";
-const formatAccount = (digits) => String(digits).replace(/(\d{4})(?=\d)/g, "$1 ");
 const LEAVE_SHORT = { casual: "Casual", sick: "Sick", earned: "Earned", wfh: "WFH" };
 const DEVICE_NOTE = "A browser can't prove who is using it: a device here is a random token kept in that browser. The backend stage will enforce devices for real.";
 
@@ -72,12 +75,6 @@ function heldText(userId) {
   if (!held.length) return "";
   const names = new Map(allItems().map((i) => [i.sku, i.name]));
   return `They still hold ${held.map((a) => `${a.id} (${names.get(a.sku) ?? a.sku})`).join(", ")}. Take ${held.length === 1 ? "it" : "them"} back on Asset assignment.`;
-}
-
-function Sensitive({ label, masked, full, canReveal }) {
-  const [shown, setShown] = useState(false);
-  if (!full) return [label, "Not on file", { muted: true }];
-  return [label, <span className="ds-reveal"><span className={shown ? undefined : "masked"}>{shown ? full : masked}</span>{canReveal && <> <button type="button" className="ds-btn ds-btn--ghost ds-btn--sm" onClick={() => setShown(!shown)}>{shown ? "Hide" : "Reveal"}</button></>}</span>];
 }
 
 function DeactivateDialog({ user, onClose, onDone }) {
@@ -157,8 +154,10 @@ function Profile({ initial }) {
   const toast = useToast();
   const confirm = useConfirm();
   const navigate = useNavigate();
-  const can = { reset: useCan("users:reset-password"), edit: useCan("users:edit"), status: useCan("users:deactivate"), del: useCan("users:delete"), pii: useCan("pii:view"), salary: useCan("salary:view") };
+  const can = { edit: useCan("users:edit"), status: useCan("users:deactivate"), del: useCan("users:delete") };
   const user = useData(() => getUser(initial.id) ?? initial, [initial.id]);
+  const relation = useData(() => relationOf(userId, initial.id), [userId, initial.id]);
+  const people = relation === "people" || relation === "self";
   const [dialog, setDialog] = useState(false);
   const role = ROLES[user.role];
   const status = STATUS[user.status] ?? { label: user.status, tone: "" };
@@ -170,7 +169,6 @@ function Profile({ initial }) {
   const tenure = tenureText(user.dateOfJoining, last ? new Date(last.year, last.month, last.day) : new Date());
   const away = daysAway(user);
   const today = todayIso();
-  const salary = can.salary ? salaryFor(user.id, Number(today.slice(0, 4)), Number(today.slice(5, 7))) : null;
   const { grants, denies } = overridesOf(user);
   const chart = leaveBalanceChart(user.id);
   const [allowance, left] = ["Allowance", "Left"].map((n) => valuesOf(chart, n));
@@ -201,15 +199,22 @@ function Profile({ initial }) {
     setTimeout(() => { bump(); navigate(LIST); }, 1200);
   };
 
-  // E0: each card's Edit opens the user form at its section (only for whoever may edit)
-  const editIn = (section, name) => (can.edit ? <Link className="ds-btn ds-btn--sm" aria-label={name} data-edit-section={section}
-    to={pageUrl(`users/user-form.html?id=${encodeURIComponent(user.id)}&section=${section}`)}>Edit</Link> : null);
+  if (!relation) {
+    return (
+      <>
+        <PageHeader title="Employee profile" breadcrumb={[{ label: "Users", to: LIST }, { label: user.name }]} />
+        <Card id="not-yours"><EmptyState title="You can't see this profile" text="You can open your direct reports' profiles. Ask HR for anyone else's details." /></Card>
+      </>
+    );
+  }
+  const leaver = leavingDate(user);
+  const service = [["Tenure", tenure ? (away ? `${tenure} (${plural(away, "day", "days")} away)` : tenure) : "—", { muted: !tenure }],
+    leaver ? ["Last working day", formatDay(leaver, true)] : null, leavePolicyOn() ? ["Leave band", bandText(user.id)] : null];
   return (
     <>
       <PageHeader title="Employee profile" breadcrumb={[{ label: "Users", to: LIST }, { label: user.name }]}
-        actions={<div className="ds-stack" style={{ gap: 6, justifyItems: "end" }}>
+        actions={(can.edit || can.status || can.del) && <div className="ds-stack" style={{ gap: 6, justifyItems: "end" }}>
           <div className="ds-form-actions__buttons">
-            {can.reset && <button type="button" className="ds-btn" onClick={() => toast(`Passwords aren't part of OfficeOS yet: no reset link was sent to ${user.email}.`, "info")}>Reset password</button>}
             {can.edit && <Link className="ds-btn" to={pageUrl(`users/user-form.html?id=${encodeURIComponent(user.id)}`)}>Edit</Link>}
             {can.status && <button type="button" className={`ds-btn${inactive ? "" : " ds-btn--danger"}`} onClick={onStatus}>{inactive ? "Reactivate" : "Deactivate"}</button>}
             {can.del && <button type="button" className="ds-btn ds-btn--danger" onClick={onDelete}>Delete</button>}
@@ -232,52 +237,47 @@ function Profile({ initial }) {
           </div>
         </section>
         <nav aria-label="Profile sections" className="ds-tabs">
-          {[["Overview", "profile-details"], ["Access", "profile-access"], ["Attendance", null], ["Leave", "profile-leave"], ["Assets", "profile-assets"], ["Activity", "profile-activity"]].map(([label, to]) => (
-            to ? <a key={label} className="ds-tabs__tab" href={`#${to}`}>{label}</a> : <Link key={label} className="ds-tabs__tab" to={pageUrl("attendance/team-attendance.html")}>{label}</Link>
-          ))}
+          {PROFILE_SECTIONS.filter((s) => people || s.key !== "access").filter((s) => relation !== "manager" || s.key !== "pay").map((s) => <a key={s.key} className="ds-tabs__tab" href={`#profile-${s.key}`}>{s.title}</a>)}
+          {people && <a className="ds-tabs__tab" href="#profile-leave">Leave</a>}
+          {relation === "people" && <a className="ds-tabs__tab" href="#profile-assets">Assets</a>}
         </nav>
         <div className="ds-two-col">
           <div className="ds-stack">
-            <Card id="profile-details" title="Details" actions={editIn("employment", "Edit employment details")}>
-              <Kv rows={[["Work email", orDash(user.email)], ["Phone", orDash(user.phone)], ["Location", orDash(user.location)], ["Employment type", orDash(user.employmentType)],
-                ["Department", orDash(departmentName(user.department))], ["Reporting manager", orDash(reportingManagerName(user))], ["Date of joining", orDash(user.dateOfJoining)],
-                leavingDate(user) ? ["Last working day", formatDay(leavingDate(user), true)] : null,
-                ["Tenure", tenure ? (away ? `${tenure} (${plural(away, "day", "days")} away)` : tenure) : "—", { muted: !tenure }],
-                leavePolicyOn() ? ["Leave band", bandText(user.id)] : null]} />
-            </Card>
-            <Card id="profile-sensitive" title="Sensitive details" actions={<><Pill tone="info">Needs pii:view</Pill>{editIn("pay", "Edit pay and tax details")}</>}>
-              <Kv rows={[Sensitive({ label: "Bank account", masked: maskAccount(user.bankAccountLast4) || "•••• ••••", full: user.bankAccount ? formatAccount(user.bankAccount) : "", canReveal: can.pii }),
-                Sensitive({ label: "PAN", masked: maskPan(user.pan), full: user.pan ?? "", canReveal: can.pii }),
-                can.salary ? ["Salary", salary ? `${rupees(salary.gross)} a month` : "Not on file", { muted: !salary }] : ["Salary", "Hidden, needs salary:view", { muted: true }]]} />
-            </Card>
-            <Places user={user} />
-            <Card id="profile-activity" title="Recent activity" meta="This month"><p className="ds-hint">No recent activity</p></Card>
+            <ProfileRecord userId={user.id} />
+            {(relation === "people" || relation === "finance") && <ChangeRequests userId={user.id} />}
+            {relation === "people" && <History userId={user.id} />}
           </div>
           <aside className="ds-stack">
-            <Card id="profile-access" title="Access" actions={editIn("access", "Edit role and access")}>
-              <Kv rows={[["Designation", orDash(user.designation)], ["Default role", <Pill tone="info">{role?.label ?? user.role}</Pill>], ["Data scope", role?.scopeLabel ?? ROLES.emp.scopeLabel],
-                ["Approval chain", approvalChainText(user.id)], ["Two-factor sign-in", "Not recorded yet", { muted: true }], ["Last sign-in", "Not recorded yet", { muted: true }]]} />
-            </Card>
-            <Card id="profile-overrides" title="Permission overrides" meta={String(grants.length + denies.length)}>
-              {!grants.length && !denies.length ? <p className="ds-hint">No overrides</p> : (
-                <div className="ds-stack">
-                  {[["Extra permissions", grants], ["Denied permissions", denies]].map(([label, list]) => (
-                    <div key={label} className="ds-field"><span className="ds-field__label">{label}</span>
-                      <div className="ds-chips">{list.length ? list.map((p) => <span key={p} className="ds-chip">{p}</span>) : <span className="ds-hint">None</span>}</div></div>
-                  ))}
-                  <p className="ds-hint">Applied on top of the role, everywhere the app checks: extra permissions are added, denied ones taken away. Only an Admin can change them.</p>
-                </div>
-              )}
-            </Card>
-            <Card id="profile-leave" title="Leave balance" meta={today.slice(0, 4)} footer="Days left this year; work from home, this month.">
-              <Kv rows={leave.map((r) => [LEAVE_SHORT[r.type] ?? r.type, String(r.left)])} />
-            </Card>
-            <Card id="profile-assets" title="Assets" meta={String(assets.length)}>
-              {!assets.length ? <p className="ds-hint">No assets assigned</p> : (
-                <Kv rows={assets.map((a) => { const b = conditionBadge(a.condition); return [names.get(a.sku) ?? a.sku, <span>{a.id} since {formatDay(a.since, true)} <Badge {...badgeOf(b.className)}>{b.textContent}</Badge></span>]; })} />
-              )}
-            </Card>
-            <Devices user={user} />
+            {relation === "people" && <Completeness userId={user.id} />}
+            {relation === "people" && <AccountCard user={user} />}
+            <Card id="profile-service" title="Service"><Kv rows={service} /></Card>
+            {relation === "people" && (
+              <Card id="profile-overrides" title="Permission overrides" meta={String(grants.length + denies.length)}>
+                {!grants.length && !denies.length ? <p className="ds-hint">No overrides</p> : (
+                  <div className="ds-stack">
+                    {[["Extra permissions", grants], ["Denied permissions", denies]].map(([label, list]) => (
+                      <div key={label} className="ds-field"><span className="ds-field__label">{label}</span>
+                        <div className="ds-chips">{list.length ? list.map((p) => <span key={p} className="ds-chip">{p}</span>) : <span className="ds-hint">None</span>}</div></div>
+                    ))}
+                    <p className="ds-hint">Applied on top of the role, everywhere the app checks: extra permissions are added, denied ones taken away. Only an Admin can change them.</p>
+                  </div>
+                )}
+              </Card>
+            )}
+            {(relation === "people" || relation === "manager") && (
+              <Card id="profile-leave" title="Leave balance" meta={today.slice(0, 4)} footer="Days left this year; work from home, this month.">
+                <Kv rows={leave.map((r) => [LEAVE_SHORT[r.type] ?? r.type, String(r.left)])} />
+              </Card>
+            )}
+            {relation === "people" && (
+              <Card id="profile-assets" title="Assets" meta={String(assets.length)}>
+                {!assets.length ? <p className="ds-hint">No assets assigned</p> : (
+                  <Kv rows={assets.map((a) => { const b = conditionBadge(a.condition); return [names.get(a.sku) ?? a.sku, <span>{a.id} since {formatDay(a.since, true)} <Badge {...badgeOf(b.className)}>{b.textContent}</Badge></span>]; })} />
+                )}
+              </Card>
+            )}
+            {relation === "people" && <Places user={user} />}
+            {relation === "people" && <Devices user={user} />}
           </aside>
         </div>
       </div>

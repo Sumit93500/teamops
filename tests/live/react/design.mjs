@@ -135,12 +135,14 @@ for (const [who, p, title] of [["out", "auth/login.html", "Sign in"], ["out", "a
   for (const width of [1280, 412]) {
     const { ctx, t } = await open(who, `/pages/${p}`, width);
     const s = await t.evaluate(() => {
-      const logo = document.querySelector(".auth__logo"), footer = document.querySelector(".app-footer"), main = document.querySelector("main.auth");
-      return { logo: logo?.innerText.replace(/\s+/g, " ").trim() ?? null, mark: logo?.querySelector(".brand-mark")?.textContent ?? null, label: document.querySelector(".auth__brand")?.getAttribute("aria-label") ?? null,
+      // E1: Sign in and Forgot password are the app's own pages: the brand is the card's, the main is .auth-page__main
+      const e1 = document.querySelector(".auth-card__brand");
+      const logo = e1 ?? document.querySelector(".auth__logo"), footer = document.querySelector(".app-footer"), main = document.querySelector("main.auth, main.auth-page__main");
+      return { logo: logo?.innerText.replace(/\s+/g, " ").trim() ?? null, mark: logo?.querySelector(".brand-mark")?.textContent ?? null, label: e1 ? "E1" : document.querySelector(".auth__brand")?.getAttribute("aria-label") ?? null,
         footer: footer?.innerText.trim(), after: Boolean(main && footer && main.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING), title: document.title,
         topOfficeOS: logo ? /OfficeOS/.test(logo.innerText) : false, scroll: document.documentElement.scrollWidth <= innerWidth };
     });
-    const brandOk = p.startsWith("auth/") ? s.logo === `N ${COMPANY}` && s.mark === "N" && s.label === `About ${COMPANY}` : s.logo === null;
+    const brandOk = p.startsWith("auth/") ? s.logo === `N ${COMPANY}` && s.mark === "N" && (s.label === `About ${COMPANY}` || s.label === "E1") : s.logo === null;
     check(`P.${p}.${width}`, `${p}: company brand, footer after main, tab title`, brandOk && !s.topOfficeOS && s.footer === `© 2026 ${COMPANY} · Powered by OfficeOS` /* L1 (behaviour): the company in the public pages' footer */ && s.after && s.title === `${title} | ${COMPANY}` && s.scroll, j(s));
     if (width === 1280 && p === "auth/login.html") await t.screenshot({ path: path.join(SHOTS, "login-1280.png"), fullPage: true });
     await ctx.close();

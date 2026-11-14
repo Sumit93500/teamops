@@ -53,6 +53,7 @@ export const ROLES = {
       "announcements:create",
       "reports:view", "reports:export",
       "audit:view",
+      "accounts:reset",   // E1: a reset link or a new temporary password for someone (not an Admin)
     ],
   },
 

@@ -211,7 +211,10 @@ async function phoneCards(letter, list) {
     await o.t.waitForTimeout(700);
     const cards = (t) => t.evaluate(() => [...document.querySelectorAll("main table")].map((tb) => ({ cards: tb.hasAttribute("data-cards"),
       rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`)) })));
-    const [a, b] = [await cards(o.t), await cards(n.t)];
+    // E1 (ruled): the app names E1's accounts module under People; the frozen old page puts it under 'Other' (one more group
+    // heading row), so on the role editor the module rows are compared without the group headings
+    const ruled = (x) => (page.includes("role-editor") ? x.map((tb) => ({ ...tb, rows: tb.rows.filter((r) => r.length > 1) })) : x);
+    const [a, b] = [ruled(await cards(o.t)), ruled(await cards(n.t))];
     check(`${letter}.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page} at 412: the same cards`, j(a) === j(b), j(a) === j(b) ? `${a.length} tables, ${a.map((x) => x.rows.length).join("+")} rows` : `old ${j(a).slice(0, 400)} new ${j(b).slice(0, 400)}`);
     await o.ctx.close(); await n.ctx.close();
   }

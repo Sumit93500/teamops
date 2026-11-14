@@ -9,6 +9,13 @@ import { canOpenPage } from "../../assets/js/core/guard.js";
 import { useSession, signOutNow } from "./data/hooks.js";
 import { PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { tabTitle, COMPANY } from "./data/company.js";
+import { can } from "../../assets/js/core/rbac.js";
+import { isManager } from "../../assets/js/data/reporting.js";
+
+// E1: pages the app also opens to people the old guard doesn't (the old site keeps its own rule): the employee profile for
+// a manager (their direct reports' team fields) and for Finance (team and pay fields). What each sees is the page's to
+// decide (data/employee-record.js); anyone else's profile says they can't see it.
+const APP_ALSO = { "users/user-profile.html": (user) => can("salary:edit") || isManager(user.id) };
 
 export default function RequireRoute({ page, children }) {
   const { session, user, role } = useSession();
@@ -27,6 +34,6 @@ export default function RequireRoute({ page, children }) {
 
   if (isPublic) return children;
   if (!session || !user) return <Navigate to={pageUrl("auth/login.html")} replace />;
-  if (!canOpenPage(page)) return <Navigate to={pageUrl("errors/403.html")} replace />;
+  if (!canOpenPage(page) && !APP_ALSO[page]?.(user)) return <Navigate to={pageUrl("errors/403.html")} replace />;
   return children;
 }

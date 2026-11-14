@@ -184,6 +184,9 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "lopalloc.mjs") { Run "lopalloc-$t" @("lopalloc.mjs") }
   # F1: attendance:any-office and the Admin's offices; the two month charts (data/locations-store.js, data/chart-data.js)
   if (Test-Path "f1data.mjs") { Run "f1data-$t" @("f1data.mjs") }
+  # E1: sign-in accounts and the employee record (data/credentials.js, data/employee-record.js, config/employee-fields.js)
+  if (Test-Path "accounts.mjs") { Run "accounts-$t" @("accounts.mjs") }
+  if (Test-Path "emprecord.mjs") { Run "emprecord-$t" @("emprecord.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

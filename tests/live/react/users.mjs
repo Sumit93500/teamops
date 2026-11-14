@@ -35,7 +35,9 @@ const EDGE = path.join(HERE, "..", "edge");
 const { chromium } = createRequire(path.join(EDGE, "x.js"))("playwright-core");
 const { useLocalFonts } = await import(new URL("file:///" + path.join(EDGE, "lib", "local-fonts.mjs").replace(/\\/g, "/")).href);
 const [DIST, PRIST, SHOTS] = process.argv.slice(2);
-const ONLY = process.env.ONLY ?? "RLFSPDOCAXKWE";
+// E1 (ruled): P (the profile against the old page) is left out of the default run: the profile is the record in sections now
+// (e1.mjs D and P check it)
+const ONLY = process.env.ONLY ?? "RLFSDOCAXKWE";
 fs.mkdirSync(SHOTS, { recursive: true });
 const t0 = Date.now();
 const srvN = spawn("python", [path.join(HERE, "spa-serve.py"), "9985", DIST], { stdio: "ignore" });
@@ -138,7 +140,9 @@ if (ONLY.includes("R")) {
       const x = await pair(who, page);
       await settle(x.n.t, 300);
       const at = (p) => (p.startsWith("/pages/errors/403") ? "403" : "page");
-      same(`R.${page.split("/")[1].split(".")[0]}.${who}`, `${who} opens ${page}: the same outcome`, [at(x.o.at())], [at(x.n.at())]);
+      // E1 (ruled): Finance and a manager open the profile in the app (team / pay fields; e1.mjs D)
+      const want = page.startsWith("users/user-profile") && (who === "fin" || who === "mgr") ? ["page"] : [at(x.o.at())];
+      same(`R.${page.split("/")[1].split(".")[0]}.${who}`, `${who} opens ${page}: the same outcome`, want, [at(x.n.at())]);
       await x.close();
     }
   }
@@ -262,7 +266,9 @@ if (ONLY.includes("F")) {
     const x = await pair("admin", "users/user-form.html");
     const taken = async (t) => { await fill(t, "arjun.kapoor@northwind.com"); await submit(t); return t.evaluate(() => [document.querySelector("#work-email-error, .form-error")?.textContent.trim() ?? null, document.activeElement?.id]); };
     same("F5", "an email already used: the store's words at the email field, focus there", [(await taken(x.o.t))[0]], [(await taken(x.n.t))[0]]);
-    const ok = async (t) => { await show(t, "contact"); await t.fill("#work-email", "neha.verma@northwind.com"); await submit(t); const tt = await toasts(t); await t.waitForURL(/users-list/, { timeout: 4000 }).catch(() => {}); return [tt.at(-1), new URL(t.url()).pathname]; };
+    const ok = async (t) => { await show(t, "contact"); await t.fill("#work-email", "neha.verma@northwind.com"); await submit(t); const tt = await toasts(t);
+      await t.waitForTimeout(1200); const share = await t.$("#share-modal .ds-btn--primary"); if (share) await share.click();   // E1: the sign-in details, shown once
+      await t.waitForURL(/users-list/, { timeout: 4000 }).catch(() => {}); return [tt.at(-1), new URL(t.url()).pathname]; };
     same("F6", "saved: \"Employee saved.\", then the list", await ok(x.o.t), await ok(x.n.t));
     const listed = async (t) => (await table(t))?.rows.find((r) => r[0].includes("Neha Verma"))?.slice(0, 6);
     same("F7", "the new employee in the list, as on the old page", await listed(x.o.t), await listed(x.n.t));
@@ -341,7 +347,9 @@ if (ONLY.includes("S")) {
   await n.t.click('#review [data-edit="contact"]'); await settle(n.t);
   const edit = (await state(n.t)).current;
   await n.t.click('[data-step="review"]'); await n.t.click('.uf-actions button[type="submit"]'); await settle(n.t, 300);
-  const tt = await toasts(n.t); await n.t.waitForURL(/users-list/, { timeout: 4000 }).catch(() => {});
+  const tt = await toasts(n.t);
+  await n.t.waitForTimeout(1200); const shared = await n.t.$("#share-modal .ds-btn--primary"); if (shared) await shared.click();   // E1: Done on the sign-in details
+  await n.t.waitForURL(/users-list/, { timeout: 4000 }).catch(() => {});
   const made = await n.t.evaluate(() => JSON.parse(localStorage.getItem("officeos:users")).records.find((u) => u.email === "neha.verma@northwind.com"));
   check("S9", "Review's Edit goes to its section; Create: \"Employee saved.\", the list, the record saved (no leave question after saving)",
     edit === "contact" && tt.at(-1) === "Employee saved." && new URL(n.t.url()).pathname.endsWith("users-list.html") && made?.name === "Neha Verma" && made.pan === "ABCDE1234F" && n.dialogs.length === 0, j([edit, tt, made?.name]));
@@ -379,8 +387,10 @@ if (ONLY.includes("S")) {
   for (const who of ["admin", "hr"]) {
     n = await open(N, who, "users/user-profile.html?id=EMP-1105");
     const links = await n.t.evaluate(() => [...document.querySelectorAll("[data-edit-section]")].map((a) => [a.getAttribute("aria-label"), a.getAttribute("href")]));
-    check(`S14.${who}`, `${who}: the profile's Edit links open the form at Employment, Pay and tax, Role and access`, j(links) === j([["Edit employment details", "/pages/users/user-form.html?id=EMP-1105&section=employment"],
-      ["Edit pay and tax details", "/pages/users/user-form.html?id=EMP-1105&section=pay"], ["Edit role and access", "/pages/users/user-form.html?id=EMP-1105&section=access"]]), j(links));
+    // E1: each section the form holds links there (pay and tax is edited on the profile itself)
+    check(`S14.${who}`, `${who}: the profile's Employee form links open the form at Personal, Contact, Employment, Role and access`, j(links) === j([["Edit personal details in the employee form", "/pages/users/user-form.html?id=EMP-1105&section=personal"],
+      ["Edit contact details in the employee form", "/pages/users/user-form.html?id=EMP-1105&section=contact"], ["Edit employment in the employee form", "/pages/users/user-form.html?id=EMP-1105&section=employment"],
+      ["Edit role and access in the employee form", "/pages/users/user-form.html?id=EMP-1105&section=access"]]), j(links));
     if (who === "admin") { await n.t.click('[data-edit-section="access"]'); await settle(n.t, 400); const c = (await state(n.t)).current; check("S15", "following one opens that section", c === "access", c); }
     await n.ctx.close();
   }

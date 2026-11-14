@@ -19,12 +19,13 @@ import { homeOf } from "../../../assets/js/data/locations-store.js";
 import { formatDay, localDateOf } from "../../../assets/js/ui/leave-view.js";
 import { maskAccount, maskPan } from "../../../assets/js/ui/pii.js";
 import Frame from "../ui/Frame.jsx";
+import { ProfileRecord, ChangeRequests } from "../ui/profile.jsx";
 import { Badge, badgeOf, NotBuilt } from "../components/Basics.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { useData, useSession } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
 import { usePerm } from "../ui/perm.js";
-import { pageUrl, MY_LOCATIONS } from "../routes.js";
+import { pageUrl, MY_LOCATIONS, APPEARANCE } from "../routes.js";
 
 const PAGE = "account/my-profile.html";
 const STATUS = {
@@ -177,6 +178,8 @@ export default function MyProfile() {
         {" "}
         <Link to={pageUrl("account/change-password.html")} className="tabs__tab">Password</Link>
         {" "}
+        <Link to={pageUrl(APPEARANCE)} className="tabs__tab">Appearance</Link>
+        {" "}
         <Link to={pageUrl("account/sessions.html")} className="tabs__tab">Sessions</Link>
         {" "}
         <Link to={pageUrl("account/notifications.html")} className="tabs__tab">Notifications</Link>
@@ -195,71 +198,21 @@ export default function MyProfile() {
               <Badge>{p.id}</Badge>
             </div>
           </div>
-          {" "}
-          <NotBuilt what="Change photo" />
         </section>
-        <div className="grid grid-main-aside">
-          <form className="card" key={`${p.id}-${saved}`} onSubmit={save} onInput={() => setError(null)}>
-            <section className="form-section">
-              <div className="form-section__head">
-                <h3 className="form-section__title">Contact details</h3>
-                <p className="form-section__desc">You can update these yourself.</p>
-              </div>
-              <div className="form-grid">
-                <Field id="p-name" label="Preferred name" value={p.fields["p-name"]} disabled hint="From your name on record. To change it, ask HR." />
-                <Field id="p-phone" label="Phone" type="tel" value={p.fields["p-phone"]} error={err("p-phone")} />
-                <Field id="p-email" label="Personal email" type="email" value={p.fields["p-email"]} error={err("p-email")} />
-                <Field id="p-city" label="City" value={p.fields["p-city"]} error={err("p-city")} />
-                <Field id="p-address" label="Address" area full value={p.fields["p-address"]} error={err("p-address")} />
-              </div>
-            </section>
-            <section className="form-section">
-              <div className="form-section__head">
-                <h3 className="form-section__title">Emergency contact</h3>
-                <p className="form-section__desc">Who we should call if something happens at work.</p>
-              </div>
-              <div className="form-grid">
-                <Field id="e-name" label="Name" value={p.fields["e-name"]} error={err("e-name")} />
-                <Field id="e-rel" label="Relationship" value={p.fields["e-rel"]} error={err("e-rel")} />
-                <Field id="e-phone" label="Phone" type="tel" value={p.fields["e-phone"]} error={err("e-phone")} />
-              </div>
-            </section>
-            <div className="card__footer">
-              <span className="card__meta">Changes are saved to your profile only.</span>
-              {" "}
-              <div className="btn-group"><button className="btn" type="reset" onClick={() => setError(null)}>Discard</button>{" "}<button className="btn btn--primary" type="submit" {...perm("profile:edit-own")}>Save changes</button></div>
+        {/* E1: the whole record, in the form's five sections: view, and edit what you may change (ui/profile.jsx); your bank
+            or tax change is asked for, and Finance or HR decides it */}
+        {user ? (
+          <div className="grid grid-main-aside">
+            <div className="stack">
+              <ProfileRecord userId={user.id} />
+              <ChangeRequests userId={user.id} />
             </div>
-          </form>
-          <aside className="stack">
-            <section className="card">
-              <div className="card__header"><h3 className="card__title">Work details</h3></div>
-              <div className="card__body">
-                <dl className="kv">{WORK.map((term, i) => <Kv key={term} term={term}>{p.work[i]}</Kv>)}</dl>
-              </div>
-            </section>
-            <section className="card">
-              <div className="card__header"><h3 className="card__title">Sensitive details</h3></div>
-              <div className="card__body">
-                {/* masked by ui/pii.js, as on the employee profile page; no Reveal here */}
-                <dl className="kv"><Sensitive term="Bank account" masked={p.bank} /><Sensitive term="PAN" masked={p.pan} /></dl>
-              </div>
-            </section>
-            <section className="card">
-              <div className="card__header"><h3 className="card__title">Your access</h3></div>
-              <div className="card__body">
-                <dl className="kv">
-                  {/* the role comes from the session: it's what this person can do right now */}
-                  <Kv term="Role"><Badge tone="primary">{p.role}</Badge></Kv>
-                  <Kv term="Data scope">{p.scope}</Kv>
-                  <Kv term="Leave approved by">{p.chain}</Kv>
-                </dl>
-              </div>
-            </section>
-            {user && <CheckInPlaces userId={user.id} />}
-            {user && <MyDevices userId={user.id} />}
-            <div className="alert alert--info">Work details, bank account and PAN are managed by HR. To correct them, send HR a request.</div>
-          </aside>
-        </div>
+            <aside className="stack">
+              <CheckInPlaces userId={user.id} />
+              <MyDevices userId={user.id} />
+            </aside>
+          </div>
+        ) : <p className="ds-note ds-note--warning">Your employee record wasn't found, so there's nothing to show here. Ask HR.</p>}
       </div>
     </Frame>
   );

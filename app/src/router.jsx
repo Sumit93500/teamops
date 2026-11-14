@@ -1,7 +1,12 @@
 // Every page keeps its old URL, /pages/<area>/<page>.html, behind the same guard as before (RequireRoute).
 // A page not ported yet opens as NotPorted; the sign-in and error pages are PublicPage (round 3). "/" opens the
 // role's landing page, or sign in.
-import { createBrowserRouter, Navigate } from "react-router-dom";
+// E1: every route sits under AccountGate: someone who must change their password (a temporary one) goes to Set password
+// whatever URL they open, and a person whose sign-in was disabled is signed out at the next check (any page change or
+// store change, another tab's included). Sign in, Forgot password and Reset password are the app's own pages now
+// (pages/AuthPages.jsx); Set password and the Admin's Mail outbox are new.
+import { useEffect } from "react";
+import { createBrowserRouter, Navigate, Outlet, useLocation } from "react-router-dom";
 import RequireRoute from "./RequireRoute.jsx";
 import NotPorted from "./NotPorted.jsx";
 import MyLeave from "./pages/MyLeave.jsx";
@@ -55,8 +60,11 @@ import UsersList from "./pages/UsersList.jsx";
 import UserForm from "./pages/UserForm.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import Departments from "./pages/Departments.jsx";
+import { Login, ForgotPassword, ResetPassword, SetPassword, SET_PASSWORD } from "./pages/AuthPages.jsx";
+import MailOutbox, { MAIL_OUTBOX } from "./pages/MailOutbox.jsx";
+import { sessionAllowed, mustChangePassword } from "../../assets/js/data/credentials.js";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT, OFFICES, MY_LOCATIONS, APPEARANCE, RATES_RULES, LEAVE_POLICY_PAGE } from "./routes.js";
-import { useSession } from "./data/hooks.js";
+import { useSession, signOutNow } from "./data/hooks.js";
 
 const PORTED = {
   "leave/my-leave.html": MyLeave,
@@ -110,14 +118,33 @@ function Home() {
   return <Navigate to={pageUrl(role && user ? role.landing : "auth/login.html")} replace />;
 }
 
+const AUTH_PAGES = { "auth/login.html": Login, "auth/forgot-password.html": ForgotPassword, "auth/reset-password.html": ResetPassword };
+
 function pageElement(page) {
+  if (AUTH_PAGES[page]) { const Page = AUTH_PAGES[page]; return <Page />; }
   if (PUBLIC_PAGES.includes(page)) return <PublicPage page={page} />;
   const Page = PORTED[page];
   return Page ? <Page /> : <NotPorted page={page} />;
 }
 
-export const router = createBrowserRouter([
+function AccountGate() {
+  const { session, user, userId } = useSession();
+  const { pathname } = useLocation();
+  const open = pathname === pageUrl(SET_PASSWORD) || PUBLIC_PAGES.some((p) => pathname === pageUrl(p));
+  const disabled = Boolean(session && userId && !sessionAllowed(userId));
+  // the session ends once the sign-in page shows (ending it before the navigation is done would let the page being left
+  // send them to sign in again, without the reason)
+  const onLogin = pathname === pageUrl("auth/login.html");
+  useEffect(() => { if (disabled && onLogin) signOutNow(); }, [disabled, onLogin]);
+  if (disabled && !onLogin) return <Navigate to={`${pageUrl("auth/login.html")}?reason=disabled`} replace />;
+  if (!open && user && mustChangePassword(user.id)) return <Navigate to={pageUrl(SET_PASSWORD)} replace />;
+  return <Outlet />;
+}
+
+export const router = createBrowserRouter([{ element: <AccountGate />, children: [
   { path: "/", element: <Home /> },
+  { path: pageUrl(SET_PASSWORD), element: <SetPassword /> },   // E1: a new employee's link, or the first sign-in's new password
+  { path: pageUrl(MAIL_OUTBOX), element: <MailOutbox /> },   // E1: the demo's Mail outbox (Admin)
   { path: "/gallery", element: <Gallery /> },   // round 4's component gallery (not a product page)
   { path: pageUrl(ABOUT), element: <About /> },   // D2a: the company's About page, for anyone signed in
   { path: pageUrl(OFFICES), element: <Offices /> },   // L1: the offices, for anyone signed in
@@ -127,4 +154,4 @@ export const router = createBrowserRouter([
   { path: pageUrl(LEAVE_POLICY_PAGE), element: <LeavePolicy /> },   // P4b: the tenure leave policy (HR reads, Admin edits)
   ...ALL_PAGES.map((page) => ({ path: pageUrl(page), element: <RequireRoute page={page}>{pageElement(page)}</RequireRoute> })),
   { path: "*", element: <Navigate to={pageUrl("errors/404.html")} replace /> },
-]);
+] }]);

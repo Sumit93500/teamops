@@ -18,7 +18,7 @@ const PAGE = "access/role-editor.html";
 // How the matrix groups modules, and their names (role-editor.js GROUPS).
 const GROUPS = [
   ["Overview", { dashboard: "Dashboard", announcements: "Announcements" }],
-  ["People", { users: "Users", pii: "Personal details (bank account, PAN)", departments: "Departments", roles: "Roles & permissions", designations: "Designations", recruitment: "Recruitment" }],
+  ["People", { users: "Users", accounts: "Sign-in accounts", pii: "Personal details (bank account, PAN)", departments: "Departments", roles: "Roles & permissions", designations: "Designations", recruitment: "Recruitment" }],
   ["Time", { attendance: "Attendance", leave: "Leave", "leave-policy": "Leave policy", holidays: "Holidays", shifts: "Shifts" }],   // P4: leave-policy
   ["Requests & approvals", { approvals: "Approvals", requests: "Requests", workflows: "Approval workflows", delegation: "Delegation" }],
   ["Finance", { payroll: "Payroll", payslips: "Everyone's payslips", payslip: "Own payslip", salary: "Salaries", "payroll-rules": "Pay rates and rules", expenses: "Expenses", tax: "Tax", declarations: "Tax declarations" }],   // P4: payroll-rules

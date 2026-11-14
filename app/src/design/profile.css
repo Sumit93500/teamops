@@ -1,0 +1,54 @@
+/* E1: the employee record on a profile (ui/profile.jsx), the share dialog and the Mail outbox. Tokens only. */
+/* one row per field: the label beside its value; a list (a table) under its label, full width */
+.pf-kv > div { grid-template-columns: minmax(140px, 32%) minmax(0, 1fr); align-items: baseline; }
+.pf-kv > div.pf-kv__wide { grid-template-columns: minmax(0, 1fr); gap: var(--ds-space-2); }
+.pf-value { overflow-wrap: anywhere; white-space: pre-line; }
+.pf-photo { display: inline-flex; align-items: center; gap: var(--ds-space-3); }
+
+.pf-rows { display: grid; gap: var(--ds-space-2); justify-items: start; }
+.pf-table-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); }
+.pf-table { width: 100%; border-collapse: collapse; font-size: var(--ds-text-sm); }
+.pf-table th, .pf-table td { padding: var(--ds-space-2) var(--ds-space-3); text-align: left; border-top: 1px solid var(--ds-border); color: var(--ds-text); vertical-align: top; overflow-wrap: anywhere; }
+.pf-table thead th { border-top: 0; background: var(--ds-surface-2); color: var(--ds-text-2); font-weight: var(--ds-weight-medium); white-space: nowrap; }
+
+.pf-edit { display: grid; gap: var(--ds-space-5); }
+.pf-edit__fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-4); }
+.pf-edit__fields > .ds-field--full, .pf-edit__fields > .pf-edit-rows { grid-column: 1 / -1; }
+.pf-edit .ds-form-actions__buttons { justify-content: flex-end; }
+.pf-edit-rows { display: grid; gap: var(--ds-space-3); margin: 0; padding: 0; border: 0; min-width: 0; }
+.pf-edit-rows > legend { padding: 0; margin-bottom: var(--ds-space-2); }
+.pf-edit-rows > .ds-btn { justify-self: start; }
+.pf-edit-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) auto; gap: var(--ds-space-3); align-items: end; padding: var(--ds-space-3);
+  border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-2); }
+
+.pf-subhead { margin: 0 0 var(--ds-space-2); font-size: var(--ds-text-sm); font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+.pf-list { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--ds-space-3); }
+.pf-list > li { display: grid; gap: var(--ds-space-1); justify-items: start; padding-bottom: var(--ds-space-3); border-bottom: 1px solid var(--ds-border); }
+.pf-list > li:last-child { padding-bottom: 0; border-bottom: 0; }
+.pf-list__head { width: 100%; display: flex; justify-content: space-between; gap: var(--ds-space-3); font-size: var(--ds-text-sm); color: var(--ds-text); }
+.pf-list p { margin: 0; }
+
+.pf-progress { height: 8px; border-radius: var(--ds-radius-pill); background: var(--ds-surface-3); overflow: hidden; }
+.pf-progress > span { display: block; height: 100%; width: var(--pct); background: var(--ds-primary); border-radius: inherit; }
+
+/* the share dialog: a secret shown once, with Copy */
+.share-row { display: grid; gap: var(--ds-space-2); }
+.share-row__value { display: flex; align-items: center; gap: var(--ds-space-2); }
+.share-row__value code { flex: 1; min-width: 0; padding: var(--ds-space-2) var(--ds-space-3); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-2);
+  color: var(--ds-text); font-size: var(--ds-text-sm); overflow-wrap: anywhere; user-select: all; }
+
+/* the Mail outbox */
+.outbox { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--ds-space-4); }
+.outbox__mail { display: grid; gap: var(--ds-space-2); padding: var(--ds-space-4); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); }
+.outbox__head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--ds-space-3); }
+.outbox__head p, .outbox__body { margin: 0; }
+.outbox__subject { font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+.outbox__body { font-size: var(--ds-text-sm); color: var(--ds-text); }
+.outbox__link { font-size: var(--ds-text-xs); overflow-wrap: anywhere; }
+
+@media (max-width: 560px) {
+  .pf-kv > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .pf-edit__fields { grid-template-columns: 1fr; }
+  .pf-edit-row { grid-template-columns: 1fr; }
+  .outbox__head { flex-direction: column; }
+}

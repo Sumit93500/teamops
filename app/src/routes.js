@@ -30,5 +30,8 @@ export const RATES_RULES = "payroll/rates-rules.html";
 // Leave policy (P4b): the app's own; the tenure leave policy by band. Admin edits, HR reads (leave-policy:edit or leave:approve).
 export const LEAVE_POLICY_PAGE = "leave/leave-policy.html";
 
+// Mail outbox (E1): the app's own; what OfficeOS would email (sign-in details, reset links). Admin only (accounts:unlock).
+export const MAIL_OUTBOX = "system/mail-outbox.html";
+
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

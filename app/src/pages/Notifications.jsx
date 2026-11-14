@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import Frame from "../ui/Frame.jsx";
 import { NotBuilt } from "../components/Basics.jsx";
 import { usePerm } from "../ui/perm.js";
-import { pageUrl } from "../routes.js";
+import { pageUrl, APPEARANCE } from "../routes.js";
 
 const PAGE = "account/notifications.html";
 
@@ -24,6 +24,8 @@ export default function Notifications() {
         <Link to={pageUrl("account/my-profile.html")} className="tabs__tab">Profile</Link>
         {" "}
         <Link to={pageUrl("account/change-password.html")} className="tabs__tab">Password</Link>
+        {" "}
+        <Link to={pageUrl(APPEARANCE)} className="tabs__tab">Appearance</Link>
         {" "}
         <Link to={pageUrl("account/sessions.html")} className="tabs__tab">Sessions</Link>
         {" "}

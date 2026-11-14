@@ -59,7 +59,8 @@ const read = (t) => t.evaluate(() => {
   // L2 (ruled): My profile's new Check-in places and My devices cards (checked in locs.mjs) are read past, so the rest still
   // matches the old page; they're shown again after the read.
   // A1 (ruled): Settings' Appearance card is the new panel (prefs.mjs), read past too.
-  const added = [...m.querySelectorAll("#my-places, #my-devices, #appearance")];
+  // E1 (ruled): the account pages' Appearance tab is new (e1.mjs M), read past too.
+  const added = [...m.querySelectorAll('#my-places, #my-devices, #appearance, .acct-tabs a[href$="appearance.html"]')];
   added.forEach((e) => { e.style.display = "none"; });
   try { return read2(); } finally { added.forEach((e) => { e.style.display = ""; }); }
   function read2() { return {
@@ -148,7 +149,9 @@ const searching = (letter, page, box, words) => pages(letter, page, async (who, 
 
 if (ONLY.includes("A")) {
   console.log("--- A. Account ---");
-  await pages("Ap", "account/my-profile.html", async (who, x) => {
+  // E1 (ruled): My profile shows the whole record (ui/profile.jsx) and Change password is real; e1.mjs P and M check them,
+  // so these two old-page comparisons are left out (ONLY=ApAc runs them against a reference with E1's pages)
+  if (process.env.E1_OLD_ACCOUNT) await pages("Ap", "account/my-profile.html", async (who, x) => {
     const flow = async (t) => {
       const out = [];
       await t.fill("#p-phone", "+91 90000 11111"); await t.fill("#p-city", "Pune"); await t.click('main button[type="submit"]'); await settle(t, 400);
@@ -163,7 +166,7 @@ if (ONLY.includes("A")) {
     same(`Ap2.${who}`, `${who}: Save (toast, page, after a reload), Discard, a refused emergency phone (error, focus), cleared on typing`, await flow(x.o.t), await flow(x.n.t));
     same(`Ap3.${who}`, `${who}: Change photo's toast`, [await toastAfter(x.o.t, firstPlaceholder)], [await toastAfter(x.n.t, firstPlaceholder)]);
   });
-  await pages("Ac", "account/change-password.html", async (who, x) => {
+  if (process.env.E1_OLD_ACCOUNT) await pages("Ac", "account/change-password.html", async (who, x) => {
     const flow = async (t) => {
       const out = [];
       await t.fill("#pw-current", "old-one"); await t.click("#pw-current + .input-group__action"); out.push(await t.getAttribute("#pw-current", "type"));
@@ -250,13 +253,13 @@ async function phoneCards(letter, list) {
 }
 if (ONLY.includes("P")) {
   console.log("\n--- P. Phone cards at 412 ---");
-  await phoneCards("P", (process.env.PHONE_PAGES ?? "emp:account/my-profile.html,emp:account/change-password.html,emp:account/sessions.html,emp:account/notifications.html,admin:system/reports.html,admin:system/audit-log.html,admin:system/backup.html,admin:system/settings.html,hr:recruitment/job-openings.html,hr:recruitment/candidates.html,emp:announcements/announcements.html").split(",").map((s) => s.split(":")));
+  await phoneCards("P", (process.env.PHONE_PAGES ?? "emp:account/sessions.html,emp:account/notifications.html,admin:system/reports.html,admin:system/audit-log.html,admin:system/backup.html,admin:system/settings.html,hr:recruitment/job-openings.html,hr:recruitment/candidates.html,emp:announcements/announcements.html").split(",").map((s) => s.split(":")));
 }
 
 if (ONLY.includes("X")) {
   console.log("\n--- X. Shots ---");
   let k = 0;
-  const list = (process.env.SHOT_PAGES ?? "emp:account/my-profile.html,emp:account/change-password.html,emp:account/sessions.html,emp:account/notifications.html,admin:system/reports.html,admin:system/audit-log.html,admin:system/backup.html,admin:system/settings.html,hr:recruitment/job-openings.html,hr:recruitment/candidates.html,emp:announcements/announcements.html").split(",").map((s) => s.split(":"));
+  const list = (process.env.SHOT_PAGES ?? "emp:account/sessions.html,emp:account/notifications.html,admin:system/reports.html,admin:system/audit-log.html,admin:system/backup.html,admin:system/settings.html,hr:recruitment/job-openings.html,hr:recruitment/candidates.html,emp:announcements/announcements.html").split(",").map((s) => s.split(":"));
   for (const [who, page] of list) for (const width of [1280, 412]) for (const theme of ["light", "dark"]) for (const [side, base] of [["old", O], ["new", N]]) {
     const x = await open(base, who, page, { width, theme });
     await x.t.screenshot({ path: path.join(SHOTS, `${page.split("/")[1].replace(".html", "").replace(/[?&=]/g, "-")}-${width}-${theme}-${side}.png`), fullPage: true, animations: "disabled" });

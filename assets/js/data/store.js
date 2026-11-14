@@ -616,6 +616,31 @@ export function updateOwnContact(actorUserId, id, changes = {}) {
   return commit(USERS_KEY, box, record);
 }
 
+// E1: the bank account and PAN, written by Finance (salary:edit) or HR / Admin (users:edit), on someone else's record or,
+// through an approved change request (data/employee-record.js), the person's own. Only these two; each checked (an account
+// number of 9-18 digits, a PAN like ABCDE1234F) or cleared with ""; the last 4 digits follow the account.
+export function setPayDetails(actorUserId, id, changes = {}) {
+  const actor = actorWith(actorUserId, "salary:edit") ?? actorWith(actorUserId, "users:edit");
+  if (!actor) return fail("You can't change bank or tax details.");
+  const other = Object.keys(changes).find((key) => key !== "bankAccount" && key !== "pan");
+  if (other) return fail("Only the bank account and PAN can be changed here.", other);
+  const box = loadUsers();
+  const record = box.records.find((u) => u.id === id);
+  if (!record) return fail(`No employee with id ${id}.`);
+  if ("bankAccount" in changes) {
+    const digits = String(changes.bankAccount ?? "").replace(/\s/g, "");
+    if (digits && !/^\d{9,18}$/.test(digits)) return fail("A bank account number has 9 to 18 digits.", "bankAccount");
+    record.bankAccount = digits || null;
+    record.bankAccountLast4 = digits ? digits.slice(-4) : null;
+  }
+  if ("pan" in changes) {
+    const pan = String(changes.pan ?? "").trim().toUpperCase();
+    if (pan && !/^[A-Z]{5}\d{4}[A-Z]$/.test(pan)) return fail("A PAN is 5 letters, 4 digits and a letter, like ABCDE1234F.", "pan");
+    record.pan = pan || null;
+  }
+  return commit(USERS_KEY, box, record);
+}
+
 // updateUser()'s checks and save, for an acting person already checked
 // (deactivateUser() and reactivateUser() come through here too).
 function changeUser(actor, id, changes = {}) {

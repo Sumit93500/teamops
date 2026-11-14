@@ -27,6 +27,9 @@ a.ds-btn--primary { color: var(--ds-on-primary); }
 .ds-hint { margin: 0; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
 .ds-note { margin: 0; padding: var(--ds-space-3) var(--ds-space-4); border-radius: var(--ds-radius-md); background: var(--ds-info-soft); color: var(--ds-info); font-size: var(--ds-text-sm); }
 .ds-note--warning { background: var(--ds-warning-soft); color: var(--ds-warning); }
+/* E1: a refusal and a success, in the same shape */
+.ds-note--danger { background: var(--ds-danger-soft); color: var(--ds-danger); }
+.ds-note--success { background: var(--ds-success-soft); color: var(--ds-success); }
 
 /* a switch: a native checkbox drawn as a track; its label beside it */
 .ds-switch { display: inline-flex; align-items: center; gap: var(--ds-space-2); font-size: var(--ds-text-sm); color: var(--ds-text); cursor: pointer; }

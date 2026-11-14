@@ -246,7 +246,7 @@ if (ONLY.includes("L")) {
 if (ONLY.includes("P")) {
   console.log("\n--- P. Profile and user form ---");
   const h = await open("hr", "users/user-profile.html?id=EMP-1042");
-  check("P1", "Rohan's profile: the Leave band row, read-only: 'Under 1 year, over 1 year from 2 Feb 2027'", /Leave band\s*Under 1 year, over 1 year from 2 Feb 2027/.test(await txt(h.t, "#profile-details") ?? ""), await txt(h.t, "#profile-details"));
+  check("P1", "Rohan's profile: the Leave band row, read-only: 'Under 1 year, over 1 year from 2 Feb 2027'", /Leave band\s*Under 1 year, over 1 year from 2 Feb 2027/.test(await txt(h.t, "#profile-service") ?? ""), await txt(h.t, "#profile-service"));   // E1: the Service card
   await h.ctx.close();
   const f = await open("hr", "users/user-form.html?id=EMP-1042&section=employment");
   check("P2", "the user form's employment type says the band under the field", /Leave band: Under 1 year, over 1 year from 2 Feb 2027/.test(await txt(f.t, "#emp-type-hint") ?? ""), await txt(f.t, "#emp-type-hint"));

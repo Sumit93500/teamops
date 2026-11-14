@@ -1,0 +1,43 @@
+/* E1: the sign-in pages (sign in, forgot password, reset password, set password), in the design system. Tokens only. */
+.auth-page { min-height: 100vh; display: flex; flex-direction: column; background: var(--ds-bg); }
+.auth-page__main { flex: 1; display: grid; place-items: center; padding: var(--ds-space-8) var(--ds-space-4); }
+.auth-card { width: min(100%, 440px); display: grid; gap: var(--ds-space-5); padding: var(--ds-space-8); background: var(--ds-surface-1); border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-xl); box-shadow: var(--ds-shadow-2); }
+.auth-card__brand { display: flex; align-items: center; gap: var(--ds-space-3); color: var(--ds-text); font-size: var(--ds-text-md); font-weight: var(--ds-weight-semibold); }
+.auth-card__title { margin: 0; font-size: var(--ds-text-2xl); font-weight: var(--ds-weight-semibold); color: var(--ds-text); line-height: 1.2; }
+.auth-card__title:focus { outline: none; }
+.auth-card__lead { margin: calc(-1 * var(--ds-space-3)) 0 0; font-size: var(--ds-text-base); color: var(--ds-text-2); }
+.auth-card form { display: grid; gap: var(--ds-space-4); }
+.auth-card .ds-btn--primary[type="submit"] { width: 100%; min-height: 44px; }
+.auth-row { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-3); flex-wrap: wrap; font-size: var(--ds-text-sm); }
+.auth-links { display: flex; justify-content: center; gap: var(--ds-space-4); flex-wrap: wrap; font-size: var(--ds-text-sm); }
+.auth-demo { display: grid; gap: var(--ds-space-3); padding-top: var(--ds-space-5); border-top: 1px solid var(--ds-border); }
+.auth-demo__title { margin: 0; font-size: var(--ds-text-sm); font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+.auth-demo__roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-2); }
+.auth-demo code { font-size: var(--ds-text-sm); padding: 0 var(--ds-space-1); border-radius: var(--ds-radius-sm); background: var(--ds-surface-2); color: var(--ds-text); }
+
+/* a password field with its Show / Hide button */
+.pw-control { position: relative; }
+.pw-control input { padding-right: 76px; }
+.pw-control__toggle { position: absolute; top: 50%; right: var(--ds-space-1); transform: translateY(-50%); min-height: 32px; padding: 0 var(--ds-space-3); border: 0;
+  border-radius: var(--ds-radius-sm); background: transparent; color: var(--ds-primary); font: inherit; font-size: var(--ds-text-sm); font-weight: var(--ds-weight-medium); cursor: pointer; }
+.pw-control__toggle:hover { background: var(--ds-surface-3); }
+
+/* the strength meter: four steps and a word */
+.pw-meter { display: grid; gap: var(--ds-space-1); }
+.pw-meter__bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--ds-space-1); }
+.pw-meter__bar { height: 6px; border-radius: var(--ds-radius-pill); background: var(--ds-surface-3); }
+.pw-meter[data-score="1"] .pw-meter__bar:nth-child(-n + 1) { background: var(--ds-danger); }
+.pw-meter[data-score="2"] .pw-meter__bar:nth-child(-n + 2) { background: var(--ds-warning); }
+.pw-meter[data-score="3"] .pw-meter__bar:nth-child(-n + 3) { background: var(--ds-success); }
+.pw-meter[data-score="4"] .pw-meter__bar { background: var(--ds-success); }
+.pw-meter__word { font-size: var(--ds-text-xs); color: var(--ds-text-2); }
+.pw-rules { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--ds-space-1); font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.pw-rules li { display: flex; gap: var(--ds-space-2); align-items: baseline; }
+.pw-rules li::before { content: "•"; width: 1em; text-align: center; color: var(--ds-text-3); }
+.pw-rules li[data-ok]::before { content: "✓"; color: var(--ds-success); font-weight: var(--ds-weight-semibold); }
+
+@media (max-width: 560px) {
+  .auth-page__main { padding: var(--ds-space-5) var(--ds-space-4); place-items: start center; }
+  .auth-card { padding: var(--ds-space-6) var(--ds-space-5); border-radius: var(--ds-radius-lg); }
+}

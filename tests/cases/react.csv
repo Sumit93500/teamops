@@ -186,6 +186,86 @@ react-design.P.errors/404.html.1280,react-design,"errors/404.html: company brand
 react-design.P.errors/404.html.412,react-design,"errors/404.html: company brand, footer after main, tab title",x1
 react-design.R,react-design,reduced motion: transitions finish at once; without it they run,x1
 react-design.E,react-design,no page or console errors,x1
+react-e1.L1,react-e1,"the page: Sign in, labelled Work email and Password, the password hidden, Forgot password?, 4 demo buttons, no demo disclaimers",x1
+react-e1.L2,react-e1,"Show / Hide turns the password into text and back, with aria-pressed",x1
+react-e1.L3,react-e1,"a wrong password and an unknown email: the same words, an alert that takes focus",x1
+react-e1.L4,react-e1,the demo password signs Arjun in: his dashboard,x1
+react-e1.L5,react-e1,"the HR demo button still signs in, to the HR dashboard",x1
+react-e1.L6,react-e1,5 wrong tries lock; then even the right password is refused with the same words,x1
+react-e1.L7,react-e1,16 minutes later the lock is over: Kabir signs in,x1
+react-e1.N1,react-e1,"Create employee shows 'Share these sign-in details': a 14-character temporary password (no look-alikes), the set-password link, two Copy buttons",x1
+react-e1.N2,react-e1,"it says plainly that email delivery arrives with the backend, and that they're shown only now",x1
+react-e1.N3,react-e1,Copy puts the temporary password on the clipboard,x1
+react-e1.T.N4,react-e1,N4: no plain password or token in any stored value (2 known),x1
+react-e1.N5,react-e1,Done goes to the users list,x1
+react-e1.N6,react-e1,her profile's Sign-in account: Invited,x1
+react-e1.N7,react-e1,her first sign-in with the temporary password goes to Set password,x1
+react-e1.N8.employee,react-e1,opening dashboard/employee.html by its URL comes back to Set password,x1
+react-e1.N8.my-profile,react-e1,opening account/my-profile.html by its URL comes back to Set password,x1
+react-e1.N8.approvals-inbox,react-e1,opening requests/approvals-inbox.html by its URL comes back to Set password,x1
+react-e1.N9,react-e1,...and so does a page change inside the app,x1
+react-e1.N10,react-e1,"the rules (her name refused), the second field must match, the meter says Strong with every rule ticked",x1
+react-e1.N11,react-e1,saved: her dashboard,x1
+react-e1.N12,react-e1,the temporary password no longer works,x1
+react-e1.N13,react-e1,"the set-password link now says it was already used, with Ask for a new link",x1
+react-e1.T.N14,react-e1,N14: no plain password or token in any stored value (3 known),x1
+react-e1.F1,react-e1,a real and an unknown email get the identical page,x1
+react-e1.F2,react-e1,"the Admin's Mail outbox: every reset mail (Arjun's newest), Open link only for this tab's two, none for the unknown email",x1
+react-e1.T.F3,react-e1,F3: no plain password or token in any stored value (5 known),x1
+react-e1.F4,react-e1,"the reset page: Reset your password, for Arjun's email",x1
+react-e1.F5,react-e1,"reset: 'Password set', then Sign in",x1
+react-e1.F6,react-e1,the new password signs Arjun in,x1
+react-e1.F7,react-e1,"61 minutes later Priya's link: 'This link has expired', with Ask for a new link",x1
+react-e1.F8,react-e1,a tampered token: 'This link isn't valid',x1
+react-e1.F9,react-e1,"no token at all: 'This link isn't valid', with Ask for a new link",x1
+react-e1.F10,react-e1,Arjun's used link: 'already used',x1
+react-e1.R1,react-e1,"Kabir's profile: Locked, with Unlock",x1
+react-e1.R2,react-e1,Unlock: Active again,x1
+react-e1.R3,react-e1,"the account events: Unlocked, Locked, Failed sign-ins",x1
+react-e1.R4,react-e1,"Disable sign-in asks first (the record stays), then Disabled",x1
+react-e1.R5,react-e1,Arjun's session ends at the next step: the sign-in page says why,x1
+react-e1.R6,react-e1,disabled: his right password is refused,x1
+react-e1.R7,react-e1,...and the Employee demo button too,x1
+react-e1.R8,react-e1,Enable sign-in: Active,x1
+react-e1.R9,react-e1,"HR: Send reset link and New temporary password, no Unlock or Disable (accounts:reset only); no account events",x1
+react-e1.R10,react-e1,HR's reset link is shown once in the share dialog (60 minutes),x1
+react-e1.R11,react-e1,HR on the Admin's profile: no reset buttons,x1
+react-e1.T.R12,react-e1,R12: no plain password or token in any stored value (7 known),x1
+react-e1.D1,react-e1,"admin: no bank account, PAN, Aadhaar or document number in the page's HTML",x4 (4 roles)
+react-e1.D2,react-e1,"admin: all five sections and every field, the bank masked to its last 4",x2 (2 roles)
+react-e1.D3,react-e1,admin: Show gives the full bank account; Hide masks it again,x2 (2 roles)
+react-e1.D4,react-e1,admin: hidden again; the Show is in the audit trail,x2 (2 roles)
+react-e1.D2#2,react-e1,"Finance: team and pay fields; no birth date, Aadhaar, addresses, emergency contacts, documents in the DOM",x1
+react-e1.D3#2,react-e1,Finance: no Show on the bank account; Show on salary,x1
+react-e1.D2#3,react-e1,"the manager: team fields only; no Pay or Role and access section; no bank, PAN, Aadhaar, birth date, address in the DOM",x1
+react-e1.D.ananya,react-e1,"another employee (not their manager): the 403 page, no record in the page",x1
+react-e1.P1,react-e1,My profile shows the five sections of my record,x1
+react-e1.P2,react-e1,"Edit contact: only phone, personal email, addresses and emergency contacts (not the work email)",x1
+react-e1.P3,react-e1,"a row with a missing field is refused at the list; complete, it saves: the new phone and two contacts",x1
+react-e1.P4,react-e1,no Edit for the bank on my own profile: Ask for a change,x1
+react-e1.P5,react-e1,"Ask for the change: waiting, shown masked",x1
+react-e1.P6,react-e1,the new number isn't in my page either (masked),x1
+react-e1.P7,react-e1,"Finance: the request counts in the bell; Review opens the approval card (bank and tax, masked rows)",x1
+react-e1.P8,react-e1,Approve: the bank account is the new one (masked •••• •••• 8912),x1
+react-e1.P9,react-e1,"HR's change history: the phone (old to new), the bank account masked, as a request",x1
+react-e1.P10,react-e1,HR sees the completeness: a percentage and what's missing,x1
+react-e1.P11,react-e1,Arjun has no change history or completeness on his own page,x1
+react-e1.M1.my-profile,react-e1,my-profile: the account tabs include Appearance,x1
+react-e1.M1.change-password,react-e1,change-password: the account tabs include Appearance,x1
+react-e1.M1.sessions,react-e1,sessions: the account tabs include Appearance,x1
+react-e1.M1.notifications,react-e1,notifications: the account tabs include Appearance,x1
+react-e1.M2,react-e1,Appearance opens the appearance page (the A1 store),x1
+react-e1.M3,react-e1,"Change password: a wrong current one refused, the rules, then changed",x1
+react-e1.M4,react-e1,the new password signs in,x1
+react-e1.T.M5,react-e1,M5: no plain password or token in any stored value (8 known),x1
+react-e1.A1,react-e1,"the sign-in pages, profiles and change password say nothing is 'not available in this demo'",x1
+react-e1.K1,react-e1,"the form by keyboard: email, password, then Show, Forgot password?, Sign in; Enter signs in",x1
+react-e1.K2,react-e1,Edit by keyboard puts focus in the first field,x1
+react-e1.K3,react-e1,the focused field shows a focus ring,x1
+react-e1.E1.light,react-e1,light: the sign-in page's text and its message are 4.5:1 or more,x1
+react-e1.E1.dark,react-e1,dark: the sign-in page's text and its message are 4.5:1 or more,x1
+react-e1.W1,react-e1,shots taken,x1
+react-e1.X1,react-e1,no page or console errors,x1
 react-f1.B1.1440,react-f1,"1440: at least 30 open / close cycles across page changes, every one right",x1
 react-f1.B1.1280,react-f1,"1280: at least 30 open / close cycles across page changes, every one right",x1
 react-f1.B1.1024,react-f1,"1024: at least 30 open / close cycles across page changes, every one right",x1
@@ -716,11 +796,6 @@ react-req.P.approvals-inbox,react-req,admin on requests/approvals-inbox.html at 
 react-req.P.my-requests,react-req,emp on requests/my-requests.html at 412: the same cards,x1
 react-req.P.claim-expense,react-req,emp on requests/claim-expense.html at 412: the same cards,x1
 react-req.X1,react-req,shots written,x1
-react-rest.Ap1,react-rest,admin on account/my-profile.html: as it opens,x5 (5 roles)
-react-rest.Ap2,react-rest,"admin: Save (toast, page, after a reload), Discard, a refused emergency phone (error, focus), cleared on typing",x5 (5 roles)
-react-rest.Ap3,react-rest,admin: Change photo's toast,x5 (5 roles)
-react-rest.Ac1,react-rest,admin on account/change-password.html: as it opens,x5 (5 roles)
-react-rest.Ac2,react-rest,"admin: the eye; different passwords (error, focus); typing clears it; the same (the toast)",x5 (5 roles)
 react-rest.As1,react-rest,admin on account/sessions.html: as it opens,x5 (5 roles)
 react-rest.As2,react-rest,admin: the first placeholder's toast,x5 (5 roles)
 react-rest.An1,react-rest,admin on account/notifications.html: as it opens,x5 (5 roles)
@@ -748,8 +823,6 @@ react-rest.Rc2,react-rest,admin: the first placeholder's toast,x2 (2 roles)
 react-rest.Rc,react-rest,fin on recruitment/candidates.html: lands where the old site does,x3 (3 roles)
 react-rest.Ra1,react-rest,admin on announcements/announcements.html: as it opens,x5 (5 roles)
 react-rest.Ra2,react-rest,admin: the first placeholder's toast,x5 (5 roles)
-react-rest.P.my-profile,react-rest,emp on account/my-profile.html at 412: the same cards,x1
-react-rest.P.change-password,react-rest,emp on account/change-password.html at 412: the same cards,x1
 react-rest.P.sessions,react-rest,emp on account/sessions.html at 412: the same cards,x1
 react-rest.P.notifications,react-rest,emp on account/notifications.html at 412: the same cards,x1
 react-rest.P.reports,react-rest,admin on system/reports.html at 412: the same cards,x1
@@ -789,21 +862,14 @@ react-shell.P.apply-leave,react-shell,"emp on leave/apply-leave.html at 412: top
 react-shell.P,react-shell,"admin on dashboard/admin.html at 412: topbar, drawer open, another section, Esc",x1
 react-shell.B.1280,react-shell,"hr at 1280: bell, list, card, Esc, See all",x3 (3 roles)
 react-shell.B.412,react-shell,"hr at 412: bell, list, card, Esc, See all",x1
-react-shell.A.login,react-shell,signed out on auth/login.html,x1
-react-shell.A.forgot-password,react-shell,signed out on auth/forgot-password.html,x1
-react-shell.A.reset-password,react-shell,signed out on auth/reset-password.html,x1
 react-shell.A.two-factor,react-shell,signed out on auth/two-factor.html,x1
 react-shell.A.403,react-shell,signed out on errors/403.html,x1
 react-shell.A.404,react-shell,signed out on errors/404.html,x1
 react-shell.A.500,react-shell,signed out on errors/500.html,x1
-react-shell.A.forgot-password#2,react-shell,emp on auth/forgot-password.html,x2 (2 roles)
 react-shell.A.403#2,react-shell,emp on errors/403.html,x2 (2 roles)
 react-shell.A.404#2,react-shell,emp on errors/404.html,x2 (2 roles)
 react-shell.A.500#2,react-shell,emp on errors/500.html,x2 (2 roles)
-react-shell.A.flow.reset-password,react-shell,auth/reset-password.html: the page's own behaviour,x1
 react-shell.A.flow.two-factor,react-shell,auth/two-factor.html: the page's own behaviour,x1
-react-shell.A.flow.forgot-password,react-shell,auth/forgot-password.html: the page's own behaviour,x1
-react-shell.A.flow.login,react-shell,auth/login.html: the page's own behaviour,x1
 react-shell.S1,react-shell,shots written,x1
 react-side.D1.1440,react-side,"1440: expanded (240 px), ""Collapse sidebar"", aria-expanded true",x1
 react-side.D1.1280,react-side,"1280: expanded (240 px), ""Collapse sidebar"", aria-expanded true",x1
@@ -895,38 +961,10 @@ react-users.S10,react-users,"the email already used: back to Contact details, th
 react-users.S11,react-users,"Cancel with changes asks (""Leave without saving?""): Stay keeps the form, Leave goes to the list",x1
 react-users.S12,react-users,Cancel with nothing changed leaves at once,x1
 react-users.S13,react-users,"Edit at ?section=contact opens Contact details; Save changes from there saves (the phone), ""Employee saved.""",x1
-react-users.S14,react-users,"admin: the profile's Edit links open the form at Employment, Pay and tax, Role and access",x2 (2 roles)
+react-users.S14,react-users,"admin: the profile's Employee form links open the form at Personal, Contact, Employment, Role and access",x2 (2 roles)
 react-users.S15,react-users,following one opens that section,x1
 react-users.S16,react-users,"412 (a stepper across the top) and 1280, light and dark: no sideways scroll; shots",x1
 react-users.S17,react-users,"the section list, its errors and the section text at 4.5:1 or more, 2 themes x 7 accent settings",x1
-react-users.P1.EMP-1042,react-users,"admin on EMP-1042: heading, crumbs, actions shown, tab title",x2 (2 roles)
-react-users.P2.EMP-1042,react-users,"admin on EMP-1042: every detail, sensitive and access row (tenure: no joining date, ruled)",x2 (2 roles)
-react-users.P3.EMP-1042,react-users,"admin on EMP-1042: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x2 (2 roles)
-react-users.P1.EMP-1105,react-users,"admin on EMP-1105: heading, crumbs, actions shown, tab title",x1
-react-users.P2.EMP-1105,react-users,"admin on EMP-1105: every detail, sensitive and access row",x1
-react-users.P3.EMP-1105,react-users,"admin on EMP-1105: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x1
-react-users.P1.EMP-1061,react-users,"admin on EMP-1061: heading, crumbs, actions shown, tab title",x1
-react-users.P2.EMP-1061,react-users,"admin on EMP-1061: every detail, sensitive and access row (tenure: no joining date, ruled)",x1
-react-users.P3.EMP-1061,react-users,"admin on EMP-1061: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x1
-react-users.P1.EMP-1001,react-users,"admin on EMP-1001: heading, crumbs, actions shown, tab title",x1
-react-users.P2.EMP-1001,react-users,"admin on EMP-1001: every detail, sensitive and access row",x1
-react-users.P3.EMP-1001,react-users,"admin on EMP-1001: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x1
-react-users.P1.EMP-1088,react-users,"admin on EMP-1088: heading, crumbs, actions shown, tab title",x1
-react-users.P2.EMP-1088,react-users,"admin on EMP-1088: every detail, sensitive and access row (tenure: no joining date, ruled)",x1
-react-users.P3.EMP-1088,react-users,"admin on EMP-1088: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x1
-react-users.P1.EMP-1003,react-users,"hr on EMP-1003: heading, crumbs, actions shown, tab title",x1
-react-users.P2.EMP-1003,react-users,"hr on EMP-1003: every detail, sensitive and access row",x1
-react-users.P3.EMP-1003,react-users,"hr on EMP-1003: name, line, badges, overrides, leave, assets, activity, the reasons under the buttons",x1
-react-users.P4,react-users,"Reveal shows the whole account, Hide masks it again",x1
-react-users.P5,react-users,Reset password: the toast (nothing is sent),x1
-react-users.P6,react-users,Delete Rohan: refused at once with the reason (his open leave request),x1
-react-users.P7,react-users,"Deactivate Vikram: the dialog's words, a later date refused in the store's words, then done (toast, last working day shown)",x1
-react-users.P8,react-users,"Reactivate Divya: the same question, then the toast",x1
-react-users.P9,react-users,not found: the crumb and the empty state,x1
-react-users.P10,react-users,"New: Check-in places for Arjun: head office in Haryana, home check-in allowed, his permanent home, no temporary, none waiting",x1
-react-users.P11,react-users,"New: Devices: 2 of 2, each named; the honest note",x1
-react-users.P12,react-users,"New: Reset devices asks first, then clears them (toast; 0 of 2)",x1
-react-users.P13,react-users,New: HR sees why devices aren't shown (Admin only) and no Reset button,x1
 react-users.D1,react-users,"admin: heading, crumbs, actions shown",x2 (2 roles)
 react-users.D2,react-users,"admin: the four numbers, every card, the note",x2 (2 roles)
 react-users.D3,react-users,"Add department: the dialog, a code already used (ENG) refused in the store's words, then MKT added (toast, card)",x1

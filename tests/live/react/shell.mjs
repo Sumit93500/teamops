@@ -289,13 +289,16 @@ if (ONLY.includes("A")) {
       role: document.documentElement.dataset.role, title: document.title, sidebar: Boolean(document.querySelector(".sidebar")) };
   });
   const toast = (t) => t.evaluate(() => [...document.querySelectorAll(".toast")].map((e) => e.className + " | " + e.innerText.replace(/×/g, "").trim()));
+  const E1_AUTH = ["auth/login.html", "auth/forgot-password.html", "auth/reset-password.html"];
   for (const who of [null, "emp", "fin"]) for (const page of ["auth/login.html", "auth/forgot-password.html", "auth/reset-password.html", "auth/two-factor.html", "errors/403.html", "errors/404.html", "errors/500.html"]) {
     if (who && page.startsWith("auth/") && page !== "auth/forgot-password.html") continue;
+    if (E1_AUTH.includes(page)) continue;   // E1 (ruled): the app's own sign-in pages now (e1.mjs L, F)
     const o = await open(O, who ?? "out", page), n = await open(N, who ?? "out", page);
     const [a, b] = [ruledAuth(await read(o.t)), await read(n.t)];
     check(`A.${who ?? "out"}.${page.split("/")[1].replace(".html", "")}`, `${who ?? "signed out"} on ${page}`, j(a) === j(b), j(a) === j(b) ? `${a.links.length} links, role ${a.role}` : `old ${j(a)} new ${j(b)}`);
     await o.ctx.close(); await n.ctx.close();
   }
+  const E1_FLOWS = new Set(E1_AUTH);
   const flows = {
     "auth/reset-password.html": async (t) => { await t.fill("#rp-new", "abc12345"); await t.fill("#rp-confirm", "abc"); await t.click("form button[type=submit]"); await t.waitForTimeout(200);
       const e1 = await t.evaluate(() => [document.querySelector(".form-error")?.textContent, document.activeElement.id]);
@@ -309,7 +312,7 @@ if (ONLY.includes("A")) {
       const ts = await toast(t); await t.click('main a[href="login.html"]'); await t.waitForTimeout(700); return [ts, new URL(t.url()).pathname]; },
     "auth/login.html": async (t) => { await t.click('[data-demo-role="fin"]'); await t.waitForTimeout(800); return [new URL(t.url()).pathname, await t.evaluate(() => JSON.parse(localStorage.getItem("officeos:session"))?.employeeId)]; },
   };
-  for (const [page, flow] of Object.entries(flows)) {
+  for (const [page, flow] of Object.entries(flows).filter(([p]) => !E1_FLOWS.has(p))) {
     const o = await open(O, "out", page), n = await open(N, "out", page);
     const [a, b] = [await flow(o.t), await flow(n.t)];
     check(`A.flow.${page.split("/")[1].replace(".html", "")}`, `${page}: the page's own behaviour`, j(a) === j(b), j(a) === j(b) ? j(b) : `old ${j(a)} new ${j(b)}`);

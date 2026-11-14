@@ -28,7 +28,8 @@ import { ISSUE_LABEL } from "../../../assets/js/ui/attendance-view.js";
 import { formatDay, formatDays, requestDates, typeLabel, nameOf, initials, avatarClass, localDateOf } from "../../../assets/js/ui/leave-view.js";
 import { waitingFor } from "../data/waiting.js";
 import { getLocationChange, homeOf } from "../../../assets/js/data/locations-store.js";
-import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, DecisionButtons } from "../components/Decision.jsx";
+import { getProfileChange, changeText } from "../../../assets/js/data/employee-record.js";
+import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, DecisionButtons } from "../components/Decision.jsx";
 import { rupees } from "./payroll.jsx";
 import { useData } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
@@ -39,14 +40,14 @@ export const GONE = "This request no longer exists.";
 export const DECIDED = "This request was already decided.";
 export const NOT_YOURS = "It's no longer waiting for you.";
 const capital = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
-const LOOKUP = { leave: getRequest, corrections: getRegularization, expenses: getExpense, assets: getAssetRequest, salary: (id) => salaryProposals().find((p) => p.id === id) ?? null, locations: getLocationChange };
-const WHAT = { leave: (r) => typeLabel(r.type), corrections: () => "Regularization", expenses: () => "Expense claim", assets: () => "Asset request", salary: () => "Salary change", locations: (r) => `${capital(r.kind)} home location change` };
+const LOOKUP = { leave: getRequest, corrections: getRegularization, expenses: getExpense, assets: getAssetRequest, salary: (id) => salaryProposals().find((p) => p.id === id) ?? null, locations: getLocationChange, profile: getProfileChange };
+const WHAT = { leave: (r) => typeLabel(r.type), corrections: () => "Regularization", expenses: () => "Expense claim", assets: () => "Asset request", salary: () => "Salary change", locations: (r) => `${capital(r.kind)} home location change`, profile: () => "Bank and tax details change" };
 const CHAIN_STAGE = { manager: "Manager", hr: "HR" };
 const STAGE = {
   leave: (r) => CHAIN_STAGE[r.stage] ?? r.stage, corrections: (r) => CHAIN_STAGE[r.stage] ?? r.stage,
   expenses: (r) => capital(EXPENSE_STAGE[r.stage] ?? r.stage), assets: (r) => capital(ASSET_STAGE[r.stage] ?? r.stage),
 };
-const SINCE = { leave: (r) => r.history[0].at, corrections: (r) => r.history[0].at, expenses: (r) => r.history.at(-1).at, assets: (r) => r.history.at(-1).at, salary: (p) => p.enteredAt, locations: (r) => r.requestedAt };
+const SINCE = { leave: (r) => r.history[0].at, corrections: (r) => r.history[0].at, expenses: (r) => r.history.at(-1).at, assets: (r) => r.history.at(-1).at, salary: (p) => p.enteredAt, locations: (r) => r.requestedAt, profile: (r) => r.requestedAt };
 const ROWS = {
   leave: (r) => [["Dates", requestDates(r)], ["Days", formatDays(r.days)], ["Applied", formatDay(r.appliedOn)]],
   corrections: (r) => [["Date", formatDay(r.date)], ["Issue", ISSUE_LABEL[r.issue] ?? r.issue], ["Recorded", r.recordedTime], ["Corrected to", r.time], ["Applied", formatDay(r.appliedOn)]],
@@ -60,6 +61,7 @@ const ROWS = {
     const current = homeOf(r.userId)[r.kind];
     return [["New address", r.place.address], ["Position", `${r.place.lat}, ${r.place.lng}`], ["Now", current ? current.address : "Not set"], ["Sent", formatDay(localDateOf(r.requestedAt))]];
   },
+  profile: (r) => [...changeText(r), ["Sent", formatDay(localDateOf(r.requestedAt))]],   // E1: sensitive values masked
 };
 // The buttons' permission, as the inbox's rows carry it: the manager stage and salary changes go by relationship / record.
 const PERMISSION = { leave: "leave:approve", corrections: "attendance:approve", expenses: "expenses:approve", assets: "assets:approve", locations: "locations:review" };
@@ -238,7 +240,7 @@ export function CardHost() {
   const open = useBellOpen();
   const { pathname } = useLocation();
   const opened = useRef({ opener: null, refresh: null, stale: false, width: 0 });
-  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW) };
+  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW) };
   const focusBack = () => {
     const back = connected(opened.current.opener) ? opened.current.opener : currentBell();
     back?.focus?.();

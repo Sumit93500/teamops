@@ -17,6 +17,7 @@ import { describeClaim } from "../../../assets/js/ui/expense-view.js";
 import { decideAssetRequest } from "../../../assets/js/data/asset-requests-store.js";
 import { describeRequest } from "../../../assets/js/ui/asset-request-view.js";
 import { decideLocationChange } from "../../../assets/js/data/locations-store.js";
+import { decideChange, changeText } from "../../../assets/js/data/employee-record.js";
 import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
 import { bump } from "../data/bus.js";
 import { useToast } from "../ui/Toast.jsx";
@@ -97,6 +98,18 @@ export const LOCATION_FLOW = {
     title: "Reject location change",
     approved: "Location change approved. The new place counts from now.",
     rejected: "Location change rejected.",
+  },
+};
+
+// E1: a person's own bank or tax change, for Finance or HR: approved, it applies at once; rejected, the reason is kept for them.
+export const PROFILE_FLOW = {
+  decide: (requestId, actorUserId, _role, action, note) => decideChange(actorUserId, requestId, action === "approve" ? "approved" : "rejected", note ?? ""),
+  describe: (r) => `${nameOf(r.userId)}: ${changeText(r).map(([label, value]) => `${label} ${value}`).join(", ")}`,
+  noteId: "reject-profile-note",
+  labels: {
+    title: "Reject bank or tax change",
+    approved: "Change approved. It applies now.",
+    rejected: "Change rejected.",
   },
 };
 

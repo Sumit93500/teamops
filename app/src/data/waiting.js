@@ -5,10 +5,12 @@
 import { waitingFor as oldWaitingFor } from "../../../assets/js/ui/waiting.js";
 import { pendingLocationChanges } from "../../../assets/js/data/locations-store.js";
 import { getUser } from "../../../assets/js/data/store.js";
+import { pendingProfileChanges } from "../../../assets/js/data/employee-record.js";
 
-// { leave, corrections, expenses, assets, salary, locations }: arrays, in store order.
+// { leave, corrections, expenses, assets, salary, locations, profile }: arrays, in store order. E1: profile, a person's own bank or
+// tax change waiting for Finance (salary:edit) or HR / Admin (users:edit), never for themself (data/employee-record.js).
 export function waitingFor(userId, roleKey) {
-  return { ...oldWaitingFor(userId, roleKey), locations: getUser(userId) ? pendingLocationChanges(userId, roleKey) : [] };
+  return { ...oldWaitingFor(userId, roleKey), locations: getUser(userId) ? pendingLocationChanges(userId, roleKey) : [], profile: getUser(userId) ? pendingProfileChanges(userId) : [] };
 }
 
 export function waitingCount(userId, roleKey) {

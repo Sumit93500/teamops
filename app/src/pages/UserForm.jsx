@@ -32,6 +32,9 @@ import { PageHeader, Card, Pill } from "../components/Layout.jsx";
 import { Field, Input, Select, Switch, Kv, initialsOf } from "../components/Form.jsx";
 import "../design/sections.css";
 import { leavePolicyOn, bandText } from "../ui/leaveband.jsx";
+import { SECTIONS } from "../../../assets/js/config/employee-fields.js";
+import { createAccount } from "../../../assets/js/data/credentials.js";
+import { ShareDetails } from "../ui/profile.jsx";
 
 const PAGE = "users/user-form.html";
 const LIST = pageUrl("users/users-list.html");
@@ -47,15 +50,9 @@ const toDisplayDate = (iso) => { const m = String(iso ?? "").match(/^(\d{4})-(\d
 const withValue = (list, value, label = value) => (value && !list.some((o) => o[0] === value) ? [...list, [value, label]] : list);
 export const OVERRIDES_HINT = "Applied on top of the default role, everywhere the app checks: extra permissions are added, denied ones taken away. Only an Admin can change them, and not on their own record. Approvals, dashboards, Admin-only powers, managing people and everyone's own pages stay with the role.";
 
-// The sections, in order; a section only shows when it has fields (all of these do today).
-export const SECTIONS = [
-  { key: "personal", title: "Personal details", desc: "Basic information about the employee." },
-  { key: "contact", title: "Contact details", desc: "How to reach them at work." },
-  { key: "employment", title: "Employment", desc: "Where this person sits in the company, and where they check in from." },
-  { key: "pay", title: "Pay and tax", desc: "Used when payroll is run." },
-  { key: "access", title: "Role and access", desc: "What this person can do in OfficeOS." },
-  { key: "review", title: "Review", desc: "Check everything, then save." },
-];
+// The sections, in order; a section only shows when it has fields (all of these do today). E1: defined once, in
+// config/employee-fields.js, which the profile reads too.
+export { SECTIONS };
 const sectionIndex = (key) => Math.max(0, SECTIONS.findIndex((s) => s.key === key));
 // The rules the old page's form held (required fields, an email address): each one's section, field and words.
 const RULES = [
@@ -93,6 +90,7 @@ function Form({ editing, editId, startAt }) {
   const [ticked, setTicked] = useState(ticked0);
   const [emailError, setEmailError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [share, setShare] = useState(null);   // E1: a new employee's sign-in details, shown once
   const [at, setAt] = useState(() => sectionIndex(startAt));
   const [checked, setChecked] = useState(() => new Set());   // the sections whose errors show (left by Next, or checked on save)
   const [visited, setVisited] = useState(() => new Set([sectionIndex(startAt)]));
@@ -194,6 +192,15 @@ function Form({ editing, editId, startAt }) {
     bump();
     setSaving(true);
     toast("Employee saved.", "success");
+    // E1: someone new gets sign-in details (a temporary password and a set-password link), shown once, then the list
+    if (!editing) {
+      createAccount(userId, id).then((r) => {
+        if (!r.ok) { toast(r.error, "danger"); setTimeout(() => navigate(LIST), 1200); return; }
+        bump();
+        setShare({ name: result.record.name, details: r });
+      });
+      return;
+    }
     setTimeout(() => navigate(LIST), 1200);
   };
 
@@ -226,6 +233,7 @@ function Form({ editing, editId, startAt }) {
 
   return (
     <div className="uf">
+      {share && <ShareDetails name={share.name} details={share.details} onClose={() => navigate(LIST)} />}
       <nav className="uf-steps ds-card" aria-label="Form sections">
         <p className="uf-steps__now" id="uf-progress-text">{`Step ${at + 1} of ${SECTIONS.length}: ${SECTIONS[at].title}`}</p>
         <div className="uf-steps__bar" role="progressbar" aria-labelledby="uf-progress-text" aria-valuemin={1} aria-valuemax={SECTIONS.length} aria-valuenow={at + 1}>

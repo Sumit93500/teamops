@@ -1,3 +1,5 @@
+// E1: the change is real now: the current password, the rules, then a new salted hash (data/credentials.js); the
+// Appearance tab joins the account sections.
 // Change password (pages/account/change-password.html + assets/js/pages/change-password.js), ported (round 23): the new
 // password must be typed the same twice ("Passwords don't match." under the confirm field, which takes focus); then the page
 // says plainly that nothing was changed: there are no passwords in OfficeOS (sign-in is picking a demo role). Each field's
@@ -7,7 +9,9 @@ import { Link } from "react-router-dom";
 import Frame from "../ui/Frame.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { usePerm } from "../ui/perm.js";
-import { pageUrl } from "../routes.js";
+import { pageUrl, APPEARANCE } from "../routes.js";
+import { useSession } from "../data/hooks.js";
+import { changeOwnPassword, passwordProblems } from "../../../assets/js/data/credentials.js";
 
 const PAGE = "account/change-password.html";
 const EYE = "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6";
@@ -26,18 +30,27 @@ function Password({ id, name, autoComplete, error }) {
 export default function ChangePassword() {
   const perm = usePerm();
   const showToast = useToast();
-  const [error, setError] = useState(null);
-  const submit = (e) => {
+  const { userId, user } = useSession();
+  const [error, setError] = useState(null);   // { field: "current" | "new" | "confirm", text }
+  const [busy, setBusy] = useState(false);
+  // E1: a real change: the current password first, then the rules (data/credentials.js); only hashes are kept
+  const submit = async (e) => {
     e.preventDefault();
-    const f = e.currentTarget.elements;
-    if (f.new.value !== f.confirm.value) {
-      setError("Passwords don't match.");
-      f.confirm.focus();
-      return;
-    }
-    setError(null);
-    showToast("Passwords aren't part of OfficeOS yet: nothing was changed.", "info");
+    const form = e.currentTarget;
+    const f = form.elements;
+    const fail = (field, text) => { setError({ field, text }); f[field].focus(); };
+    if (!f.current.value) return fail("current", "Enter your current password.");
+    const problems = passwordProblems(f.new.value, user);
+    if (problems.length) return fail("new", problems[0]);
+    if (f.new.value !== f.confirm.value) return fail("confirm", "Passwords don't match.");
+    setError(null); setBusy(true);
+    const r = await changeOwnPassword(userId, f.current.value, f.new.value);
+    setBusy(false);
+    if (!r.ok) return fail(r.code === "current" ? "current" : "new", r.error);
+    form.reset();
+    showToast("Password changed. Use the new one next time you sign in.", "success");
   };
+  const err = (field) => (error?.field === field ? error.text : null);
   return (
     <Frame page={PAGE}>
       <div className="page-header">
@@ -50,6 +63,8 @@ export default function ChangePassword() {
         <Link to={pageUrl("account/my-profile.html")} className="tabs__tab">Profile</Link>
         {" "}
         <Link to={pageUrl("account/change-password.html")} className="tabs__tab is-active">Password</Link>
+        {" "}
+        <Link to={pageUrl(APPEARANCE)} className="tabs__tab">Appearance</Link>
         {" "}
         <Link to={pageUrl("account/sessions.html")} className="tabs__tab">Sessions</Link>
         {" "}
@@ -66,27 +81,27 @@ export default function ChangePassword() {
               <div className="form-field">
                 <label className="form-label form-label--required" htmlFor="pw-current">Current password</label>
                 {" "}
-                <Password id="pw-current" name="current" autoComplete="current-password" />
+                <Password id="pw-current" name="current" autoComplete="current-password" error={err("current")} />
+                {err("current") && <span className="form-error" id="pw-current-error" role="alert">{err("current")}</span>}
               </div>
               <div className="form-field">
                 <label className="form-label form-label--required" htmlFor="pw-new">New password</label>
                 {" "}
-                <Password id="pw-new" name="new" autoComplete="new-password" />
+                <Password id="pw-new" name="new" autoComplete="new-password" error={err("new")} />
+                {err("new") ? <span className="form-error" id="pw-new-error" role="alert">{err("new")}</span> : <span className="form-hint">At least 10 characters; not your name, email or employee ID; not a common password.</span>}
               </div>
               <div className="form-field">
                 <label className="form-label form-label--required" htmlFor="pw-confirm">Confirm new password</label>
                 {" "}
-                <Password id="pw-confirm" name="confirm" autoComplete="new-password" error={error} />
-                {error && <span className="form-error" id="pw-confirm-error">{error}</span>}
+                <Password id="pw-confirm" name="confirm" autoComplete="new-password" error={err("confirm")} />
+                {err("confirm") && <span className="form-error" id="pw-confirm-error" role="alert">{err("confirm")}</span>}
               </div>
-              {" "}
-              <label className="check"><input type="checkbox" defaultChecked />{" "}Sign me out of all other devices</label>
             </div>
           </section>
           <div className="card__footer">
             <span className="card__meta">Fields marked * are required.</span>
             {" "}
-            <div className="btn-group"><Link to={pageUrl("account/my-profile.html")} className="btn">Cancel</Link>{" "}<button className="btn btn--primary" type="submit" {...perm("password:change-own")}>Update password</button></div>
+            <div className="btn-group"><Link to={pageUrl("account/my-profile.html")} className="btn">Cancel</Link>{" "}<button className="btn btn--primary" type="submit" disabled={busy} {...perm("password:change-own")}>{busy ? "Saving…" : "Update password"}</button></div>
           </div>
         </form>
         <aside className="stack">
@@ -101,7 +116,7 @@ export default function ChangePassword() {
               <p className="form-hint mt-4">Two-factor sign-in asks for a code from your phone after your password.</p>
             </div>
           </section>
-          <div className="alert alert--info">Passwords aren't part of OfficeOS yet: sign-in is picking a demo role, so nothing on this page changes a password, signs anyone out or saves these settings.</div>
+          <div className="alert alert--info">Your password is stored only as a salted hash in this browser. Two-factor sign-in and new-device emails arrive with the backend; these two switches aren't saved yet.</div>
         </aside>
       </div>
     </Frame>

@@ -27,6 +27,7 @@ import { attendanceRateChart, headcountChart, valuesOf } from "../../../assets/j
 import { rupees } from "../../../assets/js/ui/money.js";
 import { csvColumns, csvRows, csvStat, initExports } from "../../../assets/js/ui/csv-export.js";
 import { waitingFor } from "../data/waiting.js";
+import { changeText } from "../../../assets/js/data/employee-record.js";
 import { cardLink } from "../ui/ApprovalCard.jsx";
 import { can } from "../../../assets/js/core/rbac.js";
 import { resolvePageLink } from "../../../assets/js/core/paths.js";
@@ -59,6 +60,7 @@ const APPROVAL_TEXT = {
   assets: (r) => [`Asset request: ${nameOf(r.userId)}`, `${assetRequestTitle(r)}, ${ASSET_STAGE[r.stage]} stage`],
   salary: (p) => [`Salary change: ${nameOf(p.userId)}`, `${rupees(p.gross)} a month from ${formatDay(p.effectiveFrom, true)}, proposed by ${nameOf(p.enteredBy)}`],
   locations: (r) => [`Home location change: ${nameOf(r.userId)}`, `${r.kind === "permanent" ? "Permanent" : "Temporary"} home to ${r.place.address}`],
+  profile: (r) => [`Bank and tax change: ${nameOf(r.userId)}`, changeText(r).map(([l, v]) => `${l}: ${v}`).join("; ")],   // E1
 };
 function approvalItems(waiting, refresh) {
   const shown = waiting.slice(0, SHOWN_APPROVALS);

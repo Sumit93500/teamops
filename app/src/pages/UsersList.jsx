@@ -16,6 +16,10 @@ import { resetExpenseData } from "../../../assets/js/data/expenses-store.js";
 import { resetInventoryData } from "../../../assets/js/data/inventory-store.js";
 import { resetAssetRequestData } from "../../../assets/js/data/asset-requests-store.js";
 import { resetLocationData } from "../../../assets/js/data/locations-store.js";
+import { resetCredentials } from "../../../assets/js/data/credentials.js";
+import { resetMailOutbox } from "../../../assets/js/data/mail-outbox.js";
+import { resetAuditTrail } from "../../../assets/js/data/audit-trail.js";
+import { resetEmployeeRecords } from "../../../assets/js/data/employee-record.js";
 import { resetPayRules } from "../../../assets/js/data/pay-rules.js";
 import { resetPayStructures } from "../../../assets/js/data/pay-structure.js";
 import { resetPaySettings } from "../../../assets/js/data/pay-settings.js";
@@ -69,6 +73,7 @@ function Content() {
   const resetAll = async () => {
     if (!(await confirm({ message: RESET_CONFIRM, confirmLabel: "Reset demo data", danger: true }))) return;
     resetDemoData(); resetLeaveData(); resetAttendanceData(); resetPayrollData(); resetExpenseData(); resetInventoryData(); resetAssetRequestData(); resetLocationData(); resetPayRules(); resetPayStructures(); resetPaySettings(); resetLeavePolicy();
+    resetCredentials(); resetMailOutbox(); resetAuditTrail(); resetEmployeeRecords();   // E1: sign-in accounts, the outbox, the audit trail, the extra record fields
     window.location.reload();
   };
 
