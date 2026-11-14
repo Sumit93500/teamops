@@ -23,6 +23,7 @@
 //   (a placesFor() `place`: "head", "branch", "homePermanent", "homeTemporary") the reading is judged against THAT place only,
 //   so two overlapping places can't name the other one; a placeId that isn't one of the employee's places is refused
 //   ("not-allowed"). Without one (undefined or null) it is exactly as before: the nearest place inside wins.
+//   F1, attendance:any-office (the Admin): their places also hold every other active office, as "office:<office id>".
 //   codes (with a placeId): "ok", "no-location", "inaccurate", "no-place", "not-allowed", "outside"
 //
 // Check-in / check-out with a place (the only new way; checkIn()/checkOut() without it are unchanged):
@@ -38,7 +39,7 @@ import { remove } from "../core/storage.js";
 import { getUser } from "./store.js";
 import { hasPermission } from "../config/roles.js";
 import { pureBox, distanceM, placeProblem, cleanPlace } from "./places.js";
-import { officeOf, resetOffices } from "./offices-store.js";
+import { officeOf, getOffices, resetOffices } from "./offices-store.js";
 import { checkIn, checkOut, checkInRefusal, checkOutRefusal } from "./attendance-store.js";
 import { deviceToken, deviceLabel, peekDevice, useDevice, sharedWith, resetAllDevices } from "./devices-store.js";
 import { resetCompanyProfile } from "./company-store.js";
@@ -196,6 +197,14 @@ export function placesFor(employee) {
   const list = [];
   const office = officeOf(id);
   if (office) list.push({ place: office.type, name: office.name, lat: office.lat, lng: office.lng, radiusM: office.radiusM });
+  // F1: someone holding attendance:any-office (the Admin) may also check in from every other active office, each by its
+  // own place id "office:<office id>" (several branches can't share "branch"), after their own office. Nobody else's
+  // list changes.
+  if (hasPermission(getUser(id), "attendance:any-office")) {
+    for (const o of getOffices()) {
+      if (o.id !== office?.id) list.push({ place: `office:${o.id}`, name: o.name, lat: o.lat, lng: o.lng, radiusM: o.radiusM });
+    }
+  }
   const person = homes.read().people[id];
   if (person?.homeEligible) {
     for (const kind of HOME_KINDS) {

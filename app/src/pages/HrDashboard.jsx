@@ -4,6 +4,10 @@
 // (components/Decision.jsx: the in-app question, the reject modal), the approval card from each title, recent decisions with
 // the page's static sample line, the recruitment sample card, and every leave request (search, status, the first 10, Export).
 // L3: Flagged check-ins, the last 7 days (with attendance:view-all): who, the day, where they checked in and out, and why.
+// F1: the leave chart had no data on the live site (the seed's requests were all sent by 26 Sep 2026, so a 14-day window
+// ending today is empty from 10 Oct on): it now shows the requests sent per month for the last 6 months, with the design
+// system's BarChart (the shared chart theme); "No data in this range." only when none was sent in those months. And the
+// header has Mark attendance, as the Employee dashboard has.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import pageHtml from "../../../pages/dashboard/hr.html?raw";
@@ -13,16 +17,16 @@ import { getAllUsers, joiningDate } from "../../../assets/js/data/store.js";
 import { allRequests, pendingFor } from "../../../assets/js/data/leave-store.js";
 import { summaryFor, allRegularizations, pendingRegularizations } from "../../../assets/js/data/attendance-store.js";
 import {
-  el, todayIso, formatDay, formatDays, formatRange, monthName, requestDates, typeLabel, statusBadge, initials, avatarClass,
-  decisionOf, localDateOf, nameOf, oldestPendingNote, whenText, plural, percent, monthShort,
+  el, todayIso, formatDay, formatDays, monthName, requestDates, typeLabel, statusBadge, initials, avatarClass,
+  decisionOf, localDateOf, nameOf, oldestPendingNote, whenText, percent, monthShort,
 } from "../../../assets/js/ui/leave-view.js";
-import { leaveRequestsChart, valuesOf } from "../../../assets/js/data/chart-data.js";
+import { leaveRequestsByMonthChart } from "../../../assets/js/data/chart-data.js";
 import { correctionDetails } from "../../../assets/js/ui/attendance-view.js";
 import { cardOpener } from "../ui/ApprovalCard.jsx";
 import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
-import { ColumnChart } from "../components/Charts.jsx";
+import { BarChart, monthSpan } from "../components/charts/Charts.jsx";
 import { useDecision, DecisionButtons, LEAVE_FLOW, CORRECTION_FLOW } from "../components/Decision.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
@@ -34,10 +38,11 @@ import { dayNumber, isoFromDayNumber } from "../../../assets/js/data/holidays.js
 csvColumns("hr-dashboard-leave-requests", { Days: { number: true } });   // Round Data export
 
 const PAGE = "dashboard/hr.html";
-const CHART_DAYS = 14, CHART_FLOOR = 5, SHOWN_APPROVALS = 3, SHOWN_DECISIONS = 3, TABLE_ROWS = 10;
+const CHART_MONTHS = 6, SHOWN_APPROVALS = 3, SHOWN_DECISIONS = 3, TABLE_ROWS = 10;
 const ICONS = {
   positions: "M4 8h16v11H4zM9 8V5h6v3", onLeave: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4", pending: "M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6",
   joiners: "M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6",
+  mark: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6",
 };
 // The static samples, read from the old page: the interview line and the recruitment card's rows.
 const SAMPLE = (() => {
@@ -92,7 +97,7 @@ function flaggedSince(from, to) {
 
 export default function HrDashboard() {
   const { userId, role } = useSession();
-  const canExport = useCan("reports:export"), canPost = useCan("recruitment:create"), canLeave = useCan("leave:approve"), canCorrect = useCan("attendance:approve"), canAll = useCan("attendance:view-all");
+  const canExport = useCan("reports:export"), canMark = useCan("attendance:mark"), canPost = useCan("recruitment:create"), canLeave = useCan("leave:approve"), canCorrect = useCan("attendance:approve"), canAll = useCan("attendance:view-all");
   const today = todayIso();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -104,7 +109,7 @@ export default function HrDashboard() {
     const dates = people.map((u) => joiningDate(u.dateOfJoining));
     const pendingLeave = pendingFor(userId, role?.key);
     return { summary: summaryFor(today), pendingLeave, waiting: [...pendingLeave, ...(canCorrect ? pendingRegularizations(userId, role?.key) : [])].sort(newestSent),
-      people, dates, month, chart: leaveRequestsChart(today, CHART_DAYS), all: allRequests(), decided: [...allRequests(), ...(canCorrect ? allRegularizations() : [])],
+      people, dates, month, chart: leaveRequestsByMonthChart(today, CHART_MONTHS), all: allRequests(), decided: [...allRequests(), ...(canCorrect ? allRegularizations() : [])],
       flagged: canAll ? flaggedSince(isoFromDayNumber(dayNumber(today) - 6), today) : [] };
   }, [userId, role?.key, today, canCorrect, canAll]);
 
@@ -115,11 +120,8 @@ export default function HrDashboard() {
   const joinNotes = [!joiners.length ? "No one joins this month" : toJoin ? `${toJoin} still to join` : joiners.length === 1 ? "Already started" : "All already started"];
   if (missing) joinNotes.push(`no joining date on file for ${missing} of ${d.people.length}`);
 
-  // the chart (hr-dashboard.js renderChart)
-  const counts = valuesOf(d.chart, "Requests"), top = Math.max(CHART_FLOOR, ...counts);
-  const { from, to } = d.chart.period;
-  const days = d.chart.labels.map((date, i) => ({ date, modifier: d.chart.marks[i].off ? "muted" : "", height: Math.round((counts[i] / top) * 100), what: plural(counts[i], "request", "requests") }));
-  const totalSent = counts.reduce((sum, n) => sum + n, 0);
+  // the chart (F1): requests sent per month, the last 6 months
+  const chartSpan = monthSpan(d.chart.labels[0], d.chart.labels.at(-1));
 
   // the table (hr-dashboard.js renderTable)
   const query = search.trim().toLowerCase();
@@ -140,6 +142,10 @@ export default function HrDashboard() {
         </div>
         <div className="page-header__actions">
           <button className="btn" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export data-export-stats="hr-dashboard-stats">Export</button>
+          <Link className="btn" to={pageUrl("attendance/mark-attendance.html")} data-permission="attendance:mark" hidden={!canMark || undefined} id="dash-mark">
+            <Icon d={ICONS.mark} />
+            Mark attendance
+          </Link>
           <Link className="btn btn--primary" to={pageUrl("recruitment/job-openings.html")} data-permission="recruitment:create" hidden={!canPost || undefined}>
             <Icon d="M12 5v14M5 12h14" />
             Post job opening
@@ -159,13 +165,12 @@ export default function HrDashboard() {
         <div className="grid grid-main-aside">
           <section className="card">
             <div className="card__header">
-              <h3 className="card__title">Leave requests, last 14 days</h3>
-              <span className="card__meta" id="leave-range">{formatRange(from, to)}</span>
+              <h3 className="card__title">Leave requests, last 6 months</h3>
+              <span className="card__meta" id="leave-range">{chartSpan}</span>
             </div>
             <div className="card__body">
-              <ColumnChart id="leave-chart" days={days} empty={d.chart.empty}
-                label={`Leave requests sent per day, ${formatRange(from, to)}: ${plural(totalSent, "request", "requests")} in all, at most ${Math.max(...counts)} on one day`} />
-              <p className="text-xs text-muted mt-2" id="leave-note">Requests counted on the day they were sent. Weekends and holidays are shown lighter.</p>
+              <BarChart id="leave-chart" chart={d.chart} label={`Leave requests sent per month, ${chartSpan}`} labelHeader="Month" latest />
+              <p className="text-xs text-muted mt-2" id="leave-note">Each request counts in the month it was sent, whatever its status. This month is still filling in.</p>
             </div>
           </section>
           <section className="card">

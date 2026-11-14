@@ -437,14 +437,14 @@ const usersMeta = () => txt([...d.querySelectorAll(".card")].find((c) => /Users 
 const ticked = () => [...d.querySelectorAll("#matrix-rows .perm-tick")].filter((t) => t.querySelector(".matrix__yes")).map((t) => t.dataset.permissionKey);
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 45 of 78: dashboard:finance is a 79th permission)
-check("G3", "the count is on the Permissions card: HR's '49 of 90' (what roles.js grants; L0: was 45 of 79); 'Users with this role' is the store's 1",
-  permMeta() === `${ticked().length} of ${ALL_PERMISSIONS.length}` && permMeta() === "49 of 90" && usersMeta() === "1", `${permMeta()} / ${usersMeta()}`);
+check("G3", "the count is on the Permissions card: HR's '49 of 91' (what roles.js grants; F1: was 49 of 90; L0: was 45 of 79); 'Users with this role' is the store's 1",
+  permMeta() === `${ticked().length} of ${ALL_PERMISSIONS.length}` && permMeta() === "49 of 91" && usersMeta() === "1", `${permMeta()} / ${usersMeta()}`);
 const hrPayroll = offered.filter((p) => ticked().includes(p));
 await open("access/role-editor.html", "aarav", "?role=fin");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 36 of 78: Finance also holds dashboard:finance, the 79th)
-check("G4", "nothing to tick: HR holds no payroll permission; Finance (?role=fin) holds view / create / export, not approve; '42 of 90' (L0: was 37 of 79; Round 7C: no pii:view; Manager scoping part 1: dashboard:finance)",
-  hrPayroll.length === 0 && j(ticked().filter((p) => p.startsWith("payroll:"))) === j(["payroll:view", "payroll:create", "payroll:export"]) && permMeta() === "42 of 90" && !d.querySelector(".matrix input"), permMeta());
+check("G4", "nothing to tick: HR holds no payroll permission; Finance (?role=fin) holds view / create / export, not approve; '42 of 91' (F1: was 42 of 90; L0: was 37 of 79; Round 7C: no pii:view; Manager scoping part 1: dashboard:finance)",
+  hrPayroll.length === 0 && j(ticked().filter((p) => p.startsWith("payroll:"))) === j(["payroll:view", "payroll:create", "payroll:export"]) && permMeta() === "42 of 91" && !d.querySelector(".matrix input"), permMeta());
 
 // =====================================================================
 section("H. Who may not see payroll figures");

@@ -87,6 +87,8 @@ The React app's shared name `COMPANY.name` (`app/src/data/company.js`) now reads
 
 `judgePlace(reading, places)` is the pure core; `placesFor(employee)` lists the places.
 
+**Every office for the Admin (F1):** someone holding `attendance:any-office` (only the Admin) also has every other active office in `placesFor`, after their own office and before their homes, each as `office:<office id>` with the office's own name, position and radius (several branches can't share `branch`). An inactive office isn't listed. Everyone else's list is exactly as before. The record names the office by that id; the attendance views say its name (`app/src/data/stamps.js` `placeLabel`).
+
 **The chosen place (L4):** `checkPlace(reading, employee, now, placeId)` and `judgePlace(reading, places, placeId)` take an optional `placeId`, one of the employee's `place` values (`head`, `branch`, `homePermanent`, `homeTemporary`).
 
 - Given, the reading is judged against **that place only**. Two overlapping places (an office and a home close by) can't name the other one, and "outside" names the chosen place: "N m from <chosen place>".
@@ -139,7 +141,8 @@ The users page's "Reset demo data" clears all of these back to the seed (L0): `r
 - `places`: the place check;
 - `punch14`: check-in and check-out, flags, old data;
 - `perms14`: the permissions matrix for all four roles and a manager;
-- `chosen` (L4): the chosen place: chosen vs nearest with overlapping places, outside the chosen one, a place that isn't yours, no `placeId` as before, and the records check-in and check-out write.
+- `chosen` (L4): the chosen place: chosen vs nearest with overlapping places, outside the chosen one, a place that isn't yours, no `placeId` as before, and the records check-in and check-out write;
+- `f1data` (F1): `attendance:any-office` (the counts, not overridable), the Admin's place list with branches (active only, by office id), everyone else's unchanged, checking in at a chosen branch, and the two month charts (see [charts.md](charts.md)).
 
 The React harness `tests/live/react/att3.mjs` (L3) checks in and out with a mocked location: inside, at the radius, just outside, far, bad accuracy, denied, no location, in India, UTC and Los Angeles time; home not set, not home-eligible, a branch, a shared device, the device limit, a flagged check-out; and the place column, Flagged badge and filters on the views.
 

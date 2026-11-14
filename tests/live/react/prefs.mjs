@@ -9,7 +9,7 @@
 //      theme and accent; the old keys carry over ONCE, to whoever is signed in at the first load
 //   M  Match the device follows an emulated colour-scheme change live
 //   D  density and text size change measured sizes (rows, buttons, text), and back
-//   A  an accent changes the primary colour (header, buttons); the charts' series colours don't change
+//   A  an accent changes the primary colour (header, buttons) and, since F1 (the shared chart theme), the charts' first series
 //   R  Reset to default: every choice back, no attribute left, the button off, the words
 //   B  sidebar default: Collapsed at 1440, Expanded at 1024, Remember = S1's last toggle
 //   F  no flash: with the app's js blocked, <html> already carries the stored choices
@@ -174,7 +174,7 @@ if (ONLY.includes("A")) {
   const a = await read(n.t);
   await openMenu(n.t); await n.t.click('.theme-menu [data-accent-choice="teal"]'); await settle(n.t);
   const b = await read(n.t);
-  check("A1", "Teal: the primary colour, the header and the primary button change; the charts' first series colour doesn't", a.primary !== b.primary && b.primary === "#0f766e" && a.bar !== b.bar && a.button !== b.button && a.chart === b.chart, j([a, b]));
+  check("A1", "Teal: the primary colour, the header, the primary button and (F1) the charts' first series change", a.primary !== b.primary && b.primary === "#0f766e" && a.bar !== b.bar && a.button !== b.button && a.chart !== b.chart, j([a, b]));
   await n.ctx.close();
 }
 

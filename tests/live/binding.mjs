@@ -168,7 +168,7 @@ check("C14", "the cap: more policy days than the month has left come off as the 
 section("D. Self-service declarations");
 const TY = "2026-27";
 const DECL = { rentMonthly: 25000, metro: true, investments: 100000, other: 0 };
-check("D1", "the permissions: declarations:submit-own for everyone, declarations:manage for Finance and the Admin; 90 in all", j(P.PERMISSIONS.declarations) === j(["submit-own", "manage"]) && P.ALL_PERMISSIONS.length === 90
+check("D1", "the permissions: declarations:submit-own for everyone, declarations:manage for Finance and the Admin; 91 in all (F1: was 90, attendance:any-office)", j(P.PERMISSIONS.declarations) === j(["submit-own", "manage"]) && P.ALL_PERMISSIONS.length === 91
   && j(Object.values(PEOPLE).map((id) => ["declarations:submit-own", "declarations:manage"].map((p) => RO.hasPermission(S.getUser(id), p)))) === j([[true, true], [true, false], [true, true], [true, false], [true, false]]));
 const own = ST.saveOwnDeclaration(VIKRAM, TY, { regime: "old", declaration: DECL });
 check("D2", "an employee saves a draft: status draft; it doesn't apply to pay yet (still the new regime)", own.ok && own.record.status === "draft" && ST.regimeOf(VIKRAM, TY) === "new" && own.record.draft.regime === "old", own.error);

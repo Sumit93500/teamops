@@ -83,7 +83,7 @@ function Form({ editing, editId, startAt }) {
   const [f0] = useState(() => ({
     first: editing ? first : "", last: editing ? rest.join(" ") : "", email: editing?.email ?? "", phone: editing?.phone ?? "", dob: editing?.dob ?? "",
     bank: editing?.bankAccount ?? "", pan: editing?.pan ?? "", department: editing?.department ?? "", designation: editing?.designation ?? "",
-    manager: managerKey0, joining: toInputDate(editing?.dateOfJoining), empType: editing?.employmentType || "Full-time", location: editing?.location || "Gurugram office",
+    manager: managerKey0, joining: toInputDate(editing?.dateOfJoining), empType: editing?.employmentType || "Full-time", location: editing?.location || (offices.find((o) => o.type === "head") ?? offices[0])?.name || "Remote",
     active: editing ? editing.status !== "inactive" : true,
     office: editing ? officeIdOf(editing.id) : officeIdOf(null), home: editing ? isHomeEligible(editing.id) : false,
   }));
@@ -104,7 +104,8 @@ function Form({ editing, editId, startAt }) {
   const managerOptions = withValue(users.filter((u) => u.status === "active" && u.id !== editId).map((u) => [u.id, u.name]), managerKey0,
     getUser(editing?.reportingManagerId)?.name ?? editing?.reportingManager);
   const empTypes = withValue([["Full-time", "Full-time"], ["Contract", "Contract"], ["Intern", "Intern"]], editing?.employmentType);
-  const locations = withValue([["Gurugram office", "Gurugram office"], ["Remote", "Remote"]], editing?.location);
+  // F1: every active office from the offices store (not a written-in head office), then Remote; a saved value not in the list stays
+  const locations = withValue([...offices.map((o) => [o.name, o.name]), ["Remote", "Remote"]], editing?.location);
   const officeOptions = offices.map((o) => [o.id, `${o.name}${o.state ? `, ${o.state}` : ""}`]);
 
   // The role saving would store: the designation's default role, else the employee's current one, else Employee.

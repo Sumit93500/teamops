@@ -197,7 +197,9 @@ if (ONLY.includes("L")) {
 }
 
 // ---------- F: user form ----------
-const FIELDS = ["first-name", "last-name", "work-email", "phone", "dob", "emp-id", "bank-account", "pan", "department", "designation", "manager", "joining", "emp-type", "location", "default-role"];
+// F1 (ruled): Work location lists the offices store's active offices and Remote (not the old page's written-in "Gurugram office"),
+// so it is read past here and checked in f1.mjs (O6, O8)
+const FIELDS = ["first-name", "last-name", "work-email", "phone", "dob", "emp-id", "bank-account", "pan", "department", "designation", "manager", "joining", "emp-type", "default-role"];
 const readForm = (t) => t.evaluate((ids) => {
   const tx = (e) => (e ? e.innerText.replace(/\s+/g, " ").trim() : null);
   const fields = ids.map((id) => {

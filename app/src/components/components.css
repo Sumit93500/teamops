@@ -5,6 +5,9 @@
 .chart__col { cursor: pointer; }
 .chart__col.is-selected .chart__bar { outline: 2px solid var(--color-text); outline-offset: 1px; }
 .chart__col:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+/* F1: the shared chart theme (design/tokens.css). A plain bar is series 1, the person's accent, as in every other chart; the
+   bars that mean leave, absent or a missing check-out keep their status colours (and their patterns below). */
+.chart__bar:not(.chart__bar--leave):not(.chart__bar--absent):not(.chart__bar--incomplete), .bar-row__fill { background-color: var(--ds-chart-1); }
 
 /* The non-colour cue: a pattern over each bar whose meaning was colour alone. */
 .chart__bar--leave { background-image: repeating-linear-gradient(135deg, rgb(255 255 255 / 0.55) 0 2px, transparent 2px 6px); }

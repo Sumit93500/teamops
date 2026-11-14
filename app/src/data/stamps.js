@@ -4,8 +4,15 @@
 // read: stampsBy() -> Map("<userId>|<date>" -> stamp). A record without a stamp (the seed, a check-in before L3) isn't in it.
 // Reads only: storage that was never written gives an empty map (nothing is seeded by looking).
 import { load } from "../../../assets/js/core/storage.js";
+import { getOffice } from "../../../assets/js/data/offices-store.js";
 
 export const PLACE_LABEL = { head: "Head office", branch: "Branch office", homePermanent: "Permanent home", homeTemporary: "Temporary home" };
+// F1: a place in words. An office checked in from by attendance:any-office ("office:<id>") is named by the office itself.
+export function placeLabel(place) {
+  if (PLACE_LABEL[place]) return PLACE_LABEL[place];
+  if (typeof place === "string" && place.startsWith("office:")) return getOffice(place.slice(7))?.name ?? "Office";
+  return place;
+}
 export const PLACE_ICON = {
   office: "M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M2 21h20M8 7h4M8 11h4M8 15h4",
   home: "M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z",

@@ -89,7 +89,11 @@ export function BarPlot({ data, series, unit, active, onActive, height, horizont
             <Bar key={s.name} dataKey={`s${i}`} name={s.name} stackId={stacked ? "all" : undefined} fill={`url(#${prefix}-p${i})`} radius={radius(i)}
               isAnimationActive={false} maxBarSize={horizontal ? 22 : 44}>
               {data.map((_, k) => <Cell key={k} fillOpacity={active == null || active === k ? 1 : 0.45} />)}
-              {horizontal && single && <LabelList dataKey={`s${i}`} position="right" formatter={(v) => withUnit(v, unit === "%" || unit === "₹" ? unit : "")} style={{ fill: "var(--ds-text)", fontSize: 12 }} />}
+              {/* F1: drawn by hand so a zero (no bar) still says its value beside the axis, as the old bar rows did */}
+              {horizontal && single && <LabelList dataKey={`s${i}`} content={({ x, y, width, height, value }) => (value == null ? null : (
+                <text x={Number(x) + Math.max(0, Number(width) || 0) + 6} y={Number(y) + Number(height) / 2} dominantBaseline="central" style={{ fill: "var(--ds-text)", fontSize: 12 }}>
+                  {withUnit(value, unit === "%" || unit === "₹" ? unit : "")}
+                </text>))} />}
             </Bar>
           ))}
         </BarChart>

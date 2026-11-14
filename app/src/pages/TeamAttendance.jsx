@@ -19,7 +19,7 @@ import { stampsBy, stampKey, flaggedCell } from "../data/stamps.js";
 import { placeNode, flagNode } from "../ui/attendance.jsx";
 import { teamScope } from "../../../assets/js/data/reporting.js";
 import { csvColumns, csvValue, exportTableAsCsv } from "../../../assets/js/ui/csv-export.js";
-import { PLACE_LABEL } from "../data/stamps.js";
+import { placeLabel } from "../data/stamps.js";
 import { el, weekdayName, todayIso, formatDay, initials, avatarClass, departmentName, shortDate, plural, personCell, showReason } from "../../../assets/js/ui/leave-view.js";
 import { dayBadge, presentNote, checkInCell, hoursCell } from "../../../assets/js/ui/attendance-view.js";
 import { barRow } from "../../../assets/js/ui/chart.js";
@@ -67,7 +67,7 @@ function weekCell(week) {
 }
 // The Place column's words in the file (L4).
 function placeWords(stamp) {
-  const words = (place, distance) => `${PLACE_LABEL[place] ?? place}${distance ? `, ${distance}` : ""}`;
+  const words = (place, distance) => `${placeLabel(place)}${distance ? `, ${distance}` : ""}`;
   if (!stamp?.inPlace && !stamp?.outPlace) return "";
   const first = stamp.inPlace ? words(stamp.inPlace, stamp.inDistance) : words(stamp.outPlace, stamp.outDistance);
   return stamp.inPlace && stamp.outPlace && stamp.outPlace !== stamp.inPlace ? `${first}; out: ${words(stamp.outPlace, stamp.outDistance)}` : first;

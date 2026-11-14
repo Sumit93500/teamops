@@ -24,6 +24,12 @@ One function per chart, and every one returns the same shape:
 
 **Files:** `app/src/components/charts/`: `Charts.jsx` (main bundle: the frame and `AreaChart`, `BarChart`, `DonutChart`, `IndiaMap`), `plots.jsx` (Recharts, a lazy chunk), `IndiaPlot.jsx` (the map's shapes, a lazy chunk), `patterns.jsx`, `charts.css`. Colours are tokens (`--ds-chart-1..6`, `--ds-seq-1..5`, `--ds-map-*`, see [design.md](design.md)).
 
+**The shared chart theme (F1):** the colours are defined once, in `design/tokens.css`, and every chart reads them: the design system's charts, the old `ColumnChart` and `BarRows`, and the map's legend.
+- **Series 1 is the person's accent** (`--ds-primary`: their role's colour or the accent they chose, light or dark). Changing the theme or the accent recolours every chart at once, in other open tabs too (the preferences' storage event).
+- **Series 2-6** are the validated hues in one fixed order (orange, blue, green, red, violet, cyan) without the hue nearest the accent (indigo and blue drop blue, teal drops green, the Finance colour orange, violet violet, slate cyan, pink red). Measured with Machado 2009 colour-vision simulation and OKLab: neighbouring series are 6.7 or more apart for colour-blind readers (the floor band, so the patterns and dashes stay) and 16.6 or more with full colour vision, light and dark, every role and accent. Each is 3:1 or more on the card.
+- **The map's five steps** are series 1 mixed into the card (14 % to 100 %), light to dark (dark to light in the dark theme).
+- The old column bars keep their status colours where a bar means leave, absent or a missing check-out.
+
 Each takes a contract object as `chart` and draws it:
 
 | component | for | options |
@@ -44,6 +50,6 @@ What every chart does:
 
 **Libraries:** Recharts 3.10.1 (MIT; its dependencies MIT, ISC and BSD-3-Clause) and @svg-maps/india 2.0.0 (MapSVG's map, CC BY 4.0: the map shows the credit under it). The map's shapes predate 2019: Jammu and Kashmir includes Ladakh, and Dadra and Nagar Haveli and Daman and Diu are separate.
 
-**In use:** the Admin dashboard's "Headcount by department" (`BarChart`, horizontal), and every chart and case in `/gallery`. The other dashboard charts move in the restyle sweep. The map has no store data yet (no state on employees): gallery only.
+**In use:** the Admin dashboard's "Headcount by department" (`BarChart`, horizontal); since F1 the HR dashboard's "Leave requests, last 6 months" (`BarChart`, from `leaveRequestsByMonthChart(today, 6)`: requests counted in the month they were sent) and the Finance dashboard's "Monthly payroll cost" (`BarChart`, from `payrollByMonthChart(runs)`: each month's run as the payroll run page reads it, approved or live; empty when no month has gross pay) and "Payroll cost by department" (`BarChart`, horizontal); and every chart and case in `/gallery`. A month label ("2026-11") reads "Nov 2026". The other dashboard charts move in the restyle sweep. The map has no store data yet (no state on employees): gallery only.
 
-**Checks:** `tests/live/react/charts.mjs` (loading, empty, one point, many points, long labels, negative values, keyboard, phone taps, the map's zoom and keys, the table, dark colours, the Admin headcount against the store).
+**Checks:** `tests/live/react/charts.mjs` (loading, empty, one point, many points, long labels, negative values, keyboard, phone taps, the map's zoom and keys, the table, dark colours, the Admin headcount against the store); `tests/live/react/f1.mjs` (H: HR's and Finance's charts with their real values, after a reload, empty only when the months have none; C: series 1 is the accent for every accent and theme, live and from another tab, 3:1 on the card, colour-vision separation, the map's steps); `tests/live/f1data.mjs` (the two month functions).

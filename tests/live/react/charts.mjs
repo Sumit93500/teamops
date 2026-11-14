@@ -81,8 +81,9 @@ for (const width of [1280, 412]) for (const theme of ["light", "dark"]) {
   if (sec) await sec.screenshot({ path: path.join(SHOTS, `charts-${width}-${theme}.png`), animations: "disabled" });
   if (theme === "dark") {
     // D: the first series' colour in the dark theme
-    const fill = await t.evaluate(() => getComputedStyle(document.querySelector("#g-one-chart pattern rect")).fill);
-    check(`D.${width}`, "dark: series 1 is the dark token (#6ea8ff)", fill === "rgb(110, 168, 255)", fill);
+    // F1: series 1 is the person's accent, dark's --ds-primary (the role's colour mixed 62% with white), not a fixed blue
+    const [fill, primary] = await t.evaluate(() => { const p = document.createElement("span"); p.style.color = "var(--ds-primary)"; document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return [getComputedStyle(document.querySelector("#g-one-chart pattern rect")).fill, c]; });
+    check(`D.${width}`, "dark: series 1 is dark's accent (--ds-primary)", fill === primary && fill !== "rgb(110, 168, 255)", j([fill, primary]));
   }
   if (width === 412 && theme === "light") {
     // T: taps

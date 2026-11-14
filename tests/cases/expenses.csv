@@ -102,7 +102,7 @@ expclaim.G8,expclaim,"stages not reached yet name who decides them: the manager 
 expclaim.G10,expclaim,"step numbers run on: done steps show a tick, the current and later ones 4 and 5 (Rohan's three-stage claim)",x3 (3 zones)
 expclaim.H1,expclaim,"the Expenses row: view | approve | pay | create, only create ticked (HR has it via SELF_SERVICE); no edit / delete",x3 (3 zones)
 expclaim.H2,expclaim,"every expenses permission shown is real, and all of them are shown: expenses:pay too (it had no column before 6H)",x3 (3 zones)
-expclaim.H3,expclaim,"the count: '49 of 90' (L0: was 45 of 79), drawn; the static HTML holds no count (a '—' until the script runs)",x3 (3 zones)
+expclaim.H3,expclaim,"the count: '49 of 91' (F1: was 49 of 90; L0: was 45 of 79), drawn; the static HTML holds no count (a '—' until the script runs)",x3 (3 zones)
 expclaim.I1,expclaim,arjun: can open the claim page (no redirect) and sees 'Claim expense' in the nav,x3 (3 zones)
 expclaim.I1#2,expclaim,priya: can open the claim page (no redirect) and sees 'Claim expense' in the nav,x3 (3 zones)
 expclaim.I1#3,expclaim,kabir: can open the claim page (no redirect) and sees 'Claim expense' in the nav,x3 (3 zones)

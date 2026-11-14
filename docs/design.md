@@ -18,7 +18,7 @@ Imported after `assets/css/style.css`. Where a name overlaps (`--color-*`, `--ra
 | shadow | `--ds-shadow-1` (cards), `-2` (hero), `--ds-shadow-float` (menus) |
 | motion | `--ds-fast` 120 ms, `--ds-normal` 200 ms. With `prefers-reduced-motion` both are 0 and every transition finishes at once |
 | focus | a 2 px ring in the role colour (`--ds-focus-color`), with a 2 px gap |
-| charts (D2b) | `--ds-chart-1` to `-6` (series; each 3:1 or more on every surface), `--ds-chart-ink` (pattern marks), `--ds-chart-grid`, `--ds-seq-1` to `-5` (the map's steps, light to dark), `--ds-map-none`, `--ds-map-edge` (3:1). See [charts.md](charts.md) |
+| charts (D2b, F1) | `--ds-chart-1` to `-6` (series; 1 is `--ds-primary`, the person's accent; 2-6 from `--ds-hue-*` without the hue nearest it; each 3:1 or more on every surface), `--ds-chart-ink` (pattern marks), `--ds-chart-grid`, `--ds-seq-1` to `-5` (the map's steps, series 1 mixed into the card), `--ds-map-none`, `--ds-map-edge` (3:1). See [charts.md](charts.md) |
 
 **Contrast:** every text pair is at least 4.5:1, and every field edge, focus ring, knob and chart line at least 3:1 (WCAG AA). That holds in both themes, for every role and accent. It is measured in Edge on the built app by `Target/tools/react/contrast.mjs`; D2a's table is in `Target/shots/shots-D2a/contrast.md`.
 
@@ -31,7 +31,7 @@ Imported after `assets/css/style.css`. Where a name overlaps (`--color-*`, `--ra
 | HeroCard | Layout.jsx | the dark glass summary: pills, a big value, a small plot with a hatched band; the band and lines are named in words |
 | KpiCard | Layout.jsx | a value and label. The change is an arrow and words ("▲ 3.4% vs last month"); colour only repeats them. An optional mini trend has its own name |
 | Pill | Layout.jsx | a rounded label with a tone and an icon |
-| FilterBar, DateRange, FilterSelect, FilterSearch | Controls.jsx | the filter row. Date presets are Today, Last 7 days, Last 30 days, This month and Custom, and the range is said in words. Clear All is disabled while nothing is set |
+| FilterBar, DateRange, FilterSelect, FilterSearch | Controls.jsx | the filter row. Date presets are Today, Last 7 days, This month, Last month and Custom (F1: Last month is the whole calendar month before today's; Last 30 days left the list, as no page used it), and the range is said in words. Clear All is disabled while nothing is set |
 | SelectField | Controls.jsx | a labelled select with an icon, a helper line and a status line (a dot and words) |
 | Segmented, Toggle | Controls.jsx | a radio group (one Tab stop, arrow keys) and a switch that says On / Off |
 | IconButton, DownloadMenu | Controls.jsx | icon-only, named by `aria-label`. The menu opens on its first item; arrows move, Esc closes |
@@ -70,7 +70,7 @@ One store, `app/src/data/prefs.js`, read and written by the header's Appearance 
 | preference | choices (default first) | how it applies |
 |---|---|---|
 | Theme | Match the device (the default since A2), Light, Dark | `data-theme`; Match the device follows the device's setting live |
-| Accent colour | My role's colour, Indigo, Blue, Teal, Violet, Slate, Pink | `data-accent` sets `--primary-base`: the header, buttons and links. Charts keep `--ds-chart-*` |
+| Accent colour | My role's colour, Indigo, Blue, Teal, Violet, Slate, Pink | `data-accent` sets `--primary-base`: the header, buttons, links and, since F1, every chart's series 1 (the shared chart theme, [charts.md](charts.md)) |
 | Density | Comfortable, Compact | `data-density="compact"`: the spacing scale and the padding tokens (`--ds-pad-*`, `--ds-control-h`) shrink |
 | Text size | Default, Small, Large | `data-text`: the type scale (`--text-*`, `--ds-text-*`) steps down or up; chart text follows `--ds-text-xs` |
 | Sidebar on a computer | Remember my last choice, Expanded, Collapsed | the S1 sidebar's opening state |

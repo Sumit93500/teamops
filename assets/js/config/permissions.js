@@ -11,7 +11,7 @@ export const PERMISSIONS = {
   departments:   ["create", "edit"],
   roles:         ["manage"],
   designations:  ["manage", "create", "edit"],
-  attendance:    ["view-all", "view-own", "mark", "regularize", "approve"],
+  attendance:    ["view-all", "view-own", "mark", "regularize", "approve", "any-office"],   // any-office (F1): check in from any active office, not just your own (Admin)
   leave:         ["view-own", "create", "cancel", "approve"],
   holidays:      ["manage"],
   payroll:       ["view", "create", "approve", "export"],   // create: prepare a run (payroll-store.js prepareRun checks it on record)
@@ -47,6 +47,7 @@ export const PERMISSIONS = {
   "leave-policy": ["edit"],                   // edit the tenure leave policy and close a leave year (Admin; the Leave policy page)
   // P5 (2026-11-14): tax declarations. submit-own: everyone records their own regime and old-regime declaration; manage:
   // edit anyone's, verify and lock, unlock, set the tax year's cutoff (Finance, Admin). The role pages count them (88 -> 90).
+// F1 (2026-11-14): attendance:any-office, above (the Admin only, through ALL_PERMISSIONS; not overridable): 90 -> 91.
   declarations:  ["submit-own", "manage"],
 };
 

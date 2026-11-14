@@ -44,8 +44,8 @@ The record then carries `checkInPlace`, `checkInDistanceM`, `checkInDeviceId` (a
 
 ## Mark attendance with a place (L3, the React app)
 
-- **Check-In From:** only the places this person may check in from (`placesFor`): their office (head office or branch) and, when HR turned home check-in on, the homes they've set. A home means work from home; the office means office.
-- **Use my location:** the browser's position, read once when pressed. The line under it says the distance to the chosen place and its radius ("You're 40 m from Head office, inside its 150 m radius."). A reading less accurate than 100 m asks to try again; a denied permission and a browser without location say what to do.
+- **Check-In From:** only the places this person may check in from (`placesFor`): their office (head office or branch) and, when HR turned home check-in on, the homes they've set. A home means work from home; the office means office. The Admin (`attendance:any-office`, F1) also has every other active office, and the check is made against the one chosen.
+- **Use my location:** the browser's position, read once when pressed. The line under it says the check's answer with the place's real name, the distance and, when outside, the radius (F1): "You are 40 m from Head office, check-in allowed" or "You are 2.3 km from Head office (limit 150 m), check-in not allowed" (metres under 1 km, else km to one decimal; check-out the same). A reading less accurate than 100 m asks to try again; a denied permission and a browser without location say what to do.
 - **The device:** "Registered device", "New device" (checking in registers it, N of 2 used), or "Device limit reached" (ask an Admin). A device registered to someone else too checks in, flagged.
 - **The button:** one big Check in (or Check out), enabled only when the reading is inside the chosen place and the device is allowed. Every refusal the store gives is said in plain words.
 - **Check-out from another place:** a "Flagged" notice before pressing, and a question before it's done; the day is flagged `place-changed`.
@@ -64,4 +64,5 @@ The record then carries `checkInPlace`, `checkInDistanceM`, `checkInDeviceId` (a
 ## Not built yet
 
 - Shifts (the page is a sample).
-- The old site's Mark attendance has no place check (the React app does).
+- The old site's Mark attendance has no place check (the React app does). F1 removed its "Location check" card, whose only line said location and network checks weren't part of the demo.
+- **Mark attendance on every dashboard (F1):** the Admin, HR and Finance dashboards have the Employee dashboard's Mark attendance in their headers (a secondary button beside the page's own main action); a manager has the Employee dashboard's.

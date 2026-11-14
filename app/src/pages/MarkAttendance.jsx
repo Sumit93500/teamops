@@ -11,6 +11,9 @@
 // L4: the store is told the chosen place (checkInAt / checkOutAt's placeId), so it checks that place only and the record
 // names it; overlapping places can't be mixed up. Check-Out From shows the check-in's place; a check-out inside it counts
 // there, one outside it is judged at the nearest of your places (flagged, asked first, as before).
+// F1: the line under Use my location says the check's answer with the place's real name, the real distance and the radius:
+// "You are 40 m from Head office, check-in allowed" / "You are 2.3 km from Head office (limit 150 m), check-in not allowed"
+// (check-out the same). With attendance:any-office (the Admin) Check-In From lists every active office.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getUser } from "../../../assets/js/data/store.js";
@@ -32,7 +35,7 @@ import { Icon } from "../components/icons.jsx";
 import { DayPill, PlaceCell, FlagBadge } from "../ui/attendance.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
-import { stampsBy, stampKey, PLACE_LABEL } from "../data/stamps.js";
+import { stampsBy, stampKey, placeLabel } from "../data/stamps.js";
 import { PRIVACY } from "./Offices.jsx";
 import { pageUrl, MY_LOCATIONS } from "../routes.js";
 
@@ -44,6 +47,8 @@ const twelveHour = (minutes) => { const h = Math.floor(minutes / 60); return `${
 const longDate = (iso) => `${weekdayName(iso)}, ${dayOfMonth(iso)} ${monthName(Number(iso.slice(5, 7)))} ${iso.slice(0, 4)}`;
 const ordinal = (n) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
 const m = (n) => `${Number(n).toLocaleString("en-IN")} m`;
+// a distance in words: metres under 1 km, else km to one decimal ("2.3 km")
+const dist = (n) => (n < 1000 ? m(Math.round(n)) : `${(n / 1000).toLocaleString("en-IN", { maximumFractionDigits: 1 })} km`);
 const isHome = (place) => place === "homePermanent" || place === "homeTemporary";
 
 // Today's status: the pill, which button works, and the line under them (mark-attendance.js renderStatus, same words).
@@ -86,8 +91,8 @@ function useReading() {
   return [geo, read];
 }
 
-// The line under "Use my location": what the reading means for the chosen place.
-function placeLine(geo, place) {
+// The line under "Use my location": what the reading means for the chosen place (verb: "check-in" or "check-out").
+function placeLine(geo, place, verb = "check-in") {
   if (!place) return { tone: "danger", text: "No place is set for you to check in from. Ask an Admin to set your office." };
   if (geo.status === "idle") return { tone: "", text: "Press Use my location. It's read once, now, to check you're at the place you chose." };
   if (geo.status === "busy") return { tone: "info", text: "Reading your location…" };
@@ -98,8 +103,8 @@ function placeLine(geo, place) {
   if (accuracyM > ACCURACY_LIMIT_M) return { tone: "warning", text: `Your location is only accurate to within ${m(accuracyM)}; it needs to be within ${ACCURACY_LIMIT_M} m. Move near a window or outdoors, then press Use my location again.`, retry: true };
   const d = Math.round(distanceM(geo.reading, place));
   return d <= place.radiusM
-    ? { tone: "success", text: `You're ${m(d)} from ${place.name}, inside its ${m(place.radiusM)} radius.`, inside: true, d }
-    : { tone: "danger", text: `You're ${m(d)} from ${place.name}. Check-in needs you within ${m(place.radiusM)}.`, d };
+    ? { tone: "success", text: `You are ${dist(d)} from ${place.name}, ${verb} allowed`, inside: true, d }
+    : { tone: "danger", text: `You are ${dist(d)} from ${place.name} (limit ${m(place.radiusM)}), ${verb} not allowed`, d };
 }
 
 // This browser as a check-in device for this person (read only: no token is made until a check-in).
@@ -165,12 +170,14 @@ export default function MarkAttendance() {
   const fallback = day?.suggestedMode === "wfh" ? places.find((p) => isHome(p.place)) : null;
   const want = st.canOut && stamp?.inPlace ? stamp.inPlace : chosen;
   const place = places.find((p) => p.place === want) ?? fallback ?? places[0] ?? null;
-  const line = placeLine(geo, place);
-  const ready = Boolean(line.inside) && device.ok;
+  const placeWords = placeLine(geo, place, st.canOut ? "check-out" : "check-in");
+  const ready = Boolean(placeWords.inside) && device.ok;
   // Where this check-out counts: the check-in's place when the reading is inside it, else the nearest place inside (L4).
   const atIn = st.canOut && geo.reading && stamp?.inPlace ? judgePlace(geo.reading, places, stamp.inPlace) : null;
   const outAt = st.canOut && geo.reading ? (atIn?.ok ? atIn : judgePlace(geo.reading, places)) : null;
   const moved = Boolean(st.canOut && stamp?.inPlace && outAt?.ok && outAt.place !== stamp.inPlace);
+  // a check-out at another of your places is allowed (flagged, asked first): the line names where it counts
+  const line = moved ? { tone: "warning", text: `You are ${dist(outAt.distanceM)} from ${outAt.placeName}, check-out allowed` } : placeWords;
   let start = toMinutes(R.shiftStart), end = toMinutes(R.shiftEnd);
   if (day?.halfDayLeave === "first-half") start = toMinutes(R.halfSplit);
   if (day?.halfDayLeave === "second-half") end = toMinutes(R.halfSplit);
@@ -187,10 +194,10 @@ export default function MarkAttendance() {
   };
   const doIn = () => {
     const mode = isHome(place.place) ? "wfh" : "office";
-    after(checkInAt(userId, mode, geo.reading, deviceToken(), place.place), (rec) => `Checked in from ${PLACE_LABEL[rec.checkInPlace] ?? place.name}.${rec.flagged ? " Flagged for HR: this device is registered to someone else too." : ""}`);
+    after(checkInAt(userId, mode, geo.reading, deviceToken(), place.place), (rec) => `Checked in from ${placeLabel(rec.checkInPlace)}.${rec.flagged ? " Flagged for HR: this device is registered to someone else too." : ""}`);
   };
   const doOut = async () => {
-    if (moved && !(await confirm({ message: `Check out from ${outAt.placeName}?\nYou checked in at ${PLACE_LABEL[stamp.inPlace]}. A check-out from another place is flagged for HR to look at.`, confirmLabel: "Check out", danger: true }))) return;
+    if (moved && !(await confirm({ message: `Check out from ${outAt.placeName}?\nYou checked in at ${placeLabel(stamp.inPlace)}. A check-out from another place is flagged for HR to look at.`, confirmLabel: "Check out", danger: true }))) return;
     after(checkOutAt(userId, geo.reading, deviceToken(), outAt?.ok ? outAt.place : undefined), (rec) => (rec.flagged ? `Checked out. Flagged for HR: ${rec.flagReasons.includes("place-changed") ? "a different place than your check-in" : "a different device or a shared one"}.` : "Checked out."));
   };
 
@@ -231,7 +238,7 @@ export default function MarkAttendance() {
                   </div>
                   <p className={`ds-status${line.tone ? ` ds-status--${line.tone}` : ""}`} id="place-status" role="status">{line.text}</p>
                   <p className={`ds-status ds-status--${device.tone}`} id="device-status"><span><strong>{device.label}.</strong> {device.text}</span></p>
-                  {moved && <p className="ds-note ds-note--warning" id="flag-notice">{`Flagged: you checked in at ${PLACE_LABEL[stamp.inPlace]} and you're at ${outAt.placeName} now. Checking out here flags the day for HR.`}</p>}
+                  {moved && <p className="ds-note ds-note--warning" id="flag-notice">{`Flagged: you checked in at ${placeLabel(stamp.inPlace)} and you're at ${outAt.placeName} now. Checking out here flags the day for HR.`}</p>}
                 </>
               )}
               <div className="punch__actions">
@@ -245,9 +252,9 @@ export default function MarkAttendance() {
             </div>
             <Kv id="punch-stats" rows={[
               ["Check-in", <span id="stat-check-in">{day?.checkIn ? `${day.checkIn}${day.mode === "wfh" ? " (WFH)" : ""}` : "–"}</span>],
-              ["Checked in from", <span id="stat-check-in-place">{stamp?.inPlace ? `${PLACE_LABEL[stamp.inPlace]}${stamp.inDistance ? `, ${stamp.inDistance}` : ""}` : "–"}</span>],
+              ["Checked in from", <span id="stat-check-in-place">{stamp?.inPlace ? `${placeLabel(stamp.inPlace)}${stamp.inDistance ? `, ${stamp.inDistance}` : ""}` : "–"}</span>],
               ["Check-out", <span id="stat-check-out">{day?.checkOut ?? "–"}</span>],
-              ["Checked out from", <span id="stat-check-out-place">{stamp?.outPlace ? `${PLACE_LABEL[stamp.outPlace]}${stamp.outDistance ? `, ${stamp.outDistance}` : ""}` : "–"}</span>],
+              ["Checked out from", <span id="stat-check-out-place">{stamp?.outPlace ? `${placeLabel(stamp.outPlace)}${stamp.outDistance ? `, ${stamp.outDistance}` : ""}` : "–"}</span>],
               ["Hours today", <span id="stat-hours">{hoursText(day?.minutesWorked ?? 0)}</span>],
             ]} />
             </div>

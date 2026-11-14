@@ -4,7 +4,7 @@
 // Team attendance and the HR dashboard.
 import { Pill } from "../components/Layout.jsx";
 import { Icon } from "../components/icons.jsx";
-import { PLACE_LABEL, iconOfPlace, flagText } from "../data/stamps.js";
+import { placeLabel, iconOfPlace, flagText } from "../data/stamps.js";
 
 const DAY = {
   present: ["success", "Present"], late: ["warning", "Late"], "half-day": ["info", "Half day"], absent: ["danger", "Absent"], "on-leave": ["info", "On leave"],
@@ -26,8 +26,8 @@ export function PlaceCell({ stamp }) {
   return (
     <span className="ds-place" data-place={place}>
       <Icon d={iconOfPlace(place)} />
-      <span>{PLACE_LABEL[place] ?? place}{stamp.inDistance ? <span className="ds-place__sub">{stamp.inDistance}</span> : null}
-        {out ? <span className="ds-place__sub">{`Out: ${PLACE_LABEL[out] ?? out}${stamp.outDistance ? `, ${stamp.outDistance}` : ""}`}</span> : null}</span>
+      <span>{placeLabel(place)}{stamp.inDistance ? <span className="ds-place__sub">{stamp.inDistance}</span> : null}
+        {out ? <span className="ds-place__sub">{`Out: ${placeLabel(out)}${stamp.outDistance ? `, ${stamp.outDistance}` : ""}`}</span> : null}</span>
     </span>
   );
 }
@@ -47,9 +47,9 @@ export function placeNode(stamp) {
   const place = stamp.inPlace ?? stamp.outPlace;
   const out = stamp.outPlace && stamp.inPlace && stamp.outPlace !== stamp.inPlace ? stamp.outPlace : null;
   const wrap = span("ds-place"); wrap.dataset.place = place;
-  const text = span("", PLACE_LABEL[place] ?? place);
+  const text = span("", placeLabel(place));
   if (stamp.inDistance) text.append(span("ds-place__sub", stamp.inDistance));
-  if (out) text.append(span("ds-place__sub", `Out: ${PLACE_LABEL[out] ?? out}${stamp.outDistance ? `, ${stamp.outDistance}` : ""}`));
+  if (out) text.append(span("ds-place__sub", `Out: ${placeLabel(out)}${stamp.outDistance ? `, ${stamp.outDistance}` : ""}`));
   wrap.append(svgIcon(iconOfPlace(place)), text);
   return wrap;
 }

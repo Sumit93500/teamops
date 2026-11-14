@@ -182,6 +182,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "binding.mjs") { Run "binding-$t" @("binding.mjs") }
   # P5-fix: each unpaid day charged to the month it falls in; an approved month never re-deducted
   if (Test-Path "lopalloc.mjs") { Run "lopalloc-$t" @("lopalloc.mjs") }
+  # F1: attendance:any-office and the Admin's offices; the two month charts (data/locations-store.js, data/chart-data.js)
+  if (Test-Path "f1data.mjs") { Run "f1data-$t" @("f1data.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

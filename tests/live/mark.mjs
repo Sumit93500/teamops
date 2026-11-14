@@ -96,8 +96,8 @@ check("A4", "work mode: Office pre-selected and changeable", modes() === "office
 check("A5", "punch stats empty: – | – | 0h 00m", stats() === "– | – | 0h 00m", stats());
 check("A6", "rule line and shift card from the store's rules", txt($("punch-rule")) === "Shift 9:30 AM – 6:30 PM. Checking in after 9:45 AM is marked late." && shift() === "9:30 AM – 6:30 PM | 15 minutes | 1 of 3" && lateNote() === "",
   `${txt($("punch-rule"))} || ${shift()}`);
-check("A7", "Location card: one honest line, nothing invented", /aren't part of this demo/.test(txt(d.querySelector(".grid aside .card .card__body"))) && !/12 m|Wi-Fi|Chrome/.test(d.body.textContent),
-  txt(d.querySelector(".grid aside .card .card__body")));
+check("A7", "no Location card (F1: removed with its 'not part of this demo' line), nothing invented: the aside starts with Today's shift", !/part of this demo|Location check/.test(d.body.textContent) && txt(d.querySelector(".grid aside .card .card__title")) === "Today's shift" && !/12 m|Wi-Fi|Chrome/.test(d.body.textContent),
+  txt(d.querySelector(".grid aside .card .card__title")));
 check("A8", "Recent punches: today and the 4 working days before, newest first, from the store (24 Sep regularized, 22 Sep late)",
   j(recent().map((r) => r.split(" / ").slice(0, 2).concat(r.split(" / ").slice(4)).join(" / "))) === j([
     "Mon, 28 Sep / – / Overdue", "Fri, 25 Sep / " + A.dayFor("EMP-1105", "2026-09-25").checkIn + " / Present",

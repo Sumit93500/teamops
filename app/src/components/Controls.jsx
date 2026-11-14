@@ -1,7 +1,7 @@
 // The design system's controls (D2a). Native elements underneath, so the keyboard, screen readers and phones get their
 // usual behaviour; ds.css draws them from the tokens.
 //   FilterBar     a row of filters with Clear All at its end (disabled while nothing is set)
-//   DateRange     presets Today / Last 7 days / Last 30 days / This month / Custom (two dates); says the range in words
+//   DateRange     presets Today / Last 7 days / This month / Last month / Custom (two dates); says the range in words
 //   FilterSelect  a labelled select;  FilterSearch  a labelled search box
 //   SelectField   a labelled select with an icon, a helper line and a status line ("Check-In From" pattern: the status is a
 //                 dot AND words, e.g. "Online, 47 m away")
@@ -16,14 +16,22 @@ import { ICON, Icon } from "./icons.jsx";
 import "./ds.css";
 
 // ---------- DateRange ----------
-export const PRESETS = [["today", "Today"], ["7d", "Last 7 days"], ["30d", "Last 30 days"], ["month", "This month"], ["custom", "Custom"]];
+// F1: Last month in; Last 30 days out of the list (no page offered it but the gallery; rangeFor still knows "30d").
+export const PRESETS = [["today", "Today"], ["7d", "Last 7 days"], ["month", "This month"], ["lastMonth", "Last month"], ["custom", "Custom"]];
 
-// The dates a preset covers, ending today (ISO, both ends included). Custom keeps the dates given.
+// The dates a preset covers, ending today (ISO, both ends included), except Last month: the whole calendar month before
+// today's (1 Dec to 31 Dec on any day of January). Today is the person's own date (todayIso), so no time zone moves it.
+// Custom keeps the dates given.
 export function rangeFor(preset, today, custom = {}) {
   if (preset === "today") return { from: today, to: today };
   if (preset === "7d") return { from: addDays(today, -6), to: today };
   if (preset === "30d") return { from: addDays(today, -29), to: today };
   if (preset === "month") return { from: `${today.slice(0, 8)}01`, to: today };
+  if (preset === "lastMonth") {
+    const first = `${today.slice(0, 8)}01`;
+    const end = addDays(first, -1);
+    return { from: `${end.slice(0, 8)}01`, to: end };
+  }
   if (preset === "custom") return { from: custom.from ?? "", to: custom.to ?? "" };
   return { from: "", to: "" };
 }

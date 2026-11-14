@@ -291,7 +291,7 @@ mark.A3,mark,"badge 'Not checked in yet'; Check in on, Check out off; no note, n
 mark.A4,mark,work mode: Office pre-selected and changeable,x3 (3 zones)
 mark.A5,mark,punch stats empty: – | – | 0h 00m,x3 (3 zones)
 mark.A6,mark,rule line and shift card from the store's rules,x3 (3 zones)
-mark.A7,mark,"Location card: one honest line, nothing invented",x3 (3 zones)
+mark.A7,mark,"no Location card (F1: removed with its 'not part of this demo' line), nothing invented: the aside starts with Today's shift",x3 (3 zones)
 mark.A8,mark,"Recent punches: today and the 4 working days before, newest first, from the store (24 Sep regularized, 22 Sep late)",x3 (3 zones)
 mark.A9,mark,hours column from the store (22 Sep 10:05–18:20 = 8h 15m),x3 (3 zones)
 mark.A10,mark,"Check in: saved by the store (10:00, office), fixed-text success toast",x3 (3 zones)

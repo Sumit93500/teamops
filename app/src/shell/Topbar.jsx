@@ -19,7 +19,7 @@ import { useToast } from "../ui/Toast.jsx";
 import { SearchBox, SearchOpener } from "./Search.jsx";
 import { initialsFrom } from "./media.js";
 import { SIGN_OUT_ICON } from "./Sidebar.jsx";
-import { toggleBellPanel } from "../ui/ApprovalCard.jsx";
+import { toggleBellPanel, useBellOpen } from "../ui/ApprovalCard.jsx";
 
 const INBOX = "requests/approvals-inbox.html";
 const PALETTE = "M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.2 0-1.1.9-2 2-2h2.5a4.5 4.5 0 0 0 4.5-4.5C22 6.1 17.5 3 12 3M7.5 12h.01M9.5 7.5h.01M14.5 7.5h.01";
@@ -61,17 +61,18 @@ function Bell() {
   const showToast = useToast();
   const inbox = useData(() => canOpenPage(INBOX), [userId, role?.key]);
   const n = useData(() => waitingCount(userId, role?.key), [userId, role?.key]);
+  const open = useBellOpen();
   if (!inbox) {
     return (
       <button className="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications" data-not-implemented="Notifications"
         onClick={(e) => { e.preventDefault(); showToast("Notifications isn't available in this demo.", "info"); }}><Icon d={BELL} /></button>
     );
   }
-  // The list of what waits, and each item's card (ui/ApprovalCard.jsx, round 13b: drawn on <body> by the shell's CardHost,
-  // which sets the bell's aria-expanded/-controls as the old module did).
+  // The list of what waits, and each item's card (ui/ApprovalCard.jsx, round 13b: drawn on <body> by the shell's CardHost).
+  // F1: open or not is one store (useBellOpen), so aria-expanded / -controls always say what's on screen.
   const onClick = (e) => toggleBellPanel(e.currentTarget);
   return (
-    <button className="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-haspopup="dialog" aria-expanded="false"
+    <button className="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-haspopup="dialog" aria-expanded={String(open)} aria-controls={open ? "bell-panel" : undefined}
       aria-label={`Waiting for you: ${n}`} title={`Waiting for you: ${n}`} data-waiting={n > 0 ? "" : undefined}
       onClick={onClick}><Icon d={BELL} /></button>
   );

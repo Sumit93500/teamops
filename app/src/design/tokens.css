@@ -60,13 +60,24 @@
   --ds-shadow-2: 0 2px 6px rgb(15 23 42 / 0.06), 0 8px 24px rgb(15 23 42 / 0.07);
   --ds-shadow-float: 0 10px 30px rgb(15 23 42 / 0.14);
 
-  /* ---------- Charts (D2b): six series colours, each 3:1 or more on every surface; a pattern per series as well, so colour is
-     never the only cue. The map's five steps run light to dark (states are outlined at 3:1; values are in words too) ---------- */
-  --ds-chart-1: #2563eb;  --ds-chart-2: #b25e00;  --ds-chart-3: #0b7a5c;
-  --ds-chart-4: #7c3aed;  --ds-chart-5: #c8382a;  --ds-chart-6: #0e7490;
+  /* ---------- Charts: the shared chart theme (F1; D2b's six colours). Every chart reads these and nothing else:
+     series 1 is the person's accent (--ds-primary: their role's colour or the accent they chose, light or dark), series 2-6
+     are the validated hues below in one fixed order (orange, blue, green, red, violet, cyan) without the hue nearest the
+     accent (the role and accent rules after this block). Each is 3:1 or more on every surface, and each series has a
+     pattern (fills) or a dash (lines) as well, so colour is never the only cue. The map's five steps are series 1 mixed
+     into the card, light to dark (states are outlined at 3:1; values are in words too). ---------- */
+  --ds-hue-orange: #b25e00;  --ds-hue-blue: #2563eb;  --ds-hue-green: #0b7a5c;
+  --ds-hue-red: #c8382a;  --ds-hue-violet: #7c3aed;  --ds-hue-cyan: #0e7490;
+  --ds-chart-1: var(--ds-primary);
+  --ds-chart-2: var(--ds-hue-orange);  --ds-chart-3: var(--ds-hue-green);  --ds-chart-4: var(--ds-hue-red);
+  --ds-chart-5: var(--ds-hue-violet);  --ds-chart-6: var(--ds-hue-cyan);
   --ds-chart-ink: rgb(255 255 255 / 0.7);  /* a pattern's marks over a series colour */
   --ds-chart-grid: #e2e7ef;
-  --ds-seq-1: #dbe8fb;  --ds-seq-2: #a9c7f5;  --ds-seq-3: #6fa1ec;  --ds-seq-4: #3a78d8;  --ds-seq-5: #1d4fa8;
+  --ds-seq-1: color-mix(in srgb, var(--ds-chart-1) 14%, var(--ds-surface-1));
+  --ds-seq-2: color-mix(in srgb, var(--ds-chart-1) 34%, var(--ds-surface-1));
+  --ds-seq-3: color-mix(in srgb, var(--ds-chart-1) 55%, var(--ds-surface-1));
+  --ds-seq-4: color-mix(in srgb, var(--ds-chart-1) 78%, var(--ds-surface-1));
+  --ds-seq-5: var(--ds-chart-1);
   --ds-map-none: #eef1f5;  --ds-map-edge: #7d8794;
 
   /* ---------- Motion ---------- */
@@ -119,17 +130,43 @@
   --ds-hero-bg-top: #1b263c;
   --ds-hero-line: rgb(255 255 255 / 0.12);
 
-  --ds-chart-1: #6ea8ff;  --ds-chart-2: #f5b25c;  --ds-chart-3: #4fd1a5;
-  --ds-chart-4: #b597ff;  --ds-chart-5: #ff8a75;  --ds-chart-6: #5cc8e6;
+  /* the same hues, stepped for the dark card (each 3:1 or more on it); series 1 and the map's steps follow --ds-primary */
+  --ds-hue-orange: #f5b25c;  --ds-hue-blue: #6ea8ff;  --ds-hue-green: #4fd1a5;
+  --ds-hue-red: #ff8a75;  --ds-hue-violet: #b597ff;  --ds-hue-cyan: #5cc8e6;
   --ds-chart-ink: rgb(10 16 28 / 0.6);
   --ds-chart-grid: #233047;
-  --ds-seq-1: #1c2d4a;  --ds-seq-2: #24477a;  --ds-seq-3: #2f66b0;  --ds-seq-4: #4f8ee0;  --ds-seq-5: #8ab8f5;
   --ds-map-none: #182132;  --ds-map-edge: #6f7a8c;
 
   --ds-shadow-1: 0 1px 2px rgb(0 0 0 / 0.35);
   --ds-shadow-2: 0 2px 8px rgb(0 0 0 / 0.4), 0 10px 28px rgb(0 0 0 / 0.35);
   --ds-shadow-float: 0 12px 32px rgb(0 0 0 / 0.55);
   --ds-focus-color: color-mix(in srgb, var(--primary-base) 62%, #ffffff);
+}
+
+/* The chart theme's series 2-6 for each accent (F1): the fixed order without the hue nearest series 1, so neighbouring
+   series stay apart for colour-blind readers too (the validator's adjacent check: CVD delta E 6.7 or more with the
+   patterns, 16.6 or more with full colour vision, light and dark, every role and accent). A role's colour first, then a
+   chosen accent, which wins. Indigo and blue (and the default) drop blue: the :root block above. */
+:root[data-role="hr"] {
+  --ds-chart-2: var(--ds-hue-orange);  --ds-chart-3: var(--ds-hue-blue);  --ds-chart-4: var(--ds-hue-red);  --ds-chart-5: var(--ds-hue-violet);  --ds-chart-6: var(--ds-hue-cyan);
+}
+:root[data-role="fin"] {
+  --ds-chart-2: var(--ds-hue-blue);  --ds-chart-3: var(--ds-hue-green);  --ds-chart-4: var(--ds-hue-red);  --ds-chart-5: var(--ds-hue-violet);  --ds-chart-6: var(--ds-hue-cyan);
+}
+:root[data-accent="indigo"], :root[data-accent="blue"] {
+  --ds-chart-2: var(--ds-hue-orange);  --ds-chart-3: var(--ds-hue-green);  --ds-chart-4: var(--ds-hue-red);  --ds-chart-5: var(--ds-hue-violet);  --ds-chart-6: var(--ds-hue-cyan);
+}
+:root[data-accent="teal"] {
+  --ds-chart-2: var(--ds-hue-orange);  --ds-chart-3: var(--ds-hue-blue);  --ds-chart-4: var(--ds-hue-red);  --ds-chart-5: var(--ds-hue-violet);  --ds-chart-6: var(--ds-hue-cyan);
+}
+:root[data-accent="violet"] {
+  --ds-chart-2: var(--ds-hue-orange);  --ds-chart-3: var(--ds-hue-blue);  --ds-chart-4: var(--ds-hue-green);  --ds-chart-5: var(--ds-hue-red);  --ds-chart-6: var(--ds-hue-cyan);
+}
+:root[data-accent="slate"] {
+  --ds-chart-2: var(--ds-hue-orange);  --ds-chart-3: var(--ds-hue-blue);  --ds-chart-4: var(--ds-hue-green);  --ds-chart-5: var(--ds-hue-red);  --ds-chart-6: var(--ds-hue-violet);
+}
+:root[data-accent="pink"] {
+  --ds-chart-2: var(--ds-hue-orange);  --ds-chart-3: var(--ds-hue-blue);  --ds-chart-4: var(--ds-hue-green);  --ds-chart-5: var(--ds-hue-violet);  --ds-chart-6: var(--ds-hue-cyan);
 }
 
 /* Reduced motion: transitions and animations finish at once, everywhere. */

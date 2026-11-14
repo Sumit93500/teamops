@@ -6,8 +6,15 @@
 // More, through the same flows as the pages' rows (Decision.jsx: the in-app question, the reject note, the same toasts). The
 // card closes as either starts (Reject's note replaces it, as ruled; Approve's question too); when it's done or answered no,
 // focus goes back to what opened the card, or the bell if that's gone.
-import { useEffect, useRef, useState } from "react";
+// F1 (the bell's fix): the shell is drawn again on every page change (each page has its own Frame), so a new CardHost
+// mounts before the old one unmounts. The old one's cleanup used to set the module's host to null AFTER the new one had
+// set it, and nothing drew the new host again, so after any page change in the app the bell (and every card opener) did
+// nothing until a reload. Now the host registers in a layout effect and an unmount clears it only if it is still its
+// own; the list's open state is one small store (useBellOpen) that the bell's aria-expanded and the host both read; the
+// list closes on Esc anywhere, a press outside, a new width and a page change, and focus goes back to the bell.
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "react-router-dom";
 import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
 import { can } from "../../../assets/js/core/rbac.js";
 import { getRequest } from "../../../assets/js/data/leave-store.js";
@@ -78,12 +85,34 @@ export function cardState(kind, id) {
 
 // ---------- the imperative API (the old module's), wired to the mounted host ----------
 
-let host = null;   // { openCard, closeCard, toggleBell, closeBell }
+let host = null;   // { openCard, closeCard }: the mounted CardHost's
 const connected = (node) => !!node && node.isConnected;
+export const BELL_SELECTOR = ".topbar__icon-btn--dot[aria-haspopup]";
+const currentBell = () => document.querySelector(BELL_SELECTOR);
+
+// The bell's list: open or not, in one place. The bell (Topbar.jsx) draws aria-expanded from it, CardHost draws the list.
+let bellOpen = false;
+const bellListeners = new Set();
+function setBellOpen(open) {
+  if (bellOpen === open) return;
+  bellOpen = open;
+  bellListeners.forEach((l) => l());
+}
+const subscribeBell = (l) => { bellListeners.add(l); return () => bellListeners.delete(l); };
+export const useBellOpen = () => useSyncExternalStore(subscribeBell, () => bellOpen);
+
 export function openApprovalCard(kind, id, { opener = document.activeElement, more = true, refresh = null } = {}) { host?.openCard({ kind, id, opener, more, refresh }); }
 export function closeApprovalCard() { host?.closeCard(); }
-export function toggleBellPanel(bell) { host?.toggleBell(bell); }
-export function closeBellPanel(focusBell) { host?.closeBell(focusBell); }
+export function toggleBellPanel(bell) {
+  if (bellOpen) { closeBellPanel(true); return; }
+  if (!connected(bell)) return;
+  setBellOpen(true);
+}
+export function closeBellPanel(focusBell) {
+  if (!bellOpen) return;
+  setBellOpen(false);
+  if (focusBell) currentBell()?.focus();
+}
 export function cardOpener(node, kind, id, options = {}) {
   node.setAttribute("role", "button");
   node.setAttribute("aria-haspopup", "dialog");
@@ -159,24 +188,36 @@ function Card({ card, onClose, decide }) {
   );
 }
 
-function BellPanel({ bell, onClose }) {
+// What waits, newest first; a read that fails (storage that can't be read) gives null, and the list says so.
+function waitingList() {
+  try {
+    return Object.entries(waitingNow()).flatMap(([kind, list]) => list.map((r) => ({ kind, r, since: Date.parse(SINCE[kind](r)) })))
+      .sort((a, b) => b.since - a.since || b.r.id.localeCompare(a.r.id, "en", { numeric: true }));
+  } catch {
+    return null;
+  }
+}
+
+function BellPanel({ onClose }) {
   const ref = useRef(null);
-  const d = useData(() => Object.entries(waitingNow()).flatMap(([kind, list]) => list.map((r) => ({ kind, r, since: Date.parse(SINCE[kind](r)) })))
-    .sort((a, b) => b.since - a.since || b.r.id.localeCompare(a.r.id, "en", { numeric: true })), []);
-  const [pos] = useState(() => { const box = bell.getBoundingClientRect(); return { "--bell-top": `${Math.round(box.bottom + 6)}px`, "--bell-right": `${Math.max(8, Math.round(document.documentElement.clientWidth - box.right))}px` }; });
+  const d = useData(waitingList, []);
+  const [pos] = useState(() => {
+    const box = currentBell()?.getBoundingClientRect();
+    return box ? { "--bell-top": `${Math.round(box.bottom + 6)}px`, "--bell-right": `${Math.max(8, Math.round(document.documentElement.clientWidth - box.right))}px` } : {};
+  });
   useEffect(() => { document.getElementById("bell-panel-title")?.focus(); }, []);
   return (
     <div className="bell-panel" id="bell-panel" role="dialog" aria-labelledby="bell-panel-title" ref={ref} style={pos}
       onClick={(e) => { if (e.target === ref.current) onClose(true); }}
       onKeyDown={(e) => { if (e.key !== "Escape") return; e.preventDefault(); e.stopPropagation(); onClose(true); }}
-      onBlur={(e) => { if (e.relatedTarget && !ref.current.contains(e.relatedTarget) && e.relatedTarget !== bell) onClose(false); }}>
+      onBlur={(e) => { if (e.relatedTarget && !ref.current.contains(e.relatedTarget) && !e.relatedTarget.closest?.(BELL_SELECTOR)) onClose(false); }}>
       <div className="bell-panel__sheet">
         <div className="bell-panel__header"><h2 className="bell-panel__title" id="bell-panel-title" tabIndex={-1}>Waiting for you</h2></div>
-        {d.length ? (
+        {d === null ? <p className="bell-panel__empty" role="status">What's waiting couldn't be read. Reload the page to try again.</p> : d.length ? (
           <ul className="bell-panel__list">
             {d.slice(0, BELL_SHOWN).map(({ kind, r }) => (
               <li key={`${kind}-${r.id}`}>
-                <button className="bell-panel__item" type="button" aria-haspopup="dialog" data-card={kind} onClick={() => openApprovalCard(kind, r.id, { opener: bell })}>
+                <button className="bell-panel__item" type="button" aria-haspopup="dialog" data-card={kind} onClick={() => openApprovalCard(kind, r.id, { opener: currentBell() })}>
                   <span className={`${avatarClass(r.userId)} avatar--sm`}>{initials(nameOf(r.userId))}</span>
                   <span className="bell-panel__text"><span className="bell-panel__name">{nameOf(r.userId)}</span><span className="bell-panel__what">{WHAT[kind](r)}</span></span>
                   <span className="bell-panel__when">{waitingSince(SINCE[kind](r))}</span>
@@ -194,21 +235,15 @@ function BellPanel({ bell, onClose }) {
 // Mounted once by the shell: holds the open card and the bell's list, and draws them on <body>.
 export function CardHost() {
   const [card, setCard] = useState(null);   // { kind, id, item, why, more }
-  const [bell, setBell] = useState(null);   // the bell element while its list is open
+  const open = useBellOpen();
+  const { pathname } = useLocation();
   const opened = useRef({ opener: null, refresh: null, stale: false, width: 0 });
   const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW) };
   const focusBack = () => {
-    const back = connected(opened.current.opener) ? opened.current.opener : document.querySelector(".topbar__icon-btn--dot[aria-haspopup]");
+    const back = connected(opened.current.opener) ? opened.current.opener : currentBell();
     back?.focus?.();
   };
-  const closeBell = (focusBell) => {
-    setBell((b) => {
-      if (!b) return b;
-      b.setAttribute("aria-expanded", "false");
-      if (focusBell) b.focus();
-      return null;
-    });
-  };
+  const closeBell = closeBellPanel;
   const closeCard = ({ focus = true } = {}) => {
     setCard((c) => {
       if (!c) return c;
@@ -217,7 +252,10 @@ export function CardHost() {
       return null;
     });
   };
-  host = {
+  // The imperative API's target: the latest render's functions, registered once this host is in the page. A host that
+  // unmounts clears it only while it is still its own (the next page's host has registered by then).
+  const api = useRef(null);
+  api.current = {
     openCard: ({ kind, id, opener, more, refresh }) => {
       closeBell(false);
       const { item, why } = cardState(kind, id);
@@ -225,19 +263,35 @@ export function CardHost() {
       setCard({ kind, id, item, why, more });
     },
     closeCard: () => closeCard(),
-    toggleBell: (b) => { if (bell) closeBell(true); else if (connected(b)) { opened.current.width = window.innerWidth; b.setAttribute("aria-expanded", "true"); b.setAttribute("aria-controls", "bell-panel"); setBell(b); } },
-    closeBell,
   };
-  useEffect(() => () => { host = null; }, []);
-  // the list: a press outside it or a new width closes it (Chrome for Android's height-only resizes don't)
+  useLayoutEffect(() => {
+    const mine = { openCard: (a) => api.current.openCard(a), closeCard: () => api.current.closeCard() };
+    host = mine;
+    return () => { if (host === mine) host = null; setBellOpen(false); };
+  }, []);
+  // a new page closes the list and the card (focus stays with the new page)
+  const first = useRef(true);
   useEffect(() => {
-    if (!bell) return undefined;
-    const onDown = (e) => { const p = document.getElementById("bell-panel"); if (p?.contains(e.target) || bell.contains(e.target)) return; closeBell(false); };
+    if (first.current) { first.current = false; return; }
+    closeBell(false);
+    closeCard({ focus: false });
+  }, [pathname]);   // eslint-disable-line react-hooks/exhaustive-deps
+  // the list: a press outside it (and outside the bell, whose own click toggles it), Esc anywhere, or a new width closes
+  // it (Chrome for Android's height-only resizes don't)
+  useEffect(() => {
+    if (!open) return undefined;
+    opened.current.width = window.innerWidth;
+    const onDown = (e) => {
+      if (document.getElementById("bell-panel")?.contains(e.target) || e.target.closest?.(BELL_SELECTOR)) return;
+      closeBell(false);
+    };
+    const onKey = (e) => { if (e.key === "Escape") { e.preventDefault(); closeBell(true); } };
     const onResize = () => { if (window.innerWidth !== opened.current.width) closeBell(false); };
     document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
     window.addEventListener("resize", onResize);
-    return () => { document.removeEventListener("pointerdown", onDown); window.removeEventListener("resize", onResize); };
-  }, [bell]);   // eslint-disable-line react-hooks/exhaustive-deps
+    return () => { document.removeEventListener("pointerdown", onDown); document.removeEventListener("keydown", onKey); window.removeEventListener("resize", onResize); };
+  }, [open]);
 
   // Approve / Reject from the card: it closes as either starts; focus comes back when it's done or answered no.
   const decide = async (which) => {
@@ -249,7 +303,7 @@ export function CardHost() {
   };
   return (
     <>
-      {bell && createPortal(<BellPanel bell={bell} onClose={closeBell} />, document.body)}
+      {open && createPortal(<BellPanel onClose={closeBell} />, document.body)}
       {card && createPortal(<Card card={card} onClose={() => closeCard()} decide={decide} />, document.body)}
       {Object.values(flows).map((f, i) => <span key={i} style={{ display: "contents" }}>{f.modal}</span>)}
     </>

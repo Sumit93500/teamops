@@ -258,3 +258,59 @@ export function departmentPresenceChart(date, rows, scope) {
     ],
   };
 }
+
+// F1: the months ending with today's, oldest first, as "YYYY-MM" (count of
+// them, 1 or more).
+function monthsUpTo(today, count) {
+  const y = Number(today.slice(0, 4));
+  const m = Number(today.slice(5, 7));
+  return Array.from({ length: count }, (_, i) => {
+    const k = y * 12 + (m - 1) - (count - 1 - i);
+    return `${Math.floor(k / 12)}-${String((k % 12) + 1).padStart(2, "0")}`;
+  });
+}
+
+// F1: the HR dashboard's leave requests sent per month, for the months
+// ending with today's (this month so far): every request in the store,
+// counted in the month it was sent (appliedOn), whatever its status. Labels
+// are "YYYY-MM"; marks say which month is today's (still filling in).
+// Empty when no request was sent in any of the months.
+export function leaveRequestsByMonthChart(today, months) {
+  const labels = monthsUpTo(today, months);
+  const perMonth = new Map();
+  allRequests().forEach((r) => {
+    const key = String(r.appliedOn ?? "").slice(0, 7);
+    perMonth.set(key, (perMonth.get(key) ?? 0) + 1);
+  });
+  const values = labels.map((month) => perMonth.get(month) ?? 0);
+  return {
+    ...emptyAs(sum(values) === 0, "no-records"),   // empty: no request sent in any month of the range
+    title: "Leave requests sent per month",
+    unit: "requests",
+    period: { from: `${labels[0]}-01`, to: today },
+    labels,
+    series: [series("Requests", values)],
+    marks: labels.map((month) => ({ current: month === today.slice(0, 7) })),
+  };
+}
+
+// F1: the finance dashboard's payroll cost per month: runs is the month's
+// run of record for each month, oldest first, as the payroll run page reads
+// it (its stored run if it has one, else worked out live: a draft). Gross
+// pay summed over every row (on-hold rows too, as runTotals() does); a month
+// whose run has no rows has no value (null). Labels are "YYYY-MM"; marks say
+// whether each month's figures are final (an approved run). Empty when no
+// month has a gross above 0 (nobody in a run, or nobody with a salary on file:
+// as payrollByDepartmentChart).
+export function payrollByMonthChart(runs) {
+  const values = runs.map((run) => (run?.rows?.length ? run.rows.reduce((total, r) => total + r.gross, 0) : null));
+  return {
+    ...emptyAs(values.every((v) => !v), "no-records"),   // empty: no gross pay in any month
+    title: "Payroll cost per month",
+    unit: "₹",
+    period: { from: runs[0]?.month ?? null, to: runs.at(-1)?.month ?? null },
+    labels: runs.map((run) => run?.month ?? ""),
+    series: [series("Gross pay", values)],
+    marks: runs.map((run) => ({ final: run?.status === "approved" })),
+  };
+}

@@ -92,7 +92,7 @@ react-att3.C3,react-att3,"check-out in the overlap: Check-Out From shows the che
 react-att3.C4,react-att3,"checked out at the office, not flagged (the nearer home isn't taken for a move)",x1
 react-att3.C5,react-att3,"inside both, home chosen: the line measures home (40 m)",x1
 react-att3.C6,react-att3,"checked in: the record names home (40 m), work from home",x1
-react-att3.C7,react-att3,"then at the office only: Check-Out From shows home, 200 m away; the flagged notice names the office",x1
+react-att3.C7,react-att3,"then at the office only: Check-Out From shows home; the line says where the check-out counts (the office, 100 m, allowed: F1); the flagged notice names the office",x1
 react-att3.C8,react-att3,"a check-out at another of your places still works when asked: the office named, flagged place-changed",x1
 react-att3.X0,react-att3,the flagged day from T is there to read,x1
 react-att3.X1,react-att3,"hr: one file; its columns: Employee, Employee ID, Department, Check-in, Place, Hours, This week, Status, Flagged",x2 (2 roles)
@@ -123,13 +123,13 @@ react-att3.W.412.dark,react-att3,"dashboard/hr.html at 412, dark: no sideways sc
 react-att3.E,react-att3,no page or console errors,x1
 react-charts.L.1280.light,react-charts,"every chart and the map drawn, named, read out, tabled; no sideways scroll",x1
 react-charts.L.1280.dark,react-charts,"every chart and the map drawn, named, read out, tabled; no sideways scroll",x1
-react-charts.D.1280,react-charts,dark: series 1 is the dark token (#6ea8ff),x1
+react-charts.D.1280,react-charts,dark: series 1 is dark's accent (--ds-primary),x1
 react-charts.L.412.light,react-charts,"every chart and the map drawn, named, read out, tabled; no sideways scroll",x1
 react-charts.T.bar,react-charts,412: a tapped bar is read out,x1
 react-charts.T.donut,react-charts,412: a tapped donut part is read out,x1
 react-charts.T.map,react-charts,"412: a tapped state is read out, with its tooltip",x1
 react-charts.L.412.dark,react-charts,"every chart and the map drawn, named, read out, tabled; no sideways scroll",x1
-react-charts.D.412,react-charts,dark: series 1 is the dark token (#6ea8ff),x1
+react-charts.D.412,react-charts,dark: series 1 is dark's accent (--ds-primary),x1
 react-charts.C1,react-charts,"empty: ""No data in this range."", no plot, no table",x1
 react-charts.C2,react-charts,"one point: one bar, read out",x1
 react-charts.C3,react-charts,many points: 365; Last 7 days: 7 (22 to 28 Sep); Clear All: 365 and off,x1
@@ -186,6 +186,133 @@ react-design.P.errors/404.html.1280,react-design,"errors/404.html: company brand
 react-design.P.errors/404.html.412,react-design,"errors/404.html: company brand, footer after main, tab title",x1
 react-design.R,react-design,reduced motion: transitions finish at once; without it they run,x1
 react-design.E,react-design,no page or console errors,x1
+react-f1.B1.1440,react-f1,"1440: at least 30 open / close cycles across page changes, every one right",x1
+react-f1.B1.1280,react-f1,"1280: at least 30 open / close cycles across page changes, every one right",x1
+react-f1.B1.1024,react-f1,"1024: at least 30 open / close cycles across page changes, every one right",x1
+react-f1.B2.expanded,react-f1,"sidebar expanded: after a page change the list opens inside the window, on top",x1
+react-f1.B2.collapsed,react-f1,"sidebar collapsed: after a page change the list opens inside the window, on top",x1
+react-f1.B3,react-f1,"signed out, then in as HR from the sign-in page: the bell opens its list",x1
+react-f1.B4,react-f1,"out and in again as Admin, then a page change: the list still opens",x1
+react-f1.B5,react-f1,"an item opens its card (the list closes); Esc closes the card, focus on the bell",x1
+react-f1.B6,react-f1,the list shows as many as the bell says (up to 5),x1
+react-f1.B7,react-f1,"storage blocked: the list opens with words (the list, nothing waiting, or that it couldn't be read)",x1
+react-f1.B8,react-f1,after another tab's write and a page change: the list opens,x1
+react-f1.B9,react-f1,nothing waiting: the list opens and says so,x1
+react-f1.H1.f,react-f1,"HR (first load): leave requests per month, Jun to Nov 2026, the seed's real counts",x1
+react-f1.H2.f,react-f1,"HR (first load): bars drawn (3 with a value), no empty message, the card's words",x1
+react-f1.H1.r,react-f1,"HR (after a reload): leave requests per month, Jun to Nov 2026, the seed's real counts",x1
+react-f1.H2.r,react-f1,"HR (after a reload): bars drawn (3 with a value), no empty message, the card's words",x1
+react-f1.H3,react-f1,"HR in June 2028 (no request in the 6 months): ""No data in this range.""",x1
+react-f1.H4.f,react-f1,"Finance (first load): monthly payroll cost, Jun to Nov 2026, every month a rupee value; November equals the Payroll stat",x1
+react-f1.H5.f,react-f1,"Finance (first load): 6 month bars drawn, no empty message",x1
+react-f1.H6.f,react-f1,"Finance (first load): gross by department matches the run's rows (Engineering ₹4,58,000)",x1
+react-f1.H7.f,react-f1,Finance (first load): department bars drawn,x1
+react-f1.H4.r,react-f1,"Finance (after a reload): monthly payroll cost, Jun to Nov 2026, every month a rupee value; November equals the Payroll stat",x1
+react-f1.H5.r,react-f1,"Finance (after a reload): 6 month bars drawn, no empty message",x1
+react-f1.H6.r,react-f1,"Finance (after a reload): gross by department matches the run's rows (Engineering ₹4,58,000)",x1
+react-f1.H7.r,react-f1,Finance (after a reload): department bars drawn,x1
+react-f1.H8,react-f1,the Admin's headcount and attendance-rate charts still draw,x1
+react-f1.H9,react-f1,the Employee's working hours chart still draws,x1
+react-f1.H10.412,react-f1,"Finance at 412: both charts have room and stay inside the window, no sideways scroll",x1
+react-f1.H10.768,react-f1,"Finance at 768: both charts have room and stay inside the window, no sideways scroll",x1
+react-f1.C1.light.role,react-f1,"light.role: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.light.role,react-f1,light.role: every series colour 3:1 or more on the card,x1
+react-f1.C3.light.role,react-f1,light.role: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.light.role,react-f1,light.role: the map's five steps run from the card to series 1 (darker each step),x1
+react-f1.C1.light.indigo,react-f1,"light.indigo: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.light.indigo,react-f1,light.indigo: every series colour 3:1 or more on the card,x1
+react-f1.C3.light.indigo,react-f1,light.indigo: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.light.indigo,react-f1,light.indigo: the map's five steps run from the card to series 1 (darker each step),x1
+react-f1.C1.light.blue,react-f1,"light.blue: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.light.blue,react-f1,light.blue: every series colour 3:1 or more on the card,x1
+react-f1.C3.light.blue,react-f1,light.blue: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.light.blue,react-f1,light.blue: the map's five steps run from the card to series 1 (darker each step),x1
+react-f1.C1.light.teal,react-f1,"light.teal: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.light.teal,react-f1,light.teal: every series colour 3:1 or more on the card,x1
+react-f1.C3.light.teal,react-f1,light.teal: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.light.teal,react-f1,light.teal: the map's five steps run from the card to series 1 (darker each step),x1
+react-f1.C1.light.violet,react-f1,"light.violet: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.light.violet,react-f1,light.violet: every series colour 3:1 or more on the card,x1
+react-f1.C3.light.violet,react-f1,light.violet: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.light.violet,react-f1,light.violet: the map's five steps run from the card to series 1 (darker each step),x1
+react-f1.C1.light.slate,react-f1,"light.slate: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.light.slate,react-f1,light.slate: every series colour 3:1 or more on the card,x1
+react-f1.C3.light.slate,react-f1,light.slate: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.light.slate,react-f1,light.slate: the map's five steps run from the card to series 1 (darker each step),x1
+react-f1.C1.light.pink,react-f1,"light.pink: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.light.pink,react-f1,light.pink: every series colour 3:1 or more on the card,x1
+react-f1.C3.light.pink,react-f1,light.pink: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.light.pink,react-f1,light.pink: the map's five steps run from the card to series 1 (darker each step),x1
+react-f1.C5.light,react-f1,"light: the Admin's role colour (indigo) and six accents: six different series 1 colours, none fixed",x1
+react-f1.C6.light,react-f1,light: a change of accent in another tab recolours this tab's chart,x1
+react-f1.C1.dark.role,react-f1,"dark.role: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.dark.role,react-f1,dark.role: every series colour 3:1 or more on the card,x1
+react-f1.C3.dark.role,react-f1,dark.role: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.dark.role,react-f1,dark.role: the map's five steps run from the card to series 1 (lighter each step),x1
+react-f1.C1.dark.indigo,react-f1,"dark.indigo: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.dark.indigo,react-f1,dark.indigo: every series colour 3:1 or more on the card,x1
+react-f1.C3.dark.indigo,react-f1,dark.indigo: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.dark.indigo,react-f1,dark.indigo: the map's five steps run from the card to series 1 (lighter each step),x1
+react-f1.C1.dark.blue,react-f1,"dark.blue: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.dark.blue,react-f1,dark.blue: every series colour 3:1 or more on the card,x1
+react-f1.C3.dark.blue,react-f1,dark.blue: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.dark.blue,react-f1,dark.blue: the map's five steps run from the card to series 1 (lighter each step),x1
+react-f1.C1.dark.teal,react-f1,"dark.teal: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.dark.teal,react-f1,dark.teal: every series colour 3:1 or more on the card,x1
+react-f1.C3.dark.teal,react-f1,dark.teal: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.dark.teal,react-f1,dark.teal: the map's five steps run from the card to series 1 (lighter each step),x1
+react-f1.C1.dark.violet,react-f1,"dark.violet: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.dark.violet,react-f1,dark.violet: every series colour 3:1 or more on the card,x1
+react-f1.C3.dark.violet,react-f1,dark.violet: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.dark.violet,react-f1,dark.violet: the map's five steps run from the card to series 1 (lighter each step),x1
+react-f1.C1.dark.slate,react-f1,"dark.slate: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.dark.slate,react-f1,dark.slate: every series colour 3:1 or more on the card,x1
+react-f1.C3.dark.slate,react-f1,dark.slate: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.dark.slate,react-f1,dark.slate: the map's five steps run from the card to series 1 (lighter each step),x1
+react-f1.C1.dark.pink,react-f1,"dark.pink: series 1 is the accent; the headcount bars and the old column bars are drawn in it, at once",x1
+react-f1.C2.dark.pink,react-f1,dark.pink: every series colour 3:1 or more on the card,x1
+react-f1.C3.dark.pink,react-f1,dark.pink: neighbouring series apart for colour-blind readers (6+) and with full colour vision (15+),x1
+react-f1.C4.dark.pink,react-f1,dark.pink: the map's five steps run from the card to series 1 (lighter each step),x1
+react-f1.C5.dark,react-f1,"dark: the Admin's role colour (indigo) and six accents: six different series 1 colours, none fixed",x1
+react-f1.C6.dark,react-f1,dark: a change of accent in another tab recolours this tab's chart,x1
+react-f1.C7,react-f1,light to dark from the header: the bars recolour at once to dark's series 1,x1
+react-f1.C8.light,react-f1,hr light: the role's colour draws the leave-chart bars,x1
+react-f1.C8.dark,react-f1,hr dark: the role's colour draws the leave-chart bars,x1
+react-f1.C8.light#2,react-f1,fin light: the role's colour draws the fin-monthly-chart bars,x1
+react-f1.C8.dark#2,react-f1,fin dark: the role's colour draws the fin-monthly-chart bars,x1
+react-f1.M1,react-f1,"admin: the dashboard has Mark attendance, and it opens the page",x5 (5 roles)
+react-f1.P1.40,react-f1,"40 m north: ""You are 40 m from Head office, check-in allowed""",x1
+react-f1.P1.150,react-f1,"150 m north: ""You are 150 m from Head office, check-in allowed""",x1
+react-f1.P1.2300,react-f1,"2300 m north: ""You are 2.3 km from Head office (limit 150 m), check-in not allowed""",x1
+react-f1.P1.151,react-f1,"151 m north: ""You are 151 m from Head office (limit 150 m), check-in not allowed""",x1
+react-f1.P2,react-f1,"after checking in, the check-out line: ""You are 40 m from Head office, check-out allowed""",x1
+react-f1.P3,react-f1,"the old ""Location and network checks aren't part of this demo"" sentence is nowhere on the page",x1
+react-f1.O1,react-f1,"the Admin's Check-In From: the head office and every active branch, not the inactive one",x1
+react-f1.O2,react-f1,"Pune chosen, 50 m from it: ""You are 50 m from Pune branch, check-in allowed""",x1
+react-f1.O3,react-f1,"checked in at Pune: the record names the branch (""Pune branch, 50 m"")",x1
+react-f1.O4,react-f1,"at the head office with Mumbai chosen: the check is against Mumbai, not allowed",x1
+react-f1.O5,react-f1,"hr: only their own office, as before",x3 (3 roles)
+react-f1.O6,react-f1,"the user form's Work location: every active office, then Remote; the head office chosen for someone new",x1
+react-f1.O7,react-f1,the user form's Office: the active offices only,x1
+react-f1.O8,react-f1,"editing someone whose saved location isn't an office (""Gurugram office""): kept and chosen, after the offices and Remote",x1
+react-f1.D1,react-f1,"the presets: All dates, Today, Last 7 days, This month, Last month, Custom",x1
+react-f1.D2,react-f1,"Last month, mid-November: ""1 Oct to 31 Oct 2026""",x1
+react-f1.D3,react-f1,"Last month, January: December of last year: ""1 Dec to 31 Dec 2026""",x1
+react-f1.D4,react-f1,"Last month, March: a 28-day February: ""1 Feb to 28 Feb 2026""",x1
+react-f1.D5,react-f1,"Last month, 1 March 2028: a leap February: ""1 Feb to 29 Feb 2028""",x1
+react-f1.D6,react-f1,"Last month, 00:30 on 1 Dec in India: November: ""1 Nov to 30 Nov 2026""",x1
+react-f1.D7,react-f1,"Last month, the same moment in Los Angeles (still 30 Nov): October: ""1 Oct to 31 Oct 2026""",x1
+react-f1.D8,react-f1,"Last month, the same moment in UTC (30 Nov 19:00): October: ""1 Oct to 31 Oct 2026""",x1
+react-f1.D10,react-f1,"Last month, 06:00 on 1 Dec in India, 00:30 on 1 Dec in UTC: November: ""1 Nov to 30 Nov 2026""",x1
+react-f1.D9,react-f1,This month and Last 7 days as before,x1
+react-f1.K1,react-f1,"the bell by Enter: the list opens with focus on its title; Esc closes it, focus on the bell",x1
+react-f1.K2,react-f1,admin: Mark attendance is in the Tab order with a focus ring,x3 (3 roles)
+react-f1.E1.light,react-f1,hr light: the new text is 4.5:1 or more,x3 (3 roles)
+react-f1.E2.light,react-f1,light: the place line (not allowed) is 4.5:1 or more,x1
+react-f1.E1.dark,react-f1,hr dark: the new text is 4.5:1 or more,x3 (3 roles)
+react-f1.E2.dark,react-f1,dark: the place line (not allowed) is 4.5:1 or more,x1
+react-f1.W1,react-f1,shots taken,x1
+react-f1.X1,react-f1,no page or console errors,x1
 react-fin.G1,react-fin,admin on payroll/salary-structure.html: as it opens,x2 (2 roles)
 react-fin.G2,react-fin,"admin: search, department, no matches; Breakdown on the third row",x2 (2 roles)
 react-fin.G3,react-fin,"admin: Export: the employee salaries file byte for byte (the components file is gone with the table, P4a)",x2 (2 roles)
@@ -544,7 +671,7 @@ react-prefs.M1,react-prefs,"Match the device: dark on a dark device, light the m
 react-prefs.D1,react-prefs,"compact: shorter rows, less cell padding, smaller buttons; the text size unchanged",x1
 react-prefs.D2,react-prefs,text size: small < default < large for the table text and the heading,x1
 react-prefs.D3,react-prefs,"the charts' text follows the text size (large: 13 px axis labels, 12 by default)",x1
-react-prefs.A1,react-prefs,"Teal: the primary colour, the header and the primary button change; the charts' first series colour doesn't",x1
+react-prefs.A1,react-prefs,"Teal: the primary colour, the header, the primary button and (F1) the charts' first series change",x1
 react-prefs.N1,react-prefs,"the first load: the signed-in person (HR) keeps the old dark + pink, now as their own record; the marker is set",x1
 react-prefs.N2,react-prefs,"a second person on the same browser (Admin, nothing saved) starts at the defaults, not HR's dark + pink: light (the device's), the role's colour, Match the device chosen, Reset off, nothing written for them",x1
 react-prefs.N3,react-prefs,back to HR: still dark + pink (Admin's teal didn't reach them); a third person (Finance) is at the defaults though the old keys now say Admin's choice,x1

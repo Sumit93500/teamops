@@ -13,7 +13,7 @@ import { lazy, Suspense, useId, useMemo, useState } from "react";
 import { NO_DATA } from "../Basics.jsx";
 import { FilterBar, DateRange } from "../Controls.jsx";
 import { ICON, Icon } from "../icons.jsx";
-import { formatDay } from "../../../../assets/js/ui/leave-view.js";
+import { formatDay, monthShort } from "../../../../assets/js/ui/leave-view.js";
 import { Swatch, cleanId } from "./patterns.jsx";
 import "./charts.css";
 
@@ -33,7 +33,13 @@ export function withUnit(v, unit) {
   return `${n} ${Math.abs(v) === 1 && unit.endsWith("s") ? unit.slice(0, -1) : unit}`;
 }
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
-export const labelText = (l) => (ISO.test(String(l)) ? formatDay(l, false) : String(l));
+const MONTH = /^\d{4}-\d{2}$/;   // F1: a month ("2026-11") reads "Nov 2026"
+export const labelText = (l) => (ISO.test(String(l)) ? formatDay(l, false) : MONTH.test(String(l)) ? `${monthShort(`${l}-01`)} ${String(l).slice(0, 4)}` : String(l));
+// F1: two months in words, the year once when they share it: "Jun – Nov 2026", "Sep 2026 – Feb 2027"
+export function monthSpan(from, to) {
+  const [a, b] = [labelText(from), labelText(to)];
+  return String(from).slice(0, 4) === String(to).slice(0, 4) ? `${a.slice(0, -5)} – ${b}` : `${a} – ${b}`;
+}
 const pct = (part, whole) => (whole ? Math.round((part / whole) * 1000) / 10 : 0);
 
 // ---------- the frame ----------
@@ -46,7 +52,7 @@ function Frame({ id, label, summary, empty, above, legend, table, describe, init
     return (
       <div className={`ds-chart ds-chart--empty ${className}`} id={id} data-chart={label}>
         {above}
-        <div className="ds-chart__empty" role="status"><Icon d={ICON.pulse} /><span>{NO_DATA}</span></div>
+        <div className="ds-chart__empty" role="status" data-no-data=""><Icon d={ICON.pulse} /><span>{NO_DATA}</span></div>
       </div>
     );
   }
@@ -125,15 +131,17 @@ export function AreaChart({ chart, id, label = chart.title, height = 260, dateFi
 
 // ---------- BarChart ----------
 // horizontal: bars run left to right with the labels beside them (long names); stacked: series on top of each other.
-export function BarChart({ chart, id, label = chart.title, height, horizontal = false, stacked = false, labelHeader = "Item" }) {
+// latest (F1): the labels are in time order (months), so the readout starts at the latest point with a value, not the highest.
+export function BarChart({ chart, id, label = chart.title, height, horizontal = false, stacked = false, labelHeader = "Item", latest = false }) {
   const data = useMemo(() => rowsOf(chart, chart.labels.map((_, i) => i)), [chart]);
   const n = chart.series.length;
   const empty = Boolean(chart.empty) || !data.some((r) => hasValue(r, n));
   const totals = data.map((r) => chart.series.reduce((t, _, k) => t + (r[`s${k}`] ?? 0), 0));
   const top = totals.indexOf(Math.max(...totals));
+  const last = data.map((r, i) => (hasValue(r, n) ? i : -1)).filter((i) => i >= 0).at(-1);
   const h = height ?? (horizontal ? Math.max(120, data.length * (n > 1 && !stacked ? 18 * n + 14 : 34) + 40) : 260);
   return (
-    <Frame id={id} label={label} empty={empty} className="ds-chart--bar" count={data.length} initial={top >= 0 ? top : null} initialWord="Highest"
+    <Frame id={id} label={label} empty={empty} className="ds-chart--bar" count={data.length} initial={latest ? last ?? null : top >= 0 ? top : null} initialWord={latest ? "Latest" : "Highest"}
       summary={`${label}: ${stacked ? "stacked " : n > 1 ? "grouped " : ""}bar chart, ${data.length} ${data.length === 1 ? "bar" : "bars"}${n > 1 ? ` of ${chart.series.map((s) => s.name).join(" and ")}` : ""}. Arrow keys read each bar.`}
       describe={(i) => pointWords(chart, data[i]) + (stacked && n > 1 ? `; total ${withUnit(totals[i], chart.unit)}` : "")}
       legend={fillLegend(chart)} table={seriesTable(chart, data, labelHeader)}>

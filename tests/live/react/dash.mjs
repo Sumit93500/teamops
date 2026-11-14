@@ -7,6 +7,10 @@
 //   Z  the empty states (new only; the old page draws a chart of zeros): admin with everyone joining tomorrow, employee as a new
 //      joiner: "No data in this range." in the chart's place, the range and note kept; the other cards unchanged
 //   S  shots: each dashboard at 1280 and 412, light and dark, old and new; and each empty state
+// F1 (ruled): read past on both sides, checked in f1.mjs instead: the dashboards' new Mark attendance button, HR's leave chart
+// card (now per month, 6 months) and Finance's Monthly payroll cost card (now a chart); Finance's departments read as
+// "<department> <amount>" pairs like the headcount (old: bar rows, new: the chart's data table). The empty states are read
+// before that, so Y sees the new charts' "No data in this range." (Finance with no salaries: both its charts).
 import { createRequire } from "node:module";
 import { spawn } from "node:child_process";
 import path from "node:path";
@@ -58,12 +62,17 @@ const read = (t) => t.evaluate(() => {
   const flaggedCard = m.querySelector("#flagged-card");
   const flaggedAt = flaggedCard ? [flaggedCard.parentNode, flaggedCard.nextSibling] : null;
   flaggedCard?.remove();
+  const noData = [...m.querySelectorAll("[data-no-data]")].map((e) => e.innerText.replace(/\s+/g, " ").trim());
+  // F1: the two changed chart cards, out for the read and back after
+  const f1Cards = [...m.querySelectorAll("section.card")].filter((s) => s.querySelector("#leave-chart") || s.querySelector(".card__title")?.textContent === "Monthly payroll cost")
+    .map((c) => [c, c.parentNode, c.nextSibling]);
+  f1Cards.forEach(([c]) => c.remove());
   const vis = (e) => Boolean(e) && e.getClientRects().length > 0;
   const tx = (e) => (e ? e.innerText.replace(/\s+/g, " ").trim() : null);
   const chart = m.querySelector(".chart");
   const out = {
     h1: tx(m.querySelector(".page-header h1")), sub: tx(m.querySelector(".page-header__subtitle")),
-    buttons: [...m.querySelectorAll(".page-header__actions .btn")].filter(vis).map(tx),
+    buttons: [...m.querySelectorAll(".page-header__actions .btn")].filter((b) => vis(b) && b.id !== "dash-mark").map(tx),
     stats: [...m.querySelectorAll(".stat")].map((s) => [s.dataset.stat, vis(s), tx(s.querySelector(".stat__label")), tx(s.querySelector(".stat__value")), tx(s.querySelector(".stat__delta")), s.querySelector(".stat__delta")?.className ?? null]),
     chartLabel: chart?.getAttribute("aria-label") ?? null,
     bars: chart ? [...chart.querySelectorAll(".chart__bar")].map((b) => [b.title, b.className.replace("chart__bar", "").trim().replace("chart__bar--", ""), b.style.getPropertyValue("--h")]) : null,
@@ -71,14 +80,15 @@ const read = (t) => t.evaluate(() => {
     metas: [...m.querySelectorAll(".card__meta")].map(tx), notes: [...m.querySelectorAll(".card__body > p.text-xs")].map(tx),
     // D2b: the headcount card is the design system's BarChart on the new side; both sides are read as "<department> <count>"
     // pairs (old: the bar rows; new: the chart's data table), so the text compares exactly and the drawing doesn't
-    cards: [...m.querySelectorAll(".list, .activity, #headcount-bars, #balance-card")].map((c) => [c.id || c.className, c.id !== "headcount-bars" ? tx(c)
+    cards: [...m.querySelectorAll(".list, .activity, #headcount-bars, #fin-dept-bars, #balance-card")].map((c) => [c.id || c.className, c.id !== "headcount-bars" && c.id !== "fin-dept-bars" ? tx(c)
       : c.querySelector(".bar-row") ? [...c.querySelectorAll(".bar-row")].map((r) => `${tx(r.firstElementChild)} ${tx(r.querySelector(".bar-row__value"))}`).join(" ")
       : [...c.querySelectorAll(".ds-chart__table tbody tr")].map((r) => [...r.cells].map(tx).join(" ")).join(" ")]),
     links: [...m.querySelectorAll(".card__header a, .list__item a")].map((a) => [tx(a), new URL(a.href).pathname]),
     tables: [...m.querySelectorAll("table:not(.ds-chart__table)")].map((tb) => [[...tb.querySelectorAll("thead th")].map(tx), [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map(tx))]),
     footer: tx(m.querySelector(".card__footer .card__meta")),
-    noData: [...m.querySelectorAll("[data-no-data]")].map(tx),
+    noData,
   };
+  f1Cards.reverse().forEach(([c, parent, next]) => parent.insertBefore(c, next));
   if (flaggedAt) flaggedAt[0].insertBefore(flaggedCard, flaggedAt[1]);
   return out;
 });
@@ -228,13 +238,14 @@ if (ONLY.includes("Y")) {
   console.log("\n--- Y. Round 7's empty states (new only) ---");
   const EMPTY_LEAVE = () => { const box = JSON.parse(localStorage.getItem("officeos:leave-requests")); box.records = []; localStorage.setItem("officeos:leave-requests", JSON.stringify(box)); };
   const EMPTY_SALARIES = () => { const box = JSON.parse(localStorage.getItem("officeos:salaries")); box.records = []; localStorage.setItem("officeos:salaries", JSON.stringify(box)); };
-  for (const [n, who, page, prep, sel] of [["Y1", "hr", "dashboard/hr.html", EMPTY_LEAVE, "#leave-rows"], ["Y2", "fin", "dashboard/finance.html", EMPTY_SALARIES, "#fin-run-rows"], ["Y3", "admin", "dashboard/finance.html", EMPTY_SALARIES, "#fin-run-rows"]]) {
+  // F1: Finance with no salaries has two charts with nothing in them (the monthly cost and the departments)
+  for (const [n, who, page, prep, sel, count] of [["Y1", "hr", "dashboard/hr.html", EMPTY_LEAVE, "#leave-rows", 1], ["Y2", "fin", "dashboard/finance.html", EMPTY_SALARIES, "#fin-run-rows", 2], ["Y3", "admin", "dashboard/finance.html", EMPTY_SALARIES, "#fin-run-rows", 2]]) {
     const live = await open(N, who, page);
     const before = await read(live.t);
     const z = await open(N, who, page, { prep });
     const after = await read(z.t);
     const rowsText = await z.t.evaluate((s) => document.querySelector(s)?.innerText.replace(/\s+/g, " ").trim().slice(0, 80), sel);
-    const ok = before.noData.length === 0 && j(after.noData) === j(["No data in this range."]) && !z.errs.length;
+    const ok = before.noData.length === 0 && j(after.noData) === j(Array(count).fill("No data in this range.")) && !z.errs.length;
     check(n, `${who} on ${page}: "No data in this range." in the chart's place`, ok, j({ before: before.noData, after: after.noData, rows: rowsText, errs: z.errs }));
     await z.t.screenshot({ path: path.join(SHOTS, `empty-${page.split("/")[1].replace(".html", "")}-${who}-1280-new.png`), fullPage: true });
     await live.ctx.close(); await z.ctx.close();

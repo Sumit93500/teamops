@@ -3,10 +3,13 @@
 // card (the page's own note), expense claims waiting for the person (the approval card's Review), gross pay by department
 // ("No data in this range." when no department has gross pay, round 5's rule), recent expense activity, and the run's
 // employees (the search box filters the rows as ui/table-filter.js did; Export).
+// F1: the Monthly payroll cost card was a note ("Not charted yet"), so the dashboard had no graph: it now charts the gross pay
+// of the last 6 months, each month's run as the payroll run page reads it (approved: its saved figures; else worked out live,
+// a draft), and the department card draws with the same design-system BarChart as the Admin's headcount (the shared chart
+// theme). The header has Mark attendance, as the Employee dashboard has.
 import { useEffect, useLayoutEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import pageHtml from "../../../pages/dashboard/finance.html?raw";
-import { runMonth, payrollRun, runTotals, payslipTotals } from "../../../assets/js/data/payroll-store.js";
+import { runMonth, payrollRun, storedRun, runTotals, payslipTotals } from "../../../assets/js/data/payroll-store.js";
 import { csvValue, csvColumns, csvStat, initExports } from "../../../assets/js/ui/csv-export.js";
 import { filingDates } from "../../../assets/js/data/payroll.js";
 import { getUser } from "../../../assets/js/data/store.js";
@@ -15,13 +18,12 @@ import { resolvePageLink } from "../../../assets/js/core/paths.js";
 import { STAGE_NAME, categoryLabel } from "../../../assets/js/ui/expense-view.js";
 import { cardLink } from "../ui/ApprovalCard.jsx";
 import { el, plural, departmentName, personCell, nameOf, initials, avatarClass, formatDay, localDateOf, todayIso, monthShort, showReason } from "../../../assets/js/ui/leave-view.js";
-import { barRow } from "../../../assets/js/ui/chart.js";
-import { payrollByDepartmentChart, valuesOf } from "../../../assets/js/data/chart-data.js";
+import { payrollByDepartmentChart, payrollByMonthChart } from "../../../assets/js/data/chart-data.js";
 import { rupees } from "../../../assets/js/ui/money.js";
 import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
-import { NoData } from "../components/Charts.jsx";
+import { BarChart, monthSpan } from "../components/charts/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
@@ -33,13 +35,17 @@ const ROW_STATUS = { draft: { label: "Draft", badge: "badge badge--warning badge
 const ICONS = {
   payroll: "M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-4v4M17 14h1", reimbursements: "M3 6h18v12H3zM3 10h18",
   tds: "M19 5 5 19M6.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M17.5 20a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5", net: "M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6",
+  mark: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6",
 };
-// The monthly cost card's words, from the old page.
-const COST_NOTE = (() => {
-  const doc = new DOMParser().parseFromString(pageHtml, "text/html");
-  const card = [...doc.querySelectorAll("section.card")].find((s) => s.querySelector(".card__title")?.textContent === "Monthly payroll cost");
-  return card?.querySelector(".card__body")?.innerHTML ?? "";
-})();
+const COST_MONTHS = 6;
+// The run of record for each of the COST_MONTHS months ending with year / month, oldest first (payroll run page's rule).
+function monthlyRuns(year, month) {
+  return Array.from({ length: COST_MONTHS }, (_, i) => {
+    const k = year * 12 + (month - 1) - (COST_MONTHS - 1 - i);
+    const y = Math.floor(k / 12), m = (k % 12) + 1;
+    return storedRun(y, m) ?? payrollRun(y, m);
+  });
+}
 const people = (n) => plural(n, "employee", "employees");
 const short = (run) => monthShort(`${run.month}-01`);
 const shortWithYear = (run) => `${short(run)} ${run.month.slice(0, 4)}`;
@@ -94,7 +100,7 @@ const Icon = ({ d }) => <svg className="icon" viewBox="0 0 24 24" aria-hidden="t
 
 export default function FinanceDashboard() {
   const { userId, role } = useSession();
-  const canExport = useCan("reports:export"), canPay = useCan("payroll:view"), canExp = useCan("expenses:view");
+  const canExport = useCan("reports:export"), canMark = useCan("attendance:mark"), canPay = useCan("payroll:view"), canExp = useCan("expenses:view");
   const [query, setQuery] = useState("");
   const d = useData(() => {
     const today = todayIso();
@@ -102,14 +108,14 @@ export default function FinanceDashboard() {
     if (canPay) {
       const { year, month } = runMonth(today);
       const run = payrollRun(year, month);
-      Object.assign(out, { run, year, month, totals: runTotals(run), tds: payslipTotals(run.rows).tds, depts: payrollByDepartmentChart(run) });
+      Object.assign(out, { run, year, month, totals: runTotals(run), tds: payslipTotals(run.rows).tds, depts: payrollByDepartmentChart(run), monthly: payrollByMonthChart(monthlyRuns(year, month)) });
     }
     if (canExp) Object.assign(out, { approved: expenseTotals(allExpenses()).byStatus.approved, expenses: allExpenses() });
     return out;
   }, [userId, role?.key, canPay, canExp]);
 
-  const gross = d.depts ? valuesOf(d.depts, "Gross") : [];
-  const top = Math.max(1, ...gross);
+  const costSpan = d.monthly ? monthSpan(d.monthly.labels[0], d.monthly.labels.at(-1)) : "";
+  const depts = d.depts ? { ...d.depts, labels: d.depts.labels.map((name) => name || "No department") } : null;
 
   useEffect(() => { initExports(document.getElementById("main")); }, []);
   useEffect(() => {
@@ -132,6 +138,10 @@ export default function FinanceDashboard() {
         </div>
         <div className="page-header__actions">
           <button className="btn" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export data-export-stats="finance-dashboard-stats">Export</button>
+          <Link className="btn" to={pageUrl("attendance/mark-attendance.html")} data-permission="attendance:mark" hidden={!canMark || undefined} id="dash-mark">
+            <Icon d={ICONS.mark} />
+            Mark attendance
+          </Link>
           <Link className="btn btn--primary" to={pageUrl("payroll/payroll-run.html")} data-permission="payroll:view" hidden={!canPay || undefined}>
             <Icon d="M5 3l14 9-14 9z" />
             Open payroll run
@@ -152,12 +162,15 @@ export default function FinanceDashboard() {
         </StatStrip>
 
         <div className="grid grid-main-aside">
-          <section className="card">
+          <section className="card" id="fin-monthly" data-permission="payroll:view" hidden={!canPay || undefined}>
             <div className="card__header">
               <h3 className="card__title">Monthly payroll cost</h3>
-              <span className="card__meta">Not charted yet</span>
+              <span className="card__meta" id="fin-monthly-meta">{d.monthly ? `Gross pay, ${costSpan}` : "Gross pay"}</span>
             </div>
-            <div className="card__body" dangerouslySetInnerHTML={{ __html: COST_NOTE }} />
+            <div className="card__body">
+              {d.monthly && <BarChart id="fin-monthly-chart" chart={d.monthly} label={`Payroll cost per month, ${costSpan}`} labelHeader="Month" latest />}
+              <p className="text-xs text-muted mt-2" id="fin-monthly-note">Months with an approved run use its saved figures; the others are worked out from attendance and leave, as drafts.</p>
+            </div>
           </section>
           <section className="card" id="fin-approvals">
             <div className="card__header">
@@ -174,9 +187,7 @@ export default function FinanceDashboard() {
               <h3 className="card__title">Payroll cost by department</h3>
               <span className="card__meta" id="fin-dept-meta">{d.depts ? `Gross pay, ${shortWithYear(d.depts.period)}` : "Gross pay"}</span>
             </div>
-            <Nodes className="card__body" id="fin-dept-bars" hidden={d.depts?.empty || undefined}
-              build={() => (d.depts ? d.depts.labels.map((name, i) => barRow(name || "No department", rupees(gross[i]), Math.round((gross[i] / top) * 100))) : [])} deps={[d]} />
-            {d.depts?.empty && <NoData />}
+            <div className="card__body">{depts && <BarChart id="fin-dept-bars" chart={depts} horizontal label={`Payroll cost by department, ${shortWithYear(d.depts.period)}`} labelHeader="Department" />}</div>
           </section>
           <section className="card" data-permission="expenses:view" hidden={!canExp || undefined}>
             <div className="card__header">

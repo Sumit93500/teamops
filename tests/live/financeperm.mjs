@@ -81,10 +81,10 @@ function editRecord(id, field, value) {
 
 // =================================================================
 section("P. The permission tables, before and after");
-const L0_PERMS = ["offices:view", "offices:manage", "company:edit", "locations:set-own", "locations:review", "devices:view-own", "devices:reset", "payroll-rules:verify", "leave-policy:edit", "declarations:submit-own", "declarations:manage"];   // L0: the seven moved into PERMISSIONS; P4: and the two rules ones
+const L0_PERMS = ["offices:view", "offices:manage", "company:edit", "locations:set-own", "locations:review", "devices:view-own", "devices:reset", "payroll-rules:verify", "leave-policy:edit", "declarations:submit-own", "declarations:manage", "attendance:any-office"];   // L0: the seven moved into PERMISSIONS; P4: and the two rules ones; F1: attendance:any-office
 check("P1", "PERMISSIONS: dashboard is [view, finance] (was [view]); every other module as it was; ALL_PERMISSIONS one longer, the new one dashboard:finance",
   j(PERMISSIONS.dashboard) === j(["view", "finance"]) && j(pre.perms.PERMISSIONS.dashboard) === j(["view"])
-  && j(Object.entries(PERMISSIONS).filter(([m]) => m !== "dashboard" && !["offices", "company", "locations", "devices", "payroll-rules", "leave-policy", "declarations"].includes(m))) === j(Object.entries(pre.perms.PERMISSIONS).filter(([m]) => m !== "dashboard"))   // L0 (behaviour): without the four L0 modules
+  && j(Object.entries(PERMISSIONS).filter(([m]) => m !== "dashboard" && !["offices", "company", "locations", "devices", "payroll-rules", "leave-policy", "declarations"].includes(m)).map(([m, a]) => [m, a.filter((x) => !L0_PERMS.includes(`${m}:${x}`))])) === j(Object.entries(pre.perms.PERMISSIONS).filter(([m]) => m !== "dashboard"))   // L0 (behaviour): without the four L0 modules; F1: attendance without any-office
   && j(ALL_PERMISSIONS.filter((p) => !pre.perms.ALL_PERMISSIONS.includes(p) && !L0_PERMS.includes(p))) === j(["dashboard:finance"]) && ALL_PERMISSIONS.length === pre.perms.ALL_PERMISSIONS.length + 1 + L0_PERMS.length,
   j({ dashboard: PERMISSIONS.dashboard, all: [pre.perms.ALL_PERMISSIONS.length, ALL_PERMISSIONS.length] }));
 const delta = Object.fromEntries(Object.keys(ROLES).map((k) => [k, {

@@ -42,6 +42,7 @@ csvColumns("admin-dashboard-attendance", { Employee: { split: "Work email" } });
 
 const PAGE = "dashboard/admin.html";
 const CHART_DAYS = 14, PAGE_SIZE = 10, SHOWN_APPROVALS = 4, SHOWN_ACTIVITY = 5;
+const MARK_ICON = "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6";   // F1: Mark attendance, as on the Employee dashboard
 const ICONS = {
   total: "M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-2a4 4 0 0 0-3-3.8M16 3.2a3.5 3.5 0 0 1 0 6.6",
   present: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2",
@@ -134,7 +135,7 @@ const Icon = ({ d }) => <svg className="icon" viewBox="0 0 24 24" aria-hidden="t
 
 export default function AdminDashboard() {
   const { userId, role } = useSession();
-  const canExport = useCan("reports:export"), canCreate = useCan("users:create");
+  const canExport = useCan("reports:export"), canCreate = useCan("users:create"), canMark = useCan("attendance:mark");
   const canPayroll = useCan("payroll:view"), canStock = useCan("inventory:view");
   const today = todayIso();
   const [search, setSearch] = useState("");
@@ -197,6 +198,10 @@ export default function AdminDashboard() {
           </div>
           <div className="page-header__actions">
             <button className="btn" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export data-export-stats="admin-dashboard-stats">Export</button>
+            <Link className="btn" to={pageUrl("attendance/mark-attendance.html")} data-permission="attendance:mark" hidden={!canMark || undefined} id="dash-mark">
+              <Icon d={MARK_ICON} />
+              Mark attendance
+            </Link>
             <Link className="btn btn--primary" to={pageUrl("users/user-form.html")} data-permission="users:create" hidden={!canCreate || undefined}>
               <Icon d="M12 5v14M5 12h14" />
               Add employee

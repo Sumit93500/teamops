@@ -55,6 +55,10 @@ const check = (n, label, cond, detail = "") => { cond ? passed++ : failed++; con
 const j = JSON.stringify;
 const errs = [];
 const fmt = (m) => `${Number(m).toLocaleString("en-IN")} m`;
+// F1: the place line says the check's answer: metres under 1 km, else km to one decimal
+const far = (m) => (m < 1000 ? fmt(m) : `${(m / 1000).toLocaleString("en-IN", { maximumFractionDigits: 1 })} km`);
+const okLine = (m, place, verb = "check-in") => `You are ${far(m)} from ${place}, ${verb} allowed`;
+const noLine = (m, place, r, verb = "check-in") => `You are ${far(m)} from ${place} (limit ${r} m), ${verb} not allowed`;
 
 const HOMES = (people) => ["officeos:home-locations", JSON.stringify({ version: 1, people })];
 const person = (eligible, permanent = null) => ({ homeEligible: eligible, permanent, temporary: null, history: [] });
@@ -129,7 +133,7 @@ if (ONLY.includes("G")) {
       const s = await locate(n.t);
       const d = Math.round(Math.abs(pos.latitude - HEAD.lat) * M_PER_DEG);
       const want = name === "inaccurate" ? [`Your location is only accurate to within ${fmt(acc)}; it needs to be within 100 m. Move near a window or outdoors, then press Use my location again.`, true, "Try again"]
-        : d <= 150 ? [`You're ${fmt(d)} from Head office, inside its 150 m radius.`, false, "Use my location"] : [`You're ${fmt(d)} from Head office. Check-in needs you within 150 m.`, true, "Use my location"];
+        : d <= 150 ? [okLine(d, "Head office"), false, "Use my location"] : [noLine(d, "Head office", 150), true, "Use my location"];
       check(`G1.${z}.${name}`, `${zone}, ${name} (${d} m, accuracy ${acc} m): the line, the button ${want[1] ? "off" : "on"}`, s.line === want[0] && s.button[2] === want[1] && s.locate === want[2], j([s.line, s.button, s.locate]));
       await n.ctx.close();
     }
@@ -161,7 +165,7 @@ if (ONLY.includes("D")) {
   let n = await open("emp", PAGE, { geo: north(HEAD, 40), store: [TOKEN("c"), DEVICES([{ userId: "EMP-1105", token: "a".repeat(32) }, { userId: "EMP-1105", token: "b".repeat(32), label: "Chrome on Android" }])] });
   let s = await locate(n.t);
   check("D1", "the limit reached: the device line says so and whom to ask; Check in stays off though the place is fine",
-    s.device === "Device limit reached. You already use 2 devices. Ask an Admin to reset yours to check in from this one." && s.button[2] === true && s.line.startsWith("You're 40 m from Head office"), j(s));
+    s.device === "Device limit reached. You already use 2 devices. Ask an Admin to reset yours to check in from this one." && s.button[2] === true && s.line === okLine(40, "Head office"), j(s));
   await n.ctx.close();
   n = await open("emp", PAGE, { geo: north(HEAD, 40), store: [TOKEN("a"), DEVICES([{ userId: "EMP-1105", token: "a".repeat(32) }])] });
   s = await state(n.t);
@@ -190,16 +194,16 @@ if (ONLY.includes("P")) {
   await n.t.click("#check-in-btn"); await settle(n.t, 400);
   const rec = (await stored(n.t, "officeos:attendance")).records.find((r) => r.userId === "EMP-1105" && r.date === "2026-09-28");
   check("P3", "from home: \"30 m from your permanent home\"; checked in as work from home, the place stamped",
-    s.line === "You're 30 m from your permanent home, inside its 150 m radius." && rec?.mode === "wfh" && rec.checkInPlace === "homePermanent" && (await text(n.t, "#stat-check-in")) === "09:20 (WFH)", j([s.line, rec?.mode, rec?.checkInPlace]));
+    s.line === okLine(30, "your permanent home") && rec?.mode === "wfh" && rec.checkInPlace === "homePermanent" && (await text(n.t, "#stat-check-in")) === "09:20 (WFH)", j([s.line, rec?.mode, rec?.checkInPlace]));
   await n.ctx.close();
   n = await open("emp", PAGE, { store: [BRANCH], geo: north(HEAD, 20) });
   s = await locate(n.t);
   check("P4", "a branch employee: only the Pune branch is listed; at the head office they're far outside it, Check in off",
-    j(s.options) === j(["Pune branch (200 m)"]) && /^You're [\d,]+ m from Pune branch\. Check-in needs you within 200 m\.$/.test(s.line) && s.button[2], j(s));
+    j(s.options) === j(["Pune branch (200 m)"]) && /^You are [\d,.]+ km from Pune branch \(limit 200 m\), check-in not allowed$/.test(s.line) && s.button[2], j(s));
   await n.ctx.close();
   n = await open("emp", PAGE, { store: [BRANCH], geo: { latitude: 18.5913 + 100 / M_PER_DEG, longitude: 73.7389 } });
   s = await locate(n.t);
-  check("P5", "at the branch: inside its 200 m radius, Check in on", s.line === "You're 100 m from Pune branch, inside its 200 m radius." && !s.button[2], j(s));
+  check("P5", "at the branch: inside its 200 m radius, Check in on", s.line === okLine(100, "Pune branch") && !s.button[2], j(s));
   await n.ctx.close();
 }
 
@@ -282,28 +286,28 @@ if (ONLY.includes("C")) {
   const today = async (t) => (await stored(t, "officeos:attendance")).records.find((r) => r.userId === "EMP-1105" && r.date === "2026-09-28");
   let n = await open("emp", PAGE, { store, geo: north(HEAD, 60) });   // 60 m from the office, 40 m from home
   let s = await locate(n.t);
-  check("C1", "inside both, the office chosen: the line measures the office (60 m)", s.value === "head" && s.line === "You're 60 m from Head office, inside its 150 m radius." && !s.button[2], j(s));
+  check("C1", "inside both, the office chosen: the line measures the office (60 m)", s.value === "head" && s.line === okLine(60, "Head office") && !s.button[2], j(s));
   await n.t.click("#check-in-btn"); await settle(n.t, 400);
   let rec = await today(n.t);
   check("C2", "checked in: the record names the chosen office (60 m), not the nearer home; office work; the toast says Head office",
     rec?.checkInPlace === "head" && rec.checkInDistanceM === 60 && rec.mode === "office" && (await toast(n.t)) === "Checked in from Head office.", j(rec));
   s = await locate(n.t);
   check("C3", "check-out in the overlap: Check-Out From shows the check-in's place, no flagged notice, Check out on",
-    s.label === "Check-Out From" && s.value === "head" && s.flag === null && s.line === "You're 60 m from Head office, inside its 150 m radius." && !s.button[2], j(s));
+    s.label === "Check-Out From" && s.value === "head" && s.flag === null && s.line === okLine(60, "Head office", "check-out") && !s.button[2], j(s));
   await n.t.click("#check-out-btn"); await settle(n.t, 400);
   rec = await today(n.t);
   check("C4", "checked out at the office, not flagged (the nearer home isn't taken for a move)", rec?.checkOutPlace === "head" && rec.flagged === false && (await toast(n.t)) === "Checked out.", j(rec));
   await n.ctx.close();
   n = await open("emp", PAGE, { store, geo: north(HEAD, 60) });
   await n.t.selectOption("#checkin-from", "homePermanent"); s = await locate(n.t);
-  check("C5", "inside both, home chosen: the line measures home (40 m)", s.line === "You're 40 m from your permanent home, inside its 150 m radius." && !s.button[2], j(s));
+  check("C5", "inside both, home chosen: the line measures home (40 m)", s.line === okLine(40, "your permanent home") && !s.button[2], j(s));
   await n.t.click("#check-in-btn"); await settle(n.t, 400);
   rec = await today(n.t);
   check("C6", "checked in: the record names home (40 m), work from home", rec?.checkInPlace === "homePermanent" && rec.checkInDistanceM === 40 && rec.mode === "wfh", j(rec));
   await n.ctx.setGeolocation({ ...north(HEAD, -100), accuracy: 15 });   // 100 m south: the office only (home is 200 m away)
   s = await locate(n.t);
-  check("C7", "then at the office only: Check-Out From shows home, 200 m away; the flagged notice names the office",
-    s.value === "homePermanent" && s.line === "You're 200 m from your permanent home. Check-in needs you within 150 m." && s.flag === "Flagged: you checked in at Permanent home and you're at Head office now. Checking out here flags the day for HR." && !s.button[2], j(s));
+  check("C7", "then at the office only: Check-Out From shows home; the line says where the check-out counts (the office, 100 m, allowed: F1); the flagged notice names the office",
+    s.value === "homePermanent" && s.line === okLine(100, "Head office", "check-out") && s.flag === "Flagged: you checked in at Permanent home and you're at Head office now. Checking out here flags the day for HR." && !s.button[2], j(s));
   await n.t.click("#check-out-btn"); await asked(n.t, true);
   rec = await today(n.t);
   check("C8", "a check-out at another of your places still works when asked: the office named, flagged place-changed", rec?.checkOutPlace === "head" && rec.flagged && rec.flagReasons.includes("place-changed"), j(rec));
