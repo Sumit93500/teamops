@@ -19,6 +19,8 @@ const SELF_SERVICE = [
   "profile:edit-own", "password:change-own", "sessions:end-own", "notifications:edit-own",
   // L0: see the offices, your own devices, and set your own home places (HR's home-eligible flag still decides that)
   "offices:view", "devices:view-own", "locations:set-own",
+  // P5: your own tax regime and old-regime declaration
+  "declarations:submit-own",
 ];
 
 export const ROLES = {
@@ -70,6 +72,7 @@ export const ROLES = {
       "salary:view", "salary:edit",
       "expenses:view", "expenses:approve", "expenses:pay",
       "tax:view", "tax:manage",
+      "declarations:manage",   // P5: edit, verify and lock anyone's declaration; the cutoff
       "reports:view", "reports:export", "reports:create",
     ],
   },

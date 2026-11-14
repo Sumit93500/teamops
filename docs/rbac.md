@@ -6,16 +6,16 @@
 
 | key | label | permissions | landing page | Data scope (as the pages word it) |
 |---|---|---|---|---|
-| admin | Admin | all 88 | dashboard/admin.html | All records |
-| hr | HR Manager | 48 | dashboard/hr.html | All records |
-| fin | Finance Manager | 40 | dashboard/finance.html | All finance records |
-| emp | Employee | 23 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
+| admin | Admin | all 90 | dashboard/admin.html | All records |
+| hr | HR Manager | 49 | dashboard/hr.html | All records |
+| fin | Finance Manager | 42 | dashboard/finance.html | All finance records |
+| emp | Employee | 24 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
 
 Roles come from the configuration: they can't be created, edited or deleted in the app (the roles pages say so).
 
 ## Permissions
 
-- `module:action` strings, 39 modules, 88 in all (86 before P4, 79 before L0). P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
+- `module:action` strings, 40 modules, 90 in all (88 before P5, 86 before P4, 79 before L0). P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
 - Examples: `payroll:create` (prepare a run), `payroll:approve`, `salary:view`, `dashboard:finance`, `users:delete` (Admin only), `pii:view` (bank account and PAN).
 - A page needs one permission (`config/routes.js`). A control on a page needs its own, through `data-permission="..."` on the static pages and `perm()` / `useCan()` in the React app.
 

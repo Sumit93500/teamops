@@ -15,6 +15,7 @@ import { employmentOf } from "../../../assets/js/data/employment.js";
 import { salaryFor } from "../../../assets/js/data/payroll-store.js";
 import { ruleOn } from "../../../assets/js/data/pay-rules.js";
 import { usesNewRules, statutoryFrom } from "../../../assets/js/data/pay-settings.js";
+import { payForFinal } from "../../../assets/js/data/pay-runs.js";
 import { taxYearMonths } from "../../../assets/js/data/payroll.js";
 import { todayIso, monthName, formatDay } from "../../../assets/js/ui/leave-view.js";
 import { useData, useSession, useCan } from "../data/hooks.js";
@@ -41,7 +42,7 @@ export function TaxExplain({ userId }) {
   const ty = taxYearOf(y, m);
   const d = useData(() => {
     const upto = (m + 8) % 12;
-    const months = taxYearMonths(y, m).slice(0, upto + 1).map(([yy, mm]) => ({ yy, mm, key: `${yy}-${String(mm).padStart(2, "0")}`, pay: payFor(userId, yy, mm) }));
+    const months = taxYearMonths(y, m).slice(0, upto + 1).map(([yy, mm]) => ({ yy, mm, key: `${yy}-${String(mm).padStart(2, "0")}`, pay: payFor(userId, yy, mm), final: payForFinal(userId, yy, mm)?.final ?? false }));
     const latest = months.filter((x) => x.pay).at(-1)?.pay ?? null;
     const sal = salaryFor(userId, y, m);
     const structure = structureOf(userId);
@@ -71,8 +72,8 @@ export function TaxExplain({ userId }) {
             ["Health and education cess", rupees(Math.round(t.annual.cess))], ["Tax for the year", rupees(Math.round(t.annual.total))], ["An even month's share", rupees(t.monthly)]].map(([k, v]) => <div className="kv__row" key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
         </dl>
         <h3 className="ds-card__title">Your months</h3>
-        <table className="table" id="tax-months"><thead><tr><th>Month</th><th className="num">Paid</th><th className="num">Tax taken</th></tr></thead>
-          <tbody>{d.months.map((x) => <tr key={x.key}><td>{monthLabel(x.key)}</td><td className="num">{x.pay ? rupees(x.pay.gross) : "—"}</td><td className="num">{x.pay ? rupees(x.pay.deductions.tds) : "—"}</td></tr>)}</tbody></table>
+        <table className="table" id="tax-months"><thead><tr><th>Month</th><th className="num">Paid</th><th className="num">Tax taken</th><th>Figures</th></tr></thead>
+          <tbody>{d.months.map((x) => <tr key={x.key}><td>{monthLabel(x.key)}</td><td className="num">{x.pay ? rupees(x.pay.gross) : "—"}</td><td className="num">{x.pay ? rupees(x.pay.deductions.tds) : "—"}</td><td>{x.pay ? (x.final ? "Final" : "Draft, not final") : "—"}</td></tr>)}</tbody></table>
         <h3 className="ds-card__title">Slabs, {t.regime === "old" ? "old" : "new"} regime</h3>
         <ul id="tax-slabs">{slabs.map((s) => <li key={`${s[0]}${s[1]}`}>{`${slabText(s)}: ${s[2] === 0 ? "nil" : pct(s[2])}`}</li>)}</ul>
       </Card>
@@ -99,7 +100,7 @@ export function SalaryPlan({ userId, name }) {
   const { y, m } = now();
   const ty = taxYearOf(y, m);
   const d = useData(() => ({
-    templates: payTemplates(), structure: structureOf(userId), employment: employmentOf(userId), ctc: ctcFor(userId, y, m), regime: regimeOf(userId, ty.label), decl: declarationOf(userId, ty.label),
+    templates: payTemplates(), structure: structureOf(userId), employment: employmentOf(userId), ctc: ctcFor(userId, y, m), final: payForFinal(userId, y, m), regime: regimeOf(userId, ty.label), decl: declarationOf(userId, ty.label),
     sal: salaryFor(userId, y, m),
   }), [userId]);
   const [pick, setPick] = useState(null);
@@ -157,7 +158,8 @@ export function SalaryPlan({ userId, name }) {
                 {[["Gross pay", d.ctc.monthly.gross], ["Employer provident fund", d.ctc.monthly.employer.pf], ["Employer EDLI and PF admin charge", d.ctc.monthly.employer.edli + d.ctc.monthly.employer.pfAdmin], ["Employer state insurance", d.ctc.monthly.employer.esi],
                   ["Employer labour welfare fund", d.ctc.monthly.employer.lwf], ["Gratuity accrual (a cost, not paid out now)", d.ctc.monthly.employer.gratuity], ["Cost to company", d.ctc.monthly.total]].map(([k, v]) => <tr key={k}><td>{k}</td><td className="num">{rupees(v)}</td><td className="num">{rupees(v * 12)}</td></tr>)}
               </tbody></table>
-            <p className="text-muted">Rules as of {formatDay(d.ctc.rulesAsOf, true)}.</p>
+            <p className="text-muted">Rules as of {formatDay(d.ctc.rulesAsOf, true)}. A projection on the full monthly gross: a draft, not final.</p>
+            {d.final?.final && <p id="ctc-final">{`This month's approved run, as frozen: ${rupees(d.final.pay.gross)} paid and ${rupees(d.final.pay.employer.total)} of employer contributions, ${rupees(d.final.pay.costToCompany)} in all.`}</p>}
           </>
         ) : <p className="text-muted">No salary on file for this month, so there's no cost to work out.</p>}
       </Card>

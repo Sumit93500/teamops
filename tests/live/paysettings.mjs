@@ -1,7 +1,7 @@
 // usage: node paysettings.mjs   (run through PowerShell with $env:TZ set for the time-zone runs)
 // P4: the two start dates (data/pay-settings.js) and the two permissions that moved into config/permissions.js. ./js is the build.
 // Clock Tue 6 Oct 2026, 10:00 local.
-//   A  the permissions: payroll-rules:verify and leave-policy:edit are in PERMISSIONS (88 in all), held by the Admin only, not overridable
+//   A  the permissions: payroll-rules:verify and leave-policy:edit are in PERMISSIONS (90 in all since P5), held by the Admin only, not overridable
 //   B  the defaults and the boundaries: the new rules from 2026-11 (the month before, at, after), the leave policy from 2026-12-01
 //   C  who may change them (four roles + a manager), what is refused (not a month, an approved month, a past day), the audit
 //   D  reading writes nothing; reset; a saved box of another shape is ignored
@@ -25,10 +25,10 @@ const j = JSON.stringify;
 const PEOPLE = { admin: "EMP-1001", hr: "EMP-1003", fin: "EMP-1008", emp: "EMP-1105", manager: "EMP-1029" };
 
 section("A. The permissions");
-check("A1", "both are in PERMISSIONS, and ALL_PERMISSIONS has 88", j(P.PERMISSIONS["payroll-rules"]) === j(["verify"]) && j(P.PERMISSIONS["leave-policy"]) === j(["edit"]) && P.ALL_PERMISSIONS.length === 88 && P.ALL_PERMISSIONS.includes("payroll-rules:verify") && P.ALL_PERMISSIONS.includes("leave-policy:edit"));
+check("A1", "both are in PERMISSIONS, and ALL_PERMISSIONS has 90 (P5: the two declarations ones)", j(P.PERMISSIONS["payroll-rules"]) === j(["verify"]) && j(P.PERMISSIONS["leave-policy"]) === j(["edit"]) && P.ALL_PERMISSIONS.length === 90 && P.ALL_PERMISSIONS.includes("payroll-rules:verify") && P.ALL_PERMISSIONS.includes("leave-policy:edit"));
 const held = Object.fromEntries(Object.entries(PEOPLE).map(([k, id]) => [k, ["payroll-rules:verify", "leave-policy:edit"].map((p) => R.hasPermission(S.getUser(id), p))]));
 check("A2", "the Admin holds both; HR, Finance, an employee and a manager hold neither", j(held) === j({ admin: [true, true], hr: [false, false], fin: [false, false], emp: [false, false], manager: [false, false] }), j(held));
-check("A3", "the roles' counts: admin 88, hr 48, fin 40, emp 23", j(Object.keys(R.ROLES).map((k) => R.ROLES[k].permissions.length)) === j([88, 48, 40, 23]));
+check("A3", "the roles' counts: admin 90, hr 49, fin 42, emp 24", j(Object.keys(R.ROLES).map((k) => R.ROLES[k].permissions.length)) === j([90, 49, 42, 24]));
 check("A4", "not overridable: a stored grant gives nothing, a deny takes nothing from the Admin", !R.hasPermission({ ...S.getUser(PEOPLE.hr), grantPermissions: ["payroll-rules:verify", "leave-policy:edit"] }, "payroll-rules:verify") && R.hasPermission({ ...S.getUser(PEOPLE.admin), denyPermissions: ["leave-policy:edit"] }, "leave-policy:edit") && !R.OVERRIDABLE.includes("payroll-rules:verify") && !R.OVERRIDABLE.includes("leave-policy:edit"));
 
 section("B. The defaults and the boundaries");

@@ -25,7 +25,7 @@ const GROUPS = [
   ["People", { users: "Users", pii: "Personal details (bank account, PAN)", departments: "Departments", roles: "Roles & permissions", designations: "Designations", recruitment: "Recruitment" }],
   ["Time", { attendance: "Attendance", leave: "Leave", "leave-policy": "Leave policy", holidays: "Holidays", shifts: "Shifts" }],   // P4: leave-policy
   ["Requests & approvals", { approvals: "Approvals", requests: "Requests", workflows: "Approval workflows", delegation: "Delegation" }],
-  ["Finance", { payroll: "Payroll", payslips: "Everyone's payslips", payslip: "Own payslip", salary: "Salaries", "payroll-rules": "Pay rates and rules", expenses: "Expenses", tax: "Tax" }],   // P4: payroll-rules
+  ["Finance", { payroll: "Payroll", payslips: "Everyone's payslips", payslip: "Own payslip", salary: "Salaries", "payroll-rules": "Pay rates and rules", expenses: "Expenses", tax: "Tax", declarations: "Tax declarations" }],   // P4: payroll-rules
   ["Operations", { inventory: "Inventory", assets: "Assets", vendors: "Vendors" }],
   ["Offices & locations", { offices: "Offices", company: "Company profile", locations: "Home locations", devices: "Devices" }],   // L0
   ["System", { reports: "Reports", audit: "Audit log", settings: "Settings", backup: "Backup" }],

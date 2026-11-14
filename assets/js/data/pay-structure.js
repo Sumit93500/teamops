@@ -35,6 +35,15 @@
 //   declareOldRegime(actorUserId, userId, taxYear, declaration, today?)    the old regime, by declaration only
 //   chooseNewRegime(actorUserId, userId, taxYear, today?)
 //   payStructureAudit()                                       resetPayStructures()
+// P5, self-service declarations (per tax year; data in "drafts", "statuses" and "cutoffs" beside the rest):
+//   declarationStatus(userId, taxYear) -> { status "none" | "draft" | "submitted" | "locked", by, at, draft, applied }
+//   saveOwnDeclaration(actorUserId, taxYear, { regime, declaration }, { submit }, today?)   the person themself
+//     (declarations:submit-own): a draft, or submitted (it then applies: regimeOf / declarationOf); refused once locked or
+//     after the tax year's cutoff
+//   verifyDeclaration / unlockDeclaration(actorUserId, userId, taxYear, today?)            declarations:manage (Finance, Admin)
+//   setDeclarationCutoff(actorUserId, taxYear, date, today?)  declarationCutoff(taxYear)  declarations:manage
+//   declareOldRegime / chooseNewRegime (salary:edit, as before) also mark the year submitted, unless it is locked
+// Every change is in the audit with who, when, from and to.
 
 import { remove } from "../core/storage.js";
 import { getUser } from "./store.js";
@@ -67,6 +76,7 @@ const TEMPLATES = Object.freeze([
 export const TEMPLATE_IDS = TEMPLATES.map((t) => t.id);
 
 const seed = () => ({ templates: {}, people: {}, regimes: {}, declarations: {}, audit: [] });
+// P5: drafts, statuses and cutoffs are added when first written; a box saved before P5 has none and reads as before.
 const isObj = (v) => Boolean(v) && typeof v === "object" && !Array.isArray(v);
 const store = pureBox(KEY, 1, seed, (b) => isObj(b.templates) && isObj(b.people) && isObj(b.regimes) && isObj(b.declarations) && Array.isArray(b.audit));
 const copy = (value) => JSON.parse(JSON.stringify(value));
@@ -190,16 +200,15 @@ export function declareOldRegime(actorUserId, userId, taxYear, declaration = {},
   if (!actor) return fail(EDITORS_ONLY);
   if (!getUser(userId)) return fail(`No employee with id ${userId}.`, "userId");
   if (!isTaxYear(taxYear)) return fail("The tax year reads like 2026-27.", "taxYear");
-  if (!isObj(declaration)) return fail("Give the declaration.", "declaration");
-  const extra = Object.keys(declaration).find((k) => !["rentMonthly", "metro", "investments", "other"].includes(k));
-  if (extra) return fail(`"${extra}" isn't part of the declaration.`, extra);
-  const d = { rentMonthly: declaration.rentMonthly ?? 0, metro: declaration.metro ?? false, investments: declaration.investments ?? 0, other: declaration.other ?? 0 };
-  for (const k of ["rentMonthly", "investments", "other"]) if (!wholeRupees(d[k])) return fail("Enter whole rupees, 0 or more.", k);
-  if (typeof d.metro !== "boolean") return fail("Metro is yes or no.", "metro");
+  const checked = checkDeclaration(declaration);
+  if (!checked.ok) return checked;
+  const d = checked.d;
   const box = store.read();
+  const before = { regime: box.regimes[userId]?.[taxYear] === "old" ? "old" : "new" };
   (box.declarations[userId] ??= {})[taxYear] = { ...d, declaredOn: today, recordedBy: actor.id };
   (box.regimes[userId] ??= {})[taxYear] = "old";
-  box.audit.push(entry(actor, "regime", { userId, taxYear, regime: "old" }, today));
+  box.audit.push(entry(actor, "regime", { userId, taxYear, regime: "old", from: stateText(before), to: "old regime" }, today));
+  markSubmitted(box, userId, taxYear, actor, today);
   return store.write(box) ? { ok: true, record: { userId, taxYear, regime: "old", declaration: declarationOf(userId, taxYear) } } : fail(SAVE_FAILED);
 }
 // Back to the default. The declaration stays on file (it is what was declared), and is not used.
@@ -209,9 +218,93 @@ export function chooseNewRegime(actorUserId, userId, taxYear, today = todayIso()
   if (!getUser(userId)) return fail(`No employee with id ${userId}.`, "userId");
   if (!isTaxYear(taxYear)) return fail("The tax year reads like 2026-27.", "taxYear");
   const box = store.read();
+  const before = { regime: box.regimes[userId]?.[taxYear] === "old" ? "old" : "new" };
   if (box.regimes[userId]) delete box.regimes[userId][taxYear];
-  box.audit.push(entry(actor, "regime", { userId, taxYear, regime: "new" }, today));
+  box.audit.push(entry(actor, "regime", { userId, taxYear, regime: "new", from: stateText(before), to: "new regime" }, today));
+  markSubmitted(box, userId, taxYear, actor, today);
   return store.write(box) ? { ok: true, record: { userId, taxYear, regime: "new" } } : fail(SAVE_FAILED);
+}
+
+// ---------- P5: self-service declarations ----------
+function checkDeclaration(declaration) {
+  if (!isObj(declaration)) return fail("Give the declaration.", "declaration");
+  const extra = Object.keys(declaration).find((k) => !["rentMonthly", "metro", "investments", "other"].includes(k));
+  if (extra) return fail(`"${extra}" isn't part of the declaration.`, extra);
+  const d = { rentMonthly: declaration.rentMonthly ?? 0, metro: declaration.metro ?? false, investments: declaration.investments ?? 0, other: declaration.other ?? 0 };
+  for (const k of ["rentMonthly", "investments", "other"]) if (!wholeRupees(d[k])) return fail("Enter whole rupees, 0 or more.", k);
+  if (typeof d.metro !== "boolean") return fail("Metro is yes or no.", "metro");
+  return { ok: true, d };
+}
+const stateText = (s) => (s ? `${s.status ? `${s.status}, ` : ""}${s.regime === "old" ? "old regime" : "new regime"}` : "none");
+const sub = (box, name) => (box[name] ??= {});
+function markSubmitted(box, userId, taxYear, actor, today) {
+  const st = sub(sub(box, "statuses"), userId);
+  if (st[taxYear]?.status === "locked") return;
+  st[taxYear] = { status: "submitted", by: actor.id, at: today };
+}
+const manager = (id) => { const u = active(id); return u && permissionsOf(u).includes("declarations:manage") ? u : null; };
+const isDay = (s) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) && new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s;
+export const DECLARATION_STATUSES = ["none", "draft", "submitted", "locked"];
+export function declarationStatus(userId, taxYear) {
+  const box = store.read();
+  const st = box.statuses?.[userId]?.[taxYear] ?? null;
+  const draft = box.drafts?.[userId]?.[taxYear] ?? null;
+  return { userId, taxYear, status: st?.status ?? (draft ? "draft" : "none"), by: st?.by ?? null, at: st?.at ?? null, draft: draft ? copy(draft) : null,
+    applied: { regime: regimeOf(userId, taxYear), declaration: declarationOf(userId, taxYear) } };
+}
+export const declarationCutoff = (taxYear) => store.read().cutoffs?.[taxYear] ?? null;
+export const ASK_FINANCE = "Your declaration is verified and locked. To change it, ask Finance.";
+export function saveOwnDeclaration(actorUserId, taxYear, fields = {}, { submit = false } = {}, today = todayIso()) {
+  const actor = active(actorUserId);
+  if (!actor || !permissionsOf(actor).includes("declarations:submit-own")) return fail("You can't record a tax declaration.");
+  if (!isTaxYear(taxYear)) return fail("The tax year reads like 2026-27.", "taxYear");
+  const regime = fields?.regime ?? "new";
+  if (!REGIMES.includes(regime)) return fail("Choose the new or the old regime.", "regime");
+  let d = null;
+  if (regime === "old") { const c = checkDeclaration(fields.declaration ?? {}); if (!c.ok) return c; d = c.d; }
+  const box = store.read();
+  const now = declarationStatus(actor.id, taxYear);
+  if (now.status === "locked") return fail(ASK_FINANCE, "status");
+  const cutoff = box.cutoffs?.[taxYear];
+  if (cutoff && today > cutoff) return fail(`Declarations for ${taxYear} closed on ${cutoff}. To change yours, ask Finance.`, "cutoff");
+  const from = stateText({ status: now.status === "none" ? "" : now.status, regime: now.applied.regime });
+  if (submit) {
+    if (regime === "old") { sub(box.declarations, actor.id)[taxYear] = { ...d, declaredOn: today, recordedBy: actor.id }; sub(box.regimes, actor.id)[taxYear] = "old"; }
+    else if (box.regimes[actor.id]) delete box.regimes[actor.id][taxYear];
+    if (box.drafts?.[actor.id]) delete box.drafts[actor.id][taxYear];
+    sub(sub(box, "statuses"), actor.id)[taxYear] = { status: "submitted", by: actor.id, at: today };
+  } else {
+    sub(sub(box, "drafts"), actor.id)[taxYear] = { regime, declaration: d, savedOn: today };
+    if (box.statuses?.[actor.id]?.[taxYear]?.status !== "submitted") sub(sub(box, "statuses"), actor.id)[taxYear] = { status: "draft", by: actor.id, at: today };
+  }
+  box.audit.push(entry(actor, submit ? "declaration-submit" : "declaration-draft", { userId: actor.id, taxYear, from, to: `${submit ? "submitted" : "draft"}, ${regime} regime` }, today));
+  return store.write(box) ? { ok: true, record: declarationStatus(actor.id, taxYear) } : fail(SAVE_FAILED);
+}
+function setLock(actorUserId, userId, taxYear, lock, today) {
+  const actor = manager(actorUserId);
+  if (!actor) return fail("Only Finance or an Admin can verify declarations.");
+  if (!getUser(userId)) return fail(`No employee with id ${userId}.`, "userId");
+  if (!isTaxYear(taxYear)) return fail("The tax year reads like 2026-27.", "taxYear");
+  const now = declarationStatus(userId, taxYear);
+  if (lock && now.status !== "submitted") return fail(now.status === "locked" ? "It is already verified and locked." : "Only a submitted declaration can be verified.", "status");
+  if (!lock && now.status !== "locked") return fail("It isn't locked.", "status");
+  const box = store.read();
+  sub(sub(box, "statuses"), userId)[taxYear] = { status: lock ? "locked" : "submitted", by: actor.id, at: today };
+  box.audit.push(entry(actor, lock ? "declaration-verify" : "declaration-unlock", { userId, taxYear, from: `${now.status}, ${now.applied.regime} regime`, to: `${lock ? "locked" : "submitted"}, ${now.applied.regime} regime` }, today));
+  return store.write(box) ? { ok: true, record: declarationStatus(userId, taxYear) } : fail(SAVE_FAILED);
+}
+export const verifyDeclaration = (actorUserId, userId, taxYear, today = todayIso()) => setLock(actorUserId, userId, taxYear, true, today);
+export const unlockDeclaration = (actorUserId, userId, taxYear, today = todayIso()) => setLock(actorUserId, userId, taxYear, false, today);
+export function setDeclarationCutoff(actorUserId, taxYear, date, today = todayIso()) {
+  const actor = manager(actorUserId);
+  if (!actor) return fail("Only Finance or an Admin can set the cutoff.");
+  if (!isTaxYear(taxYear)) return fail("The tax year reads like 2026-27.", "taxYear");
+  if (date !== null && !isDay(date)) return fail("Choose a date.", "date");
+  const box = store.read();
+  const before = box.cutoffs?.[taxYear] ?? null;
+  if (date === null) { if (box.cutoffs) delete box.cutoffs[taxYear]; } else sub(box, "cutoffs")[taxYear] = date;
+  box.audit.push(entry(actor, "declaration-cutoff", { taxYear, from: before ?? "none", to: date ?? "none" }, today));
+  return store.write(box) ? { ok: true, record: { taxYear, cutoff: date } } : fail(SAVE_FAILED);
 }
 
 export const payStructureAudit = () => copy(store.read().audit);

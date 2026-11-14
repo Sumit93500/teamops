@@ -25,7 +25,7 @@ Loss of pay reduces a month's gross for:
 
 - `payrollRunFor()` works a month out live from the salary in effect, the month's attendance, unpaid leave and the tax year so far, so a draft payslip can't disagree with its data.
 - Finance or an Admin prepares a run (`payroll:create`). Only an Admin approves it (`payroll:approve`), and never the one who prepared it.
-- Once approved, a run's payslips are the figures it fixed.
+- Once approved, a run's payslips are the figures it fixed. From the statutory rules start month the fixed figures are the new engine's snapshot (P5, below).
 - A month with no data says so ("No data in this range.", round 5).
 
 ## Salaries
@@ -47,7 +47,32 @@ The pay screens read the new engine (`data/pay-engine.js`) from the **statutory 
 | Tax & deductions | the signed-in person's explanation and comparison above the company's figures |
 | Rates and rules (new) | every dated row with its source link, confidence, who verified it and when; filters (state, status, rule, search); **Verify** (asked first; records the Admin's name and the date); **Add dated row** (the module's checks). Finance reads, an Admin verifies |
 
-**Known limits (ruled later):** the regime and the declaration are recorded by Finance or an Admin on the employee's word, not by the employee (the module lets no one else write them); Preparing and approving a run still fixes the earlier rules' figures in the store, so for a month from the start month the page shows the new engine's figures live and says so.
+**Known limits (ruled later):** the regime and the declaration were recorded by Finance or an Admin on the employee's word, and approving a run fixed the earlier rules' figures, so the page showed the new engine's figures live. P5 replaced both (below).
+
+## P5 (2026-11-14): the rules are binding
+
+**Frozen snapshots** (`data/pay-snapshots.js`, storage `officeos:pay-snapshots`; orchestration in `data/pay-runs.js`). From the statutory rules start month, preparing a run (`prepareRunWithSnapshot`) also stores `payFor()` for every person in it; approving (`approveRunWithSnapshot`) freezes that snapshot (who and when). The old run row is written exactly as before (the old site reads it).
+
+- **Approved month:** every pay screen reads the frozen snapshot (`payForFinal()` says `final: true`), and the pages say **Final**. Later rule rows, templates, declarations, salaries or leave don't alter it; the year-to-date and TDS of later months build on the frozen figures.
+- **Any other month:** worked out live, and the pages say **Draft, not final**.
+- **Approve refuses** a run prepared before the new rules applied to it ("prepare it again") and one whose live figures have moved since it was prepared ("The figures have changed since this run was prepared: prepare it again.").
+- **Months before the start month** are byte-for-byte what they were (no snapshot is written; a before / after dump of every old-engine month is identical).
+- **The start month** still can't move on or before an approved month; a month with an approved snapshot stays under the new rules even if the start month later moves after it.
+- The "figures shown live" wording is gone: the run says Final or Draft, not final under **Figures**; the totals card, the payslip view's notes, the tax explanation's months (a **Figures** column) and the cost-to-company card (a projection; the approved month as frozen) say which.
+
+**Loss of pay from the leave policy.** `payFor()` deducts the policy's loss-of-pay days (`lossOfPayDaysIn()`, `data/leave-policy.js`: approved leave recorded `underPolicy` with `lopDays`, counted on the request's last working days, half days 0.5, off days skipped) from the **later** of the statutory start month and the leave policy's start month (`policyLossOfPayFrom()`), as `monthlyGross × days ÷ working days`, capped so it and the old unpaid-leave days never pass the month's working days. The `lop` field shows `policyDays` and `policyAmount` beside the totals. Leave taken before that month, and approved months, are never rewritten.
+
+**Self-service declarations** (`data/pay-structure.js`, per tax year): **draft → submitted → verified and locked**.
+
+| who | can |
+|---|---|
+| the employee (`declarations:submit-own`) | choose new or old regime, fill in rent, metro, 80C-type investments and others; save a draft or submit; nothing after the lock ("Your declaration is verified and locked. To change it, ask Finance.") or after the year's cutoff ("Declarations for <year> closed on <date>. To change yours, ask Finance.") |
+| Finance, the Admin (`declarations:manage`) | edit anyone's (it stays or becomes submitted), verify and lock a submitted one, unlock, set the year's cutoff (none by default: open) |
+| a manager | nothing for their team: they never see a report's declaration |
+
+Only a submitted declaration's figures apply to tax; a draft doesn't. Every change is audited with who, when, from and to. Proofs are not collected in this demo. Pages: **My payslips** and **Tax & deductions** get the employee's form (from the start month); Tax & deductions gets Finance's **Declarations to verify** (verify / unlock, the cutoff).
+
+Tests: `tests/live/binding.mjs` (60 checks, 3 time zones; mutants all caught) and the React harness `p5`.
 
 ## Not built yet
 

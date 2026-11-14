@@ -240,9 +240,12 @@ export function overAllowanceIfWorking(date) {
 // ---------- writes ----------
 
 // fields: { type, from, to, duration, reason, contactPhone }. Anything else is ignored.
+// P5: opts.policy = { lopDays, band } is given only by data/leave-policy.js applyLeaveUnderPolicy() from the leave policy's
+// start date: the old flat allowance isn't checked (the band's policy was), and the request records underPolicy, policyBand
+// and lopDays (the days beyond the balance, unpaid, accepted by the person). Without it, everything is as before.
 // Success: { ok: true, record, advisories: [{ code, message }] }. Advisories are
 // things to tell the person; they don't stop the request.
-export function applyLeave(userId, fields = {}) {
+export function applyLeave(userId, fields = {}, opts = {}) {
   const user = getUser(userId);
   if (!user) return fail(`No employee with id ${userId}.`);
   if (user.status === "inactive") return fail(`${user.name} is inactive and can't apply for leave.`);
@@ -289,7 +292,7 @@ export function applyLeave(userId, fields = {}) {
     balance: balanceFor(userId, p.year, p.month ?? 1)[type],
   }));
   const over = periods.filter((p) => policy.allowance !== null && p.balance.approved + p.balance.pending + p.days > policy.allowance);
-  if (CAPPED_TYPES.includes(type) && over.length) {
+  if (CAPPED_TYPES.includes(type) && over.length && !opts.policy) {
     const { label, balance, days: here } = over[0];
     const free = policy.allowance - balance.approved - balance.pending;
     const share = periods.length > 1 ? `${here} of this request's ${days} days fall in ${label}` : `this request is ${days}`;
@@ -323,9 +326,10 @@ export function applyLeave(userId, fields = {}) {
     finalStage = "done";
   }
 
+  const underPolicy = opts.policy ? { underPolicy: true, policyBand: opts.policy.band ?? null, lopDays: Math.min(days, Math.max(0, Number(opts.policy.lopDays) || 0)) } : {};
   const result = leave.add({
     userId, type, from, to, duration, days, reason, contactPhone,
-    status, stage: finalStage, managerId, appliedOn: today, history,
+    status, stage: finalStage, managerId, appliedOn: today, history, ...underPolicy,
   });
   return result.ok ? { ...result, advisories } : result;
 }
@@ -394,7 +398,7 @@ export function decideLeave(requestId, deciderUserId, deciderRole, decision, not
   // what's left. Each period is checked: what's approved there plus this
   // request's own days. Another pending request doesn't count here; it's
   // checked when it's approved. Nothing is decided, as above.
-  const over = !next.stage && CAPPED_TYPES.includes(request.type) ? overAllowance(request) : null;
+  const over = !next.stage && CAPPED_TYPES.includes(request.type) && !request.underPolicy ? overAllowance(request) : null;   // P5: a policy request was checked against its band
   if (over) return fail(over);
   return leave.update(requestId, {
     status: next.stage ? "pending" : "approved",

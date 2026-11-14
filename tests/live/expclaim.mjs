@@ -292,7 +292,7 @@ const pageBoxes = [...d.querySelectorAll('#matrix-rows .perm-tick[data-permissio
 check("H2", "every expenses permission shown is real, and all of them are shown: expenses:pay too (it had no column before 6H)", pageBoxes.every((p) => ALL_PERMISSIONS.includes(p)) && j(pageBoxes.slice().sort()) === j(ALL_PERMISSIONS.filter((p) => p.startsWith("expenses:")).sort()));
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 45 of 78: dashboard:finance is a 79th permission)
-check("H3", "the count: '48 of 88' (L0: was 45 of 79), drawn; the static HTML holds no count (a '—' until the script runs)", txt(row?.closest(".card")?.querySelector(".card__meta")) === "48 of 88" && /<span class="card__meta" id="permission-count">—<\/span>/.test(read(EDITOR)));
+check("H3", "the count: '49 of 90' (L0: was 45 of 79), drawn; the static HTML holds no count (a '—' until the script runs)", txt(row?.closest(".card")?.querySelector(".card__meta")) === "49 of 90" && /<span class="card__meta" id="permission-count">—<\/span>/.test(read(EDITOR)));
 
 // =====================================================================
 section("I. Access");

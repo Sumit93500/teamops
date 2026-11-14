@@ -14,7 +14,7 @@ import { useToast } from "../ui/Toast.jsx";
 import { Stepper } from "../components/Basics.jsx";
 import { useData, useSession } from "../data/hooks.js";
 import { useConfirm } from "../components/Confirm.jsx";
-import { requestOutcome } from "../../../assets/js/data/leave-policy.js";
+import { requestOutcome, applyLeaveUnderPolicy, LOSS_OF_PAY } from "../../../assets/js/data/leave-policy.js";
 import { leavePolicyOn } from "../ui/leaveband.jsx";
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
@@ -90,14 +90,19 @@ export default function ApplyLeave() {
   } else { steps.push({ state: "", title: "Approval", detail: "HR or an Admin" }); chainText = "Your request goes to HR or an Admin."; }
 
   // P4b: from the policy's start date, the days a request takes beyond the balance are said, and asked about before they are sent
-  const policyOn = leavePolicyOn();
+  const policyOn = leavePolicyOn(/^\d{4}-\d{2}-\d{2}$/.test(form.from) ? form.from : todayIso());   // P5: by the leave's first day, as the store binds
   const onDay = form.from && form.from > todayIso() ? form.from : todayIso();
   const outcome = policyOn && days ? requestOutcome(user.id, form.type, days, onDay) : null;
   const submit = async (e) => {
     e.preventDefault();
     setError(null);
-    if (outcome?.lop > 0 && !(await confirm({ message: `Apply anyway?\n${formatDays(outcome.lop)} of these ${formatDays(days)} are beyond your ${typeLabel(form.type).toLowerCase()} balance and would be unpaid (loss of pay).`, confirmLabel: "Apply anyway", cancelLabel: "Go back", danger: true }))) return;
-    const result = applyLeave(user.id, { type: form.type, from: form.from, to: form.to, duration: form.duration, reason: form.reason, contactPhone: form.phone });
+    // P5: the store decides: from the policy's start, days beyond the balance go through only as loss of pay, when confirmed
+    const fields = { type: form.type, from: form.from, to: form.to, duration: form.duration, reason: form.reason, contactPhone: form.phone };
+    let result = applyLeaveUnderPolicy(user.id, fields);
+    if (!result.ok && result.code === LOSS_OF_PAY) {
+      if (!(await confirm({ message: `Apply anyway?\n${formatDays(result.lopDays)} of these ${formatDays(result.lopDays + result.paidDays)} are beyond your ${typeLabel(form.type).toLowerCase()} balance and would be unpaid (loss of pay).`, confirmLabel: "Apply anyway", cancelLabel: "Go back", danger: true }))) return;
+      result = applyLeaveUnderPolicy(user.id, fields, { acceptLossOfPay: true });
+    }
     if (!result.ok) {
       if (ERROR_ID[result.field]) { setError({ field: result.field, message: result.error }); setTimeout(() => FOCUS[result.field]()?.focus()); }
       else showToast(result.error, "danger");

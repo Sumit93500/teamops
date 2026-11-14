@@ -230,10 +230,10 @@ perms14.B6,perms14,everyone reads offices (offices:view needs no gate in the dat
 perms14.B7,perms14,"locations:set-own follows the flag, not the role: HR (not eligible) is refused; an eligible employee may",x3 (3 zones)
 perms14.B8,perms14,"setting the flag needs users:edit (HR, Admin), not a new permission",x3 (3 zones)
 perms14.C1,perms14,PERMISSIONS has the four modules (the role matrix draws from it),x3 (3 zones)
-perms14.C2,perms14,ALL_PERMISSIONS has all seven: 88 entries (79 before L0),x3 (3 zones)
+perms14.C2,perms14,ALL_PERMISSIONS has all seven: 90 entries (79 before L0; P5: 90),x3 (3 zones)
 perms14.C3,perms14,"the Admin's list has all seven; HR's, Finance's and Employee's have exactly the three self-service ones",x3 (3 zones)
-perms14.C4,perms14,"the roles' permission counts on purpose: admin 88, hr 48, fin 40, emp 23 (were 79, 45, 37, 20)","x3 (3 zones, 4 roles)"
-perms14.C5,perms14,"permissionsOf() and hasPermission() agree for everyone, on all 88",x3 (3 zones)
+perms14.C4,perms14,"the roles' permission counts on purpose: admin 90, hr 49, fin 42, emp 24 (were 79, 45, 37, 20)","x3 (3 zones, 4 roles)"
+perms14.C5,perms14,"permissionsOf() and hasPermission() agree for everyone, on all 90",x3 (3 zones)
 perms14.C5b,perms14,LOCATION_GRANTS reads from the roles,x3 (3 zones)
 perms14.C6,perms14,none is overridable,x3 (3 zones)
 perms14.C7,perms14,a stored grant of one is ignored,x3 (3 zones)

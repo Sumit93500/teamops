@@ -19,6 +19,7 @@ import { load, remove } from "../core/storage.js";
 import { getUser } from "./store.js";
 import { hasPermission } from "../config/roles.js";
 import { pureBox } from "./places.js";
+import { approvedSnapshot } from "./pay-snapshots.js";
 
 const KEY = "pay-settings";
 export const DEFAULT_STATUTORY_FROM = "2026-11";
@@ -36,7 +37,8 @@ function todayIso() {
 
 export const statutoryFrom = () => store.read().statutoryFrom ?? DEFAULT_STATUTORY_FROM;
 export const leaveFrom = () => store.read().leaveFrom ?? DEFAULT_LEAVE_FROM;
-export const usesNewRules = (month) => isMonth(month) && month >= statutoryFrom();
+// P5: a month whose new-rules figures were approved (a frozen snapshot) stays a new-rules month whatever the start month says later.
+export const usesNewRules = (month) => isMonth(month) && (month >= statutoryFrom() || approvedSnapshot(month) !== null);
 export const leavePolicyActive = (date) => isDay(date) && date >= leaveFrom();
 export const paySettingsAudit = () => copy(store.read().audit);
 

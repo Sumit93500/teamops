@@ -401,6 +401,45 @@ react-locs.W.inbox.1280.dark,react-locs,"requests/approvals-inbox.html (inbox) a
 react-locs.W.inbox.412.light,react-locs,"requests/approvals-inbox.html (inbox) at 412, light: no sideways scroll",x1
 react-locs.W.inbox.412.dark,react-locs,"requests/approvals-inbox.html (inbox) at 412, dark: no sideways scroll",x1
 react-locs.E,react-locs,no page or console errors,x1
+react-p5.R1,react-p5,November (approved): 'Final: frozen when the run was approved'; the totals card says Final,x1
+react-p5.R2,react-p5,"Arjun's November row is the snapshot's: gross, PF, LWF, TDS, net and employer cost",x1
+react-p5.R3,react-p5,no 'shown live' wording is left where the snapshot rules,x1
+react-p5.R4,react-p5,a 10% cess row and PF on full wages added after approval: November's rows are unchanged,x1
+react-p5.R5,react-p5,"December (not prepared): 'Draft, not final'",x1
+react-p5.R6,react-p5,"October (before the start month) is the run it always was: no new columns, no figures note",x1
+react-p5.R7.1280,react-p5,1280: no sideways scroll,x1
+react-p5.R7.412,react-p5,412: no sideways scroll,x1
+react-p5.S1,react-p5,"November's payslip: 'Final', and the snapshot's figures even with the cess changed",x1
+react-p5.S2,react-p5,"December's payslip: 'Draft, not final'",x1
+react-p5.S3,react-p5,"My payslips: the tax explanation's months say Final or Draft, not final",x1
+react-p5.C1,react-p5,"the CTC card says it is a projection (a draft, not final)",x1
+react-p5.L1,react-p5,an intern's sick leave (none in the policy): Apply anyway? with the days that would be unpaid,x1
+react-p5.L2,react-p5,Go back: nothing stored,x1
+react-p5.L3,react-p5,Apply anyway: stored under the policy with 2 days of loss of pay,x1
+react-p5.L4,react-p5,HR's approvals: 'Would be unpaid: 2 days' from what the store recorded,x1
+react-p5.L5,react-p5,the Pay column is on the Approved tab too,x1
+react-p5.L6,react-p5,"starting the day before the policy (30 Nov): the flat allowance, its old words, no question",x1
+react-p5.D1,react-p5,"the employee's own form on My payslips: Not declared, the new regime applies",x1
+react-p5.D2,react-p5,Save draft: Draft; still the new regime applied,x1
+react-p5.D3,react-p5,the module's checks in words under the field,x1
+react-p5.D4,react-p5,Submit: Submitted; the old regime applies,x1
+react-p5.D5,react-p5,"Finance's review lists Arjun: Submitted, the old regime with rent 20,000",x1
+react-p5.D6,react-p5,Verify and lock asks first,x1
+react-p5.D7,react-p5,"locked: the row says Verified and locked, with Unlock",x1
+react-p5.D8,react-p5,the cutoff saves,x1
+react-p5.D9,react-p5,"the employee sees it locked, with the note to ask Finance, and no form",x1
+react-p5.D10,react-p5,"after the cutoff (and not locked): closed, ask Finance, no form",x1
+react-p5.D11,react-p5,"a manager: their own form only, no review of their team (and no tax page)",x1
+react-p5.D12,react-p5,the manager can't open the tax page,x1
+react-p5.D13,react-p5,"HR: their own form, no review",x1
+react-p5.D14,react-p5,the Admin has the review too,x1
+react-p5.D15.1280,react-p5,1280: no sideways scroll,x1
+react-p5.D15.412,react-p5,412: no sideways scroll,x1
+react-p5.D16,react-p5,before the pay start month nothing is added to My payslips,x1
+react-p5.K1,react-p5,the form's fields have names; the regime is a named group,x1
+react-p5.K2,react-p5,Save draft from the keyboard,x1
+react-p5.W1,react-p5,"the declaration status pills, the notes and the run's figures note are at least 4.5:1 in both themes",x1
+react-p5.E1,react-p5,no page errors,x1
 react-pay.S1,react-pay,admin on payroll/payslips.html: as it opens,x5 (5 roles)
 react-pay.S2,react-pay,admin: each financial year; the badges and hold reasons,x5 (5 roles)
 react-pay.Q1,react-pay,"emp: printed on A4: one page, old and new, the same text printed",x2 (2 roles)
@@ -438,7 +477,7 @@ react-pay4.P6,react-pay4,an HR person's own page has them too,x1
 react-pay4.R1,react-pay4,"the run's columns from the start month: Employee, State, Gross, PF, ESI, PT, LWF, TDS, Net pay, Employer cost, Status",x1
 react-pay4.R2,react-pay4,"every row names its state (Haryana) and has PF, LWF and an employer cost; the stats say the new rules",x1
 react-pay4.R3,react-pay4,"the statutory totals: PF, ESI, PT, LWF, TDS, employer contributions, cost to company; challans stay samples",x1
-react-pay4.R4,react-pay4,"the Unverified banner, and the note that approving still fixes the earlier rules' figures",x1
+react-pay4.R4,react-pay4,"the Unverified banner, and the Figures note (P5: Draft, not final until approved; the old 'still fix the earlier rules' note is gone)",x1
 react-pay4.R5,react-pay4,the totals are the columns' sums (PF and LWF),x1
 react-pay4.R6,react-pay4,"before the start month the run is as it was: Gross, Deductions, Net pay; no totals card",x1
 react-pay4.R7,react-pay4,a month with no records is still 'No data in this range.',x1

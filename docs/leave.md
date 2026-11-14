@@ -47,7 +47,14 @@ From the **leave policy's start date** (the Leave policy page; `data/pay-setting
 | Leave policy (new, app-own) | the numbers by band, marked sample; HR reads, an Admin edits through the module's checks, sets the start date, sees the history, and closes a leave year (once, with a preview of what is carried and paid out) |
 | Profile, user form | the leave band, read-only |
 
-**Limits, said on the pages:** payroll still deducts only leave applied for as Unpaid leave, and applyLeave still refuses requests above the old flat allowance (casual 12, sick 8, earned 10), so the policy's loss of pay is shown, not deducted, until a later round.
+**Limits, said on the pages (until P5):** payroll deducted only leave applied for as Unpaid leave, and applyLeave refused requests above the old flat allowance, so the policy's loss of pay was shown, not deducted. P5 made it binding:
+
+## P5 (2026-11-14): the policy is binding
+
+- **From the policy's start date** (by the leave's first day, `from`), Apply for leave goes through `applyLeaveUnderPolicy()` (`data/leave-policy.js`), which checks the band's balance instead of the flat allowance. A leave that starts before the start date keeps the flat 12 / 8 / 10 and its checks.
+- **Beyond the balance:** the store refuses unless the request explicitly accepts loss of pay (`acceptLossOfPay: true`; code `loss-of-pay`, with the paid and unpaid days). The page asks "Apply anyway? ... would be unpaid (loss of pay)." (Apply anyway / Go back) and sends it again only on Apply anyway. WFH and Unpaid leave are never loss of pay.
+- **The request records it:** `underPolicy: true`, `policyBand`, `lopDays`. The approvals show a **Pay** column on every tab (Paid, or the unpaid days), read from the request; deciding doesn't re-check the flat allowance for such a request.
+- **Payroll** deducts those days from the later of the pay rules' start month and the leave start month (see [payroll.md](payroll.md#p5-2026-11-14-the-rules-are-binding)). History is never rewritten: requests made before stay as they were.
 
 ## P3 (2026-11-14): leave by tenure (data only)
 

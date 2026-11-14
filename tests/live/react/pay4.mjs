@@ -163,7 +163,7 @@ if (ONLY.includes("R")) {
   check("R2", "every row names its state (Haryana) and has PF, LWF and an employer cost; the stats say the new rules", rows.length >= 9 && rows.every((r) => r.includes("Haryana")) && /new rules/.test(await txt(f.t, "[data-stat=gross]")) && (await f.t.locator("[data-stat=employer]").count()) === 1, j(rows[0]));
   const tot = await txt(f.t, "#run-statutory");
   check("R3", "the statutory totals: PF, ESI, PT, LWF, TDS, employer contributions, cost to company; challans stay samples", /Provident fund \(employees\)/.test(tot) && /Labour welfare fund/.test(tot) && /Cost to company/.test(tot) && /samples: nothing is filed or paid/.test(tot), tot?.slice(0, 120));
-  check("R4", "the Unverified banner, and the note that approving still fixes the earlier rules' figures", (await txt(f.t, "#run-unverified"))?.includes(UNVERIFIED) && /still fix the earlier rules/.test(await txt(f.t, "#run-rules-note") ?? ""));
+  check("R4", "the Unverified banner, and the Figures note (P5: Draft, not final until approved; the old 'still fix the earlier rules' note is gone)", (await txt(f.t, "#run-unverified"))?.includes(UNVERIFIED) && /^Draft, not final/.test(await txt(f.t, "#run-rules-note") ?? "") && !/still fix/.test(await f.t.evaluate(() => document.body.innerText)));
   const sums = await f.t.evaluate(() => { const g = (k) => Number(document.querySelector(`#run-statutory-totals [data-field=${k}]`).innerText.replace(/[^\d]/g, "")); return [g("pf"), g("lwf")]; });
   const colSum = (name) => rows.reduce((s, r) => s + num(r[head.indexOf(name)]), 0);
   check("R5", "the totals are the columns' sums (PF and LWF)", sums[0] === colSum("PF") && sums[1] === colSum("LWF"), j([sums, colSum("PF"), colSum("LWF")]));

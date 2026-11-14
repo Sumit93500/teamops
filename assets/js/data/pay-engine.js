@@ -35,7 +35,24 @@ import { payTemplate, componentsFor, structureOf, taxYearOf, regimeOf, declarati
 import { employmentOf } from "./employment.js";
 import { officeOf } from "./offices-store.js";
 import { payrollRunFor } from "./payroll-store.js";
-import { taxYearMonths } from "./payroll.js";
+import { taxYearMonths, lossOfPayAmount } from "./payroll.js";
+import { approvedRow } from "./pay-snapshots.js";
+import { statutoryFrom, leaveFrom } from "./pay-settings.js";
+import { lossOfPayDaysIn } from "./leave-policy.js";
+
+// P5: a month's loss of pay from the leave policy: from the LATER of the statutory rules start month and the leave
+// policy's start month, the approved policy requests' loss-of-pay days in the month (data/leave-policy.js
+// lossOfPayDaysIn), at the engine's daily rate: the full monthly gross / the month's working days, for each day, rounded
+// to the rupee (data/payroll.js lossOfPayAmount, the rule the existing loss of pay uses). Never more days than the month
+// has left after the existing loss of pay. Before that month, only leave applied for as Unpaid leave is deducted (in the
+// existing row), as before.
+export const policyLossOfPayFrom = () => { const a = statutoryFrom(), b = leaveFrom().slice(0, 7); return a > b ? a : b; };
+function policyLossOfPay(userId, year, month, old) {
+  const key = `${year}-${String(month).padStart(2, "0")}`;
+  if (key < policyLossOfPayFrom()) return { days: 0, amount: 0 };
+  const days = Math.min(lossOfPayDaysIn(userId, year, month), Math.max(0, old.workingDays - old.lop.days));
+  return { days, amount: days > 0 ? lossOfPayAmount(old.monthlyGross, days, old.workingDays) : 0 };
+}
 
 const money = (v) => (typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0);
 const trace = (...rows) => {
@@ -173,13 +190,18 @@ export function payFor(userId, year, month) {
   const upto = (m + 8) % 12;   // April is 0
   let incomeSoFar = 0, tdsSoFar = 0, out = null;
   for (const [i, [yy, mm]] of taxYearMonths(y, m).slice(0, upto + 1).entries()) {
+    // P5: an approved month is its frozen snapshot (data/pay-snapshots.js): it is what was paid, and the year goes on from it
+    const frozen = approvedRow(userId, `${yy}-${String(mm).padStart(2, "0")}`);
+    if (frozen) { incomeSoFar += frozen.gross; tdsSoFar += frozen.deductions.tds; out = frozen; continue; }
     const old = payrollRunFor(userId, yy, mm);
     if (!old) { out = null; continue; }
-    const pay = payMonth({ gross: old.gross, monthlyGross: old.monthlyGross, template, lta: structure.lta, state, year: yy, month: mm, regime, declaration,
+    const lop = policyLossOfPay(userId, yy, mm, old);
+    const pay = payMonth({ gross: Math.max(0, old.gross - lop.amount), monthlyGross: old.monthlyGross, template, lta: structure.lta, state, year: yy, month: mm, regime, declaration,
       soFar: { incomeSoFar, tdsSoFar, monthsBefore: i, monthsLeft: 12 - i }, finalMonth: Boolean(old.attendance?.lastDay) });
     incomeSoFar += pay.gross;
     tdsSoFar += pay.deductions.tds;
-    out = { userId, employmentType: employment.employmentType, joiningDate: employment.joiningDate, salaryId: old.salaryId, status: old.status, holdReason: old.holdReason, period: old.period, workingDays: old.workingDays, lop: old.lop, ...pay };
+    out = { userId, employmentType: employment.employmentType, joiningDate: employment.joiningDate, salaryId: old.salaryId, status: old.status, holdReason: old.holdReason, period: old.period, workingDays: old.workingDays,
+      lop: lop.days ? { ...old.lop, days: old.lop.days + lop.days, amount: old.lop.amount + lop.amount, policyDays: lop.days, policyAmount: lop.amount } : old.lop, ...pay };
   }
   return out;
 }

@@ -18,6 +18,7 @@ import { BarRows } from "../components/Charts.jsx";
 import { rupees } from "../ui/payroll.jsx";
 import { useData, useCan, useSession } from "../data/hooks.js";
 import { TaxExplain } from "../ui/paycards.jsx";
+import { MyDeclaration, DeclarationsReview } from "../ui/declarations.jsx";
 
 csvColumns("statutory-deductions", { "This month": { number: true, header: "This month (₹)" } });   // Round Data export
 
@@ -95,6 +96,8 @@ export default function TaxDeductions() {
       </div>
       <div className="stack">
         {me && <TaxExplain userId={me} />}
+        {me && <MyDeclaration />}
+        <DeclarationsReview />
         <StatStrip label="Key numbers">
           {stats.map(([key, l, value, note]) => <StatCard key={key} id={key} icon={ICONS[key][1]} tone={ICONS[key][0]} label={l} value={value} note={note} />)}
         </StatStrip>

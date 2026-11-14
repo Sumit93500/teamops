@@ -178,6 +178,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "paystructure.mjs") { Run "paystructure-$t" @("paystructure.mjs") }
   # P4: the two start dates and the two permissions (data/pay-settings.js, config/permissions.js)
   if (Test-Path "paysettings.mjs") { Run "paysettings-$t" @("paysettings.mjs") }
+  # P5: the pay and leave rules binding (snapshots, the leave policy, the policy's loss of pay, self-service declarations)
+  if (Test-Path "binding.mjs") { Run "binding-$t" @("binding.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

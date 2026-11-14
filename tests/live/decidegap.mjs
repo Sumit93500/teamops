@@ -230,9 +230,13 @@ check("X2", "no page and no css changed", j(pagesNow) === j(walk("./html-pre12J"
 const now = srcAt("./js", "data/leave-store.js"), pre = srcAt("./js-pre12J", "data/leave-store.js");
 check("X3", "CRLF with no final newline; no import changed", !now.endsWith("\n") && !/(^|[^\r])\n/.test(now) && j(now.match(/^import .*$/gm)) === j(pre.match(/^import .*$/gm)));
 const fnText = (s, name) => { const i = s.search(new RegExp(`(export )?function ${name}\\b`)); return i < 0 ? null : s.slice(i, s.indexOf("\r\n}\r\n", i)); };
+// P5 (2026-11-14) gave applyLeave an opts.policy on purpose (data/leave-policy.js's binding policy); X4 takes exactly those four
+// edits out (and requires all four) before comparing, so any other change to applyLeave still fails here.
+const p5Edits = [", fields = {}, opts = {}) {", " && over.length && !opts.policy) {", "\r\n  const underPolicy = opts.policy ? ", ", history, ...underPolicy,"];
+const un5 = now.replace(p5Edits[0], ", fields = {}) {").replace(p5Edits[1], " && over.length) {").replace(/\r\n  const underPolicy = opts\.policy \? [^\r]*/, "").replace(p5Edits[3], ", history,");
 const kept = ["applyLeave", "notTheirDays", "checkedInDays", "overAllowance", "balanceFor", "cancelLeave", "workingDays"];
 check("X4", "only decideLeave changes (12I's notTheirDays reused as it is); applyLeave, the check-in and balance re-checks' helpers as they were",
-  kept.every((f) => fnText(now, f) !== null && fnText(now, f) === fnText(pre, f)) && fnText(now, "decideLeave") !== fnText(pre, "decideLeave"), kept.filter((f) => fnText(now, f) !== fnText(pre, f)).join(","));
+  kept.every((f) => fnText(un5, f) !== null && fnText(un5, f) === fnText(pre, f)) && p5Edits.every((e) => now.includes(e)) && fnText(now, "decideLeave") !== fnText(pre, "decideLeave"), kept.filter((f) => fnText(un5, f) !== fnText(pre, f)).join(","));
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exitCode = failed ? 1 : 0;

@@ -13,7 +13,7 @@ import { Link, useLocation } from "react-router-dom";
 import { payrollRun, storedRun, approversFor, canApprove, runProblems, prepareProblem, approveProblem, prepareRun, approveRun, runTotals, runMonth, waitingSalaryChanges, runMonthState } from "../../../assets/js/data/payroll-store.js";
 import { ATTENDANCE_RULES } from "../../../assets/js/data/attendance-store.js";
 import { getUser } from "../../../assets/js/data/store.js";
-import { payFor } from "../../../assets/js/data/pay-engine.js";
+import { prepareRunWithSnapshot, approveRunWithSnapshot, approveSnapshotProblem, payForFinal } from "../../../assets/js/data/pay-runs.js";
 import { usesNewRules, statutoryFrom } from "../../../assets/js/data/pay-settings.js";
 import { officeOf } from "../../../assets/js/data/offices-store.js";
 import { ROLES } from "../../../assets/js/config/roles.js";
@@ -170,8 +170,11 @@ function Run({ asked }) {
     const run = storedRun(viewed.year, viewed.month) ?? payrollRun(viewed.year, viewed.month);
     const me = getCurrentUserId();
     const key = `${viewed.year}-${String(viewed.month).padStart(2, "0")}`;
-    const newPay = usesNewRules(key) ? Object.fromEntries(run.rows.map((r) => [r.userId, payFor(r.userId, viewed.year, viewed.month)])) : null;
-    return { run, me, newPay, approvers: run.status === "approved" ? [] : approverNames(run), prepareBlock: prepareProblem(me, viewed.year, viewed.month), approveBlock: approveProblem(me, viewed.year, viewed.month) };
+    // P5: an approved month reads its frozen snapshot; any other month is live (a draft, not final)
+    const finals = usesNewRules(key) ? Object.fromEntries(run.rows.map((r) => [r.userId, payForFinal(r.userId, viewed.year, viewed.month)])) : null;
+    const newPay = finals ? Object.fromEntries(Object.entries(finals).map(([id, f]) => [id, f?.pay ?? null])) : null;
+    const final = Boolean(finals) && Object.values(finals).every((f) => f?.final);
+    return { run, me, newPay, final, approvers: run.status === "approved" ? [] : approverNames(run), prepareBlock: prepareProblem(me, viewed.year, viewed.month), approveBlock: approveSnapshotProblem(me, viewed.year, viewed.month) };
   }, [asked]);
   const emptyKey = viewed && `${viewed.year}-${String(viewed.month).padStart(2, "0")}`;
   const title = d ? `Payroll run, ${monthLabel(d.run.month)}` : state?.empty ? `Payroll run, ${monthLabel(emptyKey)}` : "Payroll run";
@@ -187,7 +190,7 @@ function Run({ asked }) {
     else if (state.firstMonth) why = `Attendance records start in ${monthLabel(state.firstMonth)}, so there's no run before that.`;
     return <NoRun title={title} months={emptyKey} card={<EmptyState title={NO_DATA} text={<KeepWhole text={why} />} to={RUN_URL} linkText="Back to this month's run" />} />;
   }
-  const { run, me, approvers, prepareBlock, approveBlock, newPay } = d;
+  const { run, me, approvers, prepareBlock, approveBlock, newPay, final } = d;
   const label = monthLabel(run.month);
   const st = RUN_STATUS[run.status];
   const totals = run.totals ?? runTotals(run);
@@ -251,12 +254,12 @@ function Run({ asked }) {
           <NotBuilt what="Export bank file" data-permission="payroll:export" hidden={!canExport || undefined} />
           <button className="btn" type="button" id="prepare-run" data-permission="payroll:create" hidden={!canPrepare || undefined} disabled={Boolean(prepareBlock)}
             title={prepareBlock || (run.status === "prepared" ? `Fix ${label}'s figures again, as they are now` : `Fix ${label}'s figures for approval`)}
-            aria-describedby={prepareBlock ? ids.prepare : undefined} onClick={decide(prepareRun, (l) => `${l}'s run is prepared: its figures are fixed for approval.`)}>
+            aria-describedby={prepareBlock ? ids.prepare : undefined} onClick={decide(prepareRunWithSnapshot, (l) => `${l}'s run is prepared: its figures are fixed for approval.`)}>
             {run.status === "prepared" ? "Prepare again" : "Prepare run"}
           </button>
           <button className="btn btn--primary" type="button" id="approve-run" data-permission="payroll:approve" hidden={!canApproveIt || undefined} disabled={Boolean(approveBlock)}
             title={approveBlock || `Approve the ${monthName(viewed.month)} run`} aria-describedby={approveBlock ? ids.approve : undefined}
-            onClick={decide(approveRun, (l) => `${l}'s run is approved.`)}>Approve run</button>
+            onClick={decide(approveRunWithSnapshot, (l) => `${l}'s run is approved.`)}>Approve run</button>
           <Reason id={ids.prepare} text={prepareBlock} permission="payroll:create" hidden={!canPrepare} />
           <Reason id={ids.approve} text={approveBlock} permission="payroll:approve" hidden={!canApproveIt} />
         </div>
@@ -266,8 +269,8 @@ function Run({ asked }) {
           {[...STATS, ...(nt ? [["employer", "Employer cost", 1, STATS[1][3]]] : [])].map(([key, l, tone, icon]) => <StatCard key={key} id={key} icon={icon} tone={tone} label={l} value={values[key][0]} note={values[key][1]} />)}
         </StatStrip>
         {nt && (
-          <Card id="run-statutory" title="Statutory totals" meta={`Rules as of ${formatDay(`${run.month}-01`, true)}; the new rules start with ${monthLabel(statutoryFrom())}`}
-            footer={<span className="ds-card__meta">Challan and filing figures are samples: nothing is filed or paid from this page. Approving still fixes the figures of the earlier rules (see the note under Run details).</span>}>
+          <Card id="run-statutory" title="Statutory totals" meta={`${final ? "Final" : "Draft, not final"}; rules as of ${formatDay(`${run.month}-01`, true)}; the new rules start with ${monthLabel(statutoryFrom())}`}
+            footer={<span className="ds-card__meta">Challan and filing figures are samples: nothing is filed or paid from this page.</span>}>
             {nt.unverified && <UnverifiedNote id="run-unverified" />}
             <dl className="kv" id="run-statutory-totals">
               {[["pf", "Provident fund (employees)", nt.pf], ["esi", "Employee state insurance (employees)", nt.esi], ["pt", "Professional tax", nt.pt], ["lwf", "Labour welfare fund (employees)", nt.lwf], ["tds", "Income tax (TDS)", nt.tds],
@@ -321,7 +324,7 @@ function Run({ asked }) {
                   <div className="kv__row"><dt>Prepared by</dt><dd id="run-prepared-by">{stored ? nameOf(run.preparedBy) : "Not prepared yet"}</dd></div>
                   <div className="kv__row"><dt>Approver</dt><dd id="run-approver">{run.status === "approved" ? `Approved by ${nameOf(run.approvedBy)} on ${dayOf(run.approvedAt)}` : approvers.join("; ") || "No one"}</dd></div>
                   <div className="kv__row"><dt>Figures fixed on</dt><dd className={stored ? undefined : "text-muted"} id="run-fixed-on">{stored ? dayOf(run.preparedAt) : "Not fixed: worked out live"}</dd></div>
-                  {newPay && <div className="kv__row"><dt>Rules</dt><dd id="run-rules-note">{`Figures shown are the new rules' (from ${monthLabel(statutoryFrom())}). Preparing and approving still fix the earlier rules' figures until the stored run is moved to the new engine.`}</dd></div>}
+                  {newPay && <div className="kv__row"><dt>Figures</dt><dd id="run-rules-note">{final ? "Final: frozen when the run was approved. Later rule, template or declaration changes don't alter them." : "Draft, not final: worked out from the live records. Preparing stores them; approving freezes them."}</dd></div>}
                   <div className="kv__row"><dt>Pay date</dt><dd className="text-muted">Not set</dd></div>
                   <div className="kv__row"><dt>Bank file</dt><dd className="text-muted">Not built yet</dd></div>
                 </dl>

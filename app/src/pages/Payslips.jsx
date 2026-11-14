@@ -13,6 +13,7 @@ import Table from "../components/Table.jsx";
 import { StatStrip, StatCard, Badge, badgeOf, NotBuilt, Reason, NO_DATA } from "../components/Basics.jsx";
 import { rupees, UnverifiedNote } from "../ui/payroll.jsx";
 import { TaxExplain } from "../ui/paycards.jsx";
+import { MyDeclaration } from "../ui/declarations.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
 
@@ -163,6 +164,7 @@ export default function Payslips() {
           </aside>
         </div>
         {me && <TaxExplain userId={me} />}
+        {me && <MyDeclaration />}
       </div>
     </Frame>
   );

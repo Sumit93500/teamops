@@ -10,6 +10,7 @@
 //                              (Finance, Admin), never someone looking at a team member as a manager
 import { payslipsFor, payrollRun } from "../../../assets/js/data/payroll-store.js";
 import { payFor } from "../../../assets/js/data/pay-engine.js";
+import { payForFinal } from "../../../assets/js/data/pay-runs.js";
 import { usesNewRules } from "../../../assets/js/data/pay-settings.js";
 import { can } from "../../../assets/js/core/rbac.js";
 import { getCurrentUserId } from "../../../assets/js/core/auth.js";
@@ -19,10 +20,12 @@ const parts = (month) => [Number(month.slice(0, 4)), Number(month.slice(5, 7))];
 export function withNewEngine(slip) {
   if (!usesNewRules(slip.month)) return { ...slip, engine: "old" };
   const [y, m] = parts(slip.month);
-  const pay = payFor(slip.userId, y, m);
+  // P5: an approved month is its frozen snapshot (final); any other month is live: a draft, not final
+  const f = payForFinal(slip.userId, y, m);
+  const pay = f?.pay;
   if (!pay) return { ...slip, engine: "old" };
   return {
-    ...slip, engine: "new", pay, regime: pay.regime, gross: pay.gross, deductions: pay.deductionsTotal, net: pay.net,
+    ...slip, engine: "new", pay, final: f.final, payStatus: f.status, regime: pay.regime, gross: pay.gross, deductions: pay.deductionsTotal, net: pay.net,
     deductionLines: { pf: pay.deductions.pf, esi: pay.deductions.esi, pt: pay.deductions.pt, lwf: pay.deductions.lwf, tds: pay.deductions.tds },
   };
 }

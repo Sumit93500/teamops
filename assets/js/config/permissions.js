@@ -45,6 +45,9 @@ export const PERMISSIONS = {
   // P4 (2026-11-14), moved here from data/pay-rules.js and data/leave-policy.js: the role pages count them (86 -> 88)
   "payroll-rules": ["verify"],                // verify, add dated rows to the statutory rates and rules (Admin; the Rates and rules page)
   "leave-policy": ["edit"],                   // edit the tenure leave policy and close a leave year (Admin; the Leave policy page)
+  // P5 (2026-11-14): tax declarations. submit-own: everyone records their own regime and old-regime declaration; manage:
+  // edit anyone's, verify and lock, unlock, set the tax year's cutoff (Finance, Admin). The role pages count them (88 -> 90).
+  declarations:  ["submit-own", "manage"],
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.

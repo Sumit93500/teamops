@@ -86,7 +86,7 @@ export default function LeaveApprovals() {
     { key: "days", label: "Days", num: true, render: (r) => String(r.days) },
     { key: "applied", label: "Applied", render: (r) => formatDay(r.appliedOn), cellProps: (r) => ({ "data-csv": r.appliedOn }) },
     { key: "stage", label: "Stage", render: stageBadge },
-    ...(leavePolicyOn() && which === "pending" ? [{ key: "pay", label: "Pay", render: (r) => { const o = outcomeOf(r, today); return o.lop > 0 ? <Badge tone="warning" dot>{`Would be unpaid: ${o.lop} ${o.lop === 1 ? "day" : "days"}`}</Badge> : <Badge tone="success" dot>Paid</Badge>; }, cellProps: (r) => ({ "data-csv": outcomeOf(r, today).lop > 0 ? "Unpaid" : "Paid" }) }] : []),
+    ...(leavePolicyOn() ? [{ key: "pay", label: "Pay", render: (r) => { const o = outcomeOf(r, today); return o.lop > 0 ? <Badge tone="warning" dot>{`Would be unpaid: ${o.lop} ${o.lop === 1 ? "day" : "days"}`}</Badge> : <Badge tone="success" dot>Paid</Badge>; }, cellProps: (r) => ({ "data-csv": outcomeOf(r, today).lop > 0 ? "Unpaid" : "Paid" }) }] : []),
     { key: "actions", label: "Actions", actions: true, hidden: which !== "pending", render: (r) => (which !== "pending" ? null : d.mine.has(r.id)
       ? <DecisionButtons permission="leave:approve" onReject={() => leave.reject(r)} onApprove={() => leave.approve(r)} />
       : <span className="text-muted text-sm">{`Waiting for ${currentApproverName(r)}`}</span>) },

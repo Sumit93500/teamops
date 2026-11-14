@@ -40,6 +40,7 @@ export function BandBadge({ userId, day = todayIso(), next = true }) {
 
 // A pending request's outcome on the balance without counting itself twice: the days the balance covers and the days beyond it.
 export function outcomeOf(request, day = todayIso()) {
+  if (request.underPolicy) return { paid: request.days - (request.lopDays ?? 0), lop: request.lopDays ?? 0 };   // P5: what the store recorded
   const at = request.from > day ? request.from : day;
   const a = leaveAccount(request.userId, at);
   const t = a?.types[request.type];

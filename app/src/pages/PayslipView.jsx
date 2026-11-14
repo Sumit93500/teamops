@@ -61,6 +61,7 @@ function notesOf(slip) {
     ].filter(Boolean));
     notes.push(`Loss of pay: ${rupees(slip.lop.amount)} for ${formatDays(slip.lop.days)} (${why}), out of ${slip.workingDays} working days, taken off the monthly salary of ${rupees(slip.monthlyGross)}. The earnings above are on the ${rupees(slip.gross)} left.`);
   }
+  if (slip.engine === "new") notes.push(slip.final ? "Final: these are the figures frozen when the month's payroll run was approved." : "Draft, not final: worked out from the live records until the month's payroll run is approved.");
   if (slip.engine === "new") notes.push(`Rules as of ${formatDay(slip.pay.rulesAsOf, true)}: a month uses the rates in force on its first day. Tax regime: ${REGIME[slip.regime] ?? slip.regime}. Income tax is under section ${slip.pay.tax.section} of the ${slip.pay.tax.act}.`);
   const open = slip.attendance.openAbsences;
   if (open.length) notes.push(`Not deducted yet: ${plural(open.length, "absence", "absences")} with no check-in, on ${listed(open.map(openAbsence))}. Each costs a day's pay (half with half-day leave) once its ${ATTENDANCE_RULES.requestWindowDays}-day correction window has closed and nothing for it is waiting for a decision.`);

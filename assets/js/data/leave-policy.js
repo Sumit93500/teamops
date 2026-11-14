@@ -47,7 +47,8 @@ import { getUser, getAllUsers } from "./store.js";
 import { ROLE_KEYS } from "../config/roles.js";
 import { pureBox } from "./places.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker } from "./holidays.js";
-import { allRequests, balanceFor, LEAVE_POLICY } from "./leave-store.js";
+import { allRequests, balanceFor, LEAVE_POLICY, applyLeave, workingDays } from "./leave-store.js";
+import { leavePolicyActive } from "./pay-settings.js";
 import { employmentOf } from "./employment.js";
 
 const KEY = "leave-policy";
@@ -248,5 +249,47 @@ export const leavePolicyAudit = () => copy(store.read().audit);
 export function resetLeavePolicy() {
   remove(KEY);
 }
+// ---------- P5: the policy binds ----------
+// From the leave policy's start date (data/pay-settings.js leaveFrom), counted by the leave's first day, a request is
+// checked against the band's policy, not the old flat allowance (12 / 8 / 10, which still applies to leave starting
+// before that day). Days beyond the balance can go through only as unpaid (loss of pay), and only when the person says so
+// (acceptLossOfPay); without it the request is refused with code "loss-of-pay", lopDays and paidDays. Work from home and
+// unpaid leave are never loss of pay here (work from home keeps its old advisory). The request records lopDays.
+export const LOSS_OF_PAY = "loss-of-pay";
+export function applyLeaveUnderPolicy(userId, fields = {}, { acceptLossOfPay = false } = {}) {
+  const from = String(fields?.from ?? "").trim();
+  if (!leavePolicyActive(from)) return applyLeave(userId, fields);
+  const type = String(fields?.type ?? ""), to = String(fields?.to ?? "").trim(), duration = String(fields?.duration ?? "full");
+  const days = POLICY_TYPES.includes(type) && dayNumber(to) !== null && to >= from ? workingDays(from, to, duration) : 0;
+  const today = todayIso();
+  const outcome = days > 0 && type !== "wfh" && type !== "unpaid" ? requestOutcome(userId, type, days, from > today ? from : today) : null;
+  const lop = outcome?.lop ?? 0;
+  if (lop > 0 && acceptLossOfPay !== true) {
+    return { ok: false, code: LOSS_OF_PAY, field: "type", lopDays: lop, paidDays: outcome.paid,
+      error: `${lop} of these ${days} days are beyond your balance. They can go through only as unpaid leave (loss of pay), if you confirm.` };
+  }
+  return applyLeave(userId, fields, { policy: { lopDays: lop, band: tenureBand(userId, from) } });
+}
+
+// The loss-of-pay days of approved policy requests that fall in a month: a request's lopDays are its last working days
+// (a half-day request is 0.5). Leave taken before the policy's start date has no lopDays, so it is never counted.
+export function lossOfPayDaysIn(userId, year, month) {
+  const key = `${year}-${String(month).padStart(2, "0")}`;
+  const off = dayOffChecker();
+  let total = 0;
+  for (const r of allRequests()) {
+    if (r.userId !== userId || r.status !== "approved" || !(r.lopDays > 0)) continue;
+    let left = r.lopDays;
+    for (let n = dayNumber(r.to); n >= dayNumber(r.from) && left > 0; n--) {
+      const iso = isoFromDayNumber(n);
+      if (off(iso)) continue;
+      const take = Math.min(r.duration === "full" ? 1 : 0.5, left);
+      left -= take;
+      if (iso.slice(0, 7) === key) total += take;
+    }
+  }
+  return total;
+}
+
 // The flat policy data/leave-store.js still applies (for the comparison the page round makes).
 export const FLAT_POLICY = LEAVE_POLICY;
