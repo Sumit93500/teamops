@@ -5,8 +5,9 @@
 // HR see everyone; a manager sees their direct reports (data/reporting.js teamScope).
 // L3: a Place column (where each check-in came from), a Flagged badge beside the status, and a Flagged filter.
 // L4: Export writes Place as words ("Head office, 40 m; out: Permanent home, 30 m", "" when not recorded), Status without the
-// flag, and a Flagged column ("Yes" / "No") after it. The file is made from a copy of the table with that extra column, by
+// flag, and a Flagged column after it. The file is made from a copy of the table with that extra column, by
 // the same exporter (csv-export.js), so the page's own table, its phone cards and its look don't change.
+// L5: the Flagged cell gives the reason ("Yes: checked out from a different place"; data/stamps.js flaggedCell), "No" otherwise.
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { can } from "../../../assets/js/core/rbac.js";
@@ -14,7 +15,7 @@ import { getAllUsers, getAllDepartments } from "../../../assets/js/data/store.js
 import { isValidDate } from "../../../assets/js/data/holidays.js";
 import { allRequests } from "../../../assets/js/data/leave-store.js";
 import { teamWeekFor, summaryFor, pendingRegularizations, recordsStart } from "../../../assets/js/data/attendance-store.js";
-import { stampsBy, stampKey } from "../data/stamps.js";
+import { stampsBy, stampKey, flaggedCell } from "../data/stamps.js";
 import { placeNode, flagNode } from "../ui/attendance.jsx";
 import { teamScope } from "../../../assets/js/data/reporting.js";
 import { csvColumns, csvValue, exportTableAsCsv } from "../../../assets/js/ui/csv-export.js";
@@ -165,7 +166,7 @@ export default function TeamAttendance() {
     const head = live.tHead.cloneNode(true);
     head.rows[head.rows.length - 1].append(el("th", "", "Flagged"));
     const body = el("tbody");
-    for (const r of shown) { const tr = row(r); tr.append(el("td", "", r.stamp?.flagged ? "Yes" : "No")); body.append(tr); }
+    for (const r of shown) { const tr = row(r); tr.append(el("td", "", flaggedCell(r.stamp))); body.append(tr); }
     copy.append(head, body);
     exportTableAsCsv(copy, "team-attendance");
   };

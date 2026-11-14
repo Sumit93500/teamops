@@ -330,8 +330,8 @@ if (ONLY.includes("X")) {
     const arjun = rows.find((r) => r[0] === "Arjun Kapoor");
     check(`X1.${who}`, `${who}: one file; its columns: Employee, Employee ID, Department, Check-in, Place, Hours, This week, Status, Flagged`,
       files.length === 1 && /^team-attendance-\d{4}-\d{2}-\d{2}\.csv$/.test(files[0][0]) && j(head) === j(["Employee", "Employee ID", "Department", "Check-in", "Place", "Hours", "This week", "Status", "Flagged"]), j([files.map((f) => f[0]), head]));
-    check(`X2.${who}`, `${who}: Arjun's row: Place in words (in at the office, out at home), Status without the flag (Absent: in and out at 09:20), Flagged Yes`,
-      arjun && /^Head office, 40 m; out: Permanent home(, \d+ m)?$/.test(arjun[col("Place")]) && arjun[col("Status")] === "Absent" && arjun[col("Flagged")] === "Yes", j(arjun));
+    check(`X2.${who}`, `${who}: Arjun's row: Place in words (in at the office, out at home), Status without the flag (Absent: in and out at 09:20), Flagged with the reason (L5: "Yes: checked out from a different place")`,
+      arjun && /^Head office, 40 m; out: Permanent home(, \d+ m)?$/.test(arjun[col("Place")]) && arjun[col("Status")] === "Absent" && arjun[col("Flagged")] === "Yes: checked out from a different place", j(arjun));
     const others = rows.slice(1).filter((r) => r[0] !== "Arjun Kapoor");
     check(`X3.${who}`, `${who}: everyone else: Flagged No, Place empty (no place recorded)`, others.length > 5 && others.every((r) => r[col("Flagged")] === "No" && r[col("Place")] === ""), j(others.slice(0, 3)));
     const screen = await n.t.evaluate(() => [...document.querySelectorAll('table[data-export-name="team-attendance"] thead th')].map((h) => h.innerText.replace(/[▲▼]/g, "").replace(/\s+/g, " ").trim()));
@@ -339,7 +339,25 @@ if (ONLY.includes("X")) {
     await n.t.selectOption("#team-flag", "flagged"); await settle(n.t);
     const only = await grab(n.t);
     const fr = only.length ? csv(only.at(-1)[1]) : [];
-    check(`X5.${who}`, `${who}: with Flagged only, the file has Arjun's row only`, fr.length === 2 && fr[1][0] === "Arjun Kapoor" && fr[1][fr[0].indexOf("Flagged")] === "Yes", j(fr.slice(0, 3)));
+    check(`X5.${who}`, `${who}: with Flagged only, the file has Arjun's row only`, fr.length === 2 && fr[1][0] === "Arjun Kapoor" && fr[1][fr[0].indexOf("Flagged")] === "Yes: checked out from a different place", j(fr.slice(0, 3)));
+    await n.ctx.close();
+  }
+  // L5: every reason code in words; several joined; an unknown code as it is; a flag without a reason is a bare Yes
+  if (keep) {
+    const att = JSON.parse(keep[0]);
+    const day = att.records.find((r) => r.flagged);
+    const give = [["shared-device"], ["device-changed", "place-changed"], ["something-new"], []];
+    const others = ["EMP-1001", "EMP-1017", "EMP-1008", "EMP-1003"].map((userId, i) => ({ ...day, userId, flagged: true, flagReasons: give[i] }));
+    att.records = att.records.filter((r) => !(r.date === day.date && others.some((o) => o.userId === r.userId))).concat(others);
+    const n = await open("hr", "attendance/team-attendance.html", { store: [["officeos:attendance", JSON.stringify(att)], store[1], store[2]], at: "18:00" });
+    const files = await grab(n.t);
+    const rows = files.length === 1 ? csv(files[0][1]) : [];
+    const cells = rows.slice(1).map((r) => r[rows[0].indexOf("Flagged")]);
+    const want = ["Yes: shared device", "Yes: checked out from a different device; checked out from a different place", "Yes: something-new", "Yes", "Yes: checked out from a different place"];
+    check("X7", "L5: the Flagged cell words every reason code (shared device, a different device + a different place, an unknown code as it is, none = Yes); everyone else No",
+      others.length === 4 && want.every((w) => cells.filter((c) => c === w).length === 1) && cells.filter((c) => c === "No").length === cells.length - 5 && cells.length > 6, j(cells));
+    const screen = await n.t.evaluate(() => [...document.querySelectorAll('table[data-export-name="team-attendance"] thead th')].length);
+    check("X8", "L5: the page's own table is still 7 columns", screen === 7, screen);
     await n.ctx.close();
   }
   const m = await open("mgr", "attendance/team-attendance.html", { store, at: "18:00" });

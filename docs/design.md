@@ -69,16 +69,18 @@ One store, `app/src/data/prefs.js`, read and written by the header's Appearance 
 
 | preference | choices (default first) | how it applies |
 |---|---|---|
-| Theme | Light, Dark, Match the device | `data-theme`; Match the device follows the device's setting live |
+| Theme | Match the device (the default since A2), Light, Dark | `data-theme`; Match the device follows the device's setting live |
 | Accent colour | My role's colour, Indigo, Blue, Teal, Violet, Slate, Pink | `data-accent` sets `--primary-base`: the header, buttons and links. Charts keep `--ds-chart-*` |
 | Density | Comfortable, Compact | `data-density="compact"`: the spacing scale and the padding tokens (`--ds-pad-*`, `--ds-control-h`) shrink |
 | Text size | Default, Small, Large | `data-text`: the type scale (`--text-*`, `--ds-text-*`) steps down or up; chart text follows `--ds-text-xs` |
 | Sidebar on a computer | Remember my last choice, Expanded, Collapsed | the S1 sidebar's opening state |
 | Motion | Follow the device, Always reduce | `data-motion="reduce"`: as the device's reduced-motion setting |
 
-- **Saved per person:** under `officeos:prefs:<employee id>` (before sign-in: `officeos:prefs`, this device's). The theme and accent are also written to the old keys (`officeos:theme`, `officeos:accent`). A person with nothing saved starts from them.
+- **Saved per person:** under `officeos:prefs:<employee id>` (before sign-in: `officeos:prefs`, this device's). The theme and accent are also written to the old keys (`officeos:theme`, `officeos:accent`), which nothing in the app reads back.
+- **A new person starts at the defaults (A2):** someone with nothing saved gets the theme that follows the device, their role's colour, comfortable density and default text, never the previous person's theme and accent on the same browser. They also don't take this device's signed-out choices.
+- **The one-time carry-over (A2):** on the first load after the update, whoever is signed in and has nothing saved keeps the browser's old theme and accent, written as their own record. The marker `officeos:prefs:carried` then stays, so it happens once; with nobody signed in at that first load, nothing is carried.
 - **Before the first paint:** index.html's head script sets the same attributes, so nothing flashes.
-- **Defaults look exactly as before:** at the defaults no density, text or motion attribute is set, and `design/prefs.css` applies nothing.
+- **Defaults look exactly as before:** at the defaults no density, text or motion attribute is set, and `design/prefs.css` applies nothing. On a light device the default theme is light, as it was; on a dark device a new person now opens dark.
 - **Storage blocked:** every choice still applies for the visit (kept in memory) and the panel says so.
 - **The panel:** every choice applies and saves at once and says "Saved". There is no Save button. Reset to default puts every choice back.
 

@@ -7,10 +7,12 @@
 //   motion   device (follow the device's reduced-motion setting) | reduce (always)
 // Saved per signed-in person under "officeos:prefs:<employee id>" (before sign-in: "officeos:prefs", this device's). The
 // theme and accent are also written to the keys every page has used ("officeos:theme", "officeos:accent"), so nothing that
-// reads them changes; a person with nothing saved yet starts from them. Applied to <html> as data attributes: data-theme,
-// data-accent, data-density="compact", data-text="small|large", data-motion="reduce" (none of them at the default, so the
-// default look is exactly the old one). index.html's head script applies the same before the first paint. Storage that
-// is blocked doesn't break anything: the choices then live in memory for this visit.
+// reads them changes. A2: a person with nothing saved starts at DEFAULTS (the theme follows the device), never at whatever
+// the last person on this browser chose: those old keys are no longer read, except ONCE (carryOver below). Applied to
+// <html> as data attributes: data-theme, data-accent, data-density="compact", data-text="small|large",
+// data-motion="reduce" (only data-theme at the defaults, so the default look is exactly the old one on a light device).
+// index.html's head script applies the same before the first paint. Storage that is blocked doesn't break anything: the
+// choices then live in memory for this visit.
 import { useSyncExternalStore } from "react";
 import { THEMES, ACCENTS } from "../../../assets/js/ui/theme.js";
 
@@ -20,7 +22,7 @@ export const DENSITIES = [["comfortable", "Comfortable"], ["compact", "Compact"]
 export const TEXT_SIZES = [["small", "Small"], ["default", "Default"], ["large", "Large"]];
 export const SIDEBAR_DEFAULTS = [["remember", "Remember my last choice"], ["expanded", "Expanded"], ["collapsed", "Collapsed"]];
 export const MOTIONS = [["device", "Follow the device"], ["reduce", "Always reduce"]];
-export const DEFAULTS = Object.freeze({ theme: "light", accent: "", density: "comfortable", text: "default", sidebar: "remember", motion: "device" });
+export const DEFAULTS = Object.freeze({ theme: "system", accent: "", density: "comfortable", text: "default", sidebar: "remember", motion: "device" });
 const ALLOWED = {
   theme: THEMES.map(([v]) => v), accent: ["", ...ACCENTS.map(([v]) => v)], density: DENSITIES.map(([v]) => v),
   text: TEXT_SIZES.map(([v]) => v), sidebar: SIDEBAR_DEFAULTS.map(([v]) => v), motion: MOTIONS.map(([v]) => v),
@@ -53,13 +55,30 @@ function clean(box) {
   return out;
 }
 
-// What applies now: this person's saved choices, else this device's (its prefs and the old theme / accent keys).
-export function readPrefs() {
+// A2: the one-time carry-over. Before A1 the theme and accent were this browser's ("officeos:theme", "officeos:accent"),
+// so on the first load after this update they are whoever is signed in's: that person, if they have nothing saved yet, gets
+// them as their own record. The marker "officeos:prefs:carried" then stays, and nobody else ever inherits those keys.
+const CARRIED = `${P}prefs:carried`;
+let carryChecked = false;
+function carryOver() {
+  if (carryChecked) return;
+  carryChecked = true;
+  if (getRaw(CARRIED) !== null) return;
+  setRaw(CARRIED, JSON.stringify(1));
+  const session = parse(getRaw(`${P}session`));
+  if (!session?.employeeId) return;
   const own = parse(getRaw(whoKey()));
-  if (own && typeof own === "object") return clean(own);
-  const device = parse(getRaw(`${P}prefs`)) ?? {};
+  if (own && typeof own === "object") return;
   const theme = parse(getRaw(`${P}theme`)), accent = parse(getRaw(`${P}accent`));
-  return clean({ ...device, ...(theme !== null ? { theme } : {}), ...(accent !== null ? { accent } : {}) });
+  if (theme === null && accent === null) return;
+  setRaw(whoKey(), JSON.stringify(clean({ ...(theme !== null ? { theme } : {}), ...(accent !== null ? { accent } : {}) })));
+}
+
+// What applies now: this person's saved choices (before sign-in: this device's), else the defaults.
+export function readPrefs() {
+  carryOver();
+  const own = parse(getRaw(whoKey()));
+  return clean(own && typeof own === "object" ? own : null);
 }
 
 function write(prefs) {

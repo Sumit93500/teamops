@@ -398,7 +398,8 @@ if (ONLY.includes("S")) {
   const lows = [];
   for (const theme of ["light", "dark"]) for (const accent of ["", "indigo", "blue", "teal", "violet", "slate", "pink"]) {
     n = await open(N, "admin", "users/user-form.html", { theme });
-    if (accent) { await n.t.evaluate((a) => localStorage.setItem("officeos:accent", JSON.stringify(a)), accent); await n.t.reload(); await settle(n.t, 400); }
+    if (accent) { await n.t.evaluate(([a, th]) => localStorage.setItem("officeos:prefs:EMP-1001", JSON.stringify({ theme: th, accent: a })), [accent, theme]); await n.t.reload(); await settle(n.t, 400); }   // A2: the old accent key is no longer read after the first load
+      if (accent && (await n.t.evaluate(() => document.documentElement.dataset.accent)) !== accent) lows.push(`${theme}/${accent}: the accent didn't apply`);
     await n.t.click("#uf-next"); await settle(n.t);
     const r = await n.t.evaluate(() => {
       const rgb = (s) => { const v = (s.match(/[\d.]+/g) ?? []).map(Number); return s.startsWith("color(srgb") ? v.map((x, i) => (i < 3 ? x * 255 : x)) : v; };

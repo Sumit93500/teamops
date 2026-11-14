@@ -5,13 +5,15 @@
 #   docs/graph/hubs.txt          the 25 most connected functions            (committed)
 #   docs/graph/raw/              graph.json, graph.html, the analysis files (git-ignored: ~7 MB)
 # usage: python tools/graph.py [path ...]     (default: app/src assets/js tools; a path is relative to the repo root)
-#        GRAPHIFY=<graphify executable> if it isn't on PATH
+# Graphify is looked for in this order: GRAPHIFY=<graphify executable>; the workspace's permanent venv beside the repo
+# (../tools/graph/venv, set up in O2: its README has the reinstall command); a `graphify` on PATH.
 import os, re, shutil, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs", "graph")
 scope = sys.argv[1:] or ["app/src", "assets/js", "tools"]
-exe = os.environ.get("GRAPHIFY") or shutil.which("graphify") or "graphify"
+VENV = os.path.join(os.path.dirname(ROOT), "tools", "graph", "venv", "Scripts" if os.name == "nt" else "bin", "graphify.exe" if os.name == "nt" else "graphify")
+exe = os.environ.get("GRAPHIFY") or (VENV if os.path.exists(VENV) else None) or shutil.which("graphify") or "graphify"
 env = {k: v for k, v in os.environ.items() if not re.search(r"API_KEY|_TOKEN$|ANTHROPIC|OPENAI|GEMINI", k)}
 env["PYTHONHASHSEED"] = "0"   # graphify pins it for stable communities; set here so it needn't re-exec
 

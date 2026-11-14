@@ -39,10 +39,11 @@ Read [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) first. The de
   - the round's parity harness as every role that sees its pages;
   - the traced gate (it should select no suite);
   - screenshots at 412 and 1280, light and dark, looked at by eye;
-  - from D2a on, pixels against the app's own baseline, not the old site: `node Target/tools/react/xbase.mjs compare <dist> <repo> Target/baselines/D2a <out>` (ALLOW = the round's pages). Text, behaviour and role access still match the old pages.
+  - from D2a on, pixels against the app's own baseline, not the old site: `node Target/tools/react/xbase.mjs compare <dist> <repo> Target/baselines/<the newest round> <out>` (ALLOW = the round's pages). Text, behaviour and role access still match the old pages.
 
   No mutants.
-- **Data rounds:** the lean order. That is the traced gate (only the suites whose inputs changed, 9 shards), the changed rules' mutants, then one full run in 3 time zones after apply.
+- **Data rounds:** the lean order. That is the traced gate (only the suites whose inputs changed), the changed rules' mutants, then one full run in 3 time zones after apply.
+  - The gate lives in the workspace: `python Target/tools/speed/gate/gate.py select <build tree>` names the live suites to run; `python Target/tools/speed/gate/gate.py rebuild` (a traced full run on the clean repo) refreshes its map after a data round.
 - **The live suites in the repo:** `tests/run.cmd` or `sh tests/run.sh` (`python tools/run-tests.py`). It prints passed / failed (total) per area; add `--react` for the React harnesses.
 - **After a run:** `python tools/gen-docs.py --run tests/.out --label "<round>" --result "<round>,<date>,<commit>,<passed>,<failed>,<total>,<note>"` refreshes the catalog, the cases and RESULTS.csv.
 

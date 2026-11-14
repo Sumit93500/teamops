@@ -1,10 +1,12 @@
 // A1's harness (msedge, headless): the one appearance store (app/src/data/prefs.js), the header's Appearance menu, the
 // Appearance page and Settings > Appearance. Read by meaning (attributes, aria, measured sizes, computed colours).
-// usage: node prefs.mjs <app dist> <repo root> <shots dir>   [ONLY=SXUMDARBFLKPCWE]
+// usage: node prefs.mjs <app dist> <repo root> <shots dir>   [ONLY=SXUNMDARBFLKPCWE]
 // Fixed clock Mon 28 Sep 2026 10:00 IST, fresh storage each.
 //   S  the header menu and Settings > Appearance show each other's change at once
 //   X  two pages in one browser: a change in one shows in the other (the storage event)
 //   U  per person: Admin and HR each keep their own; the old theme / accent keys are still written
+//   N  A2: someone with nothing saved starts at the defaults (the theme follows the device), never at the last person's
+//      theme and accent; the old keys carry over ONCE, to whoever is signed in at the first load
 //   M  Match the device follows an emulated colour-scheme change live
 //   D  density and text size change measured sizes (rows, buttons, text), and back
 //   A  an accent changes the primary colour (header, buttons); the charts' series colours don't change
@@ -26,7 +28,7 @@ const EDGE = path.join(HERE, "..", "edge");
 const { chromium } = createRequire(path.join(EDGE, "x.js"))("playwright-core");
 const { useLocalFonts } = await import(new URL("file:///" + path.join(EDGE, "lib", "local-fonts.mjs").replace(/\\/g, "/")).href);
 const [DIST, , SHOTS] = process.argv.slice(2);
-const ONLY = process.env.ONLY ?? "SXUMDARBFLKPCWE";
+const ONLY = process.env.ONLY ?? "SXUNMDARBFLKPCWE";
 fs.mkdirSync(SHOTS, { recursive: true });
 const t0 = Date.now();
 const srvN = spawn("python", [path.join(HERE, "spa-serve.py"), "9972", DIST], { stdio: "ignore" });
@@ -176,6 +178,68 @@ if (ONLY.includes("A")) {
   await n.ctx.close();
 }
 
+// ---------- N (A2) ----------
+if (ONLY.includes("N")) {
+  console.log("\n--- N. New people start at the defaults; the old keys carry over once ---");
+  const signIn = async (t, who) => { await t.evaluate((w) => localStorage.setItem("officeos:session", JSON.stringify({ userLabel: w[0], employeeId: w[1], signedInAt: 1790000000000 })), WHO[who]); await t.reload(); await t.waitForLoadState("load"); await settle(t, 400); };
+  const keysOf = (t) => t.evaluate(() => Object.fromEntries(["prefs:EMP-1001", "prefs:EMP-1003", "prefs:EMP-1008", "prefs:EMP-1105", "prefs", "prefs:carried", "theme", "accent"].map((k) => { try { return [k, JSON.parse(localStorage.getItem("officeos:" + k))]; } catch { return [k, "?"]; } })));
+  // the first load after the update: HR is signed in, the browser holds the old theme and accent keys
+  let ctx = await context(); await seed(ctx, "hr", { "officeos:theme": "dark", "officeos:accent": "pink" });
+  let t = await page(ctx, PAGE);
+  const hr1 = await attrs(t), k1 = await keysOf(t), c1 = await chosen(t);
+  check("N1", "the first load: the signed-in person (HR) keeps the old dark + pink, now as their own record; the marker is set",
+    hr1.theme === "dark" && hr1.accent === "pink" && k1["prefs:EMP-1003"]?.theme === "dark" && k1["prefs:EMP-1003"]?.accent === "pink" && k1["prefs:carried"] === 1 && c1.Theme === "Dark" && c1["Accent colour"] === "Pink", j([hr1, k1, c1]));
+  await signIn(t, "admin");
+  const ad = await attrs(t), k2 = await keysOf(t), c2 = await chosen(t);
+  const off = await t.evaluate(() => document.getElementById("ap-reset").disabled);
+  check("N2", "a second person on the same browser (Admin, nothing saved) starts at the defaults, not HR's dark + pink: light (the device's), the role's colour, Match the device chosen, Reset off, nothing written for them",
+    ad.theme === "light" && ad.accent === null && ad.density === null && ad.text === null && c2.Theme === "Match the device" && c2["Accent colour"] === "My role's colour" && off && k2["prefs:EMP-1001"] === null && k2.theme === "dark" && k2.accent === "pink", j([ad, c2, k2]));
+  await pick(t, "Accent colour", "Teal");
+  await signIn(t, "hr");
+  const hr2 = await attrs(t);
+  await signIn(t, "fin");
+  const fin = await attrs(t), k3 = await keysOf(t);
+  check("N3", "back to HR: still dark + pink (Admin's teal didn't reach them); a third person (Finance) is at the defaults though the old keys now say Admin's choice",
+    hr2.theme === "dark" && hr2.accent === "pink" && fin.theme === "light" && fin.accent === null && k3["prefs:EMP-1008"] === null && k3["prefs:EMP-1001"]?.accent === "teal", j([hr2, fin, k3]));
+  await ctx.close();
+  // the carry-over happens once: old keys that appear after the first load are nobody's
+  ctx = await context(); await seed(ctx, "emp");
+  t = await page(ctx, PAGE);
+  await t.evaluate(() => { localStorage.setItem("officeos:theme", JSON.stringify("dark")); localStorage.setItem("officeos:accent", JSON.stringify("violet")); });
+  await t.reload(); await t.waitForLoadState("load"); await settle(t, 400);
+  const late = await attrs(t), k4 = await keysOf(t);
+  check("N4", "once only: with the marker set, old keys written later are not picked up (light, no accent, no record)", late.theme === "light" && late.accent === null && k4["prefs:carried"] === 1 && k4["prefs:EMP-1105"] === null, j([late, k4]));
+  await ctx.close();
+  // nobody signed in at the first load: the old keys are nobody's
+  ctx = await context(); await seed(ctx, null, { "officeos:theme": "dark", "officeos:accent": "pink" });
+  t = await page(ctx, "auth/login.html");
+  const login = await attrs(t);
+  await signIn(t, "emp"); await t.goto(N + "/pages/" + PAGE); await t.waitForLoadState("load"); await settle(t, 400);
+  const emp = await attrs(t), k5 = await keysOf(t);
+  check("N5", "nobody signed in at the first load: the sign-in page and the person who then signs in are at the defaults; nothing carried", login.theme === "light" && login.accent === null && emp.theme === "light" && emp.accent === null && k5["prefs:EMP-1105"] === null && k5["prefs:carried"] === 1, j([login, emp, k5]));
+  await ctx.close();
+  // the default theme follows the device
+  ctx = await context({ scheme: "dark" }); await seed(ctx, "emp");
+  t = await page(ctx, PAGE);
+  const dark = await attrs(t), c6 = await chosen(t);
+  await t.emulateMedia({ colorScheme: "light" }); await settle(t, 300);
+  const light = await attrs(t);
+  check("N6", "a new person on a dark device opens dark (Match the device chosen), and follows the device to light, live", dark.theme === "dark" && c6.Theme === "Match the device" && light.theme === "light" && dark.accent === null, j([dark, c6, light]));
+  await ctx.close();
+  // before any app js: the head script gives the same answers
+  const pre = async (who, store, scheme = "light") => {
+    const c = await context({ scheme }); await seed(c, who, store);
+    await c.route(/\/assets\/.*\.js$/, (r) => r.abort());
+    const p = await c.newPage(); await p.goto(N + "/pages/dashboard/admin.html"); await p.waitForLoadState("load");
+    const a = await attrs(p); await c.close(); return a;
+  };
+  const p1 = await pre("admin", { "officeos:theme": "dark", "officeos:accent": "pink", "officeos:prefs:carried": 1, "officeos:prefs:EMP-1003": { theme: "dark", accent: "pink" } });
+  const p2 = await pre("admin", {}, "dark");
+  const p3 = await pre("admin", { "officeos:prefs": { theme: "dark", accent: "teal", density: "compact" } });
+  check("N7", "no flash: before the app's js, a person with nothing saved is light with no accent beside someone else's dark + pink; dark on a dark device; and doesn't take this device's signed-out choices",
+    p1.theme === "light" && p1.accent === null && p2.theme === "dark" && p2.accent === null && p3.theme === "light" && p3.accent === null && p3.density === null, j([p1, p2, p3]));
+}
+
 // ---------- R ----------
 if (ONLY.includes("R")) {
   console.log("\n--- R. Reset ---");
@@ -184,9 +248,9 @@ if (ONLY.includes("R")) {
   await n.t.click("#ap-reset"); await settle(n.t);
   const after = await attrs(n.t), c = await chosen(n.t);
   const s = await n.t.evaluate(() => ({ off: document.getElementById("ap-reset").disabled, say: document.querySelector(".ap-saved").textContent }));
-  check("R1", "Reset to default: light, the role's colour, comfortable, default text, remember, follow the device; no attribute left; the button off; \"Back to the default look\"",
+  check("R1", "Reset to default: match the device (light here), the role's colour, comfortable, default text, remember, follow the device; no attribute left but the theme's; the button off; \"Back to the default look\"",
     before.density === "compact" && after.theme === "light" && after.accent === null && after.density === null && after.text === null && after.motion === null && after.wide === true
-    && j(Object.values(c)) === j(["Light", "My role's colour", "Comfortable", "Default", "Remember my last choice", "Follow the device"]) && s.off && s.say === "Back to the default look", j([after, c, s]));
+    && j(Object.values(c)) === j(["Match the device", "My role's colour", "Comfortable", "Default", "Remember my last choice", "Follow the device"]) && s.off && s.say === "Back to the default look", j([after, c, s]));
   await n.ctx.close();
 }
 
@@ -251,7 +315,7 @@ if (ONLY.includes("K")) {
   const names = await n.t.evaluate(() => [...document.querySelectorAll("[data-appearance-panel] [role=radiogroup]")].map((g) => g.getAttribute("aria-label") ?? document.getElementById(g.getAttribute("aria-labelledby"))?.textContent));
   check("K1", "six named radio groups", j(names) === j(["Theme", "Accent colour", "Density", "Text size", "Sidebar on a computer", "Motion"]), j(names));
   await n.t.focus('[data-appearance-panel] [role=radiogroup][aria-label="Theme"] [aria-checked=true]');
-  await n.t.keyboard.press("ArrowRight"); await settle(n.t);
+  await n.t.keyboard.press("ArrowLeft"); await settle(n.t);   // A2: the default is Match the device (the last choice); one step left is Dark
   const t1 = (await attrs(n.t)).theme;
   await n.t.keyboard.press("Tab");
   const onAccent = await n.t.evaluate(() => document.activeElement.closest("[role=radiogroup]")?.getAttribute("aria-labelledby"));

@@ -57,7 +57,7 @@ The record then carries `checkInPlace`, `checkInDistanceM`, `checkInDeviceId` (a
 
 - **My attendance:** a Place column (icon and name, the distance, the check-out's place when it differs), a Flagged badge beside the status, and "Flagged only".
 - **Team attendance:** the same column and badge, and a "Flagged only" filter. A manager still sees only their direct reports (`teamScope`).
-- **Team attendance's Export (L4):** the file has the Place in words ("Head office, 40 m; out: Permanent home, 0 m", empty when none was recorded), the Status without the flag, and a Flagged column ("Yes" / "No") after it. It follows the page's filters and tab, every page of them. The file is made from a copy of the table with that extra column, so the page's table and phone cards are unchanged.
+- **Team attendance's Export (L4):** the file has the Place in words ("Head office, 40 m; out: Permanent home, 0 m", empty when none was recorded), the Status without the flag, and a Flagged column after it. Since L5 the Flagged cell gives the reason from the store's reason codes: "Yes: checked out from a different place" (`place-changed`), "Yes: checked out from a different device" (`device-changed`), "Yes: shared device" (`shared-device`), several joined with "; ", a code without wording as it is, and "No" otherwise (`app/src/data/stamps.js` `flaggedCell`). It follows the page's filters and tab, every page of them. The file is made from a copy of the table with that extra column, so the page's table and phone cards are unchanged.
 - **HR dashboard:** Flagged check-ins, the last 7 days (with `attendance:view-all`): who, the day, the places and why.
 - The stamps are read from the saved records (`app/src/data/stamps.js`); a day without one says "Not recorded".
 

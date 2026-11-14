@@ -60,6 +60,9 @@ app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (b
 - **A1:** appearance preferences in one store (theme, accent, density, text size, sidebar default, motion), saved per
   person, synced between the header's menu, the new Appearance page (for everyone) and Settings > Appearance, and across
   tabs; applied before the first paint. See [design.md](design.md#appearance-preferences-a1).
+- **A2:** a person with nothing saved starts at the defaults (the theme follows the device), not at the previous person's
+  theme and accent; the old browser-wide keys carry over once, to whoever is signed in at the first load after the update.
+- **L5:** Team attendance's export says why a day is flagged ("Yes: checked out from a different place"), "No" otherwise.
 - **E0:** the Add / Edit employee form by sections (Personal, Contact, Employment, Pay and tax, Role and access, Review),
   per-section checks, a leave guard, the profile's Edit links into a section. The same fields, rules and permissions; the
   fields a complete form still needs are listed in the workspace's notes/react-parking-lot.md (E1).
@@ -82,7 +85,7 @@ See [../tests/TEST-CATALOG.md](../tests/TEST-CATALOG.md).
 - **locs:** L2's new screens: My locations (set once, change, cancel, with a mocked location), location changes decided by an
   Admin (inbox, card, bell, counts, dashboard), HR and managers deciding none, HR's read-only Location changes tab (V, L4),
   My devices, keyboard, 412 / 1280, light and dark.
-- **prefs:** A1's appearance preferences (sync, tabs, per person, sizes measured, reset, no flash, blocked storage, contrast).
+- **prefs:** A1's appearance preferences (sync, tabs, per person, sizes measured, reset, no flash, blocked storage, contrast), and A2's (N: two people on one browser, the carry-over once, defaults for a new person, the device's theme).
 - **side:** S1's collapsible sidebar (defaults, toggle, memory, no flash, labels on focus, roles, keyboard, layout, contrast).
 
 They live in `tests/live/react/` and run with `python tools/run-tests.py --react`, which needs Microsoft Edge.

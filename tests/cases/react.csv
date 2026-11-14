@@ -96,10 +96,12 @@ react-att3.C7,react-att3,"then at the office only: Check-Out From shows home, 20
 react-att3.C8,react-att3,"a check-out at another of your places still works when asked: the office named, flagged place-changed",x1
 react-att3.X0,react-att3,the flagged day from T is there to read,x1
 react-att3.X1,react-att3,"hr: one file; its columns: Employee, Employee ID, Department, Check-in, Place, Hours, This week, Status, Flagged",x2 (2 roles)
-react-att3.X2,react-att3,"hr: Arjun's row: Place in words (in at the office, out at home), Status without the flag (Absent: in and out at 09:20), Flagged Yes",x2 (3 roles)
+react-att3.X2,react-att3,"hr: Arjun's row: Place in words (in at the office, out at home), Status without the flag (Absent: in and out at 09:20), Flagged with the reason (L5: ""Yes: checked out from a different place"")",x2 (3 roles)
 react-att3.X3,react-att3,"hr: everyone else: Flagged No, Place empty (no place recorded)",x2 (2 roles)
 react-att3.X4,react-att3,"hr: the page's own table is unchanged (7 columns, no Flagged column)",x2 (2 roles)
 react-att3.X5,react-att3,"hr: with Flagged only, the file has Arjun's row only",x2 (2 roles)
+react-att3.X7,react-att3,"L5: the Flagged cell words every reason code (shared device, a different device + a different place, an unknown code as it is, none = Yes); everyone else No",x1
+react-att3.X8,react-att3,L5: the page's own table is still 7 columns,x1
 react-att3.X6,react-att3,a manager's team view has no Export (as before),x1
 react-att3.K1,react-att3,"Check-In From, then Use my location; after a reading, Tab reaches Check in and Enter checks in",x1
 react-att3.W.mark.1280.light,react-att3,"attendance/mark-attendance.html at 1280, light: no sideways scroll",x1
@@ -357,7 +359,14 @@ react-prefs.D1,react-prefs,"compact: shorter rows, less cell padding, smaller bu
 react-prefs.D2,react-prefs,text size: small < default < large for the table text and the heading,x1
 react-prefs.D3,react-prefs,"the charts' text follows the text size (large: 13 px axis labels, 12 by default)",x1
 react-prefs.A1,react-prefs,"Teal: the primary colour, the header and the primary button change; the charts' first series colour doesn't",x1
-react-prefs.R1,react-prefs,"Reset to default: light, the role's colour, comfortable, default text, remember, follow the device; no attribute left; the button off; ""Back to the default look""",x1
+react-prefs.N1,react-prefs,"the first load: the signed-in person (HR) keeps the old dark + pink, now as their own record; the marker is set",x1
+react-prefs.N2,react-prefs,"a second person on the same browser (Admin, nothing saved) starts at the defaults, not HR's dark + pink: light (the device's), the role's colour, Match the device chosen, Reset off, nothing written for them",x1
+react-prefs.N3,react-prefs,back to HR: still dark + pink (Admin's teal didn't reach them); a third person (Finance) is at the defaults though the old keys now say Admin's choice,x1
+react-prefs.N4,react-prefs,"once only: with the marker set, old keys written later are not picked up (light, no accent, no record)",x1
+react-prefs.N5,react-prefs,nobody signed in at the first load: the sign-in page and the person who then signs in are at the defaults; nothing carried,x1
+react-prefs.N6,react-prefs,"a new person on a dark device opens dark (Match the device chosen), and follows the device to light, live",x1
+react-prefs.N7,react-prefs,"no flash: before the app's js, a person with nothing saved is light with no accent beside someone else's dark + pink; dark on a dark device; and doesn't take this device's signed-out choices",x1
+react-prefs.R1,react-prefs,"Reset to default: match the device (light here), the role's colour, comfortable, default text, remember, follow the device; no attribute left but the theme's; the button off; ""Back to the default look""",x1
 react-prefs.B1,react-prefs,"Collapsed at 1440 (even with an earlier ""expanded"" toggle stored)",x1
 react-prefs.B2,react-prefs,Expanded at 1024,x1
 react-prefs.B3,react-prefs,Remember (the default): the last toggle holds after a reload (S1); choosing Expanded opens it at once,x1

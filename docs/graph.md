@@ -22,10 +22,16 @@ A map of the code's functions and modules and who calls whom, made with [Graphif
 ## Regenerate
 
 ```bash
-uv tool install graphifyy          # or: pipx install graphifyy   (a venv with pip works too)
 python tools/graph.py              # app/src, assets/js and tools (paths as arguments replace that scope)
 ```
 
-Set `GRAPHIFY=<path to graphify>` if it isn't on PATH. Then ask the graph, for example `graphify explain "payrollRunFor()" --graph docs/graph/raw/graph.json`, or `graphify affected "can()" --graph docs/graph/raw/graph.json`.
+Graphify itself is installed for good in the workspace, outside the repo: `Target/tools/graph/venv` (O2, 2026-11-14; `graphifyy==0.9.106`, the full package set in `Target/tools/graph/requirements.txt`). `tools/graph.py` uses that venv when it is there, so nothing needs to be on PATH. To install it again:
+
+```bash
+C:\Python313\python.exe -m venv C:\Users\ASUS\Desktop\Target\tools\graph\venv
+C:\Users\ASUS\Desktop\Target\tools\graph\venv\Scripts\python.exe -m pip install -r C:\Users\ASUS\Desktop\Target\tools\graph\requirements.txt
+```
+
+On another machine, `uv tool install graphifyy` (or `pipx install graphifyy`) and a `graphify` on PATH work too; `GRAPHIFY=<path to graphify>` overrides both. Then ask the graph, for example `graphify explain "payrollRunFor()" --graph docs/graph/raw/graph.json`, or `graphify affected "can()" --graph docs/graph/raw/graph.json`.
 
 The per-round rule (CLAUDE.md) is to refresh the graph only for the area a round touched. In practice, rerun `python tools/graph.py` (about 30 s) when a round changed code in `app/src`, `assets/js` or `tools`, and skip it otherwise. A run on fewer paths would replace the whole report with a partial one.

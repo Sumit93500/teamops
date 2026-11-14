@@ -17,6 +17,19 @@ export const FLAG_LABEL = {
   "shared-device": "Device also registered to someone else",
 };
 export const flagText = (reasons) => (reasons ?? []).map((r) => FLAG_LABEL[r] ?? r).join("; ");
+// L5: a file's Flagged cell says why, from the store's reason codes: "Yes: checked out from a different place",
+// "Yes: shared device", several joined with "; " (a code with no wording here is written as it is; a flag with no
+// reason is "Yes"), and "No" otherwise.
+export const FLAG_EXPORT = {
+  "place-changed": "checked out from a different place",
+  "device-changed": "checked out from a different device",
+  "shared-device": "shared device",
+};
+export function flaggedCell(stamp) {
+  if (!stamp?.flagged) return "No";
+  const why = (stamp.reasons ?? []).map((r) => FLAG_EXPORT[r] ?? r).join("; ");
+  return why ? `Yes: ${why}` : "Yes";
+}
 const metres = (m) => (m == null ? null : `${Number(m).toLocaleString("en-IN")} m`);
 
 export function stampsBy() {
