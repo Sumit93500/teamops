@@ -172,6 +172,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "perms14.mjs") { Run "perms14-$t" @("perms14.mjs") }
   # L4: the chosen place (checkInAt / checkOutAt / checkPlace placeId)
   if (Test-Path "chosen.mjs") { Run "chosen-$t" @("chosen.mjs") }
+  # P1: the dated statutory rules table and the calculations on it (data/pay-rules.js, data/statutory.js)
+  if (Test-Path "payrules.mjs") { Run "payrules-$t" @("payrules.mjs") }
   Run "leave-$t" @("leave.mjs")
   Run "pages-$t" @("pages.mjs", $Pages)
   Run "approvals-$t" @("approvals.mjs", $Pages)

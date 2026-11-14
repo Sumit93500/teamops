@@ -1,5 +1,7 @@
 # Payroll
 
+> **P1 (2026-11-14), data only:** the statutory rules are now a dated table with sources and confidence, and new pure calculations for PF, ESI, professional tax, LWF, statutory wages and gratuity read it: see [payroll-rules.md](payroll-rules.md). Nothing below changed: the payslips, payroll runs and the tax page still compute with `data/payroll.js` exactly as before (proved by a before / after dump of every month). The page round (P4) switches them over.
+
 **Files:** `assets/js/data/payroll.js` (the rules: pure functions, no storage, no clock), `data/payroll-store.js` (salaries, runs, proposals).
 
 ## Pay rules (`PAY_RULES`)
