@@ -34,7 +34,7 @@ NAMED = {
     "attendance": "attendance mark myatt reg team workedday bothdates cells view decidegap absence latepause relief",
     "locations": "company offices homes devices places punch14 perms14 chosen",
     "leave": "leave leavebal holiguard holileave holipast leavebands",
-    "payroll": "payroll payrun payruns payslip payclock paygate salary salchain saledit salinbox salpage salwrite wfsalary tdsyear payrules paystructure paysettings binding "
+    "payroll": "payroll payrun payruns payslip payclock paygate salary salchain saledit salinbox salpage salwrite wfsalary tdsyear payrules paystructure paysettings binding lopalloc "
                "taxlabel taxnote unpaid periods adjacent gap",
     "expenses": "expenses exppage expinbox expclaim claims",
     "assets": "inventory invpages assetpages assetreq vendorpages heldassets handover delheld stranded",

@@ -60,7 +60,16 @@ The pay screens read the new engine (`data/pay-engine.js`) from the **statutory 
 - **The start month** still can't move on or before an approved month; a month with an approved snapshot stays under the new rules even if the start month later moves after it.
 - The "figures shown live" wording is gone: the run says Final or Draft, not final under **Figures**; the totals card, the payslip view's notes, the tax explanation's months (a **Figures** column) and the cost-to-company card (a projection; the approved month as frozen) say which.
 
-**Loss of pay from the leave policy.** `payFor()` deducts the policy's loss-of-pay days (`lossOfPayDaysIn()`, `data/leave-policy.js`: approved leave recorded `underPolicy` with `lopDays`, counted on the request's last working days, half days 0.5, off days skipped) from the **later** of the statutory start month and the leave policy's start month (`policyLossOfPayFrom()`), as `monthlyGross × days ÷ working days`, capped so it and the old unpaid-leave days never pass the month's working days. The `lop` field shows `policyDays` and `policyAmount` beside the totals. Leave taken before that month, and approved months, are never rewritten.
+**Loss of pay from the leave policy.** `payFor()` deducts the policy's loss-of-pay days (`lossOfPayDaysIn()`, `data/leave-policy.js`: approved leave recorded `underPolicy` with `lopDays`, the request's last working days, half days 0.5, off days skipped; **each unpaid day is charged to the payroll month it falls in**, not to the request's last month, so a request across a month end splits its unpaid days between the two months and the months add up to its `lopDays`) from the **later** of the statutory start month and the leave policy's start month (`policyLossOfPayFrom()`), as `monthlyGross × days ÷ working days`, capped so it and the old unpaid-leave days never pass the month's working days. The `lop` field shows `policyDays` and `policyAmount` beside the totals. Leave taken before that month, and approved months, are never rewritten. Unpaid days that fall in a month before that later start month are not deducted.
+
+**An approved month is never changed (P5-fix, 2026-11-14).** A later or backdated leave request whose unpaid days fall in an approved (frozen) month is **not re-deducted automatically**: the leave record keeps its `lopDays`, but that month's pay stays the frozen snapshot, and the next month deducts only its own days. Correcting it is a Finance adjustment, planned for the backend stage (the workspace's notes/react-parking-lot.md).
+
+**Rulings (2026-11-14, after P5):**
+
+- The **old static site keeps the old pay and leave rules until cutover**: it reads its own run rows and the flat leave allowance; the snapshots and the policy fields are separate storage it never reads.
+- **Declarations stay open until Finance sets a cutoff** for the tax year: there is no default date.
+- **Loss of pay is taken off gross before `payMonth()`**: PF and TDS follow the reduced pay; **ESI eligibility stays on the full contractual monthly salary** (as P1: `coverageGross` is the monthly gross); **professional tax follows the month's reduced gross**.
+- **Every rate stays "unverified"** until an Admin verifies it on Rates and rules, after a CA / HR check.
 
 **Self-service declarations** (`data/pay-structure.js`, per tax year): **draft → submitted → verified and locked**.
 
@@ -72,7 +81,7 @@ The pay screens read the new engine (`data/pay-engine.js`) from the **statutory 
 
 Only a submitted declaration's figures apply to tax; a draft doesn't. Every change is audited with who, when, from and to. Proofs are not collected in this demo. Pages: **My payslips** and **Tax & deductions** get the employee's form (from the start month); Tax & deductions gets Finance's **Declarations to verify** (verify / unlock, the cutoff).
 
-Tests: `tests/live/binding.mjs` (60 checks, 3 time zones; mutants all caught) and the React harness `p5`.
+Tests: `tests/live/binding.mjs` (60 checks, 3 time zones; mutants all caught), `tests/live/lopalloc.mjs` (P5-fix: the allocation per day, the start-month boundaries, the frozen month, the rulings on ESI / PF / PT / TDS; 32 checks, 3 time zones; 14 mutants, all caught) and the React harness `p5`.
 
 ## Not built yet
 

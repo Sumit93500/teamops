@@ -54,7 +54,7 @@ From the **leave policy's start date** (the Leave policy page; `data/pay-setting
 - **From the policy's start date** (by the leave's first day, `from`), Apply for leave goes through `applyLeaveUnderPolicy()` (`data/leave-policy.js`), which checks the band's balance instead of the flat allowance. A leave that starts before the start date keeps the flat 12 / 8 / 10 and its checks.
 - **Beyond the balance:** the store refuses unless the request explicitly accepts loss of pay (`acceptLossOfPay: true`; code `loss-of-pay`, with the paid and unpaid days). The page asks "Apply anyway? ... would be unpaid (loss of pay)." (Apply anyway / Go back) and sends it again only on Apply anyway. WFH and Unpaid leave are never loss of pay.
 - **The request records it:** `underPolicy: true`, `policyBand`, `lopDays`. The approvals show a **Pay** column on every tab (Paid, or the unpaid days), read from the request; deciding doesn't re-check the flat allowance for such a request.
-- **Payroll** deducts those days from the later of the pay rules' start month and the leave start month (see [payroll.md](payroll.md#p5-2026-11-14-the-rules-are-binding)). History is never rewritten: requests made before stay as they were.
+- **Payroll** charges each unpaid day to the month it falls in (a request across a month end splits them) and deducts those days from the later of the pay rules' start month and the leave start month (see [payroll.md](payroll.md#p5-2026-11-14-the-rules-are-binding)). History is never rewritten: requests made before stay as they were.
 
 ## P3 (2026-11-14): leave by tenure (data only)
 
