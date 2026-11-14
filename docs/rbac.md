@@ -6,7 +6,7 @@
 
 | key | label | permissions | landing page | Data scope (as the pages word it) |
 |---|---|---|---|---|
-| admin | Admin | all 86 | dashboard/admin.html | All records |
+| admin | Admin | all 88 | dashboard/admin.html | All records |
 | hr | HR Manager | 48 | dashboard/hr.html | All records |
 | fin | Finance Manager | 40 | dashboard/finance.html | All finance records |
 | emp | Employee | 23 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
@@ -15,7 +15,7 @@ Roles come from the configuration: they can't be created, edited or deleted in t
 
 ## Permissions
 
-- `module:action` strings, 37 modules, 86 in all (79 before L0, 2026-11-12).
+- `module:action` strings, 39 modules, 88 in all (86 before P4, 79 before L0). P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
 - Examples: `payroll:create` (prepare a run), `payroll:approve`, `salary:view`, `dashboard:finance`, `users:delete` (Admin only), `pii:view` (bank account and PAN).
 - A page needs one permission (`config/routes.js`). A control on a page needs its own, through `data-permission="..."` on the static pages and `perm()` / `useCan()` in the React app.
 

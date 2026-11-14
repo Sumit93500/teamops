@@ -42,6 +42,9 @@ export const PERMISSIONS = {
   company:       ["edit"],                    // the company profile: name, overview, mission (Admin)
   locations:     ["set-own", "review"],       // set-own: everyone holds it, the HR home-eligible flag decides; review: decide changes (Admin)
   devices:       ["view-own", "reset"],       // view-own: everyone; reset: list and reset anyone's devices (Admin)
+  // P4 (2026-11-14), moved here from data/pay-rules.js and data/leave-policy.js: the role pages count them (86 -> 88)
+  "payroll-rules": ["verify"],                // verify, add dated rows to the statutory rates and rules (Admin; the Rates and rules page)
+  "leave-policy": ["edit"],                   // edit the tenure leave policy and close a leave year (Admin; the Leave policy page)
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.

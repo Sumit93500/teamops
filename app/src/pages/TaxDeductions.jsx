@@ -2,7 +2,8 @@
 // this month's statutory deductions from the run payroll-run.html shows (runMonth()): TDS, PF (both shares), professional tax,
 // the regimes; the filing calendar from data/payroll.js's sample rules; the static slab table and the note under it worked out
 // from the same constants monthlyTds() uses. Export writes the deductions and the slabs with the old exporter. Filing and
-// challans aren't built (placeholders). Nothing here works out pay; the store does.
+// challans aren't built (placeholders). Nothing here works out pay; the store does. P4a: for the signed-in person, how this
+// year's TDS is worked out under the new rules and a Compare regimes panel (ui/paycards.jsx), above the company's figures.
 import { useEffect } from "react";
 import { runMonth, payrollRun, payslipTotals } from "../../../assets/js/data/payroll-store.js";
 import { csvColumns, initExports } from "../../../assets/js/ui/csv-export.js";
@@ -15,7 +16,8 @@ import Table from "../components/Table.jsx";
 import { StatStrip, StatCard, Badge, NotBuilt } from "../components/Basics.jsx";
 import { BarRows } from "../components/Charts.jsx";
 import { rupees } from "../ui/payroll.jsx";
-import { useData, useCan } from "../data/hooks.js";
+import { useData, useCan, useSession } from "../data/hooks.js";
+import { TaxExplain } from "../ui/paycards.jsx";
 
 csvColumns("statutory-deductions", { "This month": { number: true, header: "This month (₹)" } });   // Round Data export
 
@@ -39,6 +41,7 @@ function returnToFile(year, month, today) {
 }
 
 export default function TaxDeductions() {
+  const { userId: me } = useSession();
   const canView = useCan("tax:view"), canManage = useCan("tax:manage"), canExport = useCan("reports:export");
   const today = todayIso();
   const d = useData(() => { const { year, month } = runMonth(today); return { year, month, run: payrollRun(year, month) }; }, []);
@@ -91,6 +94,7 @@ export default function TaxDeductions() {
         </div>
       </div>
       <div className="stack">
+        {me && <TaxExplain userId={me} />}
         <StatStrip label="Key numbers">
           {stats.map(([key, l, value, note]) => <StatCard key={key} id={key} icon={ICONS[key][1]} tone={ICONS[key][0]} label={l} value={value} note={note} />)}
         </StatStrip>

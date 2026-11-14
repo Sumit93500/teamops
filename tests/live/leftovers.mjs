@@ -163,11 +163,11 @@ const permMeta = () => txt(d.querySelector(".matrix")?.closest(".card")?.querySe
 await open("access/role-editor.html", "aarav", "?role=fin");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 36 of 78: dashboard:finance, the 79th, held by Finance)
-check("C3", "role editor, Finance: pii:view not ticked; '40 of 86' (L0: was 37 of 79)", !ticked().includes("pii:view") && permMeta() === "40 of 86", permMeta());
+check("C3", "role editor, Finance: pii:view not ticked; '40 of 88' (L0: was 37 of 79)", !ticked().includes("pii:view") && permMeta() === "40 of 88", permMeta());
 await open("access/role-editor.html", "aarav", "?role=hr");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 45 of 78: dashboard:finance is a 79th permission)
-check("C4", "role editor, HR: pii:view still ticked; '48 of 86' (L0: was 45 of 79)", ticked().includes("pii:view") && permMeta() === "48 of 86", permMeta());
+check("C4", "role editor, HR: pii:view still ticked; '48 of 88' (L0: was 45 of 79)", ticked().includes("pii:view") && permMeta() === "48 of 88", permMeta());
 const dd = (label) => [...d.querySelectorAll(".kv__row")].find((r) => txt(r.querySelector("dt")) === label)?.querySelector("dd");
 const reveal = () => ["Bank account", "PAN"].map((l) => dd(l)?.querySelector("button")?.hidden);
 await open("users/user-profile.html", "kabir", "?id=EMP-1105");

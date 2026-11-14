@@ -49,11 +49,12 @@ import About from "./pages/About.jsx";
 import Offices from "./pages/Offices.jsx";
 import MyLocations from "./pages/MyLocations.jsx";
 import Appearance from "./pages/Appearance.jsx";
+import RatesRules from "./pages/RatesRules.jsx";
 import UsersList from "./pages/UsersList.jsx";
 import UserForm from "./pages/UserForm.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import Departments from "./pages/Departments.jsx";
-import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT, OFFICES, MY_LOCATIONS, APPEARANCE } from "./routes.js";
+import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT, OFFICES, MY_LOCATIONS, APPEARANCE, RATES_RULES } from "./routes.js";
 import { useSession } from "./data/hooks.js";
 
 const PORTED = {
@@ -121,6 +122,7 @@ export const router = createBrowserRouter([
   { path: pageUrl(OFFICES), element: <Offices /> },   // L1: the offices, for anyone signed in
   { path: pageUrl(MY_LOCATIONS), element: <MyLocations /> },   // L2: your check-in places, for anyone signed in
   { path: pageUrl(APPEARANCE), element: <Appearance /> },   // A1: your appearance, for anyone signed in
+  { path: pageUrl(RATES_RULES), element: <RatesRules /> },   // P4a: the statutory rates and rules (Finance reads, Admin verifies)
   ...ALL_PAGES.map((page) => ({ path: pageUrl(page), element: <RequireRoute page={page}>{pageElement(page)}</RequireRoute> })),
   { path: "*", element: <Navigate to={pageUrl("errors/404.html")} replace /> },
 ]);

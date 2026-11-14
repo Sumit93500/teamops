@@ -14,7 +14,8 @@ import { NotBuilt, Reason } from "../components/Basics.jsx";
 import { usePerm } from "../ui/perm.js";
 import { pageUrl } from "../routes.js";
 import { COMPANY } from "../data/company.js";   // D2a: the company's details live in one module, read by the shell and About too
-import CompanyProfile from "./CompanyProfile.jsx";   // L1: the company profile (name, overview, mission), saved
+import CompanyProfile from "./CompanyProfile.jsx";
+import PayrollSettings from "./PayrollSettings.jsx";   // P4a: when the new statutory rules start, PF on full wages   // L1: the company profile (name, overview, mission), saved
 
 const PAGE = "system/settings.html";
 
@@ -47,6 +48,8 @@ export default function Settings() {
           <a className={`settings__link${section === "security" ? " is-active" : ""}`} href="#security" onClick={go}>Security</a>
           {" "}
           <a className={`settings__link${section === "modules" ? " is-active" : ""}`} href="#modules" onClick={go}>Modules</a>
+          {" "}
+          <a className={`settings__link${section === "payroll-settings" ? " is-active" : ""}`} href="#payroll-settings" onClick={go}>Payroll</a>
           {" "}
           <a className={`settings__link${section === "appearance" ? " is-active" : ""}`} href="#appearance" onClick={go}>Appearance</a>
         </nav>
@@ -226,6 +229,7 @@ export default function Settings() {
               </div>
             </div>
           </section>
+          <PayrollSettings />
           <section className="card" id="appearance">
             <div className="card__header"><h3 className="card__title">Appearance</h3></div>
             <div className="card__body">

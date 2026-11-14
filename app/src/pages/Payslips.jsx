@@ -1,16 +1,18 @@
 // My payslips (pages/payroll/payslips.html + assets/js/pages/payslips.js), ported (round 11): the signed-in person's own payslips
 // from data/payroll-store.js, newest first, for the chosen financial year (April to March): the stat cards, the history (View,
 // Download as a placeholder; a hold reason under its badge; a line when the history stops at the joining month) and the year
-// to date. Nothing here works out pay; the store does. Components: StatCard, Table, Badge, NotBuilt, Reason.
+// to date. Nothing here works out pay; the store does. P4a: months from the statutory rules start month carry the new engine's
+// figures (data/payview.js), the year to date gains ESI and LWF lines when it holds such a month, and an Unverified note. Components: StatCard, Table, Badge, NotBuilt, Reason.
 import { useId, useState } from "react";
 import { Link } from "react-router-dom";
-import { payslipsFor, payslipTotals } from "../../../assets/js/data/payroll-store.js";
+import { slipsFor, slipTotals } from "../data/payview.js";
 import { getUser, joiningDate } from "../../../assets/js/data/store.js";
 import { todayIso, monthName, monthShort, formatRange, formatDay, plural } from "../../../assets/js/ui/leave-view.js";
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
 import { StatStrip, StatCard, Badge, badgeOf, NotBuilt, Reason, NO_DATA } from "../components/Basics.jsx";
-import { rupees } from "../ui/payroll.jsx";
+import { rupees, UnverifiedNote } from "../ui/payroll.jsx";
+import { TaxExplain } from "../ui/paycards.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
 
@@ -62,12 +64,13 @@ export default function Payslips() {
   const canDownload = useCan("payslip:download");
   const today = todayIso();
   const thisMonth = today.slice(0, 7);
-  const d = useData(() => (me ? { all: payslipsFor(me, today), joined: joiningDate(getUser(me)?.dateOfJoining) } : null), [me]);
+  const d = useData(() => (me ? { all: slipsFor(me, today), joined: joiningDate(getUser(me)?.dateOfJoining) } : null), [me]);
   const years = d ? [...new Set(d.all.map(financialYear))] : [];
   if (!years.length) years.push(Number(thisMonth.slice(5, 7)) >= 4 ? Number(today.slice(0, 4)) : Number(today.slice(0, 4)) - 1);
   const [fy, setFy] = useState(years[0]);
   const dl = (what, cls) => <NotBuilt what={what} className={cls} data-permission="payslip:download" hidden={!canDownload || undefined} />;
 
+  let newMonths = false, unverified = false;
   let stats, rows = [], extra = null, empty = "No payslips for this financial year.", historyMeta = "", ytd = {}, ytdMeta = "";
   if (!d) {   // an old session with no employee id: nothing to look up
     stats = { latest: ["Net pay", "—", ""], "ytd-net": ["Net pay this year", "—", ""], "ytd-tds": ["Tax deducted this year", "—", ""], next: ["Next payslip", "—", ""] };
@@ -78,7 +81,7 @@ export default function Payslips() {
     const latest = all.find((s) => s.month < thisMonth) ?? all[0];
     const next = all.find((s) => s.month === thisMonth);
     const slips = all.filter((s) => financialYear(s) === fy);
-    const totals = payslipTotals(slips);
+    const totals = slipTotals(slips);
     stats = {
       latest: latest ? [`Net pay, ${monthName(monthOf(latest))}`, amount(latest, latest.net), statusNote(latest)] : ["Net pay", "—", "No payslips yet"],
       "ytd-net": ["Net pay this year", rupees(totals.net), slips.length ? `${span(slips)}, ${plural(slips.length, "payslip", "payslips")}` : "No payslips"],
@@ -94,7 +97,9 @@ export default function Payslips() {
     const note = joinedNote(all, slips, joined, today);
     extra = note ? <MessageRow text={note} /> : null;
     historyMeta = `Financial year ${yearLabel(fy)}`;
-    ytd = Object.fromEntries(["gross", "pf", "pt", "tds", "deductions", "net"].map((k) => [k, slips.length ? rupees(totals[k]) : "–"]));
+    ytd = Object.fromEntries(["gross", "pf", "esi", "pt", "lwf", "tds", "deductions", "net"].map((k) => [k, slips.length ? rupees(totals[k]) : "–"]));
+    newMonths = slips.some((s) => s.engine === "new");
+    unverified = slips.some((s) => s.pay?.unverified);
     ytdMeta = slips.length ? spanWithYear(slips) : NO_DATA;
   }
   const columns = [
@@ -111,7 +116,8 @@ export default function Payslips() {
       </div>
     ) },
   ];
-  const BREAKDOWN = [["gross", "Gross earnings", ""], ["pf", "Provident fund", ""], ["pt", "Professional tax", ""], ["tds", "Income tax (TDS), sample tax rates", ""],
+  const BREAKDOWN = [["gross", "Gross earnings", ""], ["pf", "Provident fund", ""], ...(newMonths ? [["esi", "Employee state insurance", ""]] : []), ["pt", "Professional tax", ""], ...(newMonths ? [["lwf", "Labour welfare fund", ""]] : []),
+    ["tds", newMonths ? "Income tax (TDS)" : "Income tax (TDS), sample tax rates", ""],
     ["deductions", "Total deductions", " breakdown__row--total"], ["net", "Net pay", " breakdown__row--total breakdown__row--net"]];
 
   return (
@@ -152,9 +158,11 @@ export default function Payslips() {
                 </dl>
               </div>
             </section>
+            {unverified && <UnverifiedNote />}
             <div className="alert alert--info">Your bank account and PAN are always masked on payslips. HR and Admins can see them in full on your employee profile.</div>
           </aside>
         </div>
+        {me && <TaxExplain userId={me} />}
       </div>
     </Frame>
   );

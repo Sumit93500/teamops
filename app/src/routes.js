@@ -23,5 +23,9 @@ export const MY_LOCATIONS = "account/my-locations.html";
 // Appearance (A1): the app's own; everyone signed in may open it (Settings, where Admins also find it, is Admins' only).
 export const APPEARANCE = "account/appearance.html";
 
+// Rates and rules (P4a): the app's own; the dated statutory rows, their sources and who verified them. Admin (verifies, adds
+// rows) and Finance (reads): payroll-rules:verify or tax:view.
+export const RATES_RULES = "payroll/rates-rules.html";
+
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

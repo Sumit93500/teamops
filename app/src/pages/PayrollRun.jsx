@@ -3,13 +3,19 @@
 // run's progress, every employee in it (search, status filter, View payslip), the checks before approval, the run details and
 // the alert, and Prepare / Approve (the store's writes; a disabled button says why under the buttons). A link whose month isn't
 // one says so (Round Forms); a month with no data (runMonthState(), round 5) says "No data in this range." and why, as the
-// stopped Empty ranges round drew it. Nothing here works out pay; the store does. Components: StatCard, Stepper, Table, Badge,
+// stopped Empty ranges round drew it. Nothing here works out pay; the store does. P4a: a month from the statutory rules start
+// month (Settings > Payroll) is shown by the new engine (data/pay-engine.js payFor): PF, ESI, professional tax, LWF and TDS by
+// person with the office's state, the employer's cost, the statutory totals (the challan and filing figures stay samples) and
+// an Unverified banner; earlier months are as they were. Components: StatCard, Stepper, Table, Badge,
 // PersonCell, EmptyState, NotBuilt, Reason.
 import { useEffect, useId, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { payrollRun, storedRun, approversFor, canApprove, runProblems, prepareProblem, approveProblem, prepareRun, approveRun, runTotals, runMonth, waitingSalaryChanges, runMonthState } from "../../../assets/js/data/payroll-store.js";
 import { ATTENDANCE_RULES } from "../../../assets/js/data/attendance-store.js";
 import { getUser } from "../../../assets/js/data/store.js";
+import { payFor } from "../../../assets/js/data/pay-engine.js";
+import { usesNewRules, statutoryFrom } from "../../../assets/js/data/pay-settings.js";
+import { officeOf } from "../../../assets/js/data/offices-store.js";
 import { ROLES } from "../../../assets/js/config/roles.js";
 import { getCurrentUserId } from "../../../assets/js/core/auth.js";
 import { nameOf, plural, departmentName, todayIso, monthName, formatRange, formatDay } from "../../../assets/js/ui/leave-view.js";
@@ -17,7 +23,8 @@ import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { StatStrip, StatCard, Stepper, Badge, badgeOf, PersonCell, EmptyState, NotBuilt, Reason, NO_DATA } from "../components/Basics.jsx";
-import { KeepWhole, rupees } from "../ui/payroll.jsx";
+import { KeepWhole, rupees, UnverifiedNote } from "../ui/payroll.jsx";
+import { Card } from "../components/Layout.jsx";
 import { useData, useCan } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
@@ -162,7 +169,9 @@ function Run({ asked }) {
     if (!viewed || state?.empty) return null;
     const run = storedRun(viewed.year, viewed.month) ?? payrollRun(viewed.year, viewed.month);
     const me = getCurrentUserId();
-    return { run, me, approvers: run.status === "approved" ? [] : approverNames(run), prepareBlock: prepareProblem(me, viewed.year, viewed.month), approveBlock: approveProblem(me, viewed.year, viewed.month) };
+    const key = `${viewed.year}-${String(viewed.month).padStart(2, "0")}`;
+    const newPay = usesNewRules(key) ? Object.fromEntries(run.rows.map((r) => [r.userId, payFor(r.userId, viewed.year, viewed.month)])) : null;
+    return { run, me, newPay, approvers: run.status === "approved" ? [] : approverNames(run), prepareBlock: prepareProblem(me, viewed.year, viewed.month), approveBlock: approveProblem(me, viewed.year, viewed.month) };
   }, [asked]);
   const emptyKey = viewed && `${viewed.year}-${String(viewed.month).padStart(2, "0")}`;
   const title = d ? `Payroll run, ${monthLabel(d.run.month)}` : state?.empty ? `Payroll run, ${monthLabel(emptyKey)}` : "Payroll run";
@@ -178,7 +187,7 @@ function Run({ asked }) {
     else if (state.firstMonth) why = `Attendance records start in ${monthLabel(state.firstMonth)}, so there's no run before that.`;
     return <NoRun title={title} months={emptyKey} card={<EmptyState title={NO_DATA} text={<KeepWhole text={why} />} to={RUN_URL} linkText="Back to this month's run" />} />;
   }
-  const { run, me, approvers, prepareBlock, approveBlock } = d;
+  const { run, me, approvers, prepareBlock, approveBlock, newPay } = d;
   const label = monthLabel(run.month);
   const st = RUN_STATUS[run.status];
   const totals = run.totals ?? runTotals(run);
@@ -187,6 +196,13 @@ function Run({ asked }) {
     employees: [String(run.rows.length), `${onHold} on hold`], gross: [rupees(totals.gross), totals.lossOfPay > 0 ? `After ${rupees(totals.lossOfPay)} loss of pay` : "No loss of pay"],
     deductions: [rupees(totals.deductions), "PF, PT and TDS (sample tax rates)"], net: [rupees(totals.net), st.net],
   };
+  // P4a: from the start month the figures are the new engine's
+  const pays = newPay ? run.rows.map((r) => newPay[r.userId]).filter(Boolean) : [];
+  const sum = (f) => pays.reduce((s, p) => s + f(p), 0);
+  const nt = newPay ? { gross: sum((p) => p.gross), pf: sum((p) => p.deductions.pf), esi: sum((p) => p.deductions.esi), pt: sum((p) => p.deductions.pt), lwf: sum((p) => p.deductions.lwf), tds: sum((p) => p.deductions.tds),
+    deductions: sum((p) => p.deductionsTotal), net: sum((p) => p.net), employer: sum((p) => p.employer.total), ctc: sum((p) => p.costToCompany), unverified: pays.some((p) => p.unverified) } : null;
+  if (nt) Object.assign(values, { gross: [rupees(nt.gross), "After loss of pay, by the new rules"], deductions: [rupees(nt.deductions), "PF, ESI, PT, LWF and TDS"], net: [rupees(nt.net), st.net], employer: [rupees(nt.employer), `Cost to company ${rupees(nt.ctc)}`] });
+  const money = (r, pick) => { const p = newPay?.[r.userId]; return p ? rupees(pick(p)) : "—"; };
   const period = run.rows[0]?.period;
   const stepState = (n) => (n <= st.done ? "done" : n === st.current ? "current" : "");
   const steps = [["Draft", "Worked out from the live records"],
@@ -197,9 +213,21 @@ function Run({ asked }) {
   const shown = run.rows.filter((r) => (!status || r.status === status) && (!query || rowName(r).toLowerCase().includes(query)));
   const columns = [
     { key: "employee", label: "Employee", render: (r) => <PersonCell userId={r.userId} name={rowName(r)} sub={[departmentName(rowDepartment(r)), r.holdReason].filter(Boolean).join(", ")} /> },
-    { key: "gross", label: "Gross", num: true, render: (r) => rupees(r.gross) },
-    { key: "deductions", label: "Deductions", num: true, render: (r) => rupees(r.deductions) },
-    { key: "net", label: "Net pay", num: true, render: (r) => rupees(r.net) },
+    ...(newPay ? [
+      { key: "state", label: "State", render: (r) => newPay[r.userId]?.state ?? "Not set" },
+      { key: "gross", label: "Gross", num: true, render: (r) => money(r, (p) => p.gross) },
+      { key: "pf", label: "PF", num: true, render: (r) => money(r, (p) => p.deductions.pf) },
+      { key: "esi", label: "ESI", num: true, render: (r) => money(r, (p) => p.deductions.esi) },
+      { key: "pt", label: "PT", num: true, render: (r) => money(r, (p) => p.deductions.pt) },
+      { key: "lwf", label: "LWF", num: true, render: (r) => money(r, (p) => p.deductions.lwf) },
+      { key: "tds", label: "TDS", num: true, render: (r) => money(r, (p) => p.deductions.tds) },
+      { key: "net", label: "Net pay", num: true, render: (r) => money(r, (p) => p.net) },
+      { key: "employer", label: "Employer cost", num: true, render: (r) => money(r, (p) => p.employer.total) },
+    ] : [
+      { key: "gross", label: "Gross", num: true, render: (r) => rupees(r.gross) },
+      { key: "deductions", label: "Deductions", num: true, render: (r) => rupees(r.deductions) },
+      { key: "net", label: "Net pay", num: true, render: (r) => rupees(r.net) },
+    ]),
     { key: "status", label: "Status", render: (r) => { const s = r.status === "draft" ? st : ROW_STATUS[r.status]; return <B cls={s?.badge ?? "badge"} title={r.holdReason || undefined}>{s?.label ?? r.status}</B>; } },
     { key: "actions", label: "Actions", actions: true, render: (r) => <Link className="btn btn--sm" to={`${pageUrl("payroll/payslip-view.html")}?employee=${encodeURIComponent(r.userId)}&month=${r.month}`} data-permission="payslips:view" hidden={!canSlips || undefined}>View payslip</Link> },
   ];
@@ -235,8 +263,18 @@ function Run({ asked }) {
       </div>
       <div className="stack">
         <StatStrip label="Key numbers">
-          {STATS.map(([key, l, tone, icon]) => <StatCard key={key} id={key} icon={icon} tone={tone} label={l} value={values[key][0]} note={values[key][1]} />)}
+          {[...STATS, ...(nt ? [["employer", "Employer cost", 1, STATS[1][3]]] : [])].map(([key, l, tone, icon]) => <StatCard key={key} id={key} icon={icon} tone={tone} label={l} value={values[key][0]} note={values[key][1]} />)}
         </StatStrip>
+        {nt && (
+          <Card id="run-statutory" title="Statutory totals" meta={`Rules as of ${formatDay(`${run.month}-01`, true)}; the new rules start with ${monthLabel(statutoryFrom())}`}
+            footer={<span className="ds-card__meta">Challan and filing figures are samples: nothing is filed or paid from this page. Approving still fixes the figures of the earlier rules (see the note under Run details).</span>}>
+            {nt.unverified && <UnverifiedNote id="run-unverified" />}
+            <dl className="kv" id="run-statutory-totals">
+              {[["pf", "Provident fund (employees)", nt.pf], ["esi", "Employee state insurance (employees)", nt.esi], ["pt", "Professional tax", nt.pt], ["lwf", "Labour welfare fund (employees)", nt.lwf], ["tds", "Income tax (TDS)", nt.tds],
+                ["employer", "Employer contributions, all", nt.employer], ["ctc", "Cost to company", nt.ctc]].map(([k, t, n]) => <div className="kv__row" key={k}><dt>{t}</dt><dd data-field={k}>{rupees(n)}</dd></div>)}
+            </dl>
+          </Card>
+        )}
         <section className="card">
           <div className="card__header">
             <h3 className="card__title">Run progress</h3>
@@ -283,6 +321,7 @@ function Run({ asked }) {
                   <div className="kv__row"><dt>Prepared by</dt><dd id="run-prepared-by">{stored ? nameOf(run.preparedBy) : "Not prepared yet"}</dd></div>
                   <div className="kv__row"><dt>Approver</dt><dd id="run-approver">{run.status === "approved" ? `Approved by ${nameOf(run.approvedBy)} on ${dayOf(run.approvedAt)}` : approvers.join("; ") || "No one"}</dd></div>
                   <div className="kv__row"><dt>Figures fixed on</dt><dd className={stored ? undefined : "text-muted"} id="run-fixed-on">{stored ? dayOf(run.preparedAt) : "Not fixed: worked out live"}</dd></div>
+                  {newPay && <div className="kv__row"><dt>Rules</dt><dd id="run-rules-note">{`Figures shown are the new rules' (from ${monthLabel(statutoryFrom())}). Preparing and approving still fix the earlier rules' figures until the stored run is moved to the new engine.`}</dd></div>}
                   <div className="kv__row"><dt>Pay date</dt><dd className="text-muted">Not set</dd></div>
                   <div className="kv__row"><dt>Bank file</dt><dd className="text-muted">Not built yet</dd></div>
                 </dl>

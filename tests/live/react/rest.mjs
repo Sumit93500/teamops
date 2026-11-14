@@ -100,6 +100,8 @@ const L1_OLD_NOTICE = "Sample, not built yet: company settings aren't part of Of
 const withoutL1 = (t) => t.evaluate((notice) => {
   document.getElementById("company-profile")?.remove();
   document.querySelector('.settings__nav a[href="#company-profile"]')?.remove();
+  document.getElementById("payroll-settings")?.remove();   // P4a (ruled): the Payroll card and its link
+  document.querySelector('.settings__nav a[href="#payroll-settings"]')?.remove();
   const alert = document.querySelector(".settings .alert--info"); if (alert) alert.textContent = notice;
 }, L1_OLD_NOTICE);
 async function pages(letter, page, rolesFn) {

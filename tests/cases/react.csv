@@ -188,7 +188,7 @@ react-design.R,react-design,reduced motion: transitions finish at once; without 
 react-design.E,react-design,no page or console errors,x1
 react-fin.G1,react-fin,admin on payroll/salary-structure.html: as it opens,x2 (2 roles)
 react-fin.G2,react-fin,"admin: search, department, no matches; Breakdown on the third row",x2 (2 roles)
-react-fin.G3,react-fin,admin: Export: both files byte for byte,x2 (2 roles)
+react-fin.G3,react-fin,"admin: Export: the employee salaries file byte for byte (the components file is gone with the table, P4a)",x2 (2 roles)
 react-fin.G5,react-fin,"admin: Edit Arjun: ₹91,000 from Dec takes effect at once (revision due): dialog, toast, row, page",x1
 react-fin.G,react-fin,hr on payroll/salary-structure.html: lands where the old site does,x3 (3 roles)
 react-fin.G4,react-fin,"fin: Edit Rohan: empty refused under the field; ₹99,000 from Nov sent (waits); Withdraw: question, toast, row",x1
@@ -347,6 +347,92 @@ react-pay.P.payroll-run,react-pay,fin on payroll/payroll-run.html at 412: the sa
 react-pay.P.payslips,react-pay,emp on payroll/payslips.html at 412: the same cards,x1
 react-pay.P.payslip-view,react-pay,emp on payroll/payslip-view.html at 412: the same cards,x1
 react-pay.X1,react-pay,shots written,x1
+react-pay4.S1,react-pay4,"Aarav's November payslip: the Standard template's earnings (basic is half the gross; medical 1,250; conveyance 1,600) that add up to the gross",x1
+react-pay4.S2,react-pay4,"deductions: PF 3,000 (the ceiling), ESI 0, PT 0 (Haryana, unverified), LWF 35, TDS; they add up; net = gross - deductions",x1
+react-pay4.S3,react-pay4,"the regime (New regime), the day the rules were taken as of (1 Nov 2026), and the section",x1
+react-pay4.S4,react-pay4,the Unverified label with its words and a link to Rates and rules (the Admin may open it),x1
+react-pay4.S5,react-pay4,"the employer box (the person's own): EPF and EPS 3,000, EDLI 125, admin 125, ESI 0, LWF 70, gratuity accrual, the totals and the cost to company",x1
+react-pay4.S6,react-pay4,it says the employer contributions are not taken from the pay,x1
+react-pay4.S7,react-pay4,Print or save as PDF still opens the print dialog,x1
+react-pay4.S8,react-pay4,Finance (payslips:view) opening Arjun's payslip sees the box,x1
+react-pay4.S9,react-pay4,HR sees the box on their own payslip,x1
+react-pay4.S10,react-pay4,"HR can't open someone else's payslip (as before): the 403 page, no employer box",x1
+react-pay4.S11,react-pay4,a manager opening a team member's payslip: the 403 page; no employer box ever,x1
+react-pay4.S12,react-pay4,the manager's own payslip has the box,x1
+react-pay4.S13,react-pay4,an employee's own payslip has the box and the same lines,x1
+react-pay4.S14,react-pay4,"October (before the start month) is the payslip it was: 'sample tax rates', no employer box, no Rules as of, no ESI line",x1
+react-pay4.S14b,react-pay4,a month with no payslip says 'No data in this range.' as before,x1
+react-pay4.S15.1280,react-pay4,1280: no sideways scroll,x1
+react-pay4.S15.412,react-pay4,412: no sideways scroll,x1
+react-pay4.B1,react-pay4,"start 2026-12: November is the payslip it always was (Basic 40%, PF 12% of basic, TDS 'sample tax rates', no ESI, no employer box)",x1
+react-pay4.B2,react-pay4,start 2026-11 (at the boundary): November is the new engine's,x1
+react-pay4.B3,react-pay4,start 2026-10 (the month after the start): still the new engine's,x1
+react-pay4.B4,react-pay4,the old November's figures differ from the new (the old basic is 40%): Basic and PF are not the same,x1
+react-pay4.P1,react-pay4,the year to date has ESI and LWF lines for a year holding a new-rules month,x1
+react-pay4.P2,react-pay4,"the Unverified note, in its words",x1
+react-pay4.P3,react-pay4,no link to Rates and rules for an employee (they can't open it): the words only,x1
+react-pay4.P4,react-pay4,"'How your tax is worked out': the projection, the standard deduction, the slabs, the cess, the months so far",x1
+react-pay4.P5,react-pay4,"Compare regimes: new, old (no declaration), the difference in rupees, and the answer in words",x1
+react-pay4.P6,react-pay4,an HR person's own page has them too,x1
+react-pay4.R1,react-pay4,"the run's columns from the start month: Employee, State, Gross, PF, ESI, PT, LWF, TDS, Net pay, Employer cost, Status",x1
+react-pay4.R2,react-pay4,"every row names its state (Haryana) and has PF, LWF and an employer cost; the stats say the new rules",x1
+react-pay4.R3,react-pay4,"the statutory totals: PF, ESI, PT, LWF, TDS, employer contributions, cost to company; challans stay samples",x1
+react-pay4.R4,react-pay4,"the Unverified banner, and the note that approving still fixes the earlier rules' figures",x1
+react-pay4.R5,react-pay4,the totals are the columns' sums (PF and LWF),x1
+react-pay4.R6,react-pay4,"before the start month the run is as it was: Gross, Deductions, Net pay; no totals card",x1
+react-pay4.R7,react-pay4,a month with no records is still 'No data in this range.',x1
+react-pay4.R8.1280,react-pay4,1280: no sideways scroll,x1
+react-pay4.R8.412,react-pay4,412: no sideways scroll,x1
+react-pay4.T1,react-pay4,"the templates: Standard (basic 50% of gross, HRA 50% of basic, medical, conveyance, LTA optional, special the balance) and Intern stipend; no placeholder 'Add component' or dummy rows",x1
+react-pay4.T2,react-pay4,the Admin has Edit on each editable component (not the balancing ones),x1
+react-pay4.T3,react-pay4,"the preview follows the gross typed: 2,00,000 gives a basic of 1,00,000",x1
+react-pay4.T4,react-pay4,"an invalid rule is refused by the module, in its words, under the field",x1
+react-pay4.T5,react-pay4,"45% saved: the preview (on 2,00,000) now shows 90,000; a toast says so",x1
+react-pay4.T6,react-pay4,"the person card for the person picked (Arjun; the Admin can't edit their own): template picker, cost to company, the regime (New by default)",x1
+react-pay4.T7,react-pay4,"the CTC view: gross, employer PF, EDLI and admin, ESI, LWF, gratuity accrual, cost to company; a month and a year (the year is twelve times)",x1
+react-pay4.T8,react-pay4,the old-regime declaration saves: the pill says Old regime; the proofs note is there,x1
+react-pay4.T9,react-pay4,a negative amount is refused by the module under its field,x1
+react-pay4.T10,react-pay4,'Back to the new regime' returns to New regime,x1
+react-pay4.T11,react-pay4,Finance reads the templates but has no Edit; can pick a template and record a declaration,x1
+react-pay4.T12,react-pay4,"Finance sets the intern stipend template: the preview has one line, 'No PF, ESI or gratuity' says so",x1
+react-pay4.T13,react-pay4,"hr: the salary page is the 403 page, as before",x3 (3 roles)
+react-pay4.T14.1280,react-pay4,1280: no sideways scroll,x1
+react-pay4.T14.412,react-pay4,412: no sideways scroll,x1
+react-pay4.X1,react-pay4,"Finance's own tax first (how it is worked out, compare regimes), then the company's figures as before",x1
+react-pay4.X2,react-pay4,"the difference is in words, not colour only",x1
+react-pay4.X3,react-pay4,hr: the tax page is still the 403 page,x3 (3 roles)
+react-pay4.X4,react-pay4,"someone on the old regime with a declaration: the explanation says old, shows 'Declared deductions'; the comparison uses the declaration",x1
+react-pay4.Y1,react-pay4,the Admin sees the rows with Verify and Add dated row; the banner counts the unverified rows in its words,x1
+react-pay4.Y2,react-pay4,"the KPI cards count rows by status (90 rows: 5 confirmed, 11 secondary, 74 unverified, 0 verified)",x1
+react-pay4.Y3,react-pay4,"the state filter: Haryana has the PT (0, unverified) and the two LWF rows with their sources",x1
+react-pay4.Y4,react-pay4,"each row carries its confidence as a badge (words), its effective date and its source link",x1
+react-pay4.Y5,react-pay4,the status filter: Confirmed shows the 5 confirmed rows,x1
+react-pay4.Y6,react-pay4,"search finds the cess row (unverified, 4%)",x1
+react-pay4.Y7,react-pay4,Verify asks first and says what it records (name and today's date),x1
+react-pay4.Y8,react-pay4,Cancel leaves the row unverified,x1
+react-pay4.Y9,react-pay4,"verified: the row shows who and when (Aarav Mehta, 16 Nov 2026) and its badge; the button reads Verified",x1
+react-pay4.Y10,react-pay4,the banner now counts one fewer,x1
+react-pay4.Y11,react-pay4,an empty source is refused by the module under its field,x1
+react-pay4.Y12,react-pay4,a value that isn't JSON is refused in words,x1
+react-pay4.Y13,react-pay4,"a dated row is added: a toast, the new row in the table (pf, 1 Apr 2027, Unverified)",x1
+react-pay4.Y14,react-pay4,"the new row is listed, unverified, with its source link",x1
+react-pay4.Y15,react-pay4,"Finance reads: the rows and the banner, no Verify, no Add dated row",x1
+react-pay4.Y16,react-pay4,hr: the 403 page,x3 (3 roles)
+react-pay4.Y17.1280,react-pay4,1280: no sideways scroll,x1
+react-pay4.Y17.412,react-pay4,412: no sideways scroll,x1
+react-pay4.A1,react-pay4,the Payroll card: the start month (2026-11 until changed) and PF on full wages (off),x1
+react-pay4.A2,react-pay4,"the start month saves: a toast, 'Now: December 2026'",x1
+react-pay4.A3,react-pay4,and November's payslip is the old one again,x1
+react-pay4.A4,react-pay4,"PF on full wages: Aarav's PF is 12% of the wages (his basic), not 3,000; the switch is remembered",x1
+react-pay4.A5,react-pay4,an empty month can't be saved (the button is off),x1
+react-pay4.A6,react-pay4,"Finance has no Settings page (the 403 page, as before)",x1
+react-pay4.K1,react-pay4,Add dated row opens from the keyboard; the dialog is named; Esc closes it,x1
+react-pay4.K2,react-pay4,Esc closes it,x1
+react-pay4.K3,react-pay4,every field on the page has a name,x1
+react-pay4.K4,react-pay4,Verify from the keyboard asks first; focus is on Cancel (the safe answer),x1
+react-pay4.K5,react-pay4,a component's Edit opens from the keyboard with the field focused,x1
+react-pay4.W1,react-pay4,"the Unverified note, the pills and the new cards' text are at least 4.5:1 in both themes",x1
+react-pay4.E1,react-pay4,no page errors,x1
 react-prefs.S1,react-prefs,the menu's Dark: the page turns dark and Settings > Appearance shows Dark at once,x1
 react-prefs.S2,react-prefs,Settings' Teal: the page's accent is teal and the menu marks Teal,x1
 react-prefs.S3,react-prefs,"a choice applies at once and says ""Saved"" (no Save button)",x1

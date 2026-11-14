@@ -4,7 +4,10 @@
 // opens the new-salary form for proposeSalary() (its refusals under the field it names, else a toast); an Admin's change takes
 // effect at once, anyone else's waits. A waiting change shows in its row with Approve / Reject (Decision.jsx SALARY_FLOW) for
 // those who may decide it and Withdraw (asked in the in-app dialog) for whoever proposed it. Export writes both tables with
-// the old exporter. A component's Edit and Add component stay placeholders. Nothing here works out pay; computePay() does.
+// the old exporter. P4a: the components table is the salary templates now (ui/templates.jsx: an Admin edits a component's
+// rule through the module's checks, with a preview), and the person on the example card gets their template, cost to company
+// and tax regime cards (ui/paycards.jsx; Finance and the Admin record the regime and the old-regime declaration). Nothing here
+// works out pay; computePay() and the pay engine do.
 import { useEffect, useId, useState } from "react";
 import { SALARY_COMPONENTS, computePay } from "../../../assets/js/data/payroll.js";
 import { csvColumns, initExports } from "../../../assets/js/ui/csv-export.js";
@@ -23,6 +26,9 @@ import { useDecision, SALARY_FLOW, DecisionButtons } from "../components/Decisio
 import { Badge, badgeOf, PersonCell, NotBuilt, Reason } from "../components/Basics.jsx";
 import { rupees } from "../ui/payroll.jsx";
 import { useData, useCan, useSession } from "../data/hooks.js";
+import { usesNewRules } from "../../../assets/js/data/pay-settings.js";
+import TemplateEditor from "../ui/templates.jsx";
+import { SalaryPlan } from "../ui/paycards.jsx";
 import { bump } from "../data/bus.js";
 
 csvColumns("employee-salaries", { Employee: { split: "Employee ID" }, "Gross per month": { number: true, header: "Gross per month (₹)" }, "Annual cost": { number: true, header: "Annual cost (₹)" } });   // Round Data export
@@ -167,6 +173,7 @@ export default function SalaryStructure() {
     { key: "actions", label: "Actions", actions: true, render: (r) => <ActionsCell row={r} shown={r.user.id === exampleId} onShow={() => setExampleId(r.user.id)} onEdit={() => open(r)} canEdit={canEdit} decision={decision} onWithdraw={withdraw} /> },
   ];
   const pay = example?.pay;
+  const newNow = usesNewRules(todayIso().slice(0, 7));
   const lines = pay ? {
     basic: pay.earnings.basic, hra: pay.earnings.hra, conveyance: pay.earnings.conveyance, special: pay.earnings.special, gross: pay.gross, pf: pay.deductionLines.pf, pt: pay.deductionLines.pt,
     tds: pay.deductionLines.tds, deductions: pay.deductions, net: pay.net, "cost-gross": pay.gross, "employer-pf": pay.employerPf, "monthly-cost": monthlyCost(pay), "annual-cost": monthlyCost(pay) * 12,
@@ -183,20 +190,11 @@ export default function SalaryStructure() {
         </div>
         <div className="page-header__actions">
           <button className="btn" type="button" data-permission="salary:view" data-export>Export</button>
-          <NotBuilt what="Add component" className="btn btn--primary" data-permission="salary:edit" hidden={!canEdit || undefined}>
-            <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>{" "}Add component
-          </NotBuilt>
         </div>
       </div>
       <div className="stack">
         <div className="grid grid-main-aside">
-          <section className="card">
-            <div className="card__header">
-              <h3 className="card__title">Salary components</h3>
-              <span className="card__meta" id="salary-components-meta">{plural(SALARY_COMPONENTS.length, "component", "components")}</span>
-            </div>
-            <Table bare pager={false} oldExport exportName="salary-components" tbodyId="salary-components" columns={componentColumns} rows={SALARY_COMPONENTS} rowKey={(c) => c.key} rowProps={(c) => ({ "data-component": c.key })} />
-          </section>
+          <TemplateEditor />
           <aside className="stack">
             <section className="card">
               <div className="card__header">
@@ -205,7 +203,8 @@ export default function SalaryStructure() {
               </div>
               <div className="card__body">
                 <p className="text-muted" id="salary-example-empty" hidden={Boolean(!example || pay) || undefined}>No salary on file for this month, so there's nothing to break down.</p>
-                <div id="salary-example-breakdown" hidden={Boolean(example && !pay) || undefined}>
+                <p className="text-muted" id="salary-example-new" hidden={!newNow || undefined}>The new statutory rules are in use this month: see the template, cost to company and tax regime cards below for this person.</p>
+                <div id="salary-example-breakdown" hidden={Boolean(newNow || (example && !pay)) || undefined}>
                   <h4 className="breakdown__title">Earnings</h4>
                   <dl className="breakdown">{kv([["basic", "Basic salary"], ["hra", "House rent allowance"], ["conveyance", "Conveyance allowance"], ["special", "Special allowance"], ["gross", "Gross pay", " breakdown__row--total"]])}</dl>
                   <h4 className="breakdown__title">Deductions</h4>
@@ -222,6 +221,7 @@ export default function SalaryStructure() {
                 </dl>
               </div>
             </section>
+            {example && <SalaryPlan userId={example.user.id} name={example.user.name} />}
             <div className="alert alert--info">Salary figures are only visible to roles with the salary:view permission. A person's Edit sets a new monthly gross from the 1st of a month (not your own): an Admin's change takes effect at once, anyone else's waits for an Admin to approve it. A component's Edit and Add component aren't built yet, so they don't save anything. A revised salary is used from the first payroll month that starts on or after its effective date.</div>
           </aside>
         </div>

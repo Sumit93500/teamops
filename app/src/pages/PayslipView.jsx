@@ -3,10 +3,13 @@
 // else the 403 page (the same answer whether or not that person exists). Without ?employee it's your own; without ?month the
 // newest. A month with no payslip, an unknown employee or a link that doesn't name a month shows a message instead (no Print).
 // Print or save as PDF is the browser's print dialog; print.css prints the payslip alone on one A4 page. Nothing here works
-// out pay; the store does.
+// out pay; the store does. P4a: a month from the statutory rules start month (Settings > Payroll) shows the new engine's figures:
+// the template's earnings, PF, ESI, professional tax, LWF and TDS, the regime, the day its rules were taken as of, the
+// Unverified label, and the employer contributions box (the person themself and anyone with payslips:view only). Earlier
+// months are the payslip they always were.
 import { useEffect } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
-import { payslipsFor } from "../../../assets/js/data/payroll-store.js";
+import { slipsFor, showEmployerBox } from "../data/payview.js";
 import { ATTENDANCE_RULES } from "../../../assets/js/data/attendance-store.js";
 import { getUser, joiningDate } from "../../../assets/js/data/store.js";
 import { can } from "../../../assets/js/core/rbac.js";
@@ -15,7 +18,7 @@ import { rupeesInWords } from "../../../assets/js/ui/money.js";
 import { maskAccount, maskPan } from "../../../assets/js/ui/pii.js";
 import Frame from "../ui/Frame.jsx";
 import { Badge, badgeOf, NO_DATA } from "../components/Basics.jsx";
-import { KeepWhole, rupees } from "../ui/payroll.jsx";
+import { KeepWhole, rupees, UnverifiedNote } from "../ui/payroll.jsx";
 import { useData, useSession } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
 import { COMPANY, companyInitial } from "../data/company.js";   // D2a: the company's details from one module
@@ -27,7 +30,7 @@ const STATUS = {
   approved: { label: "Approved", badge: "badge badge--success badge--dot" },
 };
 const NO_SALARY = "No salary on file for this month";
-const REGIME = { new: "New regime" };
+const REGIME = { new: "New regime", old: "Old regime" };
 const orDash = (value) => (value ? String(value) : "—");
 const monthLabel = (month) => `${monthName(Number(month.slice(5, 7)))} ${month.slice(0, 4)}`;
 const approved = (slip) => slip.runStatus === "approved";
@@ -58,6 +61,7 @@ function notesOf(slip) {
     ].filter(Boolean));
     notes.push(`Loss of pay: ${rupees(slip.lop.amount)} for ${formatDays(slip.lop.days)} (${why}), out of ${slip.workingDays} working days, taken off the monthly salary of ${rupees(slip.monthlyGross)}. The earnings above are on the ${rupees(slip.gross)} left.`);
   }
+  if (slip.engine === "new") notes.push(`Rules as of ${formatDay(slip.pay.rulesAsOf, true)}: a month uses the rates in force on its first day. Tax regime: ${REGIME[slip.regime] ?? slip.regime}. Income tax is under section ${slip.pay.tax.section} of the ${slip.pay.tax.act}.`);
   const open = slip.attendance.openAbsences;
   if (open.length) notes.push(`Not deducted yet: ${plural(open.length, "absence", "absences")} with no check-in, on ${listed(open.map(openAbsence))}. Each costs a day's pay (half with half-day leave) once its ${ATTENDANCE_RULES.requestWindowDays}-day correction window has closed and nothing for it is waiting for a decision.`);
   const paused = slip.attendance.pausedLateMarks ?? 0;
@@ -88,7 +92,7 @@ function pick(me, asked) {
   const userId = employee || me;
   const user = getUser(userId);
   if (!user) return { own, message: ["No such employee", `There's no employee with the ID ${userId}.`] };
-  const slips = payslipsFor(user.id, todayIso());
+  const slips = slipsFor(user.id, todayIso());
   if (!slips.length) return { own, message: [`No payslips for ${user.name}`, user.status === "inactive" ? `${user.name} is inactive and isn't in payroll.` : "There's no month with attendance records yet, so no payslip can be worked out."] };
   let slip = slips[0];
   if (asked.month) {
@@ -116,6 +120,8 @@ export default function PayslipView() {
   const noSalary = slip?.holdReason === NO_SALARY;
   const status = slip && STATUS[approved(slip) && slip.status === "draft" ? "approved" : slip.status];
   const notes = slip ? notesOf(slip) : [];
+  const isNew = slip?.engine === "new";
+  const employer = isNew && showEmployerBox(user.id) ? slip.pay.employer : null;
   const dd = (name, text, className) => <dd data-field={name} className={className}>{text}</dd>;
 
   return (
@@ -165,6 +171,7 @@ export default function PayslipView() {
               <div><dt>Bank account</dt><Sensitive name="bank" masked={maskAccount(user.bankAccountLast4)} /></div>
               <div><dt>PAN</dt><Sensitive name="pan" masked={maskPan(user.pan)} /></div>
               <div><dt>Tax regime</dt>{dd("regime", REGIME[slip.regime] ?? orDash(slip.regime))}</div>
+              {isNew && <div><dt>Rules as of</dt>{dd("rules-as-of", formatDay(slip.pay.rulesAsOf, true))}</div>}
               <div><dt>Working days</dt>{dd("working-days", String(slip.workingDays))}</div>
               <div><dt>Days paid</dt>{dd("days-paid", String(slip.workingDays - slip.lop.days))}</div>
               <div><dt>Loss of pay days</dt>{dd("lop-days", String(slip.lop.days))}</div>
@@ -173,18 +180,31 @@ export default function PayslipView() {
               <section className="payslip__col">
                 <h3>Earnings</h3>
                 <dl>
-                  {[["basic", "Basic salary"], ["hra", "House rent allowance"], ["conveyance", "Conveyance allowance"], ["special", "Special allowance"]].map(([k, t]) => <div className="pay-line" key={k}><dt>{t}</dt>{dd(k, rupees(slip.earnings[k]))}</div>)}
+                  {(isNew ? slip.pay.components.map((c) => [c.key, c.name, c.amount]) : [["basic", "Basic salary"], ["hra", "House rent allowance"], ["conveyance", "Conveyance allowance"], ["special", "Special allowance"]].map(([k, t]) => [k, t, slip.earnings[k]])).map(([k, t, n]) => <div className="pay-line" key={k}><dt>{t}</dt>{dd(k, rupees(n))}</div>)}
                   <div className="pay-line pay-line--total"><dt>Gross earnings</dt>{dd("gross", rupees(slip.gross))}</div>
                 </dl>
               </section>
               <section className="payslip__col">
                 <h3>Deductions</h3>
                 <dl>
-                  {[["pf", "Provident fund"], ["pt", "Professional tax"], ["tds", "Income tax (TDS), sample tax rates"]].map(([k, t]) => <div className="pay-line" key={k}><dt>{t}</dt>{dd(k, rupees(slip.deductionLines[k]))}</div>)}
+                  {(isNew ? [["pf", "Provident fund"], ["esi", "Employee state insurance"], ["pt", "Professional tax"], ["lwf", "Labour welfare fund"], ["tds", `Income tax (TDS), section ${slip.pay.tax.section}`]] : [["pf", "Provident fund"], ["pt", "Professional tax"], ["tds", "Income tax (TDS), sample tax rates"]]).map(([k, t]) => <div className="pay-line" key={k}><dt>{t}</dt>{dd(k, rupees(slip.deductionLines[k]))}</div>)}
                   <div className="pay-line pay-line--total"><dt>Total deductions</dt>{dd("deductions", rupees(slip.deductions))}</div>
                 </dl>
               </section>
             </div>
+            {employer && (
+              <section className="payslip__col payslip__employer" id="payslip-employer" aria-label="Employer contributions" hidden={noSalary || undefined}>
+                <h3>Employer contributions</h3>
+                <p className="text-muted">The company pays these on top. They are not taken from your pay.</p>
+                <dl>
+                  {[["e-pf", "Provident fund (EPF and EPS)", employer.pf], ["e-edli", "EDLI", employer.edli], ["e-pf-admin", "PF admin charge", employer.pfAdmin], ["e-esi", "Employee state insurance", employer.esi], ["e-lwf", "Labour welfare fund", employer.lwf],
+                    ["e-gratuity", "Gratuity accrual (cost to the company, not paid out now)", employer.gratuity]].map(([k, t, n]) => <div className="pay-line" key={k}><dt>{t}</dt>{dd(k, rupees(n))}</div>)}
+                  <div className="pay-line pay-line--total"><dt>Employer contributions in all</dt>{dd("e-total", rupees(employer.total))}</div>
+                  <div className="pay-line pay-line--total"><dt>Cost to company this month</dt>{dd("e-ctc", rupees(slip.pay.costToCompany))}</div>
+                </dl>
+              </section>
+            )}
+            {isNew && slip.pay.unverified && <UnverifiedNote />}
             <div className="payslip__net">
               <div><span>Net pay (gross earnings minus deductions)</span><strong data-field="net">{noSalary ? "—" : rupees(slip.net)}</strong></div>
               <Badge {...badgeOf(status?.badge ?? "badge")} id="payslip-status" title={slip.holdReason ?? ""}>{status?.label ?? slip.status}</Badge>

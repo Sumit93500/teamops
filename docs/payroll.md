@@ -34,6 +34,21 @@ Loss of pay reduces a month's gross for:
 - `setSalary()` is the only writer, and only an Admin may call it.
 - Finance proposes a change (`proposeSalary()`), and an Admin approves it. An Admin's own change takes effect at once.
 
+## P4a (2026-11-14): the pay screens
+
+The pay screens read the new engine (`data/pay-engine.js`) from the **statutory rules start month** (Settings > Payroll; `data/pay-settings.js`; **default 2026-11**, the first month whose payroll wasn't finalized when the new rules shipped). Months before it are the payslip, payroll row and tax figures they always were; from it the new engine's. The Admin can move the start month, but not on or before an approved month (its figures are fixed). Settings > Payroll also holds the company switch **PF on full wages** (off).
+
+| screen | from the start month |
+|---|---|
+| Payslip, payslip view | earnings by template component; deductions PF, ESI, professional tax, LWF, TDS (section 392); net; the tax regime; "Rules as of 1 <month>"; the **Unverified rates** note ("These rates are samples until an Admin verifies them.", with a link to Rates and rules for whoever may open it); the **employer contributions box** (employer PF with EPS / EPF, EDLI, admin charge, ESI, LWF, gratuity accrual, cost to company), shown to the person themself and to anyone with `payslips:view` (Finance, Admin), never to a manager looking at a report (a manager can't open a report's payslip at all) |
+| My payslips | the year to date gains ESI and LWF lines; **How your tax is worked out** (the year's projection, standard deduction, slabs, rebate, cess, the months so far) and **Compare regimes** (new against old with the declaration, the difference in rupees, in words) |
+| Salary structure | the components table is the **salary templates** (Admin edits a component through the module's checks; a preview on a typed gross); the person picked gets their template (Admin / Finance), **cost to company** (monthly and yearly) and **tax regime** (new by default; old only by a declaration of rent, metro, 80C-type investments and others, recorded by Finance or an Admin; "proofs are not collected in this demo") |
+| Payroll run | State, PF, ESI, PT, LWF, TDS, net and employer cost per person; statutory totals; the Unverified banner; challans and filing stay samples |
+| Tax & deductions | the signed-in person's explanation and comparison above the company's figures |
+| Rates and rules (new) | every dated row with its source link, confidence, who verified it and when; filters (state, status, rule, search); **Verify** (asked first; records the Admin's name and the date); **Add dated row** (the module's checks). Finance reads, an Admin verifies |
+
+**Known limits (ruled later):** the regime and the declaration are recorded by Finance or an Admin on the employee's word, not by the employee (the module lets no one else write them); Preparing and approving a run still fixes the earlier rules' figures in the store, so for a month from the start month the page shows the new engine's figures live and says so.
+
 ## Not built yet
 
 - Paying anyone; the bank file.

@@ -70,11 +70,11 @@ check("B8", "setting the flag needs users:edit (HR, Admin), not a new permission
 
 section("C. Ordinary permissions since L0");
 check("C1", "PERMISSIONS has the four modules (the role matrix draws from it)", j(["offices", "company", "locations", "devices"].map((m) => P.PERMISSIONS[m])) === j([["view", "manage"], ["edit"], ["set-own", "review"], ["view-own", "reset"]]));
-check("C2", "ALL_PERMISSIONS has all seven: 86 entries (79 before L0)", NEW.every((p) => P.ALL_PERMISSIONS.includes(p)) && P.ALL_PERMISSIONS.length === 86, P.ALL_PERMISSIONS.length);
+check("C2", "ALL_PERMISSIONS has all seven: 88 entries (79 before L0)", NEW.every((p) => P.ALL_PERMISSIONS.includes(p)) && P.ALL_PERMISSIONS.length === 88, P.ALL_PERMISSIONS.length);
 const SELF = ["offices:view", "locations:set-own", "devices:view-own"];
 check("C3", "the Admin's list has all seven; HR's, Finance's and Employee's have exactly the three self-service ones", NEW.every((p) => R.ROLES.admin.permissions.includes(p)) && ["hr", "fin", "emp"].every((k) => j(NEW.filter((p) => R.ROLES[k].permissions.includes(p)).sort()) === j([...SELF].sort())));
-check("C4", "the roles' permission counts on purpose: admin 86, hr 48, fin 40, emp 23 (were 79, 45, 37, 20)", j(Object.values(R.ROLES).map((r) => r.permissions.length)) === j([86, 48, 40, 23]), j(Object.values(R.ROLES).map((r) => r.permissions.length)));
-check("C5", "permissionsOf() and hasPermission() agree for everyone, on all 86", Object.values(PEOPLE).every((id) => { const u = S.getUser(id); return P.ALL_PERMISSIONS.every((p) => R.hasPermission(u, p) === R.permissionsOf(u).includes(p)); }));
+check("C4", "the roles' permission counts on purpose: admin 88, hr 48, fin 40, emp 23 (were 79, 45, 37, 20)", j(Object.values(R.ROLES).map((r) => r.permissions.length)) === j([88, 48, 40, 23]), j(Object.values(R.ROLES).map((r) => r.permissions.length)));
+check("C5", "permissionsOf() and hasPermission() agree for everyone, on all 88", Object.values(PEOPLE).every((id) => { const u = S.getUser(id); return P.ALL_PERMISSIONS.every((p) => R.hasPermission(u, p) === R.permissionsOf(u).includes(p)); }));
 check("C5b", "LOCATION_GRANTS reads from the roles", j(R.LOCATION_GRANTS.emp.slice().sort()) === j([...SELF].sort()) && R.LOCATION_GRANTS.admin.length === 7);
 check("C6", "none is overridable", NEW.every((p) => !R.OVERRIDABLE.includes(p)));
 const arjun = { ...S.getUser(PEOPLE.emp), grantPermissions: ["offices:manage", "devices:reset"] };

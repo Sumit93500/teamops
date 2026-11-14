@@ -16,6 +16,10 @@ import { resetExpenseData } from "../../../assets/js/data/expenses-store.js";
 import { resetInventoryData } from "../../../assets/js/data/inventory-store.js";
 import { resetAssetRequestData } from "../../../assets/js/data/asset-requests-store.js";
 import { resetLocationData } from "../../../assets/js/data/locations-store.js";
+import { resetPayRules } from "../../../assets/js/data/pay-rules.js";
+import { resetPayStructures } from "../../../assets/js/data/pay-structure.js";
+import { resetPaySettings } from "../../../assets/js/data/pay-settings.js";
+import { resetLeavePolicy } from "../../../assets/js/data/leave-policy.js";   // P4: the pay rules, templates, start dates and the leave policy are demo data too
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
 import Frame from "../ui/Frame.jsx";
@@ -64,7 +68,7 @@ function Content() {
     ...filtered.map((u) => [u.id, u.name, u.email, u.designation, departmentName(u.department), roleLabel(u.role), statusLabel(u.status)])], "users");
   const resetAll = async () => {
     if (!(await confirm({ message: RESET_CONFIRM, confirmLabel: "Reset demo data", danger: true }))) return;
-    resetDemoData(); resetLeaveData(); resetAttendanceData(); resetPayrollData(); resetExpenseData(); resetInventoryData(); resetAssetRequestData(); resetLocationData();
+    resetDemoData(); resetLeaveData(); resetAttendanceData(); resetPayrollData(); resetExpenseData(); resetInventoryData(); resetAssetRequestData(); resetLocationData(); resetPayRules(); resetPayStructures(); resetPaySettings(); resetLeavePolicy();
     window.location.reload();
   };
 

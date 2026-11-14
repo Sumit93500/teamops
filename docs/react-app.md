@@ -62,6 +62,7 @@ app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (b
   tabs; applied before the first paint. See [design.md](design.md#appearance-preferences-a1).
 - **A2:** a person with nothing saved starts at the defaults (the theme follows the device), not at the previous person's
   theme and accent; the old browser-wide keys carry over once, to whoever is signed in at the first load after the update.
+- **P4a (2026-11-14):** the pay screens use the new engine from the statutory rules start month (Settings > Payroll, default 2026-11; months before it are exactly as they were). Payslip and payslip view (template earnings, PF / ESI / PT / LWF / TDS, the regime, "Rules as of", the Unverified note, the employer contributions box for the person themself and anyone with payslips:view, never a manager's view of a report); the salary page (the components table is the salary templates, with Admin edits; a person's template, cost to company, regime and old-regime declaration); the payroll run (State, PF, ESI, PT, LWF, TDS, Employer cost, statutory totals, challans still samples); the tax page and My payslips (how this year's TDS is worked out, Compare regimes); the new Rates and rules page (`/pages/payroll/rates-rules.html`: Finance reads, Admin verifies and adds dated rows). See [payroll.md](payroll.md#p4a).
 - **L5:** Team attendance's export says why a day is flagged ("Yes: checked out from a different place"), "No" otherwise.
 - **E0:** the Add / Edit employee form by sections (Personal, Contact, Employment, Pay and tax, Role and access, Review),
   per-section checks, a leave guard, the profile's Edit links into a section. The same fields, rules and permissions; the
@@ -85,6 +86,7 @@ See [../tests/TEST-CATALOG.md](../tests/TEST-CATALOG.md).
 - **locs:** L2's new screens: My locations (set once, change, cancel, with a mocked location), location changes decided by an
   Admin (inbox, card, bell, counts, dashboard), HR and managers deciding none, HR's read-only Location changes tab (V, L4),
   My devices, keyboard, 412 / 1280, light and dark.
+- **pay4:** P4a's pay screens under the new statutory rules (payslip with the employer box and who sees it, the start-month boundary, payslips list and the tax explanation, payroll run, salary templates / CTC / regime / declaration, Rates and rules: filters, verify, add a row, Settings > Payroll, keyboard, contrast).
 - **prefs:** A1's appearance preferences (sync, tabs, per person, sizes measured, reset, no flash, blocked storage, contrast), and A2's (N: two people on one browser, the carry-over once, defaults for a new person, the device's theme).
 - **side:** S1's collapsible sidebar (defaults, toggle, memory, no flash, labels on focus, roles, keyboard, layout, contrast).
 

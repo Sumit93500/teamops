@@ -51,7 +51,16 @@ async function open(base, who, page, { width = 1280, theme = "light" } = {}) {
   await t.goto(base + "/pages/" + page); await t.waitForLoadState("load"); await t.evaluate(() => document.fonts.ready); await t.waitForTimeout(400);
   return { ctx, t, errs, at: new URL(t.url()).pathname };
 }
-const read = (t) => t.evaluate(() => {
+// P4a (ruled): the Salary structure page's components table is the salary templates now and the example person gets template, cost
+// and regime cards, and "Add component" is gone. Both pages are read without those parts: the old page's components card and
+// Add component button, the new page's cards.
+const stripP4a = (t) => t.evaluate(() => {
+  for (const s of ["#salary-templates", "#salary-plan", "#salary-ctc", "#salary-regime", "#salary-example-new"]) document.querySelector(s)?.remove();
+  for (const h of document.querySelectorAll("section.card .card__title")) if (h.textContent.trim() === "Salary components") h.closest("section.card").remove();
+  for (const b of document.querySelectorAll(".page-header__actions button, .page-header__actions a")) if (/Add component/.test(b.textContent)) b.remove();
+});
+const read = async (t) => { await stripP4a(t); return read0(t); };
+const read0 = (t) => t.evaluate(() => {
   const m = document.querySelector("main#main");
   if (!m) return null;
   const vis = (e) => e.getClientRects().length > 0;
@@ -135,8 +144,9 @@ if (ONLY.includes("G")) {
       return out;
     };
     same(`G2.${who}`, `${who}: search, department, no matches; Breakdown on the third row`, await steps(x.o.t), await steps(x.n.t));
-    const [fa, fb] = [await files(x.o.t), await files(x.n.t)];
-    fileCheck(`G3.${who}`, `${who}: Export: both files byte for byte`, fa, fb, 2);
+    const [fa0, fb] = [await files(x.o.t), await files(x.n.t)];
+    const fa = Array.isArray(fa0) ? fa0.filter((f) => !f[0].startsWith("salary-components")) : fa0;   // P4a: the components file is gone with the table
+    fileCheck(`G3.${who}`, `${who}: Export: the employee salaries file byte for byte (the components file is gone with the table, P4a)`, fa, fb, 1);
     if (who === "fin") {
       const flow = async (t, x2) => {
         const out = [];
@@ -241,8 +251,8 @@ async function phoneCards(letter, list) {
   for (const [who, page] of list) {
     const o = await open(O, who, page, { width: 412 }), n = await open(N, who, page, { width: 412 });
     await o.t.waitForTimeout(700);
-    const cards = (t) => t.evaluate(() => [...document.querySelectorAll("main table")].map((tb) => ({ cards: tb.hasAttribute("data-cards"),
-      rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`)) })));
+    const cards = async (t) => { await stripP4a(t); return t.evaluate(() => [...document.querySelectorAll("main table")].map((tb) => ({ cards: tb.hasAttribute("data-cards"),
+      rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`)) }))); };
     const [a, b] = [await cards(o.t), await cards(n.t)];
     check(`${letter}.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page} at 412: the same cards`, j(a) === j(b), j(a) === j(b) ? `${a.length} tables, ${a.map((x) => x.rows.length).join("+")} rows` : `old ${j(a).slice(0, 400)} new ${j(b).slice(0, 400)}`);
     await o.ctx.close(); await n.ctx.close();
