@@ -18,6 +18,7 @@ import { decideAssetRequest } from "../../../assets/js/data/asset-requests-store
 import { describeRequest } from "../../../assets/js/ui/asset-request-view.js";
 import { decideLocationChange } from "../../../assets/js/data/locations-store.js";
 import { decideChange, changeText } from "../../../assets/js/data/employee-record.js";
+import { decideOvertimeItem } from "../../../assets/js/data/overtime-store.js";
 import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
 import { bump } from "../data/bus.js";
 import { useToast } from "../ui/Toast.jsx";
@@ -110,6 +111,20 @@ export const PROFILE_FLOW = {
     title: "Reject bank or tax change",
     approved: "Change approved. It applies now.",
     rejected: "Change rejected.",
+  },
+};
+
+// SH1: a day's overtime, for the person's manager (HR or an Admin when they have none). Approved minutes are fixed for the
+// month; with comp-off on they also earn comp-off days. A rejection needs a reason, which the employee sees.
+const otWords = (m) => [Math.floor(m / 60) ? `${Math.floor(m / 60)} h` : "", m % 60 ? `${m % 60} min` : ""].filter(Boolean).join(" ");
+export const OVERTIME_FLOW = {
+  decide: (id, actorUserId, _role, action, note) => decideOvertimeItem(actorUserId, id, action === "approve" ? "approved" : "rejected", note ?? ""),
+  describe: (o) => `${nameOf(o.userId)}: ${otWords(o.minutes)} overtime on ${formatDay(o.date)} (${o.shiftName}, out at ${o.checkOut})`,
+  noteId: "reject-overtime-note",
+  labels: {
+    title: "Reject overtime",
+    approved: (res) => (res.credits?.length ? `Overtime approved. ${res.credits.length === 1 ? "1 comp-off day" : `${res.credits.length} comp-off days`} earned.` : "Overtime approved."),
+    rejected: "Overtime rejected.",
   },
 };
 

@@ -876,3 +876,47 @@ export function resetAttendanceData() {
   attendance.reset();
   regularizations.reset();
 }
+
+// ---------- SH1 (2026-11-15): the shift punch path's writers ----------
+// Additive: checkIn() / checkOut() above are unchanged, and the old site keeps using them. From the shift rules start
+// date the React Mark attendance punches through data/shift-punch.js, which works out the shift's day and the time in
+// office time (India) and its checks, then writes here. The record is the shape checkIn() writes; a night shift's
+// check-out goes on the record of the day the shift started. These writers check only that the record allows it.
+const recordOf = (userId, date) => attendance.getAll().find((r) => r.userId === userId && r.date === date) ?? null;
+// The stored record of a person's date (not a generated sample day), or null.
+export function storedRecord(userId, date) {
+  const r = recordOf(userId, date);
+  return r ? JSON.parse(JSON.stringify(r)) : null;
+}
+export function writeShiftCheckIn(userId, date, time, mode, stamp) {
+  if (!getUser(userId) || !isValidDate(date) || !isValidTime(time) || !MODES.includes(mode)) return fail("That check-in isn't valid.");
+  if (recordOf(userId, date)?.checkIn) return fail(`You already checked in at ${recordOf(userId, date).checkIn}.`);
+  return attendance.add({
+    userId, date, checkIn: time, checkOut: null, mode, source: "punch",
+    originalCheckIn: null, originalCheckOut: null,
+    history: [{ at: new Date().toISOString(), byUserId: userId, action: "checked-in", note: "" }],
+    ...stampFields("checkIn", stamp),
+  });
+}
+export function writeShiftCheckOut(userId, date, time, stamp) {
+  const record = recordOf(userId, date);
+  if (!record?.checkIn) return fail("Check in first.");
+  if (record.checkOut) return fail(`You already checked out at ${record.checkOut}.`);
+  if (!isValidTime(time)) return fail("That check-out isn't valid.");
+  return attendance.update(record.id, {
+    checkOut: time,
+    history: [...record.history, { at: new Date().toISOString(), byUserId: userId, action: "checked-out", note: "" }],
+    ...stampFields("checkOut", stamp, record),
+  });
+}
+// HR completes a day left without a check-out (data/shift-punch.js completeShiftDay makes the checks).
+export function writeCompletedDay(byUserId, userId, date, time, note) {
+  const record = recordOf(userId, date);
+  if (!record?.checkIn) return fail("There's no check-in that day.");
+  if (record.checkOut) return fail(`The day already has a check-out (${record.checkOut}).`);
+  if (!isValidTime(time)) return fail("Enter the check-out as HH:MM.", "time");
+  return attendance.update(record.id, {
+    checkOut: time,
+    history: [...record.history, { at: new Date().toISOString(), byUserId, action: "regularized", note: `Check-out added: ${time}. ${note}`.trim() }],
+  });
+}

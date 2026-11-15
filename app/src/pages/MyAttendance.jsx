@@ -4,6 +4,9 @@
 // fields). Cancel asks in the in-app dialog (round 4) instead of window.confirm; the words are the old ones.
 // L3: the daily log has a Place column (where each check-in came from: icon, name, distance; the check-out's place when it
 // differs), a Flagged badge beside the status, and "Flagged only" to narrow the log to flagged days.
+// SH1: the month is read by the shift (data/shift-days.js shiftMonthFor: before the shift rules start, the old month exactly);
+// "Your shift" with the next check-in window; a Shift and an Overtime column; Short leave, Weekly off and Incomplete; the
+// late-mark words follow the late-mark rule from the shift rules month (off by default: late marks cost no pay).
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getUser } from "../../../assets/js/data/store.js";
@@ -27,12 +30,15 @@ import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
 import { stampsBy, stampKey } from "../data/stamps.js";
 import { placeNode, flagNode } from "../ui/attendance.jsx";
+import { shiftMonthFor } from "../../../assets/js/data/shift-days.js";
+import { latePolicy } from "../../../assets/js/data/shift-settings.js";
+import { ShiftLine, statusNodes, shiftCell, otCell } from "../ui/shifts.jsx";
 
 const PAGE = "attendance/my-attendance.html";
 const PAGE_SIZE = 10, MONTHS_BACK = 3;
 const pad = (n) => String(n).padStart(2, "0");
 const ordinal = (n) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
-const isOffOrEmpty = (day) => ["weekend", "holiday", "no-data", "not-joined", "left"].includes(day.status);
+const isOffOrEmpty = (day) => ["weekend", "weekly-off", "holiday", "no-data", "not-joined", "left"].includes(day.status);
 const soFar = (days, today) => days.filter((d) => d.date <= today && !isOffOrEmpty(d) && d.status !== "not-yet");
 const ICONS = ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6", "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2", "M4 20V10M10 20V4M16 20v-7M22 20H2", "M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"];
 const TONES = [1, 3, 2, 4];
@@ -51,6 +57,8 @@ function cellLook(day, today) {
     case "present": return ["present", day.incomplete ? "No check-out" : `On time${wfh}`];
     case "late": return ["late", day.incomplete ? "Late, no check-out" : `Late${wfh}`];
     case "half-day": return ["late", "Half day"];
+    case "short-leave": return ["late", "Short leave"];
+    case "weekly-off": return ["weekend", "Weekly off"];
     case "absent": return ["absent", "Absent"];
     case "on-leave": return ["leave", "On leave"];
     case "holiday": return ["holiday", day.holiday?.name ?? "Holiday"];
@@ -75,8 +83,8 @@ function logRow(day, today, on, canFix, stamp) {
   const tr = el("tr");
   tr.dataset.date = day.date;
   const status = el("td");
-  const badge = dayBadge(day);
-  status.append(badge);
+  const [badge, ...more] = statusNodes(day);
+  status.append(badge, ...more);
   showReason(badge, badge.title);
   if (stamp?.flagged) status.append(" ", flagNode(stamp.reasons));
   const actions = el("td", "table__actions");
@@ -99,7 +107,7 @@ function logRow(day, today, on, canFix, stamp) {
   const place = el("td");
   place.append(placeNode(stamp));
   tr.append(el("td", "", shortDate(day.date)), el("td", "", day.checkIn ? `${day.checkIn}${day.mode === "wfh" ? " (WFH)" : ""}` : "–"), place,
-    el("td", "", day.incomplete ? "Not recorded" : (day.checkOut ?? "–")), el("td", "table__num", day.minutesWorked === null ? "–" : hoursText(day.minutesWorked)), status, actions);
+    el("td", "", day.incomplete ? "Not recorded" : (day.checkOut ?? "–")), el("td", "table__num", day.minutesWorked === null ? "–" : hoursText(day.minutesWorked)), shiftCell(day), otCell(day), status, actions);
   return tr;
 }
 
@@ -119,7 +127,7 @@ export default function MyAttendance() {
   const [modal, setModal] = useState(null);   // the form while open
   const [error, setError] = useState(null);   // { field, message }
   const [flaggedOnly, setFlaggedOnly] = useState(false);
-  const d = useData(() => ({ summary: monthFor(userId, year, month), requests: regularizationsFor(userId), user: getUser(userId), stamps: stampsBy() }), [userId, year, month]);
+  const d = useData(() => ({ summary: shiftMonthFor(userId, year, month), late: latePolicy(), requests: regularizationsFor(userId), user: getUser(userId), stamps: stampsBy() }), [userId, year, month]);
 
   const on = useRef({});
   on.current.cancel = async (id, date) => {
@@ -161,8 +169,12 @@ export default function MyAttendance() {
   const s0 = !done.length
     ? ["–", isCurrent && summary.workingDaysLeft ? `${plural(summary.workingDaysLeft, "working day", "working days")} left` : "No attendance recorded"]
     : [`${summary.daysWorked} / ${done.length}`, isCurrent ? `${plural(summary.workingDaysLeft, "working day", "working days")} left` : "Working days in the month"];
-  const left = R.penaltyEvery - (summary.lateMarks % R.penaltyEvery);
-  const s1 = [String(summary.lateMarks), summary.penaltyHalfDays ? `${plural(summary.penaltyHalfDays, "half day", "half days")} this month; ${left} more before the next` : `${left} more before a half day`];
+  // SH1: from the shift rules month the late-mark rule is the setting's (off by default); before it, the old every 3rd
+  const shiftRules = summary.rules === "shift";
+  const every = shiftRules ? d.late.every : R.penaltyEvery;
+  const penalised = !shiftRules || d.late.on;
+  const left = every - (summary.lateMarks % every);
+  const s1 = [String(summary.lateMarks), !penalised ? "Late marks don't cost pay" : summary.penaltyHalfDays ? `${plural(summary.penaltyHalfDays, "half day", "half days")} this month; ${left} more before the next` : `${left} more before a half day`];
   const s2 = [summary.averageMinutes === null ? "–" : hoursText(summary.averageMinutes), `Target is ${R.fullDayMinutes / 60}h`];
   const inMonth = d.requests.filter((r) => r.date.startsWith(`${year}-${pad(month)}-`)).sort((a, b) => b.appliedOn.localeCompare(a.appliedOn) || b.id.localeCompare(a.id, "en", { numeric: true }));
   const s3 = [String(inMonth.length), inMonth.length ? latestNote(inMonth[0]) : "None this month"];
@@ -181,8 +193,8 @@ export default function MyAttendance() {
   // summary, alert
   const chart = monthAttendanceChart(done);
   const counts = valuesOf(chart, "Days");
-  const alert = summary.lateMarks
-    ? `You have ${plural(summary.lateMarks, "late mark", "late marks")} this month. Every ${ordinal(R.penaltyEvery)} late mark counts as half a day.${summary.penaltyHalfDays ? ` That's ${plural(summary.penaltyHalfDays, "half day", "half days")} this month.` : ` ${left === 1 ? "The next one" : `${left} more`} would count as half a day.`} Each half day is taken from your pay, not your leave balance, when payroll is processed.`
+  const alert = summary.lateMarks && !penalised ? `You have ${plural(summary.lateMarks, "late mark", "late marks")} this month. Late marks don't cost pay under the shift rules.` : summary.lateMarks
+    ? `You have ${plural(summary.lateMarks, "late mark", "late marks")} this month. Every ${ordinal(every)} late mark counts as half a day.${summary.penaltyHalfDays ? ` That's ${plural(summary.penaltyHalfDays, "half day", "half days")} this month.` : ` ${left === 1 ? "The next one" : `${left} more`} would count as half a day.`} Each half day is taken from your pay, not your leave balance, when payroll is processed.`
     : null;
   // log
   const totalPages = Math.max(1, Math.ceil(logDays.length / PAGE_SIZE));
@@ -209,6 +221,7 @@ export default function MyAttendance() {
         </div>
       </div>
       <div className="stack">
+        <ShiftLine userId={userId} />
         <StatStrip label="Key numbers">
           {stats.map(([label, value, note], i) => <StatCard key={label} icon={ICONS[i]} tone={TONES[i]} label={label} value={value} note={note} hidden={false} />)}
         </StatStrip>
@@ -234,7 +247,7 @@ export default function MyAttendance() {
               </div>
               <div className="calendar__legend">
                 <span className="is-present">On time</span><span className="is-late">Late</span><span className="is-absent">Absent</span><span className="is-leave">On leave</span>
-                <span className="is-holiday">Holiday</span><span className="is-off">Weekend</span><span style={{ "--c": "var(--color-text-muted)" }}>No record</span>
+                <span className="is-holiday">Holiday</span><span className="is-off">{summary.rules === "shift" ? "Weekly off" : "Weekend"}</span><span style={{ "--c": "var(--color-text-muted)" }}>No record</span>
               </div>
             </div>
           </section>
@@ -258,10 +271,10 @@ export default function MyAttendance() {
           </div>
           <div className="table-wrap">
             <table className="table">
-              <thead><tr><th>Date</th><th>Check-in</th><th>Place</th><th>Check-out</th><th className="table__num">Hours</th><th>Status</th><th className="table__actions">Actions</th></tr></thead>
+              <thead><tr><th>Date</th><th>Check-in</th><th>Place</th><th>Check-out</th><th className="table__num">Hours</th><th>Shift</th><th className="table__num">Overtime</th><th>Status</th><th className="table__actions">Actions</th></tr></thead>
               <Nodes as="tbody" deps={[d, year, month, current, canFix, flaggedOnly]} build={() => {
                 if (pageDays.length) return pageDays.map((x) => logRow(x, today, on, canFix, stampOf(x)));
-                const td = el("td", "text-muted", flaggedOnly && allLogDays.length ? "No flagged days this month." : NO_DATA); td.colSpan = 7;
+                const td = el("td", "text-muted", flaggedOnly && allLogDays.length ? "No flagged days this month." : NO_DATA); td.colSpan = 9;
                 const tr = el("tr"); tr.append(td); return [tr];
               }} />
             </table>

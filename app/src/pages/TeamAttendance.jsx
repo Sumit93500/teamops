@@ -8,7 +8,10 @@
 // flag, and a Flagged column after it. The file is made from a copy of the table with that extra column, by
 // the same exporter (csv-export.js), so the page's own table, its phone cards and its look don't change.
 // L5: the Flagged cell gives the reason ("Yes: checked out from a different place"; data/stamps.js flaggedCell), "No" otherwise.
-import { useMemo, useState } from "react";
+// SH1: each day is read by the person's shift (data/shift-days.js; before the shift rules start, the old day exactly): a Shift
+// and an Overtime column, Short leave / Weekly off / Incomplete, filters by shift and by office, HR's "Complete day" on an
+// incomplete day, and "Swap shift" (HR and the Admin for anyone, a manager for a direct report, one date).
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { can } from "../../../assets/js/core/rbac.js";
 import { getAllUsers, getAllDepartments } from "../../../assets/js/data/store.js";
@@ -35,6 +38,13 @@ import { StatStrip, StatCard } from "../components/Basics.jsx";
 import { NoData, NO_DATA } from "../components/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
+import { shiftTeamFor, shiftRangeFor } from "../../../assets/js/data/shift-days.js";
+import { shiftRulesApply } from "../../../assets/js/data/shift-settings.js";
+import { getShifts } from "../../../assets/js/data/shifts-store.js";
+import { maySwap } from "../../../assets/js/data/shift-assignments.js";
+import { getOffices, officeIdOf } from "../../../assets/js/data/offices-store.js";
+import { summaryOfDays } from "../../../assets/js/data/attendance-store.js";
+import { statusNodes, shiftCell, otCell, SwapShiftModal, CompleteDayModal } from "../ui/shifts.jsx";
 
 csvColumns("team-attendance", { Employee: { split: "Employee ID" } });   // Round Data export part 2
 
@@ -44,10 +54,11 @@ const WEEK = {
   present: ["p", "P", "present"], late: ["l", "L", "late"], "half-day": ["hd", "HD", "half day"], absent: ["a", "A", "absent"], "on-leave": ["lv", "LV", "on leave"],
   holiday: ["hol", "HOL", "holiday"], weekend: ["nd", "W", "weekend"], "not-yet": ["ny", "NY", "not in yet"], "no-data": ["nd", "ND", "no data"],
   "not-joined": ["nd", "NJ", "before joining"], left: ["nd", "AL", "after leaving"],
+  "short-leave": ["hd", "SL", "short leave"], "weekly-off": ["nd", "WO", "weekly off"],   // SH1
 };
 const weekPart = (day) => WEEK[day.status] ?? ["nd", "?", day.status];
 const NO_RECORD = ["no-data", "not-joined", "left"];
-const isPresent = (day) => ["present", "late", "half-day"].includes(day.status);
+const isPresent = (day) => ["present", "late", "half-day", "short-leave"].includes(day.status);
 const isAbsent = (day) => day.status === "absent" || day.overdue;
 const isMissing = (day) => !day.checkIn && isAbsent(day);
 const TABS = { all: () => true, present: isPresent, late: (day) => day.status === "late", "on-leave": (day) => day.status === "on-leave", absent: isAbsent };
@@ -74,12 +85,21 @@ function placeWords(stamp) {
   const first = stamp.inPlace ? words(stamp.inPlace, stamp.inDistance) : words(stamp.outPlace, stamp.outDistance);
   return stamp.inPlace && stamp.outPlace && stamp.outPlace !== stamp.inPlace ? `${first}; out: ${words(stamp.outPlace, stamp.outDistance)}` : first;
 }
-function row(r) {
+// SH1: the summary counts a short leave as present (like a half day) and a weekly off as off
+const forSummary = (day) => (day.status === "short-leave" ? { ...day, status: "half-day" } : day.status === "weekly-off" ? { ...day, status: "weekend" } : day);
+function row(r, on) {
   const tr = el("tr");
   const status = el("td");
-  const badge = dayBadge(r.day);
-  status.append(badge);
+  const [badge, ...more] = statusNodes(r.day);
+  status.append(badge, ...more);
   showReason(badge, badge.title);
+  if (on?.current?.complete && r.day.incomplete && r.day.rules === "shift") {
+    const fix = el("button", "btn btn--sm", "Complete day");
+    fix.type = "button";
+    fix.setAttribute("aria-label", `Complete ${r.user?.name ?? r.day.userId}'s day`);
+    fix.addEventListener("click", () => on.current.complete(r.day));
+    status.append(" ", fix);
+  }
   if (r.stamp?.flagged) { status.append(" ", flagNode(r.stamp.reasons)); csvValue(status, badge.textContent); }
   const place = csvValue(el("td"), placeWords(r.stamp));
   place.append(placeNode(r.stamp));
@@ -92,10 +112,10 @@ function row(r) {
     a.dataset.route = "";
     name.replaceWith(a);
   }
-  tr.append(who, el("td", "", departmentName(r.user?.department)), checkInCell(r.day), place, hoursCell(r.day), weekCell(r.week), status);
+  tr.append(who, el("td", "", departmentName(r.user?.department)), shiftCell(r.day), checkInCell(r.day), place, hoursCell(r.day), otCell(r.day), weekCell(r.week), status);
   return tr;
 }
-function emptyRow(text) { const td = el("td", "text-muted", text); td.colSpan = 7; const tr = el("tr"); tr.append(td); return tr; }
+function emptyRow(text) { const td = el("td", "text-muted", text); td.colSpan = 9; const tr = el("tr"); tr.append(td); return tr; }
 function attentionNote(day, pendingLeave) {
   if (day.regularization?.status === "pending" && day.regularization.issue === "missed-check-in") return "correction pending";
   if (pendingLeave.has(day.userId)) return "leave request pending";
@@ -135,6 +155,13 @@ export default function TeamAttendance() {
   const [search, setSearch] = useState("");
   const [dept, setDept] = useState("");
   const [flag, setFlag] = useState("");
+  const [shiftF, setShiftF] = useState("");
+  const [office, setOffice] = useState("");
+  const [swapping, setSwapping] = useState(false);
+  const [completing, setCompleting] = useState(null);
+  const canComplete = useCan("attendance:approve") && canAll;
+  const on = useRef({});
+  on.current.complete = canComplete ? (day) => setCompleting(day) : null;
   const [ascending, setAscending] = useState(true);
   const [page, setPage] = useState(1);
   const phone = usePhone();   // "Sort by" before the sortable heading on a phone, as ui/phone.js (round 9b)
@@ -144,15 +171,25 @@ export default function TeamAttendance() {
   const d = useData(() => {
     const people = new Map(getAllUsers().map((u) => [u.id, u]));
     const stamps = stampsBy();
-    const rows = teamWeekFor(date).filter(({ day }) => scope === null || scope.has(day.userId)).map(({ day, week }) => ({ day, week, user: people.get(day.userId), stamp: stamps.get(stampKey(day.userId, date)) ?? null }));
-    return { rows, summary: summaryFor(date, scope), chart: departmentPresenceChart(date, rows, scope), departments: getAllDepartments(), regCount: canApprove ? pendingRegularizations(userId, role?.key).length : 0 };
+    // SH1: the date's days by each person's shift; the week too once any of it is under the shift rules
+    const shiftDays = new Map(shiftTeamFor(date).map((x) => [x.userId, x]));
+    const rows = teamWeekFor(date).filter(({ day }) => scope === null || scope.has(day.userId)).map(({ day, week }) => {
+      const sday = shiftDays.get(day.userId) ?? day;
+      const sweek = shiftRulesApply(week.at(-1).date) ? shiftRangeFor(day.userId, week[0].date, week.at(-1).date) ?? week : week;
+      return { day: sday, week: sweek, user: people.get(day.userId), stamp: stamps.get(stampKey(day.userId, date)) ?? null, office: officeIdOf(day.userId) };
+    });
+    const summary = { ...summaryOfDays(date, rows.map((r) => forSummary(r.day))), conflicts: summaryFor(date, scope).conflicts };
+    const chartRows = rows.map((r) => ({ ...r, day: forSummary(r.day) }));
+    const swappable = getAllUsers().filter((u) => u.status !== "inactive" && maySwap(userId, u.id)).sort((a, b) => a.name.localeCompare(b.name));
+    return { rows, summary, chart: departmentPresenceChart(date, chartRows, scope), departments: getAllDepartments(), regCount: canApprove ? pendingRegularizations(userId, role?.key).length : 0,
+      shifts: getShifts({ includeInactive: true }), offices: getOffices().filter((o) => o.active !== false), swappable };
   }, [date, scope, userId, role?.key, canApprove]);
 
   // the table (team-attendance.js renderTable)
   const query = search.trim().toLowerCase();
   // a date with no data (round 9b, as rer): people, but nobody's day has a record; it lists nobody and one row says so
   const noData = d.rows.length > 0 && d.rows.every((r) => NO_RECORD.includes(r.day.status));
-  const narrowed = (noData ? [] : d.rows).filter((r) => (!dept || r.user?.department === dept) && (!flag || r.stamp?.flagged) && (!query || (r.user?.name ?? "").toLowerCase().includes(query)));
+  const narrowed = (noData ? [] : d.rows).filter((r) => (!dept || r.user?.department === dept) && (!flag || r.stamp?.flagged) && (!shiftF || r.day.shiftId === shiftF) && (!office || r.office === office) && (!query || (r.user?.name ?? "").toLowerCase().includes(query)));
   const byName = (a, b) => (a.user?.name ?? "").localeCompare(b.user?.name ?? "") || a.day.userId.localeCompare(b.day.userId);
   const shown = narrowed.filter((r) => TABS[tab](r.day)).sort((a, b) => (ascending ? byName(a, b) : byName(b, a)));
   const totalPages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
@@ -160,7 +197,7 @@ export default function TeamAttendance() {
   const pageRows = shown.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
   let empty = "Nobody matches these filters.";
   if (!d.rows.length) empty = "No active employees.";
-  else if (!search.trim() && !dept && !flag) empty = "Nobody in this group on this date.";
+  else if (!search.trim() && !dept && !flag && !shiftF && !office) empty = "Nobody in this group on this date.";
   // the stats
   const s = d.summary;
   const absent = s.absent + s.overdue, waiting = s.notYet - s.overdue;
@@ -177,7 +214,7 @@ export default function TeamAttendance() {
     const head = live.tHead.cloneNode(true);
     head.rows[head.rows.length - 1].append(el("th", "", "Flagged"));
     const body = el("tbody");
-    for (const r of shown) { const tr = row(r); tr.append(el("td", "", flaggedCell(r.stamp))); body.append(tr); }
+    for (const r of shown) { const tr = row(r, null); tr.append(el("td", "", flaggedCell(r.stamp))); body.append(tr); }
     copy.append(head, body);
     exportTableAsCsv(copy, "team-attendance");
   };
@@ -205,6 +242,7 @@ export default function TeamAttendance() {
           <Link className="btn" id="team-reg-link" to={pageUrl("attendance/regularization.html")} data-permission="attendance:approve" hidden={!canApprove || undefined}>
             Regularization{d.regCount ? <>{" "}<span className="badge badge--count">{String(d.regCount)}<span className="sr-only"> pending</span></span></> : null}
           </Link>
+          {d.swappable.length > 0 && <button className="btn" type="button" id="swap-shift-open" onClick={() => setSwapping(true)}>Swap shift</button>}
           {scope === null && <button className="btn btn--primary" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export onClick={exportFile}>Export</button>}
         </div>
       </div>
@@ -217,7 +255,7 @@ export default function TeamAttendance() {
               : <StatCard key={key} id={key} icon={ICONS[key][0]} tone={ICONS[key][1]} label={label} value={String(value)} note={note} noteTone={tone} />
           ))}
         </StatStrip>
-        <div className="grid grid-main-aside">
+        <div className="stack">   {/* SH1: the table (now 9 columns) takes the full width; the side cards go below it */}
           <section className="card">
             <div className="table__toolbar">
               <div className="tabs tabs--pill" role="tablist">
@@ -237,6 +275,14 @@ export default function TeamAttendance() {
                   <option value="">All departments</option>
                   {d.departments.map((x) => <option key={x.code} value={x.code}>{x.name}</option>)}
                 </select>
+                <select className="select select--sm" id="team-shift" aria-label="Filter by shift" value={shiftF} onChange={(e) => { setShiftF(e.target.value); setPage(1); }}>
+                  <option value="">All shifts</option>
+                  {d.shifts.filter((x) => x.active || d.rows.some((r) => r.day.shiftId === x.id)).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+                </select>
+                <select className="select select--sm" id="team-office" aria-label="Filter by office" value={office} onChange={(e) => { setOffice(e.target.value); setPage(1); }}>
+                  <option value="">All offices</option>
+                  {d.offices.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+                </select>
                 <select className="select select--sm" id="team-flag" aria-label="Filter by flag" value={flag} onChange={(e) => { setFlag(e.target.value); setPage(1); }}>
                   <option value="">All check-ins</option>
                   <option value="flagged">{`Flagged only (${d.rows.filter((r) => r.stamp?.flagged).length})`}</option>
@@ -248,15 +294,15 @@ export default function TeamAttendance() {
                 <thead>
                   <tr>
                     <th className="is-sortable" aria-sort={ascending ? "ascending" : "descending"}>{phone && <span className="table__sort-label" aria-hidden="true">Sort by</span>}<button className="sort-btn" id="team-sort" type="button" onClick={() => setAscending(!ascending)}>Employee <span aria-hidden="true">{ascending ? "▲" : "▼"}</span></button></th>
-                    <th>Department</th><th>Check-in</th><th>Place</th><th className="table__num">Hours</th><th>This week</th><th>Status</th>
+                    <th>Department</th><th>Shift</th><th>Check-in</th><th>Place</th><th className="table__num">Hours</th><th className="table__num">Overtime</th><th>This week</th><th>Status</th>
                   </tr>
                 </thead>
-                <Nodes as="tbody" id="team-rows" build={() => (pageRows.length ? pageRows.map(row) : [emptyRow(noData ? NO_DATA : empty)])} deps={[d, tab, search, dept, flag, ascending, current]} />
+                <Nodes as="tbody" id="team-rows" build={() => (pageRows.length ? pageRows.map((x) => row(x, on)) : [emptyRow(noData ? NO_DATA : empty)])} deps={[d, tab, search, dept, flag, shiftF, office, ascending, current, canComplete]} />
               </table>
             </div>
             <Pagination totalItems={shown.length} pageSize={PAGE_SIZE} currentPage={current} onPageChange={setPage} />
           </section>
-          <aside className="stack">
+          <aside className="team-aside">
             <section className="card">
               <div className="card__header">
                 <h3 className="card__title">Attendance by department</h3>
@@ -283,6 +329,8 @@ export default function TeamAttendance() {
           </aside>
         </div>
       </div>
+      {swapping && <SwapShiftModal open onClose={() => setSwapping(false)} people={d.swappable.map((u) => ({ id: u.id, name: u.name }))} />}
+      {completing && <CompleteDayModal day={completing} onClose={() => setCompleting(null)} />}
     </Frame>
   );
 }

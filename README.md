@@ -49,7 +49,7 @@ assets/js/          config/ (roles, permissions, routes, nav), core/ (auth, rbac
                     data/ (the stores and rules), ui/ (DOM helpers), pages/ (one script per page), app.js
 assets/css/         tokens, base, layout, components, page styles
 app/                the React app (src/pages, src/components, src/shell, src/ui, src/data)
-docs/               one short note per area: rbac, attendance, leave, payroll, expenses, assets, charts, deploy, react-app, graph
+docs/               one short note per area: rbac, attendance, shifts, leave, payroll, expenses, assets, charts, deploy, react-app, graph
 tests/              live/ (suites that run), archive/ (static-page suites and frozen baselines, one file), cases/, catalog, results
 tools/              run-tests.py, gen-docs.py, pack-archive.py
 _templates/         the page template the static pages were built from

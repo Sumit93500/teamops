@@ -1,0 +1,73 @@
+/* SH1 (2026-11-15): shifts. Tokens only. */
+.shift-cell { display: grid; gap: 2px; min-width: 0; }
+.shift-cell__name { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--ds-text); }
+.shift-cell__icon { width: 14px; height: 14px; flex: none; color: var(--ds-info); }
+.shift-cell__sub { font-size: var(--ds-text-xs); color: var(--ds-text-2); white-space: nowrap; }
+.shift-cell__swap { font-size: var(--ds-text-xs); color: var(--ds-info); }
+
+.shift-line { display: flex; align-items: flex-start; gap: var(--ds-space-3); padding: var(--ds-space-3) var(--ds-space-4); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-1); color: var(--ds-text); font-size: var(--ds-text-sm); }
+.shift-line__icon { display: inline-grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--ds-radius-pill); background: var(--ds-info-soft); color: var(--ds-info); }
+.shift-line__icon .icon { width: 18px; height: 18px; }
+.shift-line__text { display: grid; gap: 2px; min-width: 0; }
+.shift-line__sub { color: var(--ds-text-2); }
+.shift-line--compact { padding: var(--ds-space-2) var(--ds-space-3); }
+
+.shift-name { display: grid; gap: 4px; }
+.shift-name .table__user-name { display: inline-flex; align-items: center; gap: 4px; }
+.shift-name__pills { display: flex; flex-wrap: wrap; gap: 4px; }
+.shift-name__pills:empty { display: none; }
+.shift-rules { display: block; max-width: 46ch; color: var(--ds-text-2); font-size: var(--ds-text-sm); line-height: 1.45; }
+.ds-btn-group { display: inline-flex; flex-wrap: wrap; gap: var(--ds-space-2); justify-content: flex-end; }
+
+.shift-times { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ds-space-3); }
+.shift-form__mark { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-3); min-height: 24px; font-size: var(--ds-text-sm); }
+.shift-days { border: 0; margin: 0; padding: 0; min-width: 0; }
+.shift-days__row { display: flex; flex-wrap: wrap; gap: var(--ds-space-2) var(--ds-space-4); padding-top: var(--ds-space-1); }
+.shift-days__row:focus { outline: none; }
+.shift-preview { padding: var(--ds-space-3) var(--ds-space-4); border-radius: var(--ds-radius-md); background: var(--ds-surface-2); border: 1px solid var(--ds-border); color: var(--ds-text); font-size: var(--ds-text-sm); line-height: 1.5; }
+.shift-preview p { margin: 4px 0 0; }
+.shift-preview__title { font-weight: 600; }
+.shift-preview__fix { color: var(--ds-warning); }
+
+.assign-people__tools { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); align-items: center; margin-bottom: var(--ds-space-2); }
+.assign-people__tools .ds-control { flex: 1 1 160px; min-width: 0; }
+.assign-people { display: grid; gap: 2px; max-height: 260px; overflow: auto; padding: var(--ds-space-2); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-1); }
+.assign-people__row { display: grid; grid-template-columns: 16px 1fr auto; gap: var(--ds-space-2); padding: 6px var(--ds-space-2); border-radius: var(--ds-radius-sm); }
+.assign-people__row:hover { background: var(--ds-surface-2); }
+.assign-people__row span:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
+.assign-people__sub { color: var(--ds-text-2); font-size: var(--ds-text-xs); }
+
+.shift-now { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2) var(--ds-space-3); margin-bottom: var(--ds-space-3); }
+.shift-now__name { display: inline-flex; align-items: center; gap: 6px; font-size: var(--ds-text-md); font-weight: 650; color: var(--ds-text); }
+.shift-now__name .icon { width: 18px; height: 18px; color: var(--ds-info); }
+.shift-now__hours { color: var(--ds-text-2); font-size: var(--ds-text-sm); }
+.ds-section-title { margin: var(--ds-space-5) 0 var(--ds-space-2); font-size: var(--ds-text-base); font-weight: 650; color: var(--ds-text); }
+.shift-history__tools { margin-bottom: var(--ds-space-3); }
+.shift-history { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.shift-history__item { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--ds-space-3); padding: var(--ds-space-3) 0; border-top: 1px solid var(--ds-border); }
+.shift-history__item:first-child { border-top: 0; }
+.shift-history__main { display: grid; gap: 2px; min-width: 0; }
+.shift-history__title { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--ds-text); }
+.shift-history__dates { font-size: var(--ds-text-sm); color: var(--ds-text); }
+.shift-history__sub { font-size: var(--ds-text-xs); color: var(--ds-text-2); overflow-wrap: anywhere; }
+.shift-history__side { display: flex; flex-direction: column; align-items: flex-end; gap: var(--ds-space-2); flex: none; }
+.shift-history__more { padding-top: var(--ds-space-2); font-size: var(--ds-text-sm); }
+
+.shift-settings { display: grid; gap: var(--ds-space-4); }
+.shift-settings__row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--ds-space-3) var(--ds-space-4); padding-bottom: var(--ds-space-4); border-bottom: 1px solid var(--ds-border); }
+.shift-settings__row .ds-field { flex: 0 1 240px; min-width: 0; }
+.shift-settings__row .ds-switch { flex: 1 1 100%; }
+.shift-settings__note { margin: 0; font-size: var(--ds-text-sm); }
+
+.ot-cell { white-space: nowrap; }
+.team-actions-row { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
+/* Team attendance: the side cards in a row under the table, the legend under them */
+.team-aside { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-4); align-items: start; }
+.team-aside > .calendar__legend { grid-column: 1 / -1; }
+@media (max-width: 760px) { .team-aside { grid-template-columns: minmax(0, 1fr); } }
+
+@media (max-width: 600px) {
+  .shift-times { grid-template-columns: 1fr; }
+  .shift-rules { max-width: none; }
+  .ds-btn-group { justify-content: flex-start; }
+}

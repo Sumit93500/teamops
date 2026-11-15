@@ -20,6 +20,7 @@ import { formatDay, localDateOf } from "../../../assets/js/ui/leave-view.js";
 import { maskAccount, maskPan } from "../../../assets/js/ui/pii.js";
 import Frame from "../ui/Frame.jsx";
 import { ProfileRecord, ChangeRequests } from "../ui/profile.jsx";
+import { ShiftCard } from "../ui/shifts.jsx";   // SH1: your shift and its history
 import { Badge, badgeOf, NotBuilt } from "../components/Basics.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { useData, useSession } from "../data/hooks.js";
@@ -206,6 +207,7 @@ export default function MyProfile() {
             <div className="stack">
               <ProfileRecord userId={user.id} />
               <ChangeRequests userId={user.id} />
+              <ShiftCard userId={user.id} id="my-shift-card" />
             </div>
             <aside className="stack">
               <CheckInPlaces userId={user.id} />

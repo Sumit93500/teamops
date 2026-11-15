@@ -293,3 +293,7 @@ export function resetLocationData() {
   resetLocations();
   resetAllDevices();
 }
+
+// SH1 (2026-11-15): the place and device checks of checkInAt / checkOutAt, for data/shift-punch.js's shift path (the
+// same checks, in the same order; additive: the two functions above are unchanged).
+export { where as placeAndDeviceCheck, stampAfter as punchStamp };

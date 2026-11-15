@@ -6,11 +6,14 @@ import { waitingFor as oldWaitingFor } from "../../../assets/js/ui/waiting.js";
 import { pendingLocationChanges } from "../../../assets/js/data/locations-store.js";
 import { getUser } from "../../../assets/js/data/store.js";
 import { pendingProfileChanges } from "../../../assets/js/data/employee-record.js";
+import { pendingOvertime } from "../../../assets/js/data/overtime-store.js";
 
-// { leave, corrections, expenses, assets, salary, locations, profile }: arrays, in store order. E1: profile, a person's own bank or
+// { leave, corrections, expenses, assets, salary, locations, profile, overtime }: arrays, in store order. E1: profile, a person's own bank or
 // tax change waiting for Finance (salary:edit) or HR / Admin (users:edit), never for themself (data/employee-record.js).
+// SH1: overtime, a day's overtime waiting for the person's manager (HR or an Admin for someone without one; data/overtime-store.js).
 export function waitingFor(userId, roleKey) {
-  return { ...oldWaitingFor(userId, roleKey), locations: getUser(userId) ? pendingLocationChanges(userId, roleKey) : [], profile: getUser(userId) ? pendingProfileChanges(userId) : [] };
+  const known = Boolean(getUser(userId));
+  return { ...oldWaitingFor(userId, roleKey), locations: known ? pendingLocationChanges(userId, roleKey) : [], profile: known ? pendingProfileChanges(userId) : [], overtime: known ? pendingOvertime(userId) : [] };
 }
 
 export function waitingCount(userId, roleKey) {

@@ -50,6 +50,7 @@ import { dayNumber, isoFromDayNumber, dayOffChecker } from "./holidays.js";
 import { allRequests, balanceFor, LEAVE_POLICY, applyLeave, workingDays } from "./leave-store.js";
 import { leavePolicyActive } from "./pay-settings.js";
 import { employmentOf } from "./employment.js";
+import { compOffShield } from "./comp-off.js";   // SH1
 
 const KEY = "leave-policy";
 export const LEAVE_BANDS = ["intern", "under1", "over1"];
@@ -166,9 +167,12 @@ function account(userId, type, date, band, e) {
     carriedIn = store.read().closes[year - 1]?.rows?.[userId]?.carried ?? 0;
     if (policy.usableAfterMonths && join) usableFrom = plusMonths(join, policy.usableAfterMonths);
   }
-  const available = entitled + carriedIn;
-  const usable = usableFrom && date < usableFrom ? 0 : available;
-  return { type, band, accrual: policy.accrual, entitled, carriedIn, taken, pending, available, usable, ...(usableFrom ? { usableFrom } : {}), left: Math.max(0, usable - taken), lop: Math.max(0, taken - usable) };
+  // SH1: comp-off days earned from approved overtime count in earned leave while they last (data/comp-off.js); none
+  // earned (comp-off is off by default) leaves the account exactly as it was.
+  const compOff = type === "earned" ? compOffShield(userId, date, taken, entitled + carriedIn) : 0;
+  const available = entitled + carriedIn + compOff;
+  const usable = (usableFrom && date < usableFrom ? 0 : entitled + carriedIn) + compOff;   // SH1: comp-off is usable at once
+  return { type, band, accrual: policy.accrual, entitled, carriedIn, ...(compOff ? { compOff } : {}), taken, pending, available, usable, ...(usableFrom ? { usableFrom } : {}), left: Math.max(0, usable - taken), lop: Math.max(0, taken - usable) };
 }
 export function leaveAccount(userId, date) {
   const band = tenureBand(userId, date);

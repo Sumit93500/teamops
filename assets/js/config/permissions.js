@@ -28,7 +28,7 @@ export const PERMISSIONS = {
   requests:      ["view-own", "cancel"],
   workflows:     ["view", "manage"],
   delegation:    ["create"],
-  shifts:        ["manage"],   // manage: define and assign shifts and their rules; reserved, shifts.html is a sample and its buttons are placeholders
+  shifts:        ["manage", "view", "assign", "swap-team"],   // SH1: manage: define shifts and their rules (Admin, HR); view: see your own shift (everyone; a manager also their team's); assign: put people and departments on shifts (Admin, HR); swap-team: swap one date for your own direct reports (everyone holds it; only a manager has reports)
   reports:       ["view", "create", "export"],
   audit:         ["view", "export"],
   settings:      ["edit"],
@@ -53,6 +53,10 @@ export const PERMISSIONS = {
   // E1 (2026-11-14): sign-in accounts. reset: issue someone a reset link or a new temporary password (Admin, HR; HR not for
   // an Admin); unlock: unlock a locked account, disable or enable someone's sign-in (Admin). The role pages count them (91 -> 93).
   accounts:      ["reset", "unlock", "disable"],   // E1b: disable: stop or allow someone's sign-in (Admin only); unlock only unlocks
+  // SH1 (2026-11-15): shifts:view, shifts:assign, shifts:swap-team (above) and overtime:approve: decide overtime (everyone
+  // holds it: a manager decides their direct reports'; HR and the Admin, who see everyone's attendance, decide for people
+  // without a manager). Not overridable. 94 -> 98 in 42 modules; Admin 98, HR 54, Finance 45, Employee 27.
+  overtime:      ["approve"],
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.

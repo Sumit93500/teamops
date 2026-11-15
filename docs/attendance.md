@@ -61,8 +61,11 @@ The record then carries `checkInPlace`, `checkInDistanceM`, `checkInDeviceId` (a
 - **HR dashboard:** Flagged check-ins, the last 7 days (with `attendance:view-all`): who, the day, the places and why.
 - The stamps are read from the saved records (`app/src/data/stamps.js`); a day without one says "Not recorded".
 
+## Shifts (SH1)
+
+From the shift rules start date (default 2026-12-01) each day is read by the person's shift: see [shifts.md](shifts.md). Before it everything above holds exactly. The old site keeps these rules and its sample Shifts page.
+
 ## Not built yet
 
-- Shifts (the page is a sample).
 - The old site's Mark attendance has no place check (the React app does). F1 removed its "Location check" card, whose only line said location and network checks weren't part of the demo.
 - **Mark attendance on every dashboard (F1):** the Admin, HR and Finance dashboards have the Employee dashboard's Mark attendance in their headers (a secondary button beside the page's own main action); a manager has the Employee dashboard's.

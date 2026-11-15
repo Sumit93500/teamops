@@ -9,6 +9,8 @@ import { getUser } from "../../../assets/js/data/store.js";
 import { addDays } from "../../../assets/js/data/holidays.js";
 import { LEAVE_TYPES, balanceFor, requestsFor, currentApproverName } from "../../../assets/js/data/leave-store.js";
 import { monthFor, rangeFor, regularizationsFor } from "../../../assets/js/data/attendance-store.js";
+import { shiftRangeFor, shiftMonthFor } from "../../../assets/js/data/shift-days.js";   // SH1: days by the person's shift
+import { ShiftLine, statusNodes } from "../ui/shifts.jsx";
 import { payslipsFor } from "../../../assets/js/data/payroll-store.js";
 import { assetRequestsFor, waitingOn as assetWaitingOn } from "../../../assets/js/data/asset-requests-store.js";
 import { openRequests } from "../../../assets/js/data/own-requests.js";
@@ -44,7 +46,9 @@ const STATIC_UPDATES = (() => {
 
 const isAsset = (r) => r.id.startsWith("ARQ-");
 const assetName = (r) => `${assetTypeLabel(r.assetType)} request`;
-const isOff = (day) => day.status === "weekend" || day.status === "holiday";
+const isOff = (day) => day.status === "weekend" || day.status === "weekly-off" || day.status === "holiday";
+// SH1: the charts know the old statuses: a short leave reads as a half day, a weekly off as a weekend
+const asOld = (day) => (day.status === "short-leave" ? { ...day, status: "half-day" } : day.status === "weekly-off" ? { ...day, status: "weekend" } : day);
 const requestName = (r) => (r.issue ? `Regularization, ${formatDay(r.date)}` : `${typeLabel(r.type)}, ${requestDates(r)}`);
 
 // One day's bar (employee-dashboard.js barLook), as round 4's chart takes it.
@@ -74,8 +78,8 @@ function recentRow(day) {
   const tr = el("tr");
   const outText = day.incomplete ? "Not recorded" : (day.checkOut ?? "–");
   const status = el("td");
-  const badge = dayBadge(day);
-  status.append(badge);
+  const [badge, ...more] = statusNodes(day);
+  status.append(badge, ...more);
   showReason(badge, badge.title);
   if (day.regularized) status.append(" ", el("span", "badge badge--success badge--square", "Regularized"));
   tr.append(el("td", "", shortDate(day.date)), el("td", "", day.checkIn ? `${day.checkIn}${day.mode === "wfh" ? " (WFH)" : ""}` : "–"), el("td", "", outText),
@@ -165,10 +169,10 @@ export default function EmployeeDashboard() {
     const user = getUser(userId);
     const balance = balanceFor(userId, year, month);
     const limited = LEAVE_TYPES.filter((type) => balance[type].allowance !== null).map((type) => ({ type, ...balance[type] }));
-    const days = rangeFor(userId, addDays(today, -(LOOK_BACK - 1)), today) ?? [];
-    return { user, limited, days, summary: monthFor(userId, year, month), open: openRequests(userId), slip: payslipsFor(userId, today).find((s) => s.month === today.slice(0, 7)),
+    const days = shiftRangeFor(userId, addDays(today, -(LOOK_BACK - 1)), today) ?? [];
+    return { user, limited, days, summary: shiftMonthFor(userId, year, month), open: openRequests(userId), slip: payslipsFor(userId, today).find((s) => s.month === today.slice(0, 7)),
       leave: requestsFor(userId), corrections: regularizationsFor(userId), assets: assetRequestsFor(userId),
-      hours: days.length ? hoursChart(days.slice(-CHART_DAYS), today) : null, balanceChart: leaveBalanceChart(userId, year, month) };
+      hours: days.length ? hoursChart(days.slice(-CHART_DAYS).map(asOld), today) : null, balanceChart: leaveBalanceChart(userId, year, month) };
   }, [userId, today]);
   if (!d.user) return <Frame page={PAGE}><div /></Frame>;
 
@@ -223,6 +227,7 @@ export default function EmployeeDashboard() {
         </div>
       </div>
       <div className="stack">
+        <ShiftLine userId={userId} id="dash-shift" />
         <StatStrip label="Key numbers">
           <StatCard id="present" icon={ICONS.present} tone={1} label="Days present" value={present.value} note={present.note} noteTone={present.tone} />
           <StatCard id="balance" icon={ICONS.balance} tone={2} label="Leave balance" value={`${total} ${total === 1 ? "day" : "days"}`} note={most.map((r) => `${SHORT[r.type]} ${r.left}`).join(", ")} />

@@ -9,12 +9,14 @@ import { placeLabel, iconOfPlace, flagText } from "../data/stamps.js";
 const DAY = {
   present: ["success", "Present"], late: ["warning", "Late"], "half-day": ["info", "Half day"], absent: ["danger", "Absent"], "on-leave": ["info", "On leave"],
   holiday: ["", "Holiday"], weekend: ["", "Weekend"], "no-data": ["", "No data"], "not-joined": ["", "Before joining"], left: ["", "After leaving"], "not-yet": ["", "Not in yet"],
+  "short-leave": ["warning", "Short leave"], "weekly-off": ["", "Weekly off"],   // SH1: the shift engine's two
 };
 const FLAG = "M4 22V4M4 4h12l-2 4 2 4H4";
 
 export function DayPill({ day }) {
   if (day.overdue) return <Pill tone="danger">Overdue</Pill>;
   const [tone, label] = DAY[day.status] ?? ["", day.status];
+  if (day.incomplete && day.rules === "shift") return <span className="ds-chips"><Pill tone={tone}>{label}</Pill><Pill tone="warning">Incomplete</Pill></span>;   // SH1
   return <Pill tone={tone}>{label}</Pill>;
 }
 

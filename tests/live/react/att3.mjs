@@ -246,7 +246,7 @@ if (ONLY.includes("H")) {
   let n = await open("emp", "attendance/my-attendance.html", { store, at: "18:00" });
   const log = await n.t.evaluate(() => { const tb = document.querySelector("#daily-log table"); return { head: [...tb.querySelectorAll("thead th")].map((h) => h.textContent.trim()), first: [...tb.querySelector("tbody tr").cells].map((c) => c.innerText.replace(/\s+/g, " ").trim()) }; });
   check("H1", "My attendance: a Place column after Check-in; today's row: Head office 40 m, out at your permanent home; Flagged beside the status",
-    j(log.head.slice(0, 4)) === j(["Date", "Check-in", "Place", "Check-out"]) && log.first[2].startsWith("Head office 40 m Out: Permanent home") && /Flagged/.test(log.first[5]), j(log));
+    j(log.head.slice(0, 4)) === j(["Date", "Check-in", "Place", "Check-out"]) && log.first[2].startsWith("Head office 40 m Out: Permanent home") && /Flagged/.test(log.first[log.head.indexOf("Status")]), j(log));   // SH1: Shift and Overtime after Hours
   const rowsBefore = await n.t.evaluate(() => document.querySelectorAll("#daily-log tbody tr").length);
   await n.t.check("#log-flagged"); await settle(n.t);
   const rowsAfter = await n.t.evaluate(() => [...document.querySelectorAll("#daily-log tbody tr")].map((r) => r.dataset.date));
@@ -332,14 +332,14 @@ if (ONLY.includes("X")) {
     const head = rows[0] ?? [];
     const col = (name) => head.indexOf(name);
     const arjun = rows.find((r) => r[0] === "Arjun Kapoor");
-    check(`X1.${who}`, `${who}: one file; its columns: Employee, Employee ID, Department, Check-in, Place, Hours, This week, Status, Flagged`,
-      files.length === 1 && /^team-attendance-\d{4}-\d{2}-\d{2}\.csv$/.test(files[0][0]) && j(head) === j(["Employee", "Employee ID", "Department", "Check-in", "Place", "Hours", "This week", "Status", "Flagged"]), j([files.map((f) => f[0]), head]));
+    check(`X1.${who}`, `${who}: one file; its columns: Employee, Employee ID, Department, Shift, Check-in, Place, Hours, Overtime, This week, Status, Flagged (SH1: Shift and Overtime)`,
+      files.length === 1 && /^team-attendance-\d{4}-\d{2}-\d{2}\.csv$/.test(files[0][0]) && j(head) === j(["Employee", "Employee ID", "Department", "Shift", "Check-in", "Place", "Hours", "Overtime", "This week", "Status", "Flagged"]), j([files.map((f) => f[0]), head]));
     check(`X2.${who}`, `${who}: Arjun's row: Place in words (in at the office, out at home), Status without the flag (Absent: in and out at 09:20), Flagged with the reason (L5: "Yes: checked out from a different place")`,
       arjun && /^Head office, 40 m; out: Permanent home(, \d+ m)?$/.test(arjun[col("Place")]) && arjun[col("Status")] === "Absent" && arjun[col("Flagged")] === "Yes: checked out from a different place", j(arjun));
     const others = rows.slice(1).filter((r) => r[0] !== "Arjun Kapoor");
     check(`X3.${who}`, `${who}: everyone else: Flagged No, Place empty (no place recorded)`, others.length > 5 && others.every((r) => r[col("Flagged")] === "No" && r[col("Place")] === ""), j(others.slice(0, 3)));
     const screen = await n.t.evaluate(() => [...document.querySelectorAll('table[data-export-name="team-attendance"] thead th')].map((h) => h.innerText.replace(/[▲▼]/g, "").replace(/\s+/g, " ").trim()));
-    check(`X4.${who}`, `${who}: the page's own table is unchanged (7 columns, no Flagged column)`, screen.length === 7 && !screen.includes("Flagged"), j(screen));
+    check(`X4.${who}`, `${who}: the page's own table has no Flagged column (9 columns; SH1: was 7, Shift and Overtime)`, screen.length === 9 && !screen.includes("Flagged"), j(screen));
     await n.t.selectOption("#team-flag", "flagged"); await settle(n.t);
     const only = await grab(n.t);
     const fr = only.length ? csv(only.at(-1)[1]) : [];
@@ -361,7 +361,7 @@ if (ONLY.includes("X")) {
     check("X7", "L5: the Flagged cell words every reason code (shared device, a different device + a different place, an unknown code as it is, none = Yes); everyone else No",
       others.length === 4 && want.every((w) => cells.filter((c) => c === w).length === 1) && cells.filter((c) => c === "No").length === cells.length - 5 && cells.length > 6, j(cells));
     const screen = await n.t.evaluate(() => [...document.querySelectorAll('table[data-export-name="team-attendance"] thead th')].length);
-    check("X8", "L5: the page's own table is still 7 columns", screen === 7, screen);
+    check("X8", "L5: the page's own table is still without the Flagged column (9 columns; SH1: was 7)", screen === 9, screen);
     await n.ctx.close();
   }
   const m = await open("mgr", "attendance/team-attendance.html", { store, at: "18:00" });

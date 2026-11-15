@@ -9,6 +9,8 @@
 //   outcomeOf(request, day)  how many days of a pending request the balance covers and how many would be unpaid
 import { leaveAccount, tenureBand, bandPolicy, anniversaryOf } from "../../../assets/js/data/leave-policy.js";
 import { leavePolicyActive, leaveFrom } from "../../../assets/js/data/pay-settings.js";
+import { compOffRule } from "../../../assets/js/data/shift-settings.js";   // SH1: comp-off in earned leave
+import { compOffFor } from "../../../assets/js/data/comp-off.js";
 import { employmentOf } from "../../../assets/js/data/employment.js";
 import { formatDay, formatDays, todayIso, monthName } from "../../../assets/js/ui/leave-view.js";
 import { useData } from "../data/hooks.js";
@@ -80,6 +82,7 @@ function Explain({ a }) {
 export function PolicyBalances({ userId }) {
   const day = todayIso();
   const a = useData(() => leaveAccount(userId, day), [userId, day]);
+  const comp = useData(() => ({ rule: compOffRule(), mine: compOffFor(userId, day) }), [userId, day]);   // SH1
   if (!a) return null;
   const earnedPolicy = bandPolicy(a.band).earned;
   const lops = TYPES.filter((type) => a.types[type].lop > 0);
@@ -99,7 +102,7 @@ export function PolicyBalances({ userId }) {
               <p className="balance__meta">
                 {noLimit ? `Salary is deducted if used${t.pending ? `, ${t.pending} pending` : ""}`
                   : none ? "Not part of the intern leave"
-                    : `${t.entitled} so far${t.carriedIn ? ` + ${t.carriedIn} carried forward` : ""}, ${t.taken} used${t.pending ? `, ${t.pending} pending` : ""}${t.usableFrom && day < t.usableFrom ? `; usable from ${formatDay(t.usableFrom, true)}` : ""}`}
+                    : `${t.entitled} so far${t.carriedIn ? ` + ${t.carriedIn} carried forward` : ""}${t.compOff ? ` + ${t.compOff} comp-off` : ""}, ${t.taken} used${t.pending ? `, ${t.pending} pending` : ""}${t.usableFrom && day < t.usableFrom ? `; usable from ${formatDay(t.usableFrom, true)}` : ""}`}
               </p>
               {t.lop > 0 && <p className="balance__meta"><Pill tone="warning">Loss of pay</Pill>{` ${days(t.lop)} beyond your balance`}</p>}
             </div>
@@ -109,6 +112,7 @@ export function PolicyBalances({ userId }) {
       <Card id="leave-lines" title="Carry-forward and encashment" meta={`Year ${a.date.slice(0, 4)}`}>
         <dl className="kv">
           <div className="kv__row"><dt>Carried forward into this year</dt><dd data-field="carried-in">{days(a.types.earned.carriedIn)}</dd></div>
+          {(comp.rule.on || comp.mine.active > 0 || comp.mine.expired > 0) && <div className="kv__row"><dt>Comp-off from approved overtime</dt><dd data-field="comp-off">{`${days(comp.mine.active)} in earned leave now${comp.mine.expired ? `, ${days(comp.mine.expired)} expired` : ""}. ${comp.rule.on ? `Every ${comp.rule.minutesPerDay / 60} h of approved overtime earns a day, usable for ${comp.rule.expiryDays} days.` : "Comp-off is off: new overtime earns none."}`}</dd></div>}
           <div className="kv__row"><dt>Carry-forward at year end</dt><dd data-field="carry-cap">{a.band === "intern" ? "None for interns" : `Up to ${days(earnedPolicy.carryForwardMax)} of earned leave`}</dd></div>
           <div className="kv__row"><dt>Encashment at year end</dt><dd data-field="encash">{a.band === "intern" || earnedPolicy.encashAbove == null ? "None" : `Earned leave above ${days(earnedPolicy.encashAbove)} is paid out`}</dd></div>
         </dl>

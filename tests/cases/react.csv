@@ -33,10 +33,6 @@ react-access.P.role-editor?role=hr,react-access,admin on access/role-editor.html
 react-access.P.approval-workflows,react-access,admin on access/approval-workflows.html at 412: the same cards,x1
 react-access.P.delegation,react-access,admin on access/delegation.html at 412: the same cards,x1
 react-access.X1,react-access,shots written,x1
-react-att.S1,react-att,admin on attendance/shifts.html: as it opens,x2 (2 roles)
-react-att.S2,react-att,admin: a placeholder's toast,x2 (2 roles)
-react-att.S,react-att,fin on attendance/shifts.html: lands where the old site does,x3 (3 roles)
-react-att.P.shifts,react-att,admin on attendance/shifts.html at 412: the same cards,x1
 react-att.X1,react-att,shots written,x1
 react-att3.M1,react-att3,employee: not checked in yet; Check-In From lists only the head office (with its radius); Use my location; the line says to press it; a new device (0 of 2); Check in off; the privacy line,x1
 react-att3.M2,react-att3,nothing was read or written by opening the page (no device token made),x1
@@ -95,13 +91,13 @@ react-att3.C6,react-att3,"checked in: the record names home (40 m), work from ho
 react-att3.C7,react-att3,"then at the office only: Check-Out From shows home; the line says where the check-out counts (the office, 100 m, allowed: F1); the flagged notice names the office",x1
 react-att3.C8,react-att3,"a check-out at another of your places still works when asked: the office named, flagged place-changed",x1
 react-att3.X0,react-att3,the flagged day from T is there to read,x1
-react-att3.X1,react-att3,"hr: one file; its columns: Employee, Employee ID, Department, Check-in, Place, Hours, This week, Status, Flagged",x2 (2 roles)
+react-att3.X1,react-att3,"hr: one file; its columns: Employee, Employee ID, Department, Shift, Check-in, Place, Hours, Overtime, This week, Status, Flagged (SH1: Shift and Overtime)",x2 (2 roles)
 react-att3.X2,react-att3,"hr: Arjun's row: Place in words (in at the office, out at home), Status without the flag (Absent: in and out at 09:20), Flagged with the reason (L5: ""Yes: checked out from a different place"")",x2 (3 roles)
 react-att3.X3,react-att3,"hr: everyone else: Flagged No, Place empty (no place recorded)",x2 (2 roles)
-react-att3.X4,react-att3,"hr: the page's own table is unchanged (7 columns, no Flagged column)",x2 (2 roles)
+react-att3.X4,react-att3,"hr: the page's own table has no Flagged column (9 columns; SH1: was 7, Shift and Overtime)",x2 (2 roles)
 react-att3.X5,react-att3,"hr: with Flagged only, the file has Arjun's row only",x2 (2 roles)
 react-att3.X7,react-att3,"L5: the Flagged cell words every reason code (shared device, a different device + a different place, an unknown code as it is, none = Yes); everyone else No",x1
-react-att3.X8,react-att3,L5: the page's own table is still 7 columns,x1
+react-att3.X8,react-att3,L5: the page's own table is still without the Flagged column (9 columns; SH1: was 7),x1
 react-att3.X6,react-att3,a manager's team view has no Export (as before),x1
 react-att3.K1,react-att3,"Check-In From, then Use my location; after a reading, Tab reaches Check in and Enter checks in",x1
 react-att3.W.mark.1280.light,react-att3,"attendance/mark-attendance.html at 1280, light: no sideways scroll",x1
@@ -844,6 +840,57 @@ react-rest.P.settings,react-rest,admin on system/settings.html at 412: the same 
 react-rest.P.job-openings,react-rest,hr on recruitment/job-openings.html at 412: the same cards,x1
 react-rest.P.candidates,react-rest,hr on recruitment/candidates.html at 412: the same cards,x1
 react-rest.P.announcements,react-rest,emp on announcements/announcements.html at 412: the same cards,x1
+react-sh1.R,react-sh1,admin: opens the Shifts page,x2 (2 roles)
+react-sh1.R#2,react-sh1,fin: sent to 403 (shifts:manage),x3 (3 roles)
+react-sh1.S1,react-sh1,"four shifts: General (default), Early, Night (overnight), Part-time, each with its rules in words",x1
+react-sh1.S2,react-sh1,"who is on each today: Night 1 person (Arjun), Early 1 (Ananya, Sales' default)",x1
+react-sh1.S3,react-sh1,the rules apply note (since 1 Dec 2026),x1
+react-sh1.S4,react-sh1,typing night times: the night mark and the live preview in plain words,x1
+react-sh1.S5,react-sh1,"a bad threshold: its own message under the field, the preview names what to fix, nothing saved",x1
+react-sh1.S6,react-sh1,"saved: the new shift is in the list, marked overnight",x1
+react-sh1.S7,react-sh1,deactivating Night (Arjun is on it) is refused with who is on it,x1
+react-sh1.S8,react-sh1,Part-time (nobody on it) is deactivated after the question,x1
+react-sh1.A1,react-sh1,"before any assignment: 'No assignments yet' (an empty state, not an empty table)",x1
+react-sh1.A2,react-sh1,before the start date the note says when the shift rules start,x1
+react-sh1.A3,react-sh1,the dialog previews the chosen shift's rules and starts on the rules' start date,x1
+react-sh1.A4,react-sh1,"Arjun on Night from 1 Dec, no end, by Priya: in Assignments and swaps",x1
+react-sh1.A5,react-sh1,a date range it doesn't touch: 'No data in this range.',x1
+react-sh1.A6,react-sh1,"HR on Arjun's profile: the Shift card (General today, the rules start on 1 Dec), Assign shift, the history with Night from 1 Dec",x1
+react-sh1.A7,react-sh1,"the manager (Sneha) on Arjun: the Shift card on Night, no Assign shift",x1
+react-sh1.A8,react-sh1,"Arjun's own My profile: his shift and its history, no Assign",x1
+react-sh1.M1,react-sh1,"21:20: 'Your shift starts at 22:00, check-in opens at 21:30.' and the button can't be used",x1
+react-sh1.M2,react-sh1,"the shift card: Night, 22:00 - 07:00 (next morning), check-in opens 21:30",x1
+react-sh1.M3,react-sh1,the rule line says the window and when it is late,x1
+react-sh1.M4,react-sh1,"21:45: check-in is open (the place check comes next): no refusal, Check-In From shown",x1
+react-sh1.D1,react-sh1,"the employee's dashboard: 'Your shift: Night, 22:00 to 07:00 (next morning)' and 'Next check-in: today, opens at 21:30.'",x1
+react-sh1.D2,react-sh1,the Admin's attendance table has a Shift column; Arjun's row says Night,x1
+react-sh1.D3,react-sh1,"HR's 'Shifts today': General, Early and Night with who is on them",x1
+react-sh1.T1,react-sh1,Shift and Overtime columns,x1
+react-sh1.T2,react-sh1,filters by shift (every active shift) and by office (every active office),x1
+react-sh1.T3,react-sh1,Night only: Arjun,x1
+react-sh1.T4,react-sh1,"7 Dec: Arjun's night, out 08:40 next morning: present, 1h of overtime",x1
+react-sh1.T5,react-sh1,a manager's swap: only their direct reports to choose from,x1
+react-sh1.T6,react-sh1,no reason: refused under the field,x1
+react-sh1.T6b,react-sh1,back-to-back: Early on the 10th (opens 05:30) after his Night swap on the 9th (ends 07:00) is refused as an overlap,x1
+react-sh1.T7,react-sh1,"saved: Rohan on Early on 11 Dec, by Sneha, with the reason",x1
+react-sh1.T8,react-sh1,"3 Dec, no check-out: Arjun's day is Incomplete with HR's Complete day",x1
+react-sh1.T9,react-sh1,completed: no longer incomplete; the record keeps the history,x1
+react-sh1.T10,react-sh1,"My attendance: the Shift and Overtime columns, Short leave on the 2nd, Incomplete on the 3rd",x1
+react-sh1.O1,react-sh1,"Arjun's 7 Dec overtime waits for Sneha: a row in the inbox (Overtime, 1h)",x1
+react-sh1.O2,react-sh1,the type filter Overtime shows only it,x1
+react-sh1.O3,react-sh1,"approved: stored once, 60 min, by Sneha",x1
+react-sh1.O4,react-sh1,HR doesn't get it (Arjun has a manager),x1
+react-sh1.L1,react-sh1,comp-off on: My leave says how comp-off works,x1
+react-sh1.L2,react-sh1,comp-off off (the default) and none earned: no comp-off line,x1
+react-sh1.K1,react-sh1,Enter on New shift opens the dialog with the name focused,x1
+react-sh1.K2,react-sh1,"Esc closes it (nothing typed), focus back on New shift",x1
+react-sh1.C1.light,react-sh1,"light: the shift texts, cells, pills and notes are 4.5:1 or more",x1
+react-sh1.C1.dark,react-sh1,"dark: the shift texts, cells, pills and notes are 4.5:1 or more",x1
+react-sh1.W.412.light,react-sh1,412 light: no sideways scroll on the 10 changed pages,x1
+react-sh1.W.1280.light,react-sh1,1280 light: no sideways scroll on the 10 changed pages,x1
+react-sh1.W.412.dark,react-sh1,412 dark: no sideways scroll on the 10 changed pages,x1
+react-sh1.W.1280.dark,react-sh1,1280 dark: no sideways scroll on the 10 changed pages,x1
+react-sh1.X1,react-sh1,no page or console errors,x1
 react-shell.D,react-shell,admin on dashboard/admin.html,x2 (2 roles)
 react-shell.D.my-leave,react-shell,admin on leave/my-leave.html,x5 (5 roles)
 react-shell.D.users-list,react-shell,admin on users/users-list.html,x1

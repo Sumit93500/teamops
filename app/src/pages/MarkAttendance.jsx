@@ -14,6 +14,10 @@
 // F1: the line under Use my location says the check's answer with the place's real name, the real distance and the radius:
 // "You are 40 m from Head office, check-in allowed" / "You are 2.3 km from Head office (limit 150 m), check-in not allowed"
 // (check-out the same). With attendance:any-office (the Admin) Check-In From lists every active office.
+// SH1: from the shift rules start date (office time, India) the page punches by the person's shift (data/shift-punch.js:
+// shiftCheckInAt / shiftCheckOutAt): the window opens before the shift's start ("Your shift starts at 22:00, check-in
+// opens at 21:30."), a night shift's check-out next morning completes the night, the weekly off is the shift's. Today's
+// shift card shows the shift, its window and the late-mark rule; "Your shift" sits above. Before that date: as before.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getUser } from "../../../assets/js/data/store.js";
@@ -38,6 +42,12 @@ import { bump } from "../data/bus.js";
 import { stampsBy, stampKey, placeLabel } from "../data/stamps.js";
 import { PRIVACY } from "./Offices.jsx";
 import { pageUrl, MY_LOCATIONS } from "../routes.js";
+import { shiftRulesApply, latePolicy } from "../../../assets/js/data/shift-settings.js";
+import { punchState, shiftCheckInAt, shiftCheckOutAt } from "../../../assets/js/data/shift-punch.js";
+import { shiftDayFor, shiftMonthFor } from "../../../assets/js/data/shift-days.js";
+import { getShift } from "../../../assets/js/data/shifts-store.js";
+import { officeNow, toMin as shiftMin, hhmm } from "../../../assets/js/data/shift-engine.js";
+import { ShiftLine, MOON } from "../ui/shifts.jsx";
 
 const PAGE = "attendance/mark-attendance.html";
 const RECENT_DAYS = 5;
@@ -63,6 +73,31 @@ function statusOf(day, user) {
   if (day.status === "absent") return { pill: ["danger", "Not checked in, the shift has ended"], why: `Check-in closed at ${twelveHour(checkInWindow(day).closes)}. If you were working today, use Request fix on My attendance.` };
   if (nowMinutes() < checkInWindow(day).opens) return { pill: ["warning", "Not checked in yet"], why: `Check-in opens at ${twelveHour(checkInWindow(day).opens)}.` };
   return { pill: ["warning", "Not checked in yet"], canIn: true, why: "" };
+}
+
+// SH1: the status from the shift path's punchState (same pills; the shift's own words).
+function shiftStatusOf(ps, user) {
+  if (!ps || !user || user.status === "inactive") return { pill: ["danger", "Account inactive"], why: user ? "Your account is inactive, so attendance can't be recorded." : "Your employee record wasn't found, so attendance can't be recorded." };
+  const day = ps.day;
+  if (ps.action === "check-out") return { pill: day.minutesLate ? ["warning", `Checked in at ${day.checkIn}, late by ${day.minutesLate} min`] : ["success", `Checked in at ${day.checkIn}`], canOut: true, why: day.crossesMidnight ? `Your ${day.shiftName} shift ends at ${day.shiftEnd} (next morning).` : "" };
+  if (ps.action === "check-in") return { pill: ["warning", "Not checked in yet"], canIn: true, why: "" };
+  if (ps.action === "done") return { pill: ["", `Checked out at ${day.checkOut}`], why: "You're done for this shift." };
+  if (day.status === "weekly-off") return { pill: ["", "Weekly off"], why: ps.message };
+  if (day.status === "on-leave") return { pill: ["info", "On leave today"], why: `You're on approved ${day.leave ? typeLabel(day.leave.type).toLowerCase() : "leave"} today, so there's nothing to check in for.` };
+  if (day.status === "holiday") return { pill: ["", `Holiday: ${day.holiday?.name ?? ""}`], why: "No attendance is needed on holidays." };
+  if (day.status === "not-joined") return { pill: ["", "Not joined yet"], why: `Attendance starts on your joining date, ${user.dateOfJoining}.` };
+  if (day.status === "absent") return { pill: ["danger", "Not checked in, the shift has ended"], why: `${ps.message} If you were working, use Request fix on My attendance.` };
+  return { pill: ["warning", "Not checked in yet"], why: ps.message };
+}
+function shiftRecentDays(userId, today) {
+  const days = [];
+  for (let n = dayNumber(today); days.length < RECENT_DAYS && n > dayNumber(today) - 31; n--) {
+    const day = shiftDayFor(userId, isoFromDayNumber(n));
+    if (!day || day.status === "no-data" || day.status === "not-joined") break;
+    if (day.status === "weekend" || day.status === "weekly-off" || day.status === "holiday") continue;
+    days.push(day);
+  }
+  return days;
 }
 
 // A minute tick, from the start of the next minute.
@@ -157,6 +192,16 @@ export default function MarkAttendance() {
   const [chosen, setChosen] = useState(null);   // the place the person picked, once they pick one
   const [error, setError] = useState("");
   const d = useData(() => {
+    const now = officeNow();
+    if (shiftRulesApply(now.date)) {
+      // SH1: the shift path; the day a punch now concerns (a night shift's start date after midnight)
+      const ps = punchState(userId, now);
+      const stamps = stampsBy();
+      const dd = ps?.date ?? now.date;
+      return { shiftMode: true, ps, today: now.date, day: ps?.day ?? null, user: getUser(userId), month: shiftMonthFor(userId, Number(dd.slice(0, 4)), Number(dd.slice(5, 7))), places: placesFor(userId),
+        device: deviceLine(userId), stamp: stamps.get(stampKey(userId, dd)) ?? null, recent: shiftRecentDays(userId, now.date).map((x) => ({ ...x, stamp: stamps.get(stampKey(userId, x.date)) ?? null })),
+        minutes: now.minutes, rules: ps ? getShift(ps.shift.id, dd) : null, late: latePolicy() };
+    }
     const today = todayIso();
     const day = dayFor(userId, today);
     const stamps = stampsBy();
@@ -166,7 +211,7 @@ export default function MarkAttendance() {
   }, [userId, tick]);
 
   const { day, user, month, today, places, device, stamp } = d;
-  const st = statusOf(day, user);
+  const st = d.shiftMode ? shiftStatusOf(d.ps, user) : statusOf(day, user);
   const fallback = day?.suggestedMode === "wfh" ? places.find((p) => isHome(p.place)) : null;
   const want = st.canOut && stamp?.inPlace ? stamp.inPlace : chosen;
   const place = places.find((p) => p.place === want) ?? fallback ?? places[0] ?? null;
@@ -183,9 +228,17 @@ export default function MarkAttendance() {
   if (day?.halfDayLeave === "second-half") end = toMinutes(R.halfSplit);
   const half = day?.halfDayLeave ? `You're on leave for the ${day.halfDayLeave === "first-half" ? "first" : "second"} half today. ` : "";
   const [time, ampm] = twelveHour(d.minutes).split(" ");
+  // SH1: the late-mark rule from the shift rules start date is the setting's (off by default)
+  const every = d.shiftMode ? d.late.every : R.penaltyEvery;
+  const penalised = !d.shiftMode || d.late.on;
   let lateNote = "";
-  if (month?.penaltyHalfDays) lateNote = `Every ${ordinal(R.penaltyEvery)} late mark in a month counts as half a day: ${month.penaltyHalfDays} this month. Each half day is taken from your pay, not your leave balance, when payroll is processed.`;
-  else if (month && month.lateMarks === R.penaltyEvery - 1) lateNote = "One more late mark this month counts as half a day. Each half day is taken from your pay, not your leave balance, when payroll is processed.";
+  if (!penalised) lateNote = month?.lateMarks ? "Late marks are recorded but don't cost pay under the shift rules." : "";
+  else if (month?.penaltyHalfDays) lateNote = `Every ${ordinal(every)} late mark in a month counts as half a day: ${month.penaltyHalfDays} this month. Each half day is taken from your pay, not your leave balance, when payroll is processed.`;
+  else if (month && month.lateMarks === every - 1) lateNote = "One more late mark this month counts as half a day. Each half day is taken from your pay, not your leave balance, when payroll is processed.";
+  const sr = d.rules;   // the shift's rules (shift mode)
+  const ruleLine = d.shiftMode && sr
+    ? `${half}${sr.name}: ${sr.start} to ${sr.end}${sr.crossesMidnight ? " (next morning)" : ""}. Check-in opens at ${hhmm(shiftMin(sr.start) - sr.earliestCheckInMin)}; after ${hhmm(shiftMin(sr.start) + sr.graceMin)} is marked late.`
+    : `${half}Shift ${twelveHour(start)} – ${twelveHour(end)}. Checking in after ${twelveHour(start + R.graceMinutes)} is marked late.`;
 
   const after = (r, done) => {
     if (!r.ok) { setError(refusalText(r)); return; }
@@ -194,11 +247,11 @@ export default function MarkAttendance() {
   };
   const doIn = () => {
     const mode = isHome(place.place) ? "wfh" : "office";
-    after(checkInAt(userId, mode, geo.reading, deviceToken(), place.place), (rec) => `Checked in from ${placeLabel(rec.checkInPlace)}.${rec.flagged ? " Flagged for HR: this device is registered to someone else too." : ""}`);
+    after((d.shiftMode ? shiftCheckInAt : checkInAt)(userId, mode, geo.reading, deviceToken(), place.place), (rec) => `Checked in from ${placeLabel(rec.checkInPlace)}.${rec.flagged ? " Flagged for HR: this device is registered to someone else too." : ""}`);
   };
   const doOut = async () => {
     if (moved && !(await confirm({ message: `Check out from ${outAt.placeName}?\nYou checked in at ${placeLabel(stamp.inPlace)}. A check-out from another place is flagged for HR to look at.`, confirmLabel: "Check out", danger: true }))) return;
-    after(checkOutAt(userId, geo.reading, deviceToken(), outAt?.ok ? outAt.place : undefined), (rec) => (rec.flagged ? `Checked out. Flagged for HR: ${rec.flagReasons.includes("place-changed") ? "a different place than your check-in" : "a different device or a shared one"}.` : "Checked out."));
+    after((d.shiftMode ? shiftCheckOutAt : checkOutAt)(userId, geo.reading, deviceToken(), outAt?.ok ? outAt.place : undefined), (rec) => (rec.flagged ? `Checked out. Flagged for HR: ${rec.flagReasons.includes("place-changed") ? "a different place than your check-in" : "a different device or a shared one"}.` : "Checked out."));
   };
 
   const recentColumns = [
@@ -220,7 +273,7 @@ export default function MarkAttendance() {
             <div className="ds-stack">
             <div className="ds-stack punch">
               <div className="punch__time" id="punch-clock"><time dateTime={`${pad(Math.floor(d.minutes / 60))}:${pad(d.minutes % 60)}`}>{time.padStart(5, "0")}</time><small>{ampm}</small></div>
-              <p className="ds-hint" id="punch-rule">{`${half}Shift ${twelveHour(start)} – ${twelveHour(end)}. Checking in after ${twelveHour(start + R.graceMinutes)} is marked late.`}</p>
+              <p className="ds-hint" id="punch-rule">{ruleLine}</p>
               {(st.canIn || st.canOut) && canMark && (
                 <>
                   <div className="ds-field">
@@ -261,8 +314,14 @@ export default function MarkAttendance() {
           </Card>
           <div className="ds-stack">
             <Card id="shift-card" title="Today's shift">
-              <Kv rows={[["Shift", "General"], ["Timing", <span id="shift-timing">{`${twelveHour(toMinutes(R.shiftStart))} – ${twelveHour(toMinutes(R.shiftEnd))}`}</span>],
-                ["Grace period", <span id="shift-grace">{`${R.graceMinutes} minutes`}</span>], ["Late marks this month", <span id="late-marks">{month ? `${month.lateMarks} of ${R.penaltyEvery}` : "–"}</span>]]} />
+              {d.shiftMode && sr
+                ? <Kv rows={[["Shift", <span id="shift-name" className="shift-now__name">{sr.crossesMidnight && <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d={MOON} /></svg>}{sr.name}</span>],
+                    ["Timing", <span id="shift-timing">{`${sr.start} – ${sr.end}${sr.crossesMidnight ? " (next morning)" : ""}`}</span>],
+                    ["Check-in opens", <span id="shift-opens">{hhmm(shiftMin(sr.start) - sr.earliestCheckInMin)}</span>],
+                    ["Grace period", <span id="shift-grace">{`${sr.graceMin} minutes`}</span>],
+                    ["Late marks this month", <span id="late-marks">{month ? (penalised ? `${month.lateMarks} of ${every}` : String(month.lateMarks)) : "–"}</span>]]} />
+                : <Kv rows={[["Shift", "General"], ["Timing", <span id="shift-timing">{`${twelveHour(toMinutes(R.shiftStart))} – ${twelveHour(toMinutes(R.shiftEnd))}`}</span>],
+                ["Grace period", <span id="shift-grace">{`${R.graceMinutes} minutes`}</span>], ["Late marks this month", <span id="late-marks">{month ? `${month.lateMarks} of ${R.penaltyEvery}` : "–"}</span>]]} />}
               <p className="ds-hint" id="late-note" hidden={!lateNote || undefined}>{lateNote}</p>
             </Card>
             <Card id="places-card" title="Your places" actions={<Link className="ds-btn ds-btn--sm" to={pageUrl(MY_LOCATIONS)}>My locations</Link>}>

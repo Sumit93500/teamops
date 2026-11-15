@@ -39,6 +39,8 @@ import { taxYearMonths, lossOfPayAmount } from "./payroll.js";
 import { approvedRow } from "./pay-snapshots.js";
 import { statutoryFrom, leaveFrom } from "./pay-settings.js";
 import { lossOfPayDaysIn } from "./leave-policy.js";
+import { shiftMonthLossOfPay } from "./shift-days.js";   // SH1
+import { shiftRulesMonth } from "./shift-settings.js";   // SH1
 
 // P5: a month's loss of pay from the leave policy: from the LATER of the statutory rules start month and the leave
 // policy's start month, the approved policy requests' loss-of-pay days in the month (data/leave-policy.js
@@ -52,6 +54,22 @@ function policyLossOfPay(userId, year, month, old) {
   if (key < policyLossOfPayFrom()) return { days: 0, amount: 0 };
   const days = Math.min(lossOfPayDaysIn(userId, year, month), Math.max(0, old.workingDays - old.lop.days));
   return { days, amount: days > 0 ? lossOfPayAmount(old.monthlyGross, days, old.workingDays) : 0 };
+}
+
+// SH1: from the shift rules month (data/shift-settings.js), the shift engine decides attendance's loss of pay. The old
+// row's attendance part (its late-mark half days and settled absences, worked out by the old rules) is replaced by the
+// shift engine's settled days (data/shift-days.js shiftMonthLossOfPay: absent 1, half day 0.5, short leave 0.25, the
+// late-mark rule only when it is on), at the same daily rate. The rest of the row (unpaid leave, before joining, after
+// leaving) is kept. Before that month: null, and payFor is exactly as it was.
+function shiftLossOfPay(userId, year, month, old) {
+  const key = `${year}-${String(month).padStart(2, "0")}`;
+  if (key < shiftRulesMonth()) return null;
+  const s = shiftMonthLossOfPay(userId, year, month);
+  if (!s) return null;
+  const replaced = (old.lop.penaltyHalfDays ?? 0) * 0.5 + (old.lop.absenceDays ?? 0);
+  const days = Math.min(old.workingDays, Math.max(0, old.lop.days - replaced + s.days));
+  const amount = lossOfPayAmount(old.monthlyGross, days, old.workingDays);
+  return { shiftDays: s.days, replacedDays: replaced, detail: s, lop: { ...old.lop, days, amount }, gross: old.monthlyGross - amount };
 }
 
 const money = (v) => (typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0);
@@ -193,15 +211,17 @@ export function payFor(userId, year, month) {
     // P5: an approved month is its frozen snapshot (data/pay-snapshots.js): it is what was paid, and the year goes on from it
     const frozen = approvedRow(userId, `${yy}-${String(mm).padStart(2, "0")}`);
     if (frozen) { incomeSoFar += frozen.gross; tdsSoFar += frozen.deductions.tds; out = frozen; continue; }
-    const old = payrollRunFor(userId, yy, mm);
-    if (!old) { out = null; continue; }
+    const row = payrollRunFor(userId, yy, mm);
+    if (!row) { out = null; continue; }
+    const sh = shiftLossOfPay(userId, yy, mm, row);   // SH1: null before the shift rules month
+    const old = sh ? { ...row, lop: sh.lop, gross: sh.gross } : row;
     const lop = policyLossOfPay(userId, yy, mm, old);
     const pay = payMonth({ gross: Math.max(0, old.gross - lop.amount), monthlyGross: old.monthlyGross, template, lta: structure.lta, state, year: yy, month: mm, regime, declaration,
       soFar: { incomeSoFar, tdsSoFar, monthsBefore: i, monthsLeft: 12 - i }, finalMonth: Boolean(old.attendance?.lastDay) });
     incomeSoFar += pay.gross;
     tdsSoFar += pay.deductions.tds;
     out = { userId, employmentType: employment.employmentType, joiningDate: employment.joiningDate, salaryId: old.salaryId, status: old.status, holdReason: old.holdReason, period: old.period, workingDays: old.workingDays,
-      lop: lop.days ? { ...old.lop, days: old.lop.days + lop.days, amount: old.lop.amount + lop.amount, policyDays: lop.days, policyAmount: lop.amount } : old.lop, ...pay };
+      lop: { ...(lop.days ? { ...old.lop, days: old.lop.days + lop.days, amount: old.lop.amount + lop.amount, policyDays: lop.days, policyAmount: lop.amount } : old.lop), ...(sh ? { shiftDays: sh.shiftDays, replacedDays: sh.replacedDays, shift: sh.detail } : {}) }, ...pay };
   }
   return out;
 }

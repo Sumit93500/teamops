@@ -16,6 +16,9 @@ import { csvValue, csvColumns, csvRows, initExports } from "../../../assets/js/u
 import { getAllUsers, joiningDate } from "../../../assets/js/data/store.js";
 import { allRequests, pendingFor } from "../../../assets/js/data/leave-store.js";
 import { summaryFor, allRegularizations, pendingRegularizations } from "../../../assets/js/data/attendance-store.js";
+import { shiftTeamFor } from "../../../assets/js/data/shift-days.js";   // SH1: today by shift
+import { getShifts, shiftHours } from "../../../assets/js/data/shifts-store.js";
+import { MOON } from "../ui/shifts.jsx";
 import {
   el, todayIso, formatDay, formatDays, monthName, requestDates, typeLabel, statusBadge, initials, avatarClass,
   decisionOf, localDateOf, nameOf, oldestPendingNote, whenText, percent, monthShort,
@@ -110,7 +113,9 @@ export default function HrDashboard() {
     const pendingLeave = pendingFor(userId, role?.key);
     return { summary: summaryFor(today), pendingLeave, waiting: [...pendingLeave, ...(canCorrect ? pendingRegularizations(userId, role?.key) : [])].sort(newestSent),
       people, dates, month, chart: leaveRequestsByMonthChart(today, CHART_MONTHS), all: allRequests(), decided: [...allRequests(), ...(canCorrect ? allRegularizations() : [])],
-      flagged: canAll ? flaggedSince(isoFromDayNumber(dayNumber(today) - 6), today) : [] };
+      flagged: canAll ? flaggedSince(isoFromDayNumber(dayNumber(today) - 6), today) : [],
+      // SH1: today by shift: who is on each active shift, how many are in (present, late, a half day or short leave), the incomplete days
+      byShift: canAll ? (() => { const days = shiftTeamFor(today); return getShifts().map((s) => { const on = days.filter((x) => x.shiftId === s.id); return { ...s, on: on.length, expected: on.filter((x) => x.expected).length, inNow: on.filter((x) => ["present", "late", "half-day", "short-leave"].includes(x.status)).length, incomplete: on.filter((x) => x.incomplete).length }; }).filter((s) => s.on > 0); })() : [] };
   }, [userId, role?.key, today, canCorrect, canAll]);
 
   // stats (hr-dashboard.js renderStats, renderJoiners)
@@ -221,6 +226,26 @@ export default function HrDashboard() {
             <Nodes className="activity" id="activity" build={() => activityNodes(d.decided, today)} deps={[d, today]} />
           </section>
         </div>
+
+        {canAll && (
+          <section className="card" id="shifts-today">
+            <div className="card__header">
+              <h3 className="card__title">Shifts today</h3>
+              <Link className="link text-sm" to={pageUrl("attendance/shifts.html")}>Shifts</Link>
+            </div>
+            <div className="table-wrap">
+              <table className="table">
+                <thead><tr><th>Shift</th><th>Hours</th><th className="table__num">People</th><th className="table__num">In</th><th className="table__num">Incomplete</th></tr></thead>
+                <tbody>
+                  {d.byShift.length ? d.byShift.map((s) => (
+                    <tr key={s.id} data-shift={s.id}><td><span className="shift-cell__name">{s.crossesMidnight && <svg className="icon shift-cell__icon" viewBox="0 0 24 24" aria-hidden="true"><path d={MOON} /></svg>}{s.name}</span></td><td>{shiftHours(s)}</td>
+                      <td className="table__num">{s.on}</td><td className="table__num">{s.expected ? `${s.inNow} of ${s.expected}` : "Off today"}</td><td className="table__num">{s.incomplete || "–"}</td></tr>
+                  )) : <tr><td className="text-muted" colSpan={5}>No data in this range.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
         {canAll && (
           <section className="card" id="flagged-card">

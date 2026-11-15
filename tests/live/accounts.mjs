@@ -48,9 +48,9 @@ const tokenOf = (link) => decodeURIComponent(link.split("token=")[1]);
 const events = (id) => AU.eventsFor(id).map((e) => e.kind);
 
 section("P. Permissions");
-check("P1", "accounts:reset, accounts:unlock and accounts:disable (E1b) are in the list; 94 in all", j(P.PERMISSIONS.accounts) === j(["reset", "unlock", "disable"]) && P.ALL_PERMISSIONS.length === 94, P.ALL_PERMISSIONS.length);
+check("P1", "accounts:reset, accounts:unlock and accounts:disable (E1b) are in the list; 98 in all (SH1: was 94)", j(P.PERMISSIONS.accounts) === j(["reset", "unlock", "disable"]) && P.ALL_PERMISSIONS.length === 98, P.ALL_PERMISSIONS.length);
 const counts = Object.fromEntries(Object.entries(R.ROLES).map(([k, r]) => [k, r.permissions.length]));
-check("P2", "roles: Admin 94 (all three), HR 50 (reset only), Finance 42, Employee 24", j(counts) === j({ admin: 94, hr: 50, fin: 42, emp: 24 })
+check("P2", "roles: Admin 98 (all three), HR 54 (reset only), Finance 45, Employee 27 (SH1: were 94, 50, 42, 24)", j(counts) === j({ admin: 98, hr: 54, fin: 45, emp: 27 })
   && R.ROLES.hr.permissions.includes("accounts:reset") && !R.ROLES.hr.permissions.includes("accounts:unlock") && !R.ROLES.fin.permissions.includes("accounts:reset"), j(counts));
 check("P3", "neither is overridable: a stored grant gives an employee nothing", !R.OVERRIDABLE.some((p) => p.startsWith("accounts:")) && !["accounts:reset", "accounts:unlock", "accounts:disable"].some((p) => R.hasPermission({ ...S.getUser(ARJUN), grantPermissions: [p] }, p)));
 check("P4", "only the Admin holds accounts:disable (E1b): HR, Finance, an employee and a manager don't", R.hasPermission(S.getUser(AARAV), "accounts:disable") && [PRIYA, KABIR, ARJUN, SNEHA].every((id) => !R.hasPermission(S.getUser(id), "accounts:disable")));

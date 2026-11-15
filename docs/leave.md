@@ -49,6 +49,10 @@ From the **leave policy's start date** (the Leave policy page; `data/pay-setting
 
 **Limits, said on the pages (until P5):** payroll deducted only leave applied for as Unpaid leave, and applyLeave refused requests above the old flat allowance, so the policy's loss of pay was shown, not deducted. P5 made it binding:
 
+## SH1 (2026-11-15): comp-off
+
+With comp-off on (off by default; the Shifts page's settings), approved overtime earns comp-off days that count in **earned leave** (`leaveAccount`'s `compOff`, available and usable at once) until they expire (90 days); an expired day still covers earned leave already taken with it. None earned: the account is exactly as before. See [shifts.md](shifts.md#overtime-and-comp-off).
+
 ## P5 (2026-11-14): the policy is binding
 
 - **From the policy's start date** (by the leave's first day, `from`), Apply for leave goes through `applyLeaveUnderPolicy()` (`data/leave-policy.js`), which checks the band's balance instead of the flat allowance. A leave that starts before the start date keeps the flat 12 / 8 / 10 and its checks.

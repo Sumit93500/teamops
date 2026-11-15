@@ -7,6 +7,7 @@
 //   Z  the empty states (new only; the old page draws a chart of zeros): admin with everyone joining tomorrow, employee as a new
 //      joiner: "No data in this range." in the chart's place, the range and note kept; the other cards unchanged
 //   S  shots: each dashboard at 1280 and 412, light and dark, old and new; and each empty state
+// SH1 (the brief): HR's Shifts today card and the Admin's Shift column (and its export column) are read past, checked in sh1.mjs.
 // F1 (ruled): read past on both sides, checked in f1.mjs instead: the dashboards' new Mark attendance button, HR's leave chart
 // card (now per month, 6 months) and Finance's Monthly payroll cost card (now a chart); Finance's departments read as
 // "<department> <amount>" pairs like the headcount (old: bar rows, new: the chart's data table). The empty states are read
@@ -62,6 +63,10 @@ const read = (t) => t.evaluate(() => {
   const flaggedCard = m.querySelector("#flagged-card");
   const flaggedAt = flaggedCard ? [flaggedCard.parentNode, flaggedCard.nextSibling] : null;
   flaggedCard?.remove();
+  // SH1 (the brief): HR's new Shifts today card and the Admin's new Shift column (checked in sh1.mjs D) are read past too
+  const shiftsCard = m.querySelector("#shifts-today");
+  const shiftsMark = shiftsCard ? document.createComment("shifts-today") : null;
+  shiftsCard?.replaceWith(shiftsMark);   // a marker holds its place, whatever else is taken out and put back
   const noData = [...m.querySelectorAll("[data-no-data]")].map((e) => e.innerText.replace(/\s+/g, " ").trim());
   // F1: the two changed chart cards, out for the read and back after
   const f1Cards = [...m.querySelectorAll("section.card")].filter((s) => s.querySelector("#leave-chart") || s.querySelector(".card__title")?.textContent === "Monthly payroll cost")
@@ -84,12 +89,14 @@ const read = (t) => t.evaluate(() => {
       : c.querySelector(".bar-row") ? [...c.querySelectorAll(".bar-row")].map((r) => `${tx(r.firstElementChild)} ${tx(r.querySelector(".bar-row__value"))}`).join(" ")
       : [...c.querySelectorAll(".ds-chart__table tbody tr")].map((r) => [...r.cells].map(tx).join(" ")).join(" ")]),
     links: [...m.querySelectorAll(".card__header a, .list__item a")].map((a) => [tx(a), new URL(a.href).pathname]),
-    tables: [...m.querySelectorAll("table:not(.ds-chart__table)")].map((tb) => [[...tb.querySelectorAll("thead th")].map(tx), [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map(tx))]),
+    tables: [...m.querySelectorAll("table:not(.ds-chart__table)")].map((tb) => { const heads = [...tb.querySelectorAll("thead th")].map(tx); const s = heads.indexOf("Shift");   // SH1: the Shift column read past
+      return [heads.filter((_, i) => i !== s), [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].filter((_, i) => r.cells.length === 1 || i !== s).map(tx))]; }),
     footer: tx(m.querySelector(".card__footer .card__meta")),
     noData,
   };
   f1Cards.reverse().forEach(([c, parent, next]) => parent.insertBefore(c, next));
   if (flaggedAt) flaggedAt[0].insertBefore(flaggedCard, flaggedAt[1]);
+  shiftsMark?.replaceWith(shiftsCard);
   return out;
 });
 function compare(n, label, a, b, skip = []) {
@@ -130,7 +137,16 @@ if (ONLY.includes("A")) {
         await exp.click(); await t.waitForTimeout(1500);
         return got.sort((p, q) => p[0].localeCompare(q[0]));
       };
-      const [fa, fb] = [await files(x.o.t), await files(x.n.t)];
+      // SH1: the attendance file gains a Shift column (after Department); read without it (sh1.mjs D checks the column)
+      const cut = (line) => (line.match(/("(?:[^"]|"")*"|[^,]*)(?:,|$)/g) ?? []).slice(0, -1);
+      const noShift = (text) => {
+        const rows = text.split("\n");
+        const s = cut(rows[0]).findIndex((c) => c.replace(/,$/, "").replace(/^"|"$/g, "") === "Shift");
+        if (s < 0) return text;
+        return rows.map((l) => { if (!l) return l; const c = cut(l); c.splice(s, 1); return c.join("").replace(/,$/, ""); }).join("\n");
+      };
+      const [fa, fb0] = [await files(x.o.t), await files(x.n.t)];
+      const fb = fb0.map(([name, text]) => [name, name.startsWith("admin-dashboard-attendance") ? noShift(text) : text]);
       check("A3.admin", "Export: the same two files, byte for byte", fa.length === 2 && j(fa) === j(fb), j([fa.map((f) => [f[0], f[1].length]), fb.map((f) => [f[0], f[1].length])]));
     }
     if (x.o.errs.length || x.n.errs.length) check(`A9.${who}`, "no page errors", false, j([x.o.errs, x.n.errs]));
@@ -258,13 +274,15 @@ if (ONLY.includes("M")) {
     const o = await open(O, who, page, { width: 412 }), n = await open(N, who, page, { width: 412 });
     await o.t.waitForTimeout(700);
     // D2b: a chart's data table (.ds-chart__table) isn't one of the page's tables; L3: nor the HR dashboard's new Flagged check-ins (att3.mjs)
-    const cards = (t) => t.evaluate(() => [...document.querySelectorAll("main table:not(.ds-chart__table):not(#flagged-card table)")].map((tb) => ({ cards: tb.hasAttribute("data-cards"), role: tb.getAttribute("role"),
-      rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.getAttribute("role")}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`)) })));
+    // SH1: nor HR's Shifts today; the Admin's Shift cells are read past
+    const cards = (t) => t.evaluate(() => [...document.querySelectorAll("main table:not(.ds-chart__table):not(#flagged-card table):not(#shifts-today table)")].map((tb) => ({ cards: tb.hasAttribute("data-cards"), role: tb.getAttribute("role"),
+      rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].filter((c) => c.dataset.label !== "Shift").map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.getAttribute("role")}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`)) })));
     const [a, b] = [await cards(o.t), await cards(n.t)];
     let opened = "no Details";
     if (await o.t.$("main .table__more")) {
-      for (const x of [o, n]) { await x.t.click("main tbody tr:first-child .table__more"); await x.t.waitForTimeout(150); }
-      const st = (t) => t.evaluate(() => { const r = document.querySelector("main table:not(.ds-chart__table):not(#flagged-card table) tbody tr:first-child"); return [r.classList.contains("is-open"), r.querySelector(".table__more").getAttribute("aria-expanded")]; });
+      // SH1: never HR's new Shifts today table
+      for (const x of [o, n]) { await x.t.click("main table:not(#shifts-today table) tbody tr:first-child .table__more"); await x.t.waitForTimeout(150); }
+      const st = (t) => t.evaluate(() => { const r = document.querySelector("main table:not(.ds-chart__table):not(#flagged-card table):not(#shifts-today table) tbody tr:first-child"); return [r.classList.contains("is-open"), r.querySelector(".table__more").getAttribute("aria-expanded")]; });
       opened = j([await st(o.t), await st(n.t)]);
     }
     check(`M.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page} at 412: the same cards`, j(a) === j(b) && a.every((x) => x.cards) && (opened === "no Details" || (() => { const [p, q] = JSON.parse(opened); return p[0] === true && j(p) === j(q); })()),

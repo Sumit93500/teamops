@@ -18,8 +18,8 @@ import HrDashboard from "./pages/HrDashboard.jsx";
 import FinanceDashboard from "./pages/FinanceDashboard.jsx";
 import MarkAttendance from "./pages/MarkAttendance.jsx";
 import MyAttendance from "./pages/MyAttendance.jsx";
-import SamplePage from "./pages/SamplePage.jsx";
 import TeamAttendance from "./pages/TeamAttendance.jsx";
+import Shifts from "./pages/Shifts.jsx";
 import Regularization from "./pages/Regularization.jsx";
 import ApplyLeave from "./pages/ApplyLeave.jsx";
 import LeaveApprovals from "./pages/LeaveApprovals.jsx";
@@ -74,7 +74,7 @@ const PORTED = {
   "dashboard/finance.html": FinanceDashboard,
   "attendance/mark-attendance.html": MarkAttendance,
   "attendance/my-attendance.html": MyAttendance,
-  "attendance/shifts.html": () => <SamplePage page="attendance/shifts.html" />,
+  "attendance/shifts.html": Shifts,   // SH1: built (was a sample page)
   "attendance/team-attendance.html": TeamAttendance,
   "attendance/regularization.html": Regularization,
   "leave/apply-leave.html": ApplyLeave,

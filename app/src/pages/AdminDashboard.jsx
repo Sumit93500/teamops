@@ -11,6 +11,8 @@ import { getUser, getAllUsers, getAllDepartments, activeHeadcount } from "../../
 import { runMonth, payrollRun, runTotals } from "../../../assets/js/data/payroll-store.js";
 import { addDays } from "../../../assets/js/data/holidays.js";
 import { teamFor, summaryRange, allRegularizations } from "../../../assets/js/data/attendance-store.js";
+import { shiftTeamFor } from "../../../assets/js/data/shift-days.js";   // SH1: today by each person's shift
+import { statusNodes, shiftCell } from "../ui/shifts.jsx";
 import { allRequests } from "../../../assets/js/data/leave-store.js";
 import { allExpenses } from "../../../assets/js/data/expenses-store.js";
 import { allAssetRequests } from "../../../assets/js/data/asset-requests-store.js";
@@ -61,6 +63,7 @@ const APPROVAL_TEXT = {
   salary: (p) => [`Salary change: ${nameOf(p.userId)}`, `${rupees(p.gross)} a month from ${formatDay(p.effectiveFrom, true)}, proposed by ${nameOf(p.enteredBy)}`],
   locations: (r) => [`Home location change: ${nameOf(r.userId)}`, `${r.kind === "permanent" ? "Permanent" : "Temporary"} home to ${r.place.address}`],
   profile: (r) => [`Bank and tax change: ${nameOf(r.userId)}`, changeText(r).map(([l, v]) => `${l}: ${v}`).join("; ")],   // E1
+  overtime: (o) => [`Overtime: ${nameOf(o.userId)}`, `${formatDay(o.date)}: ${o.minutes} min on ${o.shiftName}`],   // SH1
 };
 function approvalItems(waiting, refresh) {
   const shown = waiting.slice(0, SHOWN_APPROVALS);
@@ -119,15 +122,15 @@ function activityItems(sources) {
 function row({ person, day }) {
   const tr = el("tr");
   const status = el("td");
-  const badge = dayBadge(day);
-  status.append(badge);
+  const [badge, ...more] = statusNodes(day);   // SH1: Short leave, Weekly off, Incomplete too
+  status.append(badge, ...more);
   showReason(badge, badge.title);   // an Overdue badge's time in words too, not only on hover (round 14E part 2)
-  tr.append(personCell(day.userId, person, person?.email ?? ""), el("td", "", day.userId), el("td", "", departmentName(person?.department)), status, checkInCell(day), hoursCell(day));
+  tr.append(personCell(day.userId, person, person?.email ?? ""), el("td", "", day.userId), el("td", "", departmentName(person?.department)), shiftCell(day), status, checkInCell(day), hoursCell(day));
   return tr;
 }
 function emptyRow(text) {
   const td = el("td", "text-muted", text);
-  td.colSpan = 6;
+  td.colSpan = 7;
   const tr = el("tr");
   tr.append(td);
   return tr;
@@ -146,7 +149,7 @@ export default function AdminDashboard() {
 
   const d = useData(() => {
     const people = new Map(getAllUsers().map((u) => [u.id, u]));
-    const all = teamFor(today).map((day) => ({ day, person: people.get(day.userId) }));
+    const all = shiftTeamFor(today).map((day) => ({ day, person: people.get(day.userId) }));
     const range = summaryRange(addDays(today, -(CHART_DAYS - 1)), today);   // one storage read; today is the last day
     const waiting = Object.entries(waitingFor(userId, role?.key))
       .flatMap(([kind, list]) => list.map((request) => ({ kind, request })))
@@ -280,7 +283,7 @@ export default function AdminDashboard() {
             <div className="table-wrap">
               <table className="table" data-export-name="admin-dashboard-attendance">
                 <thead>
-                  <tr><th>Employee</th><th>ID</th><th>Department</th><th>Status</th><th>Check-in</th><th className="table__num">Hours</th></tr>
+                  <tr><th>Employee</th><th>ID</th><th>Department</th><th>Shift</th><th>Status</th><th>Check-in</th><th className="table__num">Hours</th></tr>
                 </thead>
                 <Nodes as="tbody" id="admin-rows" build={() => (shown.length ? shown.map(row) : [emptyRow(d.all.length ? "No employees match these filters." : "No active employees.")])} deps={[d, search, dept, current]} />
               </table>

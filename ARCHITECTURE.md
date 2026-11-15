@@ -22,7 +22,7 @@ Nothing in `config/`, `core/`, `data/` or `ui/` touches `window`, `document` or 
 - **Rules are plain functions with no storage and no clock:** `payroll.js` (earnings, PF, professional tax, TDS), `expenses.js` (categories, approval stages), `inventory.js`, `holidays.js` (date maths in UTC on whole days).
 - **No store has a change event.** The React app adds one (below).
 
-Area notes: [docs/attendance.md](docs/attendance.md), [docs/leave.md](docs/leave.md), [docs/payroll.md](docs/payroll.md), [docs/expenses.md](docs/expenses.md), [docs/assets.md](docs/assets.md), [docs/charts.md](docs/charts.md).
+Area notes: [docs/attendance.md](docs/attendance.md), [docs/shifts.md](docs/shifts.md), [docs/leave.md](docs/leave.md), [docs/payroll.md](docs/payroll.md), [docs/expenses.md](docs/expenses.md), [docs/assets.md](docs/assets.md), [docs/charts.md](docs/charts.md).
 
 ## How the React app uses it
 
@@ -38,7 +38,7 @@ Pages import the stores directly (`../../../assets/js/data/...`). Vite bundles t
 ## RBAC
 
 - **Four roles** (`config/roles.js`): Admin, HR Manager, Finance Manager and Employee.
-- **94 permissions** in 41 modules (`config/permissions.js`), each a `module:action` string. Admin holds all 94, HR 50, Finance 42 and Employee 24 (F1 added `attendance:any-office`, E1 `accounts:reset` and `accounts:unlock`).
+- **98 permissions** in 42 modules (`config/permissions.js`), each a `module:action` string. Admin holds all 98, HR 54, Finance 45 and Employee 27 (F1 added `attendance:any-office`, E1 `accounts:reset` and `accounts:unlock`, SH1 the shift and overtime ones).
 - **`can(permission)`** (`core/rbac.js`) checks the signed-in person's permissions on record: their role's, plus any per-person overrides. It is the only check pages use.
 - **Each page needs one permission** (`config/routes.js`, 48 signed-in pages). `core/guard.js` sends a person without it to 403. The React app's `RequireRoute` does the same.
 - **Being a manager is a relationship, not a role.** Someone is a manager when a request from a direct report would reach them (`data/reporting.js`, `managerFor()` in `leave-store.js`). Managers see their direct reports' attendance and leave, and decide the manager stage of their requests. Direct reports only.

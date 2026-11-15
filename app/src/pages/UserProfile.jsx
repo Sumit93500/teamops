@@ -40,6 +40,7 @@ import { leavePolicyOn, bandText } from "../ui/leaveband.jsx";
 import { relationOf } from "../../../assets/js/data/employee-record.js";
 import { PROFILE_SECTIONS } from "../../../assets/js/config/employee-fields.js";
 import { ProfileRecord, ChangeRequests, Completeness, History, AccountCard } from "../ui/profile.jsx";
+import { ShiftCard } from "../ui/shifts.jsx";   // SH1
 
 const PAGE = "users/user-profile.html";
 const LIST = pageUrl("users/users-list.html");
@@ -238,6 +239,7 @@ function Profile({ initial }) {
         </section>
         <nav aria-label="Profile sections" className="ds-tabs">
           {PROFILE_SECTIONS.filter((s) => people || s.key !== "access").filter((s) => relation !== "manager" || s.key !== "pay").map((s) => <a key={s.key} className="ds-tabs__tab" href={`#profile-${s.key}`}>{s.title}</a>)}
+          {(people || relation === "manager") && <a className="ds-tabs__tab" href="#profile-shift">Shift</a>}
           {people && <a className="ds-tabs__tab" href="#profile-leave">Leave</a>}
           {relation === "people" && <a className="ds-tabs__tab" href="#profile-assets">Assets</a>}
         </nav>
@@ -245,6 +247,7 @@ function Profile({ initial }) {
           <div className="ds-stack">
             <ProfileRecord userId={user.id} />
             {(relation === "people" || relation === "finance") && <ChangeRequests userId={user.id} />}
+            {(people || relation === "manager") && <ShiftCard userId={user.id} />}
             {relation === "people" && <History userId={user.id} />}
           </div>
           <aside className="ds-stack">

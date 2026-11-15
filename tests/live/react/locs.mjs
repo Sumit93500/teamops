@@ -201,7 +201,7 @@ if (ONLY.includes("A")) {
       j(row) === j(["AK Home location: Arjun Kapoor, permanent", "Location", "Arjun Kapoor", "45 Golf Course Road, Gurugram", "1 day", "Reject Approve"]), j(row));
     await n.t.selectOption('select[aria-label="Filter by type"]', "location"); await settle(n.t);
     const filtered = await n.t.evaluate(() => [...document.querySelectorAll("#inbox-table tbody tr")].map((r) => r.dataset.changeId ?? r.dataset.type));
-    const who = await n.t.evaluate(() => [...document.querySelectorAll("#who-approves dt")].map((d) => `${d.textContent}: ${d.nextElementSibling.textContent}`).at(-1));
+    const who = await n.t.evaluate(() => [...document.querySelectorAll("#who-approves dt")].map((d) => `${d.textContent}: ${d.nextElementSibling.textContent}`).find((x) => x.startsWith("Home location changes")));   // SH1: Overtime comes after it
     check("A2", "the type filter has Location (1 row); Who approves what: Home location changes, An Admin", j(filtered) === j(["LC-1"]) && who === "Home location changes: An Admin", j([filtered, who]));
     await n.t.click('#inbox-table tr[data-change-id="LC-1"] [data-card]'); await settle(n.t, 350);
     const card = await n.t.evaluate(() => { const c = document.getElementById("approval-card"); return c ? { kind: c.dataset.kind, title: c.querySelector("#approval-card-title")?.textContent, what: c.querySelector(".approval-card__what")?.textContent,

@@ -21,6 +21,9 @@ const SELF_SERVICE = [
   "offices:view", "devices:view-own", "locations:set-own",
   // P5: your own tax regime and old-regime declaration
   "declarations:submit-own",
+  // SH1: see your own shift (a manager also their team's), swap a date for your direct reports and decide their overtime
+  // (both act only on direct reports: managing people is a relationship, not a permission)
+  "shifts:view", "shifts:swap-team", "overtime:approve",
 ];
 
 export const ROLES = {
@@ -49,6 +52,7 @@ export const ROLES = {
       "attendance:view-all", "attendance:approve",
       "leave:approve",
       "holidays:manage", "shifts:manage",
+      "shifts:assign",   // SH1: put people and departments on shifts, swap anyone's date
       "recruitment:view", "recruitment:create", "recruitment:edit",
       "announcements:create",
       "reports:view", "reports:export",

@@ -187,6 +187,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   # E1: sign-in accounts and the employee record (data/credentials.js, data/employee-record.js, config/employee-fields.js)
   if (Test-Path "accounts.mjs") { Run "accounts-$t" @("accounts.mjs") }
   if (Test-Path "emprecord.mjs") { Run "emprecord-$t" @("emprecord.mjs") }
+  # SH1: shift-based attendance (shifts, assignments, the shift engine, the punch path, overtime, comp-off, the pay hook)
+  if (Test-Path "shifts.mjs") { Run "shifts-$t" @("shifts.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

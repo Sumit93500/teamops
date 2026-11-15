@@ -8,7 +8,8 @@
 //      checks it. run-tests runs att with SPX. P leaves out My attendance since L3 too: its new Place cell takes a key slot on
 //      the phone card, so Check-out moves to Details (att3.mjs H8 checks the new card).
 //   Y  my attendance, as each role: as opened; each earlier month; Request fix (filled in; time missing refused; sent); Cancel (Sneha's)
-//   S  shifts (a sample page), as each role: as opened; a placeholder's toast
+//   S  shifts (a sample page), as each role: as opened; a placeholder's toast. Retired in SH1 (the brief): the page is built
+//      (checked in sh1.mjs); P's only page was it, so run-tests runs att with X only.
 //   P  phone cards at 412 on every table of these pages
 //   T  team attendance (round 9)   G  regularization (round 9)
 //   X  shots: each page at 1280 and 412, light and dark, old and new
