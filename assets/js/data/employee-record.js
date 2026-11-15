@@ -43,6 +43,13 @@ export function relationOf(viewerId, userId) {
   return null;
 }
 const SEES = { self: ["team", "pay", "people"], people: ["team", "pay", "people"], finance: ["team", "pay"], manager: ["team"] };
+// E1b: may this viewer open this person's profile from a team page: HR / Admin (users:view) or the person's manager.
+// Direct reports only for a manager (managerOf); your own row links only when you may open the profile page (HR, Admin);
+// Finance and everyone else get no link (they can't open anyone's from a team page).
+export const profileLinkable = (viewerId, userId) => {
+  const rel = relationOf(viewerId, userId);
+  return rel === "people" || rel === "manager" || (rel === "self" && hasPermission(active(viewerId), "users:view"));
+};
 export const canSee = (relation, field) => Boolean(relation && SEES[relation]?.includes(field.see));
 // "direct" (saveFields), "request" (requestChange), or null
 export function editMode(viewerId, relation, field) {

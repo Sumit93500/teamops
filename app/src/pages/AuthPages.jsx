@@ -17,10 +17,10 @@ import { COMPANY, tabTitle } from "../data/company.js";
 import { pageUrl } from "../routes.js";
 import { CompanyMark, PoweredBy } from "../shell/Brand.jsx";
 import { Field } from "../components/Form.jsx";
+import { DEMO } from "../../../assets/js/config/demo.js";
 import "../design/auth.css";
 
 export const SET_PASSWORD = "auth/set-password.html";
-export const DEMO_PASSWORD = "Northwind@2026";
 const DEMO_USERS = { admin: ["Admin", "EMP-1001"], hr: ["HR Manager", "EMP-1003"], fin: ["Finance", "EMP-1008"], emp: ["Employee", "EMP-1105"] };
 const landingOf = (user) => pageUrl(ROLES[user.role]?.landing ?? "dashboard/employee.html");
 
@@ -128,13 +128,16 @@ export function Login() {
         <div className="auth-row"><span /><Link className="link" to={pageUrl("auth/forgot-password.html")}>Forgot password?</Link></div>
         <button type="submit" className="ds-btn ds-btn--primary" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
       </form>
-      <div className="auth-demo" aria-labelledby="demo-title">
-        <p className="auth-demo__title" id="demo-title">Demo accounts</p>
-        <p className="ds-hint">Sign in with any demo work email, like arjun.kapoor@northwind.com, and the password <code>{DEMO_PASSWORD}</code>, or pick a role:</p>
-        <div className="auth-demo__roles">
-          {Object.entries(DEMO_USERS).map(([key, [label]]) => <button key={key} type="button" className="ds-btn" data-demo-role={key} onClick={() => demo(key)}>{label}</button>)}
+      {/* E1b: the demo hint and the role buttons are shown only in demo mode (config/demo.js) */}
+      {DEMO.mode && (
+        <div className="auth-demo" aria-labelledby="demo-title">
+          <p className="auth-demo__title" id="demo-title">Demo accounts</p>
+          <p className="ds-hint">Sign in with any demo work email, like arjun.kapoor@northwind.com, and the password <code>{DEMO.password}</code>, or pick a role:</p>
+          <div className="auth-demo__roles">
+            {Object.entries(DEMO_USERS).map(([key, [label]]) => <button key={key} type="button" className="ds-btn" data-demo-role={key} onClick={() => demo(key)}>{label}</button>)}
+          </div>
         </div>
-      </div>
+      )}
     </AuthLayout>
   );
 }

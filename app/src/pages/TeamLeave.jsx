@@ -13,6 +13,8 @@ import { todayIso, formatDay, requestDates, typeLabel, departmentName, nameOf, m
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
 import { PersonCell } from "../components/Basics.jsx";
+import { profileLinkable } from "../../../assets/js/data/employee-record.js";
+import { getCurrentUserId } from "../../../assets/js/core/auth.js";
 import { StatusBadge, OutNextWeek } from "../ui/leave.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
@@ -25,7 +27,9 @@ const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const CAPPED = Object.keys(LEAVE_POLICY).filter((type) => LEAVE_POLICY[type].allowance !== null);
 const isOff = (r) => (r.status === "pending" || r.status === "approved") && r.type !== "wfh";
 const Icon = ({ d }) => <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg>;
-const person = (id, sub) => { const u = getUser(id); return <PersonCell userId={id} name={u?.name ?? nameOf(id) ?? id} sub={sub ?? departmentName(u?.department)} />; };
+// E1b: the name links to the person's profile for HR / Admin and for their manager (direct reports only)
+const profileTo = (id) => (profileLinkable(getCurrentUserId(), id) ? pageUrl(`users/user-profile.html?id=${encodeURIComponent(id)}`) : undefined);
+const person = (id, sub) => { const u = getUser(id); return <PersonCell userId={id} name={u?.name ?? nameOf(id) ?? id} sub={sub ?? departmentName(u?.department)} to={profileTo(id)} />; };
 
 function Calendar({ year, month, leave, today }) {
   const first = dayNumber(`${year}-${pad(month)}-01`);
@@ -81,7 +85,7 @@ export default function TeamLeave() {
   const active = d.people.filter((u) => u.status !== "inactive").map((u) => ({ id: u.id, user: u, balance: balanceFor(u.id) }));
   // P4b: from the policy's start date the band and the policy's balances (a person on a band with none of a type reads 0)
   const policyOn = leavePolicyOn();
-  const balanceColumns = [{ key: "employee", label: "Employee", render: (r) => <PersonCell userId={r.id} name={r.user.name} sub={departmentName(r.user.department)} /> },
+  const balanceColumns = [{ key: "employee", label: "Employee", render: (r) => <PersonCell userId={r.id} name={r.user.name} sub={departmentName(r.user.department)} to={profileTo(r.id)} /> },
     ...(policyOn ? [{ key: "band", label: "Band", render: (r) => <BandBadge userId={r.id} next={false} /> }] : []),
     ...CAPPED.map((type) => ({ key: type, label: typeLabel(type), render: (r) => { if (!policyOn) return `${r.balance[type].left} days left`; const t = leaveAccount(r.id, today)?.types[type]; return t ? `${t.left} days left${t.lop ? `, ${t.lop} loss of pay` : ""}` : "—"; } }))];
   const requests = [...d.requests].sort((a, b) => b.appliedOn.localeCompare(a.appliedOn) || b.id.localeCompare(a.id, "en", { numeric: true }));

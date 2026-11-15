@@ -6,7 +6,7 @@
 
 | key | label | permissions | landing page | Data scope (as the pages word it) |
 |---|---|---|---|---|
-| admin | Admin | all 93 | dashboard/admin.html | All records |
+| admin | Admin | all 94 | dashboard/admin.html | All records |
 | hr | HR Manager | 50 | dashboard/hr.html | All records |
 | fin | Finance Manager | 42 | dashboard/finance.html | All finance records |
 | emp | Employee | 24 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
@@ -15,7 +15,7 @@ Roles come from the configuration: they can't be created, edited or deleted in t
 
 ## Permissions
 
-- `module:action` strings, 41 modules, 93 in all (91 before E1, 90 before F1, 88 before P5, 86 before P4, 79 before L0). F1 (2026-11-14) added `attendance:any-office`: check in from any active office, not only your own (the Admin only, through every permission; not overridable), so Admin 91 and the others unchanged. P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
+- `module:action` strings, 41 modules, 94 in all (93 before E1b, 91 before E1, 90 before F1, 88 before P5, 86 before P4, 79 before L0). F1 (2026-11-14) added `attendance:any-office`: check in from any active office, not only your own (the Admin only, through every permission; not overridable), so Admin 91 and the others unchanged. P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
 - Examples: `payroll:create` (prepare a run), `payroll:approve`, `salary:view`, `dashboard:finance`, `users:delete` (Admin only), `pii:view` (bank account and PAN).
 - A page needs one permission (`config/routes.js`). A control on a page needs its own, through `data-permission="..."` on the static pages and `perm()` / `useCan()` in the React app.
 
@@ -24,6 +24,8 @@ Roles come from the configuration: they can't be created, edited or deleted in t
 E1 (2026-11-14) added the module `accounts` (see [accounts.md](accounts.md)): `accounts:reset` (Admin and HR: issue someone a reset link or a new temporary password; HR not for an Admin) and `accounts:unlock` (Admin: unlock, disable or enable someone's sign-in). Neither is overridable. Admin 93, HR 50, Finance 42, Employee 24.
 
 The employee record's field rules (who sees, edits and reveals each field) are in `config/employee-fields.js` and `data/employee-record.js`, see [employee-record.md](employee-record.md). The React app also opens a profile to a manager (their direct reports) and Finance; the old site's guard is unchanged.
+
+E1b (2026-11-15) added `accounts:disable` (Admin only, not overridable: stop or allow someone's sign-in); `accounts:unlock` now only unlocks. Admin 94, HR 50, Finance 42, Employee 24.
 
 ## Offices and locations (round 14, in the main list since L0)
 

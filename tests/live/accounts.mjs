@@ -33,13 +33,14 @@ const M = await import("./js/data/mail-outbox.js");
 const AU = await import("./js/data/audit-trail.js");
 const S = await import("./js/data/store.js");
 const AUTH = await import("./js/core/auth.js");
+const { DEMO: DEMODEF } = await import("./js/config/demo.js");
 console.log(`TZ=${process.env.TZ ?? "(system)"}`);
 let passed = 0, failed = 0;
 const check = (n, label, cond, detail = "") => { cond ? passed++ : failed++; console.log(`${cond ? "PASS" : "FAIL"}  ${String(n).padEnd(5)} ${label}${detail !== "" ? `  -> ${detail}` : ""}`); };
 const section = (t) => console.log(`\n--- ${t} ---`);
 const j = JSON.stringify;
-const AARAV = "EMP-1001", PRIYA = "EMP-1003", KABIR = "EMP-1008", ARJUN = "EMP-1105";
-const DEMO = "Northwind@2026";
+const AARAV = "EMP-1001", PRIYA = "EMP-1003", KABIR = "EMP-1008", ARJUN = "EMP-1105", SNEHA = "EMP-1029";
+const DEMO_PW = "Northwind@2026";
 const box = () => JSON.parse(mem.get("officeos:credentials") ?? "{}");
 const min = (n) => n * 60000;
 const secrets = [];   // every plain password and token this run handles, for X
@@ -47,33 +48,34 @@ const tokenOf = (link) => decodeURIComponent(link.split("token=")[1]);
 const events = (id) => AU.eventsFor(id).map((e) => e.kind);
 
 section("P. Permissions");
-check("P1", "accounts:reset and accounts:unlock are in the list; 93 in all", j(P.PERMISSIONS.accounts) === j(["reset", "unlock"]) && P.ALL_PERMISSIONS.length === 93, P.ALL_PERMISSIONS.length);
+check("P1", "accounts:reset, accounts:unlock and accounts:disable (E1b) are in the list; 94 in all", j(P.PERMISSIONS.accounts) === j(["reset", "unlock", "disable"]) && P.ALL_PERMISSIONS.length === 94, P.ALL_PERMISSIONS.length);
 const counts = Object.fromEntries(Object.entries(R.ROLES).map(([k, r]) => [k, r.permissions.length]));
-check("P2", "roles: Admin 93 (both), HR 50 (reset only), Finance 42, Employee 24", j(counts) === j({ admin: 93, hr: 50, fin: 42, emp: 24 })
+check("P2", "roles: Admin 94 (all three), HR 50 (reset only), Finance 42, Employee 24", j(counts) === j({ admin: 94, hr: 50, fin: 42, emp: 24 })
   && R.ROLES.hr.permissions.includes("accounts:reset") && !R.ROLES.hr.permissions.includes("accounts:unlock") && !R.ROLES.fin.permissions.includes("accounts:reset"), j(counts));
-check("P3", "neither is overridable: a stored grant gives an employee nothing", !R.OVERRIDABLE.some((p) => p.startsWith("accounts:")) && !R.hasPermission({ ...S.getUser(ARJUN), grantPermissions: ["accounts:reset", "accounts:unlock"] }, "accounts:reset"));
+check("P3", "neither is overridable: a stored grant gives an employee nothing", !R.OVERRIDABLE.some((p) => p.startsWith("accounts:")) && !["accounts:reset", "accounts:unlock", "accounts:disable"].some((p) => R.hasPermission({ ...S.getUser(ARJUN), grantPermissions: [p] }, p)));
+check("P4", "only the Admin holds accounts:disable (E1b): HR, Finance, an employee and a manager don't", R.hasPermission(S.getUser(AARAV), "accounts:disable") && [PRIYA, KABIR, ARJUN, SNEHA].every((id) => !R.hasPermission(S.getUser(id), "accounts:disable")));
 
 section("S. Seeded people and the demo password");
 check("S1", "a seeded person's account before any sign-in: active, has the demo password, nothing stored", C.accountOf(ARJUN, T0).status === "active" && C.accountOf(ARJUN, T0).hasPassword && !mem.has("officeos:credentials"));
-const s2 = await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO, T0);
-check("S2", "the demo password signs Arjun in (any case, spaces round the email)", s2.ok && s2.userId === ARJUN && !s2.mustChange && (await C.signInWithPassword("  ARJUN.KAPOOR@northwind.com ", DEMO, T0)).ok, j(s2));
+const s2 = await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO_PW, T0);
+check("S2", "the demo password signs Arjun in (any case, spaces round the email)", s2.ok && s2.userId === ARJUN && !s2.mustChange && (await C.signInWithPassword("  ARJUN.KAPOOR@northwind.com ", DEMO_PW, T0)).ok, j(s2));
 const a2 = box().accounts[ARJUN];
 check("S3", "afterwards a salted PBKDF2-SHA256 hash, 210,000 iterations, 16-byte salt, no longer the legacy check", a2.algo === "PBKDF2-SHA256" && a2.iterations === 210000 && atob(a2.salt).length === 16 && atob(a2.hash).length === 32 && a2.legacy === false, j({ algo: a2.algo, it: a2.iterations, legacy: a2.legacy }));
-const b2 = await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO, T0);
+const b2 = await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO_PW, T0);
 check("S4", "the demo password still works through the stored hash", b2.ok);
-const other = await C.signInWithPassword("priya.nair@northwind.com", DEMO, T0);
+const other = await C.signInWithPassword("priya.nair@northwind.com", DEMO_PW, T0);
 const pr = box().accounts[PRIYA];
 check("S5", "each person gets their own salt (the same password, different hashes)", other.ok && pr.salt !== a2.salt && pr.hash !== a2.hash);
 const w = await C.signInWithPassword("arjun.kapoor@northwind.com", "Northwind@2027", T0);
-const u = await C.signInWithPassword("nobody@northwind.com", DEMO, T0);
+const u = await C.signInWithPassword("nobody@northwind.com", DEMO_PW, T0);
 check("S6", "a wrong password and an unknown email get the same words and code", !w.ok && !u.ok && w.code === "invalid" && u.code === "invalid" && w.error === u.error && w.error === C.MESSAGES.invalid, j([w, u]));
-await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO, T0);   // clears the failure count again
+await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO_PW, T0);   // clears the failure count again
 check("S7", "a good sign-in resets the failure count", box().accounts[ARJUN].failedCount === 0);
 
 section("N. A new employee");
 const add = S.addUser(PRIYA, { name: "Meghna Rao", email: "meghna.rao@northwind.com", department: "ENG", designation: "Software Engineer", dateOfJoining: "1 Dec 2026" });
 const MEGHNA = add.record.id;
-check("N1", "before an account: status none, and no password signs them in (the demo one neither)", C.accountOf(MEGHNA, T0).status === "none" && (await C.signInWithPassword("meghna.rao@northwind.com", DEMO, T0)).code === "invalid");
+check("N1", "before an account: status none, and no password signs them in (the demo one neither)", C.accountOf(MEGHNA, T0).status === "none" && (await C.signInWithPassword("meghna.rao@northwind.com", DEMO_PW, T0)).code === "invalid");
 const deny = await C.createAccount(KABIR, MEGHNA, T0);
 check("N2", "Finance can't make sign-in details (no users:create or accounts:reset)", !deny.ok && deny.code === "not-allowed");
 const made = await C.createAccount(PRIYA, MEGHNA, T0);
@@ -146,14 +148,14 @@ for (let i = 0; i < 4; i++) last = await C.signInWithPassword("arjun.kapoor@nort
 check("L1", "4 failures: still 'invalid', count 4", last.code === "invalid" && box().accounts[ARJUN].failedCount === 4);
 last = await C.signInWithPassword("arjun.kapoor@northwind.com", "wrong-guess-5", T0 + min(200));
 check("L2", "the 5th: locked, for 15 minutes", last.code === "locked" && last.error === C.MESSAGES.locked && C.accountOf(ARJUN, T0 + min(200)).status === "locked" && C.accountOf(ARJUN, T0 + min(200)).lockedUntil === T0 + min(215));
-check("L3", "locked, even the right password is refused", (await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO, T0 + min(214))).code === "locked");
+check("L3", "locked, even the right password is refused", (await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO_PW, T0 + min(214))).code === "locked");
 check("L4", "the lock and the burst are in the audit trail", events(ARJUN).includes("locked") && events(ARJUN).includes("signin-failed"));
-check("L5", "after 15 minutes the right password works again, and the count starts over", (await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO, T0 + min(215))).ok && box().accounts[ARJUN].failedCount === 0);
+check("L5", "after 15 minutes the right password works again, and the count starts over", (await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO_PW, T0 + min(215))).ok && box().accounts[ARJUN].failedCount === 0);
 const ghost = [];
 for (let i = 0; i < 5; i++) ghost.push(await C.signInWithPassword("nobody.here@northwind.com", "x" + i, T0 + min(220)));
 check("L6", "an unknown email locks the same way after 5 (no telling who has an account)", ghost.slice(0, 4).every((g) => g.code === "invalid") && ghost[4].code === "locked" && ghost[4].error === C.MESSAGES.locked);
 for (let i = 0; i < 5; i++) await C.signInWithPassword("kabir.shah@northwind.com", "nope" + i, T0 + min(230));
-check("L7", "an Admin unlocks: Kabir signs in at once", C.unlockAccount(AARAV, KABIR, T0 + min(231)).ok && (await C.signInWithPassword("kabir.shah@northwind.com", DEMO, T0 + min(231))).ok && events(KABIR).includes("unlocked"));
+check("L7", "an Admin unlocks: Kabir signs in at once", C.unlockAccount(AARAV, KABIR, T0 + min(231)).ok && (await C.signInWithPassword("kabir.shah@northwind.com", DEMO_PW, T0 + min(231))).ok && events(KABIR).includes("unlocked"));
 for (let i = 0; i < 5; i++) await C.signInWithPassword("kabir.shah@northwind.com", "nope" + i, T0 + min(240));
 check("L8", "HR can't unlock (accounts:unlock is the Admin's); not locked any more is refused", C.unlockAccount(PRIYA, KABIR, T0 + min(241)).code === "not-allowed" && C.unlockAccount(AARAV, ARJUN, T0 + min(241)).code === "not-locked");
 check("L9", "a failure after the lock ran out starts a new count of 1", (await C.signInWithPassword("kabir.shah@northwind.com", "again", T0 + min(256))).code === "invalid" && box().accounts[KABIR].failedCount === 1);
@@ -167,7 +169,7 @@ secrets.push(hrTemp.tempPassword);
 check("A2", "...or a temporary password: Arjun must change it at the next sign-in; the earlier link is dead", hrTemp.ok && hrTemp.tempPassword.length === 14 && (await C.signInWithPassword("arjun.kapoor@northwind.com", hrTemp.tempPassword, T0 + min(302))).mustChange && (await C.checkToken(tokenOf(hrLink.link), T0 + min(302))).code === "used");
 check("A3", "HR can't reset an Admin's sign-in, nor their own here", (await C.issueReset(PRIYA, AARAV, "link", T0)).error === "Only an Admin can change an Admin's sign-in." && (await C.issueReset(PRIYA, PRIYA, "link", T0)).code === "not-allowed");
 check("A4", "Finance and an employee can't issue resets", (await C.issueReset(KABIR, ARJUN, "link", T0)).code === "not-allowed" && (await C.issueReset(ARJUN, KABIR, "temp", T0)).code === "not-allowed");
-check("A5", "only an Admin disables: HR is refused, the Admin's own is refused", C.setSignInEnabled(PRIYA, ARJUN, false, T0).code === "not-allowed" && C.setSignInEnabled(AARAV, AARAV, false, T0).code === "not-allowed");
+check("A5", "only an Admin disables (accounts:disable): HR, Finance, an employee and a manager are refused, the Admin's own is refused", [PRIYA, KABIR, ARJUN, SNEHA].every((id) => C.setSignInEnabled(id, MEGHNA, false, T0).code === "not-allowed") && C.setSignInEnabled(PRIYA, ARJUN, false, T0).code === "not-allowed" && C.setSignInEnabled(AARAV, AARAV, false, T0).code === "not-allowed");
 const dis = C.setSignInEnabled(AARAV, MEGHNA, false, T0 + min(310));
 check("A6", "the Admin disables Meghna: disabled, the employee record unchanged, audited", dis.ok && C.accountOf(MEGHNA, T0 + min(310)).status === "disabled" && S.getUser(MEGHNA).status === "active" && events(MEGHNA).includes("disabled"));
 const d1 = await C.signInWithPassword("meghna.rao@northwind.com", NEW, T0 + min(311));
@@ -183,11 +185,30 @@ const ch2 = await C.changeOwnPassword(MEGHNA, NEW, "Brighter-Lantern-5", T0 + mi
 secrets.push("Brighter-Lantern-5");
 check("A12", "changing your own password needs the current one", !ch.ok && ch.code === "current" && ch2.ok && (await C.signInWithPassword("meghna.rao@northwind.com", "Brighter-Lantern-5", T0 + min(331))).ok);
 
+section("O. Demo mode off (config/demo.js)");
+const ANANYA = "EMP-1017";
+check("O1", "demo mode is on by default, with the demo password Northwind@2026 in one config object", DEMODEF.mode === true && DEMODEF.password === DEMO_PW);
+DEMODEF.mode = false;
+const o2 = await C.signInWithPassword("ananya.iyer@northwind.com", DEMO_PW, T0 + min(400));
+check("O2", "off: the demo password signs nobody in (the same words as any wrong password)", !o2.ok && o2.code === "invalid" && o2.error === C.MESSAGES.invalid, j(o2));
+check("O3", "off: a seeded person with no password has no sign-in yet; making one is the normal temporary-password flow", C.accountOf(ANANYA, T0 + min(400)).status === "none" && !C.accountOf(ANANYA, T0 + min(400)).hasPassword);
+const o4 = await C.createAccount(AARAV, ANANYA, T0 + min(401));
+secrets.push(o4.tempPassword, tokenOf(o4.link));
+check("O4", "off: an Admin makes Ananya's sign-in details (a seeded person: no longer 'already has an account')", o4.ok && o4.tempPassword.length === 14 && C.accountOf(ANANYA, T0 + min(401)).status === "invited", o4.ok);
+const o5 = await C.signInWithPassword("ananya.iyer@northwind.com", o4.tempPassword, T0 + min(402));
+check("O5", "off: the temporary password signs her in and she must set her own", o5.ok && o5.mustChange && (await C.setFirstPassword(ANANYA, "Maple-Harbour-81", T0 + min(403))).ok);
+secrets.push("Maple-Harbour-81");
+check("O6", "off: her own password works; the demo password still doesn't", (await C.signInWithPassword("ananya.iyer@northwind.com", "Maple-Harbour-81", T0 + min(404))).ok && (await C.signInWithPassword("ananya.iyer@northwind.com", DEMO_PW, T0 + min(404))).code === "invalid");
+check("O7", "off: someone who already changed their password (Arjun, a hash on record) keeps it", (await C.signInWithPassword("arjun.kapoor@northwind.com", hrTemp.tempPassword, T0 + min(405))).ok);
+check("O8", "off: a seeded person's forgot-password asks for nothing special (same answer; a link only once they have an account)", (await C.requestReset("kabir.shah@northwind.com", T0 + min(406))).message === C.MESSAGES.resetSent);
+DEMODEF.mode = true;
+check("O9", "back on: the demo password works for a seeded person again (Priya, whose hash came from it)", (await C.signInWithPassword("priya.nair@northwind.com", DEMO_PW, T0 + min(407))).ok);
+
 section("X. No plain secrets anywhere");
 const stored = [...mem.entries()].map(([k, v]) => `${k}=${v}`).join("\n");
 const leaks = secrets.filter((s) => s && (stored.includes(s) || stored.includes(encodeURIComponent(s))));
 check("X1", `none of the ${secrets.length} passwords and tokens is in any stored value (${mem.size} keys)`, secrets.length >= 12 && leaks.length === 0, leaks.length);
-check("X2", "nor the demo password", !stored.includes(DEMO));
+check("X2", "nor the demo password", !stored.includes(DEMO_PW));
 const trail = JSON.stringify(AU.allEvents());
 check("X3", "the audit trail has the events and no secret", AU.allEvents().length >= 15 && !secrets.some((s) => trail.includes(s)));
 const outbox = JSON.stringify(M.allMail());

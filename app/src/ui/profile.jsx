@@ -265,7 +265,7 @@ export function AccountCard({ user }) {
   const { userId: me } = useSession();
   const toast = useToast();
   const confirm = useConfirm();
-  const can = { create: useCan("users:create"), reset: useCan("accounts:reset"), unlock: useCan("accounts:unlock") };
+  const can = { create: useCan("users:create"), reset: useCan("accounts:reset"), unlock: useCan("accounts:unlock"), disable: useCan("accounts:disable") };
   const account = useData(() => accountOf(user.id), [user.id]);
   const events = useData(() => (can.unlock ? eventsFor(user.id).filter((e) => !["field-changed", "field-revealed"].includes(e.kind)).slice(0, 8) : null), [user.id, can.unlock]);
   const [share, setShare] = useState(null);
@@ -284,7 +284,7 @@ export function AccountCard({ user }) {
   // HR can't change an Admin's sign-in (data/credentials.js says the same), so an Admin's card offers HR nothing
   const { role: myRole } = useSession();
   const helpable = !own && (user.role !== "admin" || myRole?.key === "admin");
-  const any = helpable && (can.reset || can.unlock || (can.create && account.status === "none"));
+  const any = helpable && (can.reset || can.unlock || can.disable || (can.create && account.status === "none"));
   return (
     <Card id="profile-account" title="Sign-in account" meta={<Pill tone={tone} id="account-status">{label}</Pill>}>
       <div className="ds-stack">
@@ -295,7 +295,7 @@ export function AccountCard({ user }) {
             {account.status !== "none" && account.status !== "disabled" && can.reset && <button type="button" className="ds-btn ds-btn--sm" onClick={resetLink}>Send reset link</button>}
             {account.status !== "none" && account.status !== "disabled" && can.reset && <button type="button" className="ds-btn ds-btn--sm" onClick={resetTemp}>New temporary password</button>}
             {account.status === "locked" && can.unlock && <button type="button" className="ds-btn ds-btn--sm" onClick={unlock}>Unlock</button>}
-            {account.status !== "none" && can.unlock && <button type="button" className={`ds-btn ds-btn--sm${account.status === "disabled" ? "" : " ds-btn--danger"}`} onClick={toggle}>{account.status === "disabled" ? "Enable sign-in" : "Disable sign-in"}</button>}
+            {account.status !== "none" && can.disable && <button type="button" className={`ds-btn ds-btn--sm${account.status === "disabled" ? "" : " ds-btn--danger"}`} onClick={toggle}>{account.status === "disabled" ? "Enable sign-in" : "Disable sign-in"}</button>}
           </div>
         )}
         {can.unlock && <Link className="link text-sm" to={pageUrl(MAIL_OUTBOX)}>Mail outbox</Link>}

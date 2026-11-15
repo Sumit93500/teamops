@@ -18,6 +18,8 @@ import { teamWeekFor, summaryFor, pendingRegularizations, recordsStart } from ".
 import { stampsBy, stampKey, flaggedCell } from "../data/stamps.js";
 import { placeNode, flagNode } from "../ui/attendance.jsx";
 import { teamScope } from "../../../assets/js/data/reporting.js";
+import { profileLinkable } from "../../../assets/js/data/employee-record.js";
+import { getCurrentUserId } from "../../../assets/js/core/auth.js";
 import { csvColumns, csvValue, exportTableAsCsv } from "../../../assets/js/ui/csv-export.js";
 import { placeLabel } from "../data/stamps.js";
 import { el, weekdayName, todayIso, formatDay, initials, avatarClass, departmentName, shortDate, plural, personCell, showReason } from "../../../assets/js/ui/leave-view.js";
@@ -81,7 +83,16 @@ function row(r) {
   if (r.stamp?.flagged) { status.append(" ", flagNode(r.stamp.reasons)); csvValue(status, badge.textContent); }
   const place = csvValue(el("td"), placeWords(r.stamp));
   place.append(placeNode(r.stamp));
-  tr.append(personCell(r.day.userId, r.user, r.day.userId), el("td", "", departmentName(r.user?.department)), checkInCell(r.day), place, hoursCell(r.day), weekCell(r.week), status);
+  const who = personCell(r.day.userId, r.user, r.day.userId);
+  // E1b: the name opens the person's profile for HR / Admin and for their manager (direct reports only)
+  if (profileLinkable(getCurrentUserId(), r.day.userId)) {
+    const name = who.querySelector(".table__user-name");
+    const a = el("a", "table__user-name", name.textContent);
+    a.href = pageUrl(`users/user-profile.html?id=${encodeURIComponent(r.day.userId)}`);
+    a.dataset.route = "";
+    name.replaceWith(a);
+  }
+  tr.append(who, el("td", "", departmentName(r.user?.department)), checkInCell(r.day), place, hoursCell(r.day), weekCell(r.week), status);
   return tr;
 }
 function emptyRow(text) { const td = el("td", "text-muted", text); td.colSpan = 7; const tr = el("tr"); tr.append(td); return tr; }

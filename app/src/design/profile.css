@@ -3,6 +3,9 @@
 .pf-kv > div { grid-template-columns: minmax(140px, 32%) minmax(0, 1fr); align-items: baseline; }
 .pf-kv > div.pf-kv__wide { grid-template-columns: minmax(0, 1fr); gap: var(--ds-space-2); }
 .pf-value { overflow-wrap: anywhere; white-space: pre-line; }
+/* a name that links to the profile (team pages) */
+a.table__user-name { color: inherit; text-decoration: none; }
+a.table__user-name:hover { text-decoration: underline; }
 .pf-photo { display: inline-flex; align-items: center; gap: var(--ds-space-3); }
 
 .pf-rows { display: grid; gap: var(--ds-space-2); justify-items: start; }
@@ -32,6 +35,7 @@
 .pf-progress > span { display: block; height: 100%; width: var(--pct); background: var(--ds-primary); border-radius: inherit; }
 
 /* the share dialog: a secret shown once, with Copy */
+#share-details { margin-top: var(--ds-space-3); }
 .share-row { display: grid; gap: var(--ds-space-2); }
 .share-row__value { display: flex; align-items: center; gap: var(--ds-space-2); }
 .share-row__value code { flex: 1; min-width: 0; padding: var(--ds-space-2) var(--ds-space-3); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-2);

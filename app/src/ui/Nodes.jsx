@@ -5,14 +5,23 @@
 // the props change (pass the data the nodes are built from as deps). A tbody's table gets the phone cards at 560px and
 // under (ui/phone.jsx labelTable, as ui/phone.js marked the old tables).
 import { createElement, useLayoutEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { usePhone, labelTable } from "./phone.jsx";
 
 export default function Nodes({ as = "div", build, deps = [], ...props }) {
   const ref = useRef(null);
   const phone = usePhone();
+  const navigate = useNavigate();
+  // E1b: a link a helper drew with data-route (a person's name on the team pages) goes through the router, not a page load
+  const onClick = (e) => {
+    const a = e.target.closest?.("a[data-route]");
+    if (!a || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    navigate(a.getAttribute("href"));
+  };
   useLayoutEffect(() => {
     ref.current.replaceChildren(...build());
     if (as === "tbody") labelTable(ref.current.closest("table"), phone);
   }, [...deps, phone]);   // eslint-disable-line react-hooks/exhaustive-deps
-  return createElement(as, { ...props, ref });
+  return createElement(as, { ...props, ref, onClick });
 }

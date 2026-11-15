@@ -12,16 +12,20 @@ Built in E1 (2026-11-14), in the React app. The old static site's sign-in is unc
 - **Links:** 32 random bytes, stored only as their SHA-256. A used link's hash is remembered, so it says "already used" rather than "not valid".
 - **Status:** `invited`, `active` or `disabled`; locked while `lockedUntil` is in the future. `mustChange` sends the person to Set password.
 
+## Demo mode (E1b)
+
+`config/demo.js` holds one setting, `DEMO = { mode: true, password: "Northwind@2026" }`. While `mode` is true the seeded people sign in with the demo password and the sign-in page shows the hint and the four role buttons. **Turn it off at cutover / the backend stage** (`mode: false`, the one change): no demo password works, the sign-in page says nothing about one and has no role buttons, and seeded people have no sign-in until an Admin makes their sign-in details (the normal temporary-password flow) or they ask for a reset. Someone who already changed their password keeps it. A test build with it off: `OFFICEOS_DEMO_OFF=1 npm run build` (tests only).
+
 ## The flows
 
 | flow | what happens |
 |---|---|
-| seeded people | sign in with the demo password (`Northwind@2026`, on the sign-in page) until their first sign-in, which stores a salted hash of it for them; the code holds only its SHA-256 |
+| seeded people | in demo mode (below), sign in with the demo password (`Northwind@2026`, on the sign-in page) until their first sign-in, which stores a salted hash of it for them; the demo password is a setting in `config/demo.js` |
 | a new employee | Create employee (users:create) makes a temporary password (14 characters, no look-alikes) and a 48-hour set-password link, shown once in "Share these sign-in details" with Copy buttons; a copy of the message, without them, goes to the Mail outbox; status invited |
 | first sign-in | the temporary password or the link; the person must choose a new password before anything else (every URL, and every page change, comes back to Set password) |
 | the rules | at least 10 characters; not their name, email or employee ID; not one of 30 common passwords; a strength meter (four steps and a word) and the rules ticked off |
 | forgot password | the same answer whether or not the email is someone's; a real one gets a 60-minute reset link in the Mail outbox; an expired, used or wrong link says so, with "Ask for a new link" |
-| help from others | accounts:reset (Admin, HR): a reset link or a new temporary password, shown once; HR can't for an Admin, nobody for themself. accounts:unlock (Admin): unlock, disable or enable a sign-in (the employee record is untouched) |
+| help from others | accounts:reset (Admin, HR): a reset link or a new temporary password, shown once; HR can't for an Admin, nobody for themself. accounts:unlock (Admin): unlock a locked account; accounts:disable (Admin, E1b): disable or enable a sign-in (the employee record is untouched) |
 | lockout | 5 failed sign-ins lock for 15 minutes, even with the right password; an unknown email is counted the same way, so the answers never tell who has an account; a good sign-in resets the count |
 | a disabled person | can't sign in; a session already open ends at its next check (any page change or store change) with the reason on the sign-in page |
 | change password | My account > Password: the current password, the rules, then a new hash |

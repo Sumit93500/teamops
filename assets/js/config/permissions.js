@@ -47,11 +47,12 @@ export const PERMISSIONS = {
   "leave-policy": ["edit"],                   // edit the tenure leave policy and close a leave year (Admin; the Leave policy page)
   // P5 (2026-11-14): tax declarations. submit-own: everyone records their own regime and old-regime declaration; manage:
   // edit anyone's, verify and lock, unlock, set the tax year's cutoff (Finance, Admin). The role pages count them (88 -> 90).
+// E1b (2026-11-15): accounts:disable (Admin only, not overridable): 93 -> 94.
 // F1 (2026-11-14): attendance:any-office, above (the Admin only, through ALL_PERMISSIONS; not overridable): 90 -> 91.
   declarations:  ["submit-own", "manage"],
   // E1 (2026-11-14): sign-in accounts. reset: issue someone a reset link or a new temporary password (Admin, HR; HR not for
   // an Admin); unlock: unlock a locked account, disable or enable someone's sign-in (Admin). The role pages count them (91 -> 93).
-  accounts:      ["reset", "unlock"],
+  accounts:      ["reset", "unlock", "disable"],   // E1b: disable: stop or allow someone's sign-in (Admin only); unlock only unlocks
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.

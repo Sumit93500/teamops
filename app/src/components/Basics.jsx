@@ -57,12 +57,13 @@ export function Reason({ id, text, permission, hidden }) {
   return <span className="reason" id={id} data-permission={permission} hidden={hidden || undefined}>{text}</span>;
 }
 
-export function PersonCell({ userId, name, sub }) {
+// to (E1b): the name links there (a manager's team pages: the person's profile)
+export function PersonCell({ userId, name, sub, to }) {
   const shown = name ?? nameOf(userId);
   return (
     <div className="table__user">
       <div className={avatarClass(userId)}>{initials(shown)}</div>
-      <div><span className="table__user-name">{shown}</span><span className="table__user-sub">{sub}</span></div>
+      <div>{to ? <Link className="table__user-name" to={to}>{shown}</Link> : <span className="table__user-name">{shown}</span>}<span className="table__user-sub">{sub}</span></div>
     </div>
   );
 }

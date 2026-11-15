@@ -38,8 +38,21 @@ function pageMeta() {
   };
 }
 
+// E1b (tests only): with OFFICEOS_DEMO_OFF=1 a build has demo mode off (config/demo.js "mode: true" -> "mode: false"), so
+// the harness can check the switched-off sign-in page without editing the source. A normal build never sets it.
+function demoOffForTests() {
+  return {
+    name: "demo-off-for-tests",
+    enforce: "pre",
+    transform(code, id) {
+      if (process.env.OFFICEOS_DEMO_OFF !== "1" || !/config[\\/]demo\.js$/.test(id)) return null;
+      return { code: code.replace("mode: true", "mode: false"), map: null };
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), pageMeta()],
+  plugins: [react(), pageMeta(), demoOffForTests()],
   server: { fs: { allow: [".."] } },
   build: { outDir: "dist", emptyOutDir: true },
 });

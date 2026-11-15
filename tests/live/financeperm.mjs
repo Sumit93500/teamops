@@ -81,7 +81,7 @@ function editRecord(id, field, value) {
 
 // =================================================================
 section("P. The permission tables, before and after");
-const L0_PERMS = ["offices:view", "offices:manage", "company:edit", "locations:set-own", "locations:review", "devices:view-own", "devices:reset", "payroll-rules:verify", "leave-policy:edit", "declarations:submit-own", "declarations:manage", "attendance:any-office", "accounts:reset", "accounts:unlock"];   // E1: accounts   // L0: the seven moved into PERMISSIONS; P4: and the two rules ones; F1: attendance:any-office
+const L0_PERMS = ["offices:view", "offices:manage", "company:edit", "locations:set-own", "locations:review", "devices:view-own", "devices:reset", "payroll-rules:verify", "leave-policy:edit", "declarations:submit-own", "declarations:manage", "attendance:any-office", "accounts:reset", "accounts:unlock", "accounts:disable"];   // E1, E1b: accounts   // L0: the seven moved into PERMISSIONS; P4: and the two rules ones; F1: attendance:any-office
 check("P1", "PERMISSIONS: dashboard is [view, finance] (was [view]); every other module as it was; ALL_PERMISSIONS one longer, the new one dashboard:finance",
   j(PERMISSIONS.dashboard) === j(["view", "finance"]) && j(pre.perms.PERMISSIONS.dashboard) === j(["view"])
   && j(Object.entries(PERMISSIONS).filter(([m]) => m !== "dashboard" && !["offices", "company", "locations", "devices", "payroll-rules", "leave-policy", "declarations", "accounts"].includes(m)).map(([m, a]) => [m, a.filter((x) => !L0_PERMS.includes(`${m}:${x}`))])) === j(Object.entries(pre.perms.PERMISSIONS).filter(([m]) => m !== "dashboard"))   // L0 (behaviour): without the four L0 modules; F1: attendance without any-office

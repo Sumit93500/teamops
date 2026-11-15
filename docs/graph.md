@@ -5,7 +5,7 @@ A map of the code's functions and modules and who calls whom, made with [Graphif
 ## What it covers
 
 - **Scope:** `app/src`, `assets/js` and `tools`. Not node_modules, dist, the test suites or the HTML pages.
-- **Size:** 3,259 nodes, 14,600 edges, 87 communities (2026-11-15, refreshed after E1).
+- **Size:** 3,263 nodes, 14,634 edges, 96 communities (2026-11-15, refreshed after E1b).
 - **Code only:** Graphify's local AST extraction, with no model call (its report says "Token cost: 0 input · 0 output").
   - API keys are removed from its environment.
   - Communities are not named by a model, so they stay "Community N".

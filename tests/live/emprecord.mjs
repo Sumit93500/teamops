@@ -125,6 +125,13 @@ const q2 = E.requestChange(ARJUN, { pan: "ABCPK9999Q" });
 check("Q8", "a rejection needs a reason; with one, nothing changes", !E.decideChange(PRIYA, q2.record.id, "rejected", " ").ok && E.decideChange(PRIYA, q2.record.id, "rejected", "Upload the PAN card first").ok && S.getUser(ARJUN).pan === "ABCPK1234Q");
 check("Q9", "the decisions are in the audit trail", AU.eventsFor(ARJUN).some((e) => e.kind === "change-approved") && AU.eventsFor(ARJUN).some((e) => e.kind === "change-rejected"));
 
+section("L. Profile links on the team pages (E1b)");
+check("L1", "HR and Admin: a link for everyone, themselves included", [AARAV, PRIYA, ARJUN, KABIR, ANANYA].every((u) => E.profileLinkable(PRIYA, u) && E.profileLinkable(AARAV, u)));
+check("L2", "a manager: their direct reports only (Arjun yes; Ananya no, Priya no; not themself)", E.profileLinkable(SNEHA, ARJUN) && !E.profileLinkable(SNEHA, ANANYA) && !E.profileLinkable(SNEHA, PRIYA) && !E.profileLinkable(SNEHA, SNEHA));
+check("L3", "Finance and an employee without reports: no links", [AARAV, PRIYA, ARJUN, ANANYA].every((u) => !E.profileLinkable(KABIR, u)) && [AARAV, PRIYA, ANANYA].every((u) => !E.profileLinkable(ARJUN, u)) && !E.profileLinkable(ARJUN, ARJUN));
+check("L4", "nobody signed in, an unknown viewer or person: no link", !E.profileLinkable(null, ARJUN) && !E.profileLinkable("EMP-9999", ARJUN) && !E.profileLinkable(PRIYA, "EMP-9999"));
+check("L5", "a link is exactly where the profile opens: linkable <=> the profile view isn't null (manager, HR, Admin)", [AARAV, PRIYA, SNEHA].every((v) => [AARAV, PRIYA, ARJUN, ANANYA, SNEHA].filter((u) => u !== v).every((u) => E.profileLinkable(v, u) === (E.profileView(v, u) !== null))));
+
 section("C. Completeness");
 const c0 = E.completeness(ANANYA);
 check("C1", "a percentage and the missing fields' names", Number.isInteger(c0.percent) && c0.percent < 100 && c0.missing.includes("Aadhaar") && c0.missing.includes("IFSC"), j(c0));

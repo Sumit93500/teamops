@@ -13,13 +13,14 @@
 // - First sign-in (temporary password or link): the person must set their own password before anything else (mustChange).
 // - Forgot password: the same answer whether or not the email is someone's; if it is, a 60-minute reset link goes to the
 //   Mail outbox (data/mail-outbox.js). An Admin or HR (accounts:reset) can issue a reset link or a temporary password for
-//   someone else (not an Admin's, unless they are an Admin); an Admin (accounts:unlock) unlocks and disables / enables.
+//   someone else (not an Admin's, unless they are an Admin); an Admin unlocks (accounts:unlock) and disables / enables (accounts:disable).
 // - Lockout: 5 failed sign-ins lock the account for 15 minutes; an unknown email is counted the same way, so the answers
 //   never tell who has an account. A good sign-in resets the count.
 // - Every event goes to the audit trail (data/audit-trail.js), never the secret. Clock: every function takes now (ms).
 import { load, save, remove } from "../core/storage.js";
 import { getUser, getAllUsers } from "./store.js";
 import { USERS } from "./users.js";
+import { DEMO } from "../config/demo.js";
 import { hasPermission } from "../config/roles.js";
 import { logEvent } from "./audit-trail.js";
 import { queueMail } from "./mail-outbox.js";
@@ -31,9 +32,10 @@ export const RESET_MINUTES = 60;
 export const LOCK_AFTER = 5;
 export const LOCK_MINUTES = 15;
 export const MIN_LENGTH = 10;
-// The demo password's SHA-256 (the login page tells people the demo password; nothing stores it).
-const SEED_VERIFIER = "9a6208c9811f4f3fade3b6ffa3e91106f551e735e5d46e3041045674ccb26424";
+// E1b: the seeded people sign in with the demo password only while demo mode is on (config/demo.js); with it off they are
+// like anyone added later: no sign-in until an account is made for them.
 const SEED_IDS = USERS.map((u) => u.id);
+const seeded = (id) => DEMO.mode && SEED_IDS.includes(id);
 // No 0 / O / o, 1 / l / I: nothing that reads two ways.
 const TEMP_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
 export const TEMP_LENGTH = 14;
@@ -82,7 +84,7 @@ async function passwordFields(password) {
 }
 async function passwordMatches(account, password, userId) {
   if (account?.hash) return sameText(await pbkdf2(password, fromB64(account.salt), account.iterations), account.hash);
-  if (SEED_IDS.includes(userId) && (!account || account.legacy)) return sameText(await sha256hex(password), SEED_VERIFIER);
+  if (seeded(userId) && (!account || account.legacy)) return sameText(await sha256hex(password), await sha256hex(DEMO.password));
   return false;
 }
 
@@ -124,15 +126,15 @@ const minutes = (n) => n * 60 * 1000;
 // "none": someone added before accounts existed, or through the store directly, with no sign-in yet.
 export function accountOf(userId, now = Date.now()) {
   const account = read().accounts[userId] ?? null;
-  const seeded = SEED_IDS.includes(userId);
-  if (!account && !seeded) return { status: "none", mustChange: false, failedCount: 0, lockedUntil: null, linkKind: null, linkExpires: null, hasPassword: false, updatedAt: null };
+  const isSeed = seeded(userId);
+  if (!account && !isSeed) return { status: "none", mustChange: false, failedCount: 0, lockedUntil: null, linkKind: null, linkExpires: null, hasPassword: false, updatedAt: null };
   const a = account ?? blank("seed", 0);
   const locked = a.lockedUntil && a.lockedUntil > now;
   return {
     status: a.status === "disabled" ? "disabled" : locked ? "locked" : a.status,
     mustChange: a.mustChange, failedCount: a.failedCount, lockedUntil: locked ? a.lockedUntil : null,
     linkKind: a.tokenHash && a.tokenExpiry > now ? a.tokenKind : null, linkExpires: a.tokenHash && a.tokenExpiry > now ? a.tokenExpiry : null,
-    hasPassword: Boolean(a.hash) || (seeded && !account?.hash), updatedAt: account?.updatedAt ?? null,
+    hasPassword: Boolean(a.hash) || (isSeed && !account?.hash), updatedAt: account?.updatedAt ?? null,
   };
 }
 
@@ -185,7 +187,7 @@ export async function createAccount(actorId, userId, now = Date.now()) {
   const user = getUser(userId);
   if (!user) return fail(`No employee with id ${userId}.`, "no-employee");
   const box = read();
-  if (box.accounts[userId]?.hash || SEED_IDS.includes(userId)) return fail(`${user.name} already has an account. Issue a reset instead.`, "exists");
+  if (box.accounts[userId]?.hash || seeded(userId)) return fail(`${user.name} already has an account. Issue a reset instead.`, "exists");
   const tempPassword = makeTempPassword();
   const account = { ...blank(actorId, now), ...(await passwordFields(tempPassword)), status: "invited", mustChange: true };
   const token = await newLink(account, "invite", now);
@@ -224,7 +226,7 @@ export async function signInWithPassword(email, password, now = Date.now()) {
   const box = read();
   if (lockState(box, user?.id ?? null, key, now)) return fail(MESSAGES.locked, "locked");
   const account = user ? box.accounts[user.id] ?? null : null;
-  const known = user && (account || SEED_IDS.includes(user.id));
+  const known = user && (account || seeded(user.id));
   const good = known ? await passwordMatches(account, password, user.id) : false;
   if (!good) {
     const locked = countFailure(box, known ? user.id : null, key, now);
@@ -326,7 +328,7 @@ export async function redeemToken(token, password, now = Date.now()) {
 export async function requestReset(email, now = Date.now()) {
   const user = userByEmail(email);
   const box = read();
-  const account = user ? box.accounts[user.id] ?? (SEED_IDS.includes(user.id) ? { ...blank("seed", now), legacy: true } : null) : null;
+  const account = user ? box.accounts[user.id] ?? (seeded(user.id) ? { ...blank("seed", now), legacy: true } : null) : null;
   if (user && account && account.status !== "disabled" && user.status !== "inactive") {
     if (account.tokenHash) box.used.push(account.tokenHash);
     const token = await newLink(account, "reset", now);
@@ -355,7 +357,7 @@ export async function issueReset(actorId, userId, mode = "link", now = Date.now(
   const why = mayHelp(actor, user, "accounts:reset");
   if (why) return fail(why, "not-allowed");
   const box = read();
-  const account = box.accounts[userId] ?? (SEED_IDS.includes(userId) ? { ...blank("seed", now), legacy: true } : blank(actorId, now));
+  const account = box.accounts[userId] ?? (seeded(userId) ? { ...blank("seed", now), legacy: true } : blank(actorId, now));
   if (account.status === "disabled") return fail(`${user.name}'s sign-in is disabled. Enable it first.`, "disabled");
   if (account.tokenHash) box.used.push(account.tokenHash);
   account.tokenHash = null; account.tokenExpiry = null; account.tokenKind = null;
@@ -394,14 +396,14 @@ export function unlockAccount(actorId, userId, now = Date.now()) {
   return { ok: true };
 }
 
-// accounts:unlock (Admin): stop or allow someone's sign-in. The employee record stays as it is; a disabled person's
+// accounts:disable (Admin): stop or allow someone's sign-in. The employee record stays as it is; a disabled person's
 // session ends at its next check (sessionAllowed).
 export function setSignInEnabled(actorId, userId, enabled, now = Date.now()) {
   const actor = getUser(actorId), user = getUser(userId);
-  const why = mayHelp(actor, user, "accounts:unlock");
+  const why = mayHelp(actor, user, "accounts:disable");
   if (why) return fail(why, "not-allowed");
   const box = read();
-  const account = box.accounts[userId] ?? (SEED_IDS.includes(userId) ? { ...blank("seed", now), legacy: true } : null);
+  const account = box.accounts[userId] ?? (seeded(userId) ? { ...blank("seed", now), legacy: true } : null);
   if (!account) return fail(`${user.name} has no sign-in yet.`, "none");
   if (enabled === (account.status !== "disabled")) return fail(enabled ? `${user.name} can already sign in.` : `${user.name}'s sign-in is already disabled.`, "same");
   account.status = enabled ? (account.mustChange ? "invited" : "active") : "disabled";

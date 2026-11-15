@@ -42,12 +42,12 @@ const T = (c) => c.repeat(32);
 
 section("P. attendance:any-office");
 check("P1", "in the master list, once", P.ALL_PERMISSIONS.filter((p) => p === ANY).length === 1, P.ALL_PERMISSIONS.length);
-check("P2", "93 permissions in all (90 before F1, 91 before E1)", P.ALL_PERMISSIONS.length === 93, P.ALL_PERMISSIONS.length);
+check("P2", "94 permissions in all (90 before F1, 91 before E1, 93 before E1b)", P.ALL_PERMISSIONS.length === 94, P.ALL_PERMISSIONS.length);
 check("P3", "the Admin holds it", R.hasPermission(S.getUser(AARAV), ANY));
 check("P4", "HR, Finance, an employee and a manager don't", [PRIYA, KABIR, ARJUN, SNEHA].every((id) => !R.hasPermission(S.getUser(id), ANY)));
 check("P5", "not overridable: a stored grant gives it to nobody", !R.OVERRIDABLE.includes(ANY) && !R.hasPermission({ ...S.getUser(PRIYA), grantPermissions: [ANY] }, ANY));
 const counts = Object.fromEntries(Object.entries(R.ROLES).map(([k, r]) => [k, r.permissions.length]));
-check("P6", "role counts: Admin 93, HR 50, Finance 42, Employee 24 (E1: accounts)", j(counts) === j({ admin: 93, hr: 50, fin: 42, emp: 24 }), j(counts));
+check("P6", "role counts: Admin 94, HR 50, Finance 42, Employee 24 (E1, E1b: accounts)", j(counts) === j({ admin: 94, hr: 50, fin: 42, emp: 24 }), j(counts));
 check("P7", "a denied grant can't take it from the Admin either (no overrides for an Admin)", R.hasPermission({ ...S.getUser(AARAV), denyPermissions: [ANY] }, ANY));
 
 section("L. placesFor");

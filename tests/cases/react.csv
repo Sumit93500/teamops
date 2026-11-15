@@ -265,6 +265,18 @@ react-e1.K3,react-e1,the focused field shows a focus ring,x1
 react-e1.E1.light,react-e1,light: the sign-in page's text and its message are 4.5:1 or more,x1
 react-e1.E1.dark,react-e1,dark: the sign-in page's text and its message are 4.5:1 or more,x1
 react-e1.W1,react-e1,shots taken,x1
+react-e1.G0,react-e1,a build with demo mode off,x1
+react-e1.G1,react-e1,"off: the sign-in page has no demo hint, no role buttons and never names the demo password",x1
+react-e1.G2,react-e1,"off: the demo password signs nobody in (the usual words, still on the sign-in page)",x1
+react-e1.G3,react-e1,off: with nobody signed in the app still sends you to sign in,x1
+react-e1.G4,react-e1,on (the default build): the hint with the demo password and the four role buttons,x1
+react-e1.G5,react-e1,the Admin's card offers Disable sign-in (accounts:disable) beside the reset buttons,x1
+react-e1.G6,react-e1,HR's card has no Disable sign-in,x1
+react-e1.B1.Team,react-e1,"attendance mgr on Team attendance: 2 names, every one a profile link",x3 (3 roles)
+react-e1.B2,react-e1,the manager's links are their direct reports only (and never themself),x1
+react-e1.B3,react-e1,a name opens the person's profile through the router (no page load); the manager sees the team fields,x1
+react-e1.B1.Team#2,react-e1,"leave mgr on Team leave: 9 names, every one a profile link",x3 (3 roles)
+react-e1.B4,react-e1,an employee with no reports can't open Team attendance (403): no names to link,x1
 react-e1.X1,react-e1,no page or console errors,x1
 react-f1.B1.1440,react-f1,"1440: at least 30 open / close cycles across page changes, every one right",x1
 react-f1.B1.1280,react-f1,"1280: at least 30 open / close cycles across page changes, every one right",x1

@@ -10,7 +10,8 @@
 .auth-card form { display: grid; gap: var(--ds-space-4); }
 .auth-card .ds-btn--primary[type="submit"] { width: 100%; min-height: 44px; }
 .auth-row { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-3); flex-wrap: wrap; font-size: var(--ds-text-sm); }
-.auth-links { display: flex; justify-content: center; gap: var(--ds-space-4); flex-wrap: wrap; font-size: var(--ds-text-sm); }
+.auth-card .ds-note:focus-visible { outline: none; }   /* the message is read out (role alert / status); a ring on text isn't needed */
+.auth-links { display: flex; align-items: center; justify-content: center; gap: var(--ds-space-4); flex-wrap: wrap; font-size: var(--ds-text-sm); }
 .auth-demo { display: grid; gap: var(--ds-space-3); padding-top: var(--ds-space-5); border-top: 1px solid var(--ds-border); }
 .auth-demo__title { margin: 0; font-size: var(--ds-text-sm); font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
 .auth-demo__roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-2); }

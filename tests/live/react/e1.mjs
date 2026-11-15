@@ -1,5 +1,5 @@
 // E1's harness (msedge, headless): sign-in accounts and the whole employee record. Read by meaning (words, attributes, the
-// DOM, storage), never by pixels. usage: node e1.mjs <app dist> <repo root> <shots dir>   [ONLY=LNFRDPMATKEWX]
+// DOM, storage), never by pixels. usage: node e1.mjs <app dist> <repo root> <shots dir>   [ONLY=LNFRDPMATKEWXGB]
 // Clock Mon 16 Nov 2026 10:00 IST unless a check moves it; fresh storage for each context.
 //   L  Sign in: the page (labels, Show / Hide, Forgot, demo buttons; no "part of this demo"); a wrong password and an unknown
 //      email get the same words, focused; the demo password signs a seeded person in; the role buttons still work; 5 wrong
@@ -29,6 +29,10 @@
 //   E  contrast: the sign-in pages' text and messages, light and dark
 //   W  shots: the sign-in pages and states at 412, 768 and 1280, light and dark; profiles as every role, masked and shown;
 //      the share dialog, the outbox, change password
+//   G  (E1b) demo mode off (a build with config/demo.js mode false): no demo hint, no role buttons, the demo password refused;
+//      on, the hint and four buttons; Disable sign-in is the Admin's own permission (accounts:disable)
+//   B  (E1b) the team pages' names: HR and Admin get a profile link on every row, a manager only on their direct reports
+//      (through the router: no page load), an employee without reports can't open the pages; the profile a manager opens
 //   X  no page or console errors
 import { createRequire } from "node:module";
 import { spawn } from "node:child_process";
@@ -39,7 +43,7 @@ const EDGE = path.join(HERE, "..", "edge");
 const { chromium } = createRequire(path.join(EDGE, "x.js"))("playwright-core");
 const { useLocalFonts } = await import(new URL("file:///" + path.join(EDGE, "lib", "local-fonts.mjs").replace(/\\/g, "/")).href);
 const [DIST, , SHOTS] = process.argv.slice(2);
-const ONLY = process.env.ONLY ?? "LNFRDPMATKEWX";
+const ONLY = process.env.ONLY ?? "LNFRDPMATKEWXGB";
 fs.mkdirSync(SHOTS, { recursive: true });
 const t0 = Date.now();
 const srvN = spawn("python", [path.join(HERE, "spa-serve.py"), "9972", DIST], { stdio: "ignore" });
@@ -482,6 +486,73 @@ if (ONLY.includes("W")) {
     await c.ctx.close();
   }
   check("W1", "shots taken", shots === 24 + 20, shots);
+}
+
+// ---------- G ----------
+if (ONLY.includes("G")) {
+  console.log("\n--- G. Demo mode (E1b) ---");
+  // a second build with demo mode off, served on its own port, in a folder of its own beside the normal dist
+  const { spawnSync } = await import("node:child_process");
+  const appDir = path.dirname(DIST);
+  const offDist = path.join(appDir, "dist-demo-off");
+  const built = spawnSync("npx", ["vite", "build", "--outDir", offDist, "--emptyOutDir"], { cwd: appDir, shell: true, env: { ...process.env, OFFICEOS_DEMO_OFF: "1" }, encoding: "utf8" });
+  check("G0", "a build with demo mode off", built.status === 0 && fs.existsSync(path.join(offDist, "index.html")), (built.stderr ?? "").slice(-200));
+  const srvOff = spawn("python", [path.join(HERE, "spa-serve.py"), "9973", offDist], { stdio: "ignore" });
+  for (let i = 0; i < 60; i++) { try { if ((await fetch("http://127.0.0.1:9973/")).ok) break; } catch {} await new Promise((r) => setTimeout(r, 500)); }
+  const ctx = await browser.newContext({ ...size(1280), timezoneId: "Asia/Kolkata" });
+  await ctx.clock.setFixedTime(new Date(NOW));
+  const t = await ctx.newPage();
+  t.on("pageerror", (e) => errs.push(`demo-off: ${e.message}`));
+  await t.goto("http://127.0.0.1:9973/pages/auth/login.html"); await t.waitForLoadState("load"); await t.waitForTimeout(500);
+  const off = await t.evaluate(() => ({ demo: !!document.getElementById("demo-title"), buttons: document.querySelectorAll("[data-demo-role]").length, text: /Northwind@2026|demo/i.test(document.body.innerText) }));
+  check("G1", "off: the sign-in page has no demo hint, no role buttons and never names the demo password", !off.demo && off.buttons === 0 && !off.text, j(off));
+  await t.fill("#email", "arjun.kapoor@northwind.com"); await t.fill("#password", DEMO); await t.click('form button[type="submit"]'); await t.waitForTimeout(900);
+  check("G2", "off: the demo password signs nobody in (the usual words, still on the sign-in page)", (await text(t, "#auth-message")) === INVALID && new URL(t.url()).pathname.endsWith("auth/login.html"), await text(t, "#auth-message"));
+  await t.goto("http://127.0.0.1:9973/pages/dashboard/admin.html"); await t.waitForTimeout(600);
+  check("G3", "off: with nobody signed in the app still sends you to sign in", new URL(t.url()).pathname.endsWith("auth/login.html"));
+  await ctx.close();
+  try { srvOff.kill(); } catch {}
+  const n = await open(null, "auth/login.html");
+  const on = await n.t.evaluate(() => ({ demo: !!document.getElementById("demo-title"), buttons: document.querySelectorAll("[data-demo-role]").length, code: document.querySelector(".auth-demo code")?.textContent }));
+  check("G4", "on (the default build): the hint with the demo password and the four role buttons", on.demo && on.buttons === 4 && on.code === DEMO, j(on));
+  await n.ctx.close();
+  // Disable sign-in belongs to accounts:disable: the Admin sees it, HR (reset only) doesn't, and neither does the Unlock-only story
+  const a = await open("admin", "users/user-profile.html?id=EMP-1105");
+  const adminBtns = await a.t.evaluate(() => [...document.querySelectorAll("#account-actions button")].map((b) => b.textContent));
+  check("G5", "the Admin's card offers Disable sign-in (accounts:disable) beside the reset buttons", adminBtns.includes("Disable sign-in") && adminBtns.includes("Send reset link"), j(adminBtns));
+  await a.ctx.close();
+  const h = await open("hr", "users/user-profile.html?id=EMP-1105");
+  const hrBtns = await h.t.evaluate(() => [...document.querySelectorAll("#account-actions button")].map((b) => b.textContent));
+  check("G6", "HR's card has no Disable sign-in", !hrBtns.includes("Disable sign-in") && !hrBtns.includes("Enable sign-in"), j(hrBtns));
+  await h.ctx.close();
+}
+
+// ---------- B ----------
+if (ONLY.includes("B")) {
+  console.log("\n--- B. Team pages link to profiles (E1b) ---");
+  const names = (t, sel) => t.evaluate((sel) => [...document.querySelectorAll(sel)].map((e) => ({ text: e.textContent.trim(), tag: e.tagName, href: e.getAttribute("href") })), sel);
+  for (const [who, page, sel, label] of [["mgr", "attendance/team-attendance.html", "#team-rows .table__user-name", "Team attendance"], ["mgr", "leave/team-leave.html", "main table .table__user-name", "Team leave"],
+    ["hr", "attendance/team-attendance.html", "#team-rows .table__user-name", "Team attendance"], ["admin", "attendance/team-attendance.html", "#team-rows .table__user-name", "Team attendance"], ["hr", "leave/team-leave.html", "main table .table__user-name", "Team leave"], ["admin", "leave/team-leave.html", "main table .table__user-name", "Team leave"]]) {
+    const n = await open(who, page);
+    await settle(n.t, 400);
+    const list = await names(n.t, sel);
+    const linked = list.filter((x) => x.tag === "A");
+    check(`B1.${who}.${label}`, `${who} on ${label}: ${list.length} names, every one a profile link`, list.length > 0 && linked.length === list.length && linked.every((x) => /^\/pages\/users\/user-profile\.html\?id=EMP-\d+$/.test(x.href)), j(list.slice(0, 3)));
+    if (who === "mgr" && label === "Team attendance") {
+      const ids = linked.map((x) => x.href.split("id=")[1]);
+      const reports = await n.t.evaluate(() => { const box = JSON.parse(localStorage.getItem("officeos:users") ?? "null"); return box ? box.records.filter((u) => u.reportingManagerId === "EMP-1029").map((u) => u.id) : null; });
+      check("B2", "the manager's links are their direct reports only (and never themself)", ids.length > 0 && !ids.includes("EMP-1029") && (reports === null || ids.every((id) => reports.includes(id))), j(ids));
+      await n.t.evaluate(() => { window.__marker = 1; });
+      await n.t.click("#team-rows a.table__user-name"); await settle(n.t, 800);
+      const sameDoc = await n.t.evaluate(() => window.__marker === 1);
+      check("B3", "a name opens the person's profile through the router (no page load); the manager sees the team fields", new URL(n.t.url()).pathname.endsWith("users/user-profile.html") && sameDoc && (await n.t.$('[data-field="phone"]')) !== null && (await n.t.$('[data-field="bankAccount"]')) === null && (await n.t.$("#profile-pay")) === null);
+    }
+    await n.ctx.close();
+  }
+  const e = await open("emp", "attendance/team-attendance.html");
+  await settle(e.t, 500);
+  check("B4", "an employee with no reports can't open Team attendance (403): no names to link", new URL(e.t.url()).pathname.endsWith("errors/403.html"));
+  await e.ctx.close();
 }
 
 // ---------- X ----------

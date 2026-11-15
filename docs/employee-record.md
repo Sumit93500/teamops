@@ -25,7 +25,7 @@ The user record keeps what it held before; the new fields are in `officeos:emplo
 | the person (My profile) | everything of their own; sensitive values masked, with Show | phone, personal email, addresses, emergency contacts, dependants; their bank or tax details only by "Ask for a change" |
 | HR, Admin (users:view, users:edit) | everything | everything on the profile; role, department, manager and joining date in the employee form |
 | Finance (salary:edit) | team and pay fields | bank and tax fields, directly |
-| the manager | their direct reports' team fields (name, photo, work email, phone, employment, skills) and leave balance | nothing |
+| the manager (also from a name on Team attendance and Team leave, E1b) | their direct reports' team fields (name, photo, work email, phone, employment, skills) and leave balance | nothing |
 | anyone else | nothing (the 403 page, or "You can't see this profile") | nothing |
 
 - **Not in the page at all:** a field someone may not see isn't returned by `profileView()`, so it is never drawn.
