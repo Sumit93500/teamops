@@ -192,8 +192,8 @@ function Settings() {
           <button className="ds-btn" type="submit">Save date</button>
         </form>
         <div className="shift-settings__row">
-          <Switch id="set-late" label={`Late marks cost pay: every ${s.late.every} late marks in a month = half a day`} checked={s.late.on} onChange={(on) => done(setLatePolicy(userId, { on, every: Number(every) }), on ? "The late-mark rule is on." : "The late-mark rule is off.", "late")} />
-          <Field id="set-every" label="Late marks per half day" error={e("late-every")}><Input id="set-every" type="number" min="2" max="10" value={every} onChange={(x) => setEvery(x.target.value)} onBlur={() => Number(every) !== s.late.every && done(setLatePolicy(userId, { on: s.late.on, every: Number(every) }), `Every ${every} late marks.`, "late")} /></Field>
+          <Switch id="set-late" label={`Late marks cost pay: every ${s.late.every === 3 ? "3rd" : `${s.late.every}th`} late mark in a month = half a day`} checked={s.late.on} onChange={(on) => done(setLatePolicy(userId, { on, every: Number(every) }), on ? "The late-mark rule is on." : "The late-mark rule is off.", "late")} />
+          <Field id="set-every" label="Late marks per half day" error={e("late-every")} hint="A change applies from today; earlier days keep the policy they had."><Input id="set-every" type="number" min="2" max="10" value={every} onChange={(x) => setEvery(x.target.value)} onBlur={() => Number(every) !== s.late.every && done(setLatePolicy(userId, { on: s.late.on, every: Number(every) }), `Every ${every} late marks.`, "late")} /></Field>
         </div>
         <div className="shift-settings__row">
           <Switch id="set-comp" label="Approved overtime earns comp-off days (added to earned leave)" checked={s.comp.on} onChange={(on) => done(setCompOff(userId, { on, minutesPerDay: Number(comp.minutesPerDay), expiryDays: Number(comp.expiryDays) }), on ? "Comp-off is on." : "Comp-off is off.", "comp")} />

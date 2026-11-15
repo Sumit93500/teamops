@@ -85,7 +85,7 @@ Tests: `tests/live/binding.mjs` (60 checks, 3 time zones; mutants all caught), `
 
 ## SH1 (2026-11-15): loss of pay from shifts
 
-From the shift rules month (default 2026-12), `payFor` replaces the old row's attendance part (late-mark half days and settled absences) with the shift engine's settled days: absent 1, half day 0.5, short leave 0.25, and the late-mark rule only when it is on (off by default). Same daily rate, same settling rule; unpaid leave, joining and leaving as before; the leave policy's loss of pay on top. Months before it, approved months and the old site are unchanged. `lop` gains `shiftDays`, `replacedDays` and `shift` (the breakdown). Overtime isn't paid yet (a Finance rule). See [shifts.md](shifts.md#pay).
+From the shift rules month (default 2026-12), `payFor` replaces the old row's attendance part (late-mark half days and settled absences) with the shift engine's settled days: absent 1, half day 0.5, short leave 0.25, and the late-mark half days (the dated policy, on by default, every 3rd). Same daily rate, same settling rule; unpaid leave, joining and leaving as before; the leave policy's loss of pay on top. Months before it, approved months and the old site are unchanged. `lop` gains `shiftDays`, `replacedDays` and `shift` (the breakdown). Overtime isn't paid yet (a Finance rule). See [shifts.md](shifts.md#pay).
 
 ## Not built yet
 

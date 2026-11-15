@@ -131,6 +131,9 @@ if (ONLY.includes("S")) {
   const box = await n.t.evaluate(() => JSON.parse(localStorage.getItem("officeos:shifts")).shifts.find((s) => s.id === "SH-4").active);
   check("S8", "Part-time (nobody on it) is deactivated after the question", box === false);
   await n.ctx.close();
+  const ad = await open("admin", "attendance/shifts.html");
+  check("S9", "SH1b: the Admin's shift settings: the late-mark rule is on, every 3rd late mark = half a day, and a change applies from today", (await ad.t.$eval("#set-late", (c) => c.checked)) && /every 3rd late mark in a month = half a day/.test(await text(ad.t, "#shift-settings")) && /applies from today; earlier days keep the policy they had/.test(await text(ad.t, "#shift-settings")), await text(ad.t, "#shift-settings"));
+  await ad.ctx.close();
 }
 
 // ---------- A ----------

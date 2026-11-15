@@ -4,16 +4,19 @@
 //                   and pay read exactly today's rules (data/attendance-store.js, data/payroll-store.js), byte for byte;
 //                   from it, the shift engine decides each day (data/shift-days.js) and pay takes its loss of pay
 //                   (data/pay-engine.js payFor). Default (nothing saved): 2026-12-01, as the leave policy's.
-//   latePolicy      { on, every }: every `every` late marks in a month cost a half day's pay. Default OFF (every 3, the
-//                   old rule's number, ready to switch on). Only from the start date; before it the old rule stands.
+//   latePolicy      { on, every }: every `every`th late mark in a month costs a half day's pay. Default ON, every 3: today's
+//                   rule, so pay from the start date matches it (SH1b ruling; SH1 shipped it off). Dated: a change made by the
+//                   Admin applies from its effective date (the day it is made) only; a late mark is judged by the policy in
+//                   force on its own date, counted in the month's running order (the 3rd costs a half day, the 6th another).
+//                   Only from the shift rules start date; before it the old rule stands.
 //   compOff         { on, minutesPerDay, expiryDays }: approved overtime turns into comp-off days, credited to earned
 //                   leave (data/comp-off.js, data/leave-policy.js), each expiring expiryDays after it is earned.
 //                   Default OFF (480 minutes a day, 90 days).
 //
-// Saved under "officeos:shift-settings" as { version, shiftRulesFrom, latePolicy, compOff, audit }. Reads never write.
+// Saved under "officeos:shift-settings" as { version, shiftRulesFrom, lateHistory: [{ from, on, every }], compOff, audit }. Reads never write.
 // Only an Admin changes them (settings:edit, the Admin's alone); every change is in the audit.
 //
-//   shiftRulesFrom()  shiftRulesApply(date)  shiftRulesMonth()  latePolicy()  compOffRule()  shiftSettingsAudit()
+//   shiftRulesFrom()  shiftRulesApply(date)  shiftRulesMonth()  latePolicy(date?)  lateHalfDays(lateDates)  compOffRule()  shiftSettingsAudit()
 //   setShiftRulesFrom(actorUserId, date, today?)  setLatePolicy(actorUserId, { on, every })  setCompOff(actorUserId, { on, minutesPerDay, expiryDays })
 //   resetShiftSettings()
 
@@ -25,9 +28,9 @@ import { officeNow, dayNo } from "./shift-engine.js";
 
 const KEY = "shift-settings";
 export const DEFAULT_SHIFT_RULES_FROM = "2026-12-01";
-export const DEFAULT_LATE_POLICY = Object.freeze({ on: false, every: 3 });
+export const DEFAULT_LATE_POLICY = Object.freeze({ on: true, every: 3 });
 export const DEFAULT_COMP_OFF = Object.freeze({ on: false, minutesPerDay: 480, expiryDays: 90 });
-const store = pureBox(KEY, 1, () => ({ shiftRulesFrom: null, latePolicy: null, compOff: null, audit: [] }), (b) => Array.isArray(b.audit));
+const store = pureBox(KEY, 1, () => ({ shiftRulesFrom: null, lateHistory: [], compOff: null, audit: [] }), (b) => Array.isArray(b.audit));
 const copy = (v) => JSON.parse(JSON.stringify(v));
 const fail = (error, field) => (field ? { ok: false, error, field } : { ok: false, error });
 const SAVE_FAILED = "Couldn't save. Browser storage may be full or disabled.";
@@ -35,7 +38,16 @@ const SAVE_FAILED = "Couldn't save. Browser storage may be full or disabled.";
 export const shiftRulesFrom = () => store.read().shiftRulesFrom ?? DEFAULT_SHIFT_RULES_FROM;
 export const shiftRulesMonth = () => shiftRulesFrom().slice(0, 7);
 export const shiftRulesApply = (date) => dayNo(date) !== null && date >= shiftRulesFrom();
-export const latePolicy = () => ({ ...DEFAULT_LATE_POLICY, ...(store.read().latePolicy ?? {}) });
+// The late-mark policy in force on a date (today in office time by default): the newest version from on or before it.
+const lateVersions = (box) => [{ from: "2000-01-01", ...DEFAULT_LATE_POLICY }, ...(Array.isArray(box.lateHistory) ? box.lateHistory : [])].sort((a, b) => a.from.localeCompare(b.from));
+const lateOn = (versions, date) => [...versions].reverse().find((v) => v.from <= date) ?? versions[0];
+export const latePolicy = (date = officeNow().date) => { const v = lateOn(lateVersions(store.read()), date); return { on: v.on, every: v.every, from: v.from }; };
+// The half days a month's late marks cost: the k-th late mark (dates, oldest first) costs one when the policy in force on its date
+// is on and k is a multiple of its `every`. A constant policy: floor(marks / every).
+export function lateHalfDays(lateDates) {
+  const versions = lateVersions(store.read());
+  return [...lateDates].sort().reduce((n, date, i) => { const p = lateOn(versions, date); return n + (p.on && (i + 1) % p.every === 0 ? 1 : 0); }, 0);
+}
 export const compOffRule = () => ({ ...DEFAULT_COMP_OFF, ...(store.read().compOff ?? {}) });
 export const shiftSettingsAudit = () => copy(store.read().audit);
 
@@ -68,13 +80,15 @@ export function setShiftRulesFrom(actorUserId, date, today = officeNow().date) {
 export function setLatePolicy(actorUserId, { on, every } = {}, today = officeNow().date) {
   const actor = admin(actorUserId);
   if (!actor) return fail(NOT_ALLOWED);
-  const n = every ?? latePolicy().every;
+  const n = every ?? latePolicy(today).every;
   if (typeof on !== "boolean") return fail("Turn the late-mark rule on or off.", "on");
   if (!Number.isInteger(n) || n < 2 || n > 10) return fail("Late marks per half day: a whole number from 2 to 10.", "every");
   const box = store.read();
-  box.latePolicy = { on, every: n };
-  box.audit.push(entry(actor, "late-policy", { value: { on, every: n } }, today));
-  return store.write(box) ? { ok: true, record: { ...box.latePolicy } } : fail(SAVE_FAILED);
+  const history = Array.isArray(box.lateHistory) ? box.lateHistory.filter((v) => v.from !== today) : [];
+  history.push({ from: today, on, every: n });   // effective from today: days before it keep the policy they had
+  box.lateHistory = history;
+  box.audit.push(entry(actor, "late-policy", { value: { on, every: n }, from: today }, today));
+  return store.write(box) ? { ok: true, record: { on, every: n, from: today } } : fail(SAVE_FAILED);
 }
 export function setCompOff(actorUserId, { on, minutesPerDay, expiryDays } = {}, today = officeNow().date) {
   const actor = admin(actorUserId);

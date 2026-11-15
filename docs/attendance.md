@@ -63,7 +63,7 @@ The record then carries `checkInPlace`, `checkInDistanceM`, `checkInDeviceId` (a
 
 ## Shifts (SH1)
 
-From the shift rules start date (default 2026-12-01) each day is read by the person's shift: see [shifts.md](shifts.md). Before it everything above holds exactly. The old site keeps these rules and its sample Shifts page.
+From the shift rules start date (default 2026-12-01) each day is read by the person's shift (the every-3rd late-mark rule stays, as a dated, Admin-editable policy): see [shifts.md](shifts.md). Before it everything above holds exactly. The old site keeps these rules and its sample Shifts page.
 
 ## Not built yet
 

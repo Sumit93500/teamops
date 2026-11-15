@@ -850,6 +850,7 @@ react-sh1.S5,react-sh1,"a bad threshold: its own message under the field, the pr
 react-sh1.S6,react-sh1,"saved: the new shift is in the list, marked overnight",x1
 react-sh1.S7,react-sh1,deactivating Night (Arjun is on it) is refused with who is on it,x1
 react-sh1.S8,react-sh1,Part-time (nobody on it) is deactivated after the question,x1
+react-sh1.S9,react-sh1,"SH1b: the Admin's shift settings: the late-mark rule is on, every 3rd late mark = half a day, and a change applies from today",x1
 react-sh1.A1,react-sh1,"before any assignment: 'No assignments yet' (an empty state, not an empty table)",x1
 react-sh1.A2,react-sh1,before the start date the note says when the shift rules start,x1
 react-sh1.A3,react-sh1,the dialog previews the chosen shift's rules and starts on the rules' start date,x1

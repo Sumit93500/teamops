@@ -18,7 +18,7 @@ import { allRequests } from "./leave-store.js";
 import { classifyDay, dayLossOfPay, officeNow, addDays, shiftShape, toMin, hhmm, dayNo, DAY } from "./shift-engine.js";
 import { assignmentReader } from "./shift-assignments.js";
 import { shiftReader, GENERAL_ID } from "./shifts-store.js";
-import { shiftRulesApply, shiftRulesMonth, latePolicy } from "./shift-settings.js";
+import { shiftRulesApply, shiftRulesMonth, lateHalfDays } from "./shift-settings.js";
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -90,7 +90,7 @@ export function shiftCounts(days) {
 
 // One person's month: the old month's fields, its days under the shift rules (before the start month: the old month as
 // it is, each day named General), and the counts again. The late-mark half days follow the late policy from the start
-// month (off by default), the old rule before it.
+// month (on by default, every 3rd; SH1b), dated; the old rule before it.
 export function shiftMonthFor(userId, year, month, now) {
   const m = monthFor(userId, year, month);
   if (!m) return null;
@@ -99,12 +99,11 @@ export function shiftMonthFor(userId, year, month, now) {
   if (`${m.year}-${pad(m.month)}` < shiftRulesMonth()) return { ...m, days, rules: "old", counts: { ...m.counts, shortLeave: 0, weeklyOff: 0, incomplete: days.filter((d) => d.incomplete).length, overtimeMinutes: 0 } };
   const counts = shiftCounts(days);
   const finished = days.filter((d) => d.checkOut && d.minutesWorked !== null);
-  const lp = latePolicy();
   return {
     ...m, days, rules: "shift", counts,
     daysWorked: counts.present + counts.late + counts.halfDay + counts.shortLeave,
     lateMarks: counts.late,
-    penaltyHalfDays: lp.on ? Math.floor(counts.late / lp.every) : 0,
+    penaltyHalfDays: lateHalfDays(days.filter((d) => d.status === "late").map((d) => d.date)),
     averageMinutes: finished.length ? Math.round(finished.reduce((s, d) => s + d.minutesWorked, 0) / finished.length) : null,
     overtimeMinutes: counts.overtimeMinutes,
   };
@@ -114,7 +113,7 @@ export function shiftMonthFor(userId, year, month, now) {
 // settled the way the old payroll settles an absence (data/payroll-store.js absencesIn): once the day's correction
 // window has closed and no correction or leave request for it is waiting. Absent 1 (0.5 with a half-day leave), half day
 // 0.5, short leave 0.25; an absence with no check-in only from the joining date and only with a joining date on file;
-// plus the late-mark half days when the late policy is on (a late mark whose late-arrival correction is pending waits).
+// plus the late-mark half days the policy gives (a late mark whose late-arrival correction is pending waits).
 // null before the shift rules month or when the old month is null.
 // -> { days, absent, halfDay, shortLeave, penaltyHalfDays, open: [{ date, days, until, waiting }] }
 export function shiftMonthLossOfPay(userId, year, month, now = officeNow()) {
@@ -138,11 +137,9 @@ export function shiftMonthLossOfPay(userId, year, month, now = officeNow()) {
       else out.shortLeave += lop;
     } else out.open.push({ date: d.date, days: lop, until, waiting });
   }
-  const lp = latePolicy();
-  if (lp.on) {
-    const paused = m.days.filter((d) => d.status === "late" && d.regularization?.status === "pending" && d.regularization.issue === "late-arrival").length;
-    out.penaltyHalfDays = Math.floor((m.counts.late - paused) / lp.every);
-    out.days += out.penaltyHalfDays * 0.5;
-  }
+  // a late mark whose late-arrival correction is pending waits (the old rule's G4); the rest are judged by the policy of their own date
+  const counted = m.days.filter((d) => d.status === "late" && !(d.regularization?.status === "pending" && d.regularization.issue === "late-arrival")).map((d) => d.date);
+  out.penaltyHalfDays = lateHalfDays(counted);
+  out.days += out.penaltyHalfDays * 0.5;
   return out;
 }

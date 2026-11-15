@@ -228,7 +228,7 @@ export default function MarkAttendance() {
   if (day?.halfDayLeave === "second-half") end = toMinutes(R.halfSplit);
   const half = day?.halfDayLeave ? `You're on leave for the ${day.halfDayLeave === "first-half" ? "first" : "second"} half today. ` : "";
   const [time, ampm] = twelveHour(d.minutes).split(" ");
-  // SH1: the late-mark rule from the shift rules start date is the setting's (off by default)
+  // SH1: the late-mark rule from the shift rules start date is the setting's (on by default, every 3rd; SH1b)
   const every = d.shiftMode ? d.late.every : R.penaltyEvery;
   const penalised = !d.shiftMode || d.late.on;
   let lateNote = "";

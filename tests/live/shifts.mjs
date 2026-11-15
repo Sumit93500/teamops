@@ -262,15 +262,32 @@ check("Y4", "an absence turned into a half day (5 h 30 on General) costs 0.5, no
 SP.shiftCheckIn(NEEL, "office", undefined, at("2026-12-29", "09:30"));
 SP.shiftCheckOut(NEEL, undefined, at("2026-12-29", "17:00"));
 check("Y4b", "a short day on General (7 h 30) is a half day there (no short-leave band): 0.5", SD.shiftMonthLossOfPay(NEEL, 2026, 12).days === before - 1);
-for (const d of ["2026-12-30", "2026-12-31", "2026-12-22"]) { SP.shiftCheckIn(NEEL, "office", undefined, at(d, "09:50")); SP.shiftCheckOut(NEEL, undefined, at(d, "18:40")); }
-const offP = SD.shiftMonthLossOfPay(NEEL, 2026, 12);
-check("Y5", "three late marks with the late-mark rule OFF (the default): no penalty (pay or the month's view)", SS.latePolicy().on === false && offP.penaltyHalfDays === 0 && SD.shiftMonthFor(NEEL, 2026, 12).lateMarks === 3 && SD.shiftMonthFor(NEEL, 2026, 12).penaltyHalfDays === 0, String(SD.shiftMonthFor(NEEL, 2026, 12).lateMarks));
-SS.setLatePolicy(AARAV, { on: true, every: 3 }, "2027-01-20");
-const onP = SD.shiftMonthLossOfPay(NEEL, 2026, 12);
-check("Y6", "the rule ON, every 3: one half day (the month's view too), 0.5 more loss of pay; every 4: none", onP.penaltyHalfDays === 1 && SD.shiftMonthFor(NEEL, 2026, 12).penaltyHalfDays === 1 && onP.days === offP.days + 0.5 && SS.setLatePolicy(AARAV, { on: true, every: 4 }, "2027-01-20").ok && SD.shiftMonthLossOfPay(NEEL, 2026, 12).penaltyHalfDays === 0);
-SS.setLatePolicy(AARAV, { on: true, every: 3 }, "2027-01-20");
-check("Y7", "pay takes the penalty too (payFor's shift days include it)", E.payFor(NEEL, 2026, 12).lop.shiftDays === offP.days + 0.5);
-check("Y8", "only an Admin sets it; every is 2 to 10", !SS.setLatePolicy(PRIYA, { on: false }).ok && SS.setLatePolicy(AARAV, { on: true, every: 1 }).field === "every" && SS.setLatePolicy(AARAV, { on: false, every: 3 }).ok);
+for (const d of ["2026-12-30", "2026-12-22"]) { SP.shiftCheckIn(NEEL, "office", undefined, at(d, "09:50")); SP.shiftCheckOut(NEEL, undefined, at(d, "18:40")); }
+const lateAt = (d, h = "09:50") => { SP.shiftCheckIn(NEEL, "office", undefined, at(d, h)); SP.shiftCheckOut(NEEL, undefined, at(d, "18:40")); };
+const p2 = SD.shiftMonthLossOfPay(NEEL, 2026, 12), m2 = SD.shiftMonthFor(NEEL, 2026, 12);
+check("Y5", "SH1b: the late-mark rule is ON by default, every 3: two late marks (22 and 30 Dec) cost nothing, pay or the month's view", SS.latePolicy().on === true && SS.latePolicy().every === 3 && m2.lateMarks === 2 && m2.penaltyHalfDays === 0 && p2.penaltyHalfDays === 0, j([SS.latePolicy(), m2.lateMarks]));
+lateAt("2026-12-31");
+const p3 = SD.shiftMonthLossOfPay(NEEL, 2026, 12), m3 = SD.shiftMonthFor(NEEL, 2026, 12);
+check("Y6", "the 3rd late mark costs a half day (the month's view too): 31 Dec stops being an absence (-1) and the half day is added (+0.5)", m3.lateMarks === 3 && m3.penaltyHalfDays === 1 && p3.penaltyHalfDays === 1 && p3.days === p2.days - 1 + 0.5, j([m3.lateMarks, m3.penaltyHalfDays, p3.days, p2.days]));
+check("Y7", "pay takes the penalty too (payFor's shift days include it)", E.payFor(NEEL, 2026, 12).lop.shiftDays === p3.days);
+lateAt("2026-12-21"); lateAt("2026-12-24");
+check("Y6b", "the 4th and 5th late marks add nothing", SD.shiftMonthFor(NEEL, 2026, 12).lateMarks === 5 && SD.shiftMonthLossOfPay(NEEL, 2026, 12).penaltyHalfDays === 1);
+lateAt("2026-12-25");
+const p6 = SD.shiftMonthLossOfPay(NEEL, 2026, 12);
+check("Y6c", "the 6th late mark costs a second half day (21, 24 and 25 Dec stop being absences: -3, +0.5)", SD.shiftMonthFor(NEEL, 2026, 12).lateMarks === 6 && SD.shiftMonthFor(NEEL, 2026, 12).penaltyHalfDays === 2 && p6.penaltyHalfDays === 2 && p6.days === p3.days - 3 + 0.5);
+check("Y8", "only an Admin sets it; every is 2 to 10; a change is dated from the day it is made", !SS.setLatePolicy(PRIYA, { on: false }).ok && SS.setLatePolicy(AARAV, { on: true, every: 1 }).field === "every" && SS.setLatePolicy(AARAV, { on: true, every: 3 }, "2026-12-23").record.from === "2026-12-23");
+// a change mid-month applies from its effective date only: the 3rd late mark (24 Dec) and the 6th (25 Dec was the 6th: dates 21, 22, 24, 25, 30, 31)
+const lateDates = SD.shiftMonthFor(NEEL, 2026, 12).days.filter((x) => x.status === "late").map((x) => x.date);
+check("Y8a", "the late marks, in order: 21, 22, 24, 25, 30, 31 Dec (the 3rd is the 24th, the 6th the 31st)", j(lateDates) === j(["2026-12-21", "2026-12-22", "2026-12-24", "2026-12-25", "2026-12-30", "2026-12-31"]), j(lateDates));
+SS.setLatePolicy(AARAV, { on: false, every: 3 }, "2026-12-31");
+check("Y8b", "off from 31 Dec: the 3rd (24 Dec, before it) still costs its half day, the 6th (31 Dec, on it) doesn't", SD.shiftMonthFor(NEEL, 2026, 12).penaltyHalfDays === 1 && SD.shiftMonthLossOfPay(NEEL, 2026, 12).penaltyHalfDays === 1 && SS.latePolicy("2026-12-30").on === true && SS.latePolicy("2026-12-31").on === false);
+SS.setLatePolicy(AARAV, { on: true, every: 4 }, "2026-12-25");
+check("Y8c", "every 4 from 25 Dec (and off from the 31st): the 3rd (24th) keeps its half day, the 4th (25th) costs one too; the 6th isn't judged by 4", SD.shiftMonthFor(NEEL, 2026, 12).penaltyHalfDays === 2, String(SD.shiftMonthFor(NEEL, 2026, 12).penaltyHalfDays));
+SS.resetShiftSettings();
+SS.setLatePolicy(AARAV, { on: false, every: 3 }, "2026-12-01");
+check("Y8d", "policy OFF from the start: no dock at all (6 late marks, 0 half days)", SD.shiftMonthFor(NEEL, 2026, 12).lateMarks === 6 && SD.shiftMonthFor(NEEL, 2026, 12).penaltyHalfDays === 0 && SD.shiftMonthLossOfPay(NEEL, 2026, 12).penaltyHalfDays === 0 && SD.shiftMonthLossOfPay(NEEL, 2026, 12).days === p6.days - 1);
+SS.resetShiftSettings();
+check("Y8e", "reset: back to the default (on, every 3)", SS.latePolicy().on === true && SS.latePolicy().every === 3);
 check("Y9", "a sample person's generated days follow their shift: Ananya (Sales: Early) reads on time, with no overtime", (() => { const m = SD.shiftMonthFor(ANANYA, 2026, 12); const worked = m.days.filter((d) => d.checkIn); return worked.length > 10 && worked.every((d) => d.status === "present" && d.overtimeMinutes === 0 && (d.shiftName !== "Early" || d.checkIn < "06:11")) && worked.filter((d) => d.shiftName === "Early").length > 10; })());
 
 // ---------- O ----------

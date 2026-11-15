@@ -58,9 +58,9 @@ The window opens before the start ("Your shift starts at 22:00, check-in opens a
 
 ## Pay
 
-From the shift rules month, `payFor` (the new engine) **replaces** the old row's attendance part (its late-mark half days and settled absences) with the shift engine's settled days, at the same daily rate: absent 1 (0.5 with a half-day leave), half day 0.5, **short leave 0.25**, plus the late-mark rule when it is on. Settled as today: once the 7-day correction window has closed and no correction or leave request is waiting. Unpaid leave, before joining and after leaving stay as the old row has them; the leave policy's loss of pay is added on top as before. No pay maths changed.
+From the shift rules month, `payFor` (the new engine) **replaces** the old row's attendance part (its late-mark half days and settled absences) with the shift engine's settled days, at the same daily rate: absent 1 (0.5 with a half-day leave), half day 0.5, **short leave 0.25**, plus the late-mark half days the policy gives. Settled as today: once the 7-day correction window has closed and no correction or leave request is waiting. Unpaid leave, before joining and after leaving stay as the old row has them; the leave policy's loss of pay is added on top as before. No pay maths changed.
 
-**Late-mark rule:** off by default (every 3, ready to switch on). The old site and months before the start keep the old every-3rd rule.
+**Late-mark rule (SH1b ruling):** ON by default, every 3rd late mark in a month costs a half day: today's rule, so pay from the start date matches it. The Admin edits it in the shift settings (on / off, 2 to 10). It is **dated**: a change applies from the day it is made, and a late mark is judged by the policy in force on its own date, counted in the month's running order (the 3rd costs a half day, the 6th another; the 2nd and 4th-5th nothing). Marks whose late-arrival correction is pending wait, as before. The old site and months before the start keep the old every-3rd rule, byte for byte.
 
 ## Overtime and comp-off
 

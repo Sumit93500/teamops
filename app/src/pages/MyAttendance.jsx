@@ -6,7 +6,7 @@
 // differs), a Flagged badge beside the status, and "Flagged only" to narrow the log to flagged days.
 // SH1: the month is read by the shift (data/shift-days.js shiftMonthFor: before the shift rules start, the old month exactly);
 // "Your shift" with the next check-in window; a Shift and an Overtime column; Short leave, Weekly off and Incomplete; the
-// late-mark words follow the late-mark rule from the shift rules month (off by default: late marks cost no pay).
+// late-mark words follow the late-mark rule from the shift rules month (on by default, every 3rd: SH1b).
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getUser } from "../../../assets/js/data/store.js";
@@ -169,7 +169,7 @@ export default function MyAttendance() {
   const s0 = !done.length
     ? ["–", isCurrent && summary.workingDaysLeft ? `${plural(summary.workingDaysLeft, "working day", "working days")} left` : "No attendance recorded"]
     : [`${summary.daysWorked} / ${done.length}`, isCurrent ? `${plural(summary.workingDaysLeft, "working day", "working days")} left` : "Working days in the month"];
-  // SH1: from the shift rules month the late-mark rule is the setting's (off by default); before it, the old every 3rd
+  // SH1: from the shift rules month the late-mark rule is the setting's (on by default, every 3rd; SH1b); before it, the old every 3rd
   const shiftRules = summary.rules === "shift";
   const every = shiftRules ? d.late.every : R.penaltyEvery;
   const penalised = !shiftRules || d.late.on;
