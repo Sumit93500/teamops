@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { profileView, revealField, saveFields, requestChange, profileChangesFor, changeText, historyFor, completeness } from "../../../assets/js/data/employee-record.js";
+import { bankFromIfsc } from "../../../assets/js/config/ifsc-banks.js";   // F2
 import { accountOf, createAccount, issueReset, unlockAccount, setSignInEnabled } from "../../../assets/js/data/credentials.js";
 import { eventsFor, AUDIT_LABEL } from "../../../assets/js/data/audit-trail.js";
 import { nameOf } from "../../../assets/js/ui/leave-view.js";
@@ -105,15 +106,33 @@ function RowsEditor({ field, rows, onChange, error }) {
   );
 }
 
-function EditForm({ userId, fields, mode, onClose }) {
+// F2: what a field does as it is typed: PAN and IFSC in capitals; a new IFSC fills the bank name (when it is empty or still names the
+// old IFSC's bank); numbers get a number keyboard on a phone.
+const UPPER = new Set(["pan", "ifsc"]);
+const NUMERIC = new Set(["aadhaar", "bankAccount"]);
+function typed(values, key, raw) {
+  const v = UPPER.has(key) ? raw.toUpperCase() : raw;
+  const next = { ...values, [key]: v };
+  if (key === "ifsc" && "bankName" in values) {
+    const named = bankFromIfsc(v);
+    if (named && (!values.bankName || values.bankName === bankFromIfsc(values.ifsc))) next.bankName = named;
+  }
+  return next;
+}
+
+function EditForm({ userId, fields, mode, onClose, focus = null }) {
   const { userId: me } = useSession();
   const toast = useToast();
   const [values, setValues] = useState(() => Object.fromEntries(fields.map((f) => [f.key, f.kind === "list" ? f.value.map((r) => ({ ...r })) : f.masked ? "" : String(f.value ?? "")])));
+  const [confirmAccount, setConfirmAccount] = useState("");   // F2: the account number typed twice
   const [error, setError] = useState(null);
   const first = useRef(null);
-  useEffect(() => { first.current?.querySelector("input, textarea")?.focus(); }, []);
+  useEffect(() => { (focus && first.current?.querySelector(`#pf-${focus}`) || first.current?.querySelector("input, textarea"))?.focus(); }, [focus]);
+  const hasAccount = fields.some((f) => f.key === "bankAccount");
   const submit = (e) => {
     e.preventDefault();
+    const digits = (s) => String(s ?? "").replace(/\s/g, "");
+    if (hasAccount && digits(values.bankAccount) && digits(values.bankAccount) !== digits(confirmAccount)) { setError({ field: "bankAccountConfirm", text: "The two account numbers don't match. Type it again." }); return; }
     // a masked field left empty isn't sent (its value stays as it is)
     const changes = Object.fromEntries(Object.entries(values).filter(([k, v]) => !(fields.find((f) => f.key === k).masked && v === "")));
     const r = mode === "request" ? requestChange(me, changes) : saveFields(me, userId, changes);
@@ -130,16 +149,23 @@ function EditForm({ userId, fields, mode, onClose }) {
           const err = error?.field === f.key ? error.text : null;
           const id = `pf-${f.key}`;
           if (f.kind === "list") return <RowsEditor key={f.key} field={f} rows={values[f.key]} error={err} onChange={(rows) => { setValues({ ...values, [f.key]: rows }); setError(null); }} />;
-          const hint = f.masked ? "Leave empty to keep the one on file." : f.hint ?? undefined;
+          const hint = f.masked ? `${f.hint ? `${f.hint} ` : ""}Leave empty to keep the one on file.` : f.hint ?? undefined;   // F2: the field's own help stays
           return (
             <Field key={f.key} id={id} label={f.label} error={err} hint={hint} full={f.kind === "textarea"}>
               {f.kind === "textarea"
                 ? <TextArea id={id} rows={3} value={values[f.key]} error={err} hint={hint} onChange={(e) => { setValues({ ...values, [f.key]: e.target.value }); setError(null); }} />
                 : <Input id={id} type={f.kind === "date" ? "date" : f.kind === "email" ? "email" : f.kind === "tel" ? "tel" : "text"} value={values[f.key]} error={err} hint={hint} autoComplete="off"
-                  onChange={(e) => { setValues({ ...values, [f.key]: e.target.value }); setError(null); }} />}
+                  inputMode={NUMERIC.has(f.key) ? "numeric" : undefined} onChange={(e) => { setValues(typed(values, f.key, e.target.value)); setError(null); }} />}
             </Field>
           );
-        })}
+        }).flatMap((node, i) => (fields[i].key !== "bankAccount" ? [node] : [node, (() => {
+          const err = error?.field === "bankAccountConfirm" ? error.text : null;
+          return (
+            <Field key="bankAccountConfirm" id="pf-bankAccount-confirm" label="Confirm bank account" error={err} hint="Type the account number again.">
+              <Input id="pf-bankAccount-confirm" type="text" inputMode="numeric" autoComplete="off" value={confirmAccount} error={err} hint="Type the account number again." onChange={(e) => { setConfirmAccount(e.target.value); setError(null); }} onPaste={(e) => e.preventDefault()} />
+            </Field>
+          );
+        })()]))}
       </div>
       <div className="ds-form-actions__buttons">
         <button type="button" className="ds-btn" onClick={onClose}>Cancel</button>
@@ -152,8 +178,21 @@ function EditForm({ userId, fields, mode, onClose }) {
 function Section({ userId, section, relation }) {
   const canForm = useCan("users:edit");
   const [mode, setMode] = useState(null);   // null | "direct" | "request"
+  const [focus, setFocus] = useState(null);   // F2: the field Add opened the form at
   const direct = section.fields.filter((f) => f.edit === "direct" && f.kind !== "photo");
   const request = section.fields.filter((f) => f.edit === "request");
+  // F2: filled fields first; the empty ones under "Not added (N)", collapsed, each with Add for whoever may fill it
+  const filled = section.fields.filter((f) => !empty(f.value));
+  const missing = section.fields.filter((f) => empty(f.value));
+  const open = (m, key) => { setFocus(key); setMode(m); };
+  const add = (f) => {
+    const label = `Add ${f.label.toLowerCase()}`;
+    if (direct.some((d) => d.key === f.key)) return <button type="button" className="ds-btn ds-btn--ghost ds-btn--sm" data-add={f.key} aria-label={label} onClick={() => open("direct", f.key)}>Add</button>;
+    if (request.some((d) => d.key === f.key)) return <button type="button" className="ds-btn ds-btn--ghost ds-btn--sm" data-add={f.key} aria-label={`Ask to add ${f.label.toLowerCase()}`} onClick={() => open("request", f.key)}>Add</button>;
+    if (formEdit) return <Link className="ds-btn ds-btn--ghost ds-btn--sm" data-add={f.key} aria-label={label} to={pageUrl(`users/user-form.html?id=${encodeURIComponent(userId)}&section=${section.key}`)}>Add</Link>;
+    return null;
+  };
+  const row = (f) => <div key={f.key} data-kv={f.label} data-field={f.key} className={f.kind === "list" ? "pf-kv__wide" : undefined}><dt>{f.label}</dt><dd><Value userId={userId} field={f} /></dd></div>;
   const formEdit = canForm && relation === "people" && ["personal", "contact", "employment", "access"].includes(section.key);
   const actions = mode ? null : (
     <div className="ds-form-actions__buttons">
@@ -164,8 +203,20 @@ function Section({ userId, section, relation }) {
   );
   return (
     <Card id={`profile-${section.key}`} title={section.title} actions={actions} className="pf-section">
-      {mode ? <EditForm userId={userId} fields={mode === "request" ? request : direct} mode={mode} onClose={() => setMode(null)} />
-        : <dl className="ds-kv pf-kv">{section.fields.map((f) => <div key={f.key} data-kv={f.label} data-field={f.key} className={f.kind === "list" ? "pf-kv__wide" : undefined}><dt>{f.label}</dt><dd><Value userId={userId} field={f} /></dd></div>)}</dl>}
+      {mode ? <EditForm userId={userId} fields={mode === "request" ? request : direct} mode={mode} focus={focus} onClose={() => { setMode(null); setFocus(null); }} />
+        : (
+          <>
+            {filled.length > 0 ? <dl className="ds-kv pf-kv">{filled.map(row)}</dl> : <p className="ds-hint pf-none">Nothing added yet.</p>}
+            {missing.length > 0 && (
+              <details className="pf-missing" data-missing={section.key}>
+                <summary>{`Not added (${missing.length})`}</summary>
+                <ul className="pf-missing__list">
+                  {missing.map((f) => <li key={f.key} data-field={f.key} data-empty=""><span>{f.label}</span>{add(f)}</li>)}
+                </ul>
+              </details>
+            )}
+          </>
+        )}
     </Card>
   );
 }

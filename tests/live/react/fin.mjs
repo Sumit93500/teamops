@@ -32,12 +32,17 @@ const ROLES = Object.keys(WHO);
 const UA = "Mozilla/5.0 (Linux; Android 14; Pixel 6a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 const SIZES = { 412: { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2.625, isMobile: true, hasTouch: true, userAgent: UA }, 1280: { viewport: { width: 1280, height: 900 } } };
 const browser = await chromium.launch({ channel: "msedge", headless: true, args: ["--disable-gpu", "--disable-partial-raster"] });
+// F2 (the brief, item 5): the app no longer draws a control with nothing behind it; the old pages' ones ([data-not-implemented])
+// are hidden as they appear (in every context: the app has none), so the rest compares as before.
+const F2_PAST = () => { const sweep = () => document.querySelectorAll("[data-not-implemented]:not([data-f2-past])").forEach((e) => { e.dataset.f2Past = ""; e.hidden = true; e.style.setProperty("display", "none", "important"); });
+  new MutationObserver(sweep).observe(document, { childList: true, subtree: true }); };
 let passed = 0, failed = 0;
 const check = (n, label, cond, detail = "") => { cond ? passed++ : failed++; console.log(`${cond ? "PASS" : "FAIL"}  ${String(n).padEnd(16)} ${label}${detail !== "" ? `  -> ${String(detail).slice(0, 500)}` : ""}`); };
 const j = JSON.stringify;
 
 async function open(base, who, page, { width = 1280, theme = "light" } = {}) {
   const ctx = await browser.newContext({ ...SIZES[width], timezoneId: "Asia/Kolkata" });
+  await ctx.addInitScript(F2_PAST);
   await useLocalFonts(ctx);
   await ctx.clock.setFixedTime(new Date(process.env.CLOCK ?? "2026-09-28T10:00:00+05:30"));
   await ctx.addInitScript(([w, th]) => {
@@ -78,7 +83,15 @@ function where(x, y) {
   let i = 0; while (i < x.length && x[i] === y[i]) i++;
   return `at ${i}: old …${x.slice(Math.max(0, i - 80), i + 220)}… new …${y.slice(Math.max(0, i - 80), i + 220)}…`;
 }
-function compare(n, label, a, b) {
+// F2 (the brief, items 4 and 5): on the old side, the Tax page's demo sentences read as the app's words now, and a counter with
+// nothing filtered ("Showing 9 of 9 employees") as the one counting rule says it ("9 employees"; app/src/data/counts.js, f2.mjs O)
+const f2Old = (v) => (typeof v === "string" ? v
+  .replace("Only the new regime has tax rules in this demo, and choosing a regime isn't built yet.", "Under the old rules only the new regime has tax rates; from the statutory rules month each person chooses theirs.")
+  .replace(/Tax declarations Not built yet/g, "Tax declarations Before the statutory rules")
+  .replace(/Showing (\d+) of \1 (employees|people|requests)/g, "$1 $2")
+  : Array.isArray(v) ? v.map(f2Old) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, f2Old(x)])) : v);
+function compare(n, label, a0, b) {
+  const a = f2Old(a0);
   if (!a || !b) { check(n, label, false, `old ${j(a)?.slice(0, 100)} new ${j(b)?.slice(0, 100)}`); return; }
   const diff = Object.keys(a).filter((k) => j(a[k]) !== j(b[k]));
   check(n, label, diff.length === 0, diff.length ? diff.map((k) => `${k}: ${where(j(a[k]), j(b[k]))}`).join(" ; ") : `${a.text.length} chars, ${a.controls.length} controls, ${a.tables.map((x) => x.length).join("+") || 0} rows`);
@@ -119,7 +132,7 @@ async function pages(letter, page, rolesFn) {
 //   E  expenses, as each role: as opened; each tab, search, category, no matches; Export (Pending and Paid, byte for byte);
 //      Approve the first decidable claim and Reject the next; Pay approved claims (the question, the toasts, the page)
 const settle = (t, ms = 250) => t.waitForTimeout(ms);
-const same = (n, label, a, b) => { const bad = a.map((v, i) => j(v) === j(b[i])).indexOf(false); check(n, label, bad === -1 && a.length === b.length, bad === -1 ? `${a.length} steps` : `step ${bad}: ${where(j(a[bad]), j(b[bad]))}`); };
+const same = (n, label, a0, b) => { const a = f2Old(a0); const bad = a.map((v, i) => j(v) === j(b[i])).indexOf(false); check(n, label, bad === -1 && a.length === b.length, bad === -1 ? `${a.length} steps` : `step ${bad}: ${where(j(a[bad]), j(b[bad]))}`); };
 const files = async (t, n = 1) => {
   const got = []; t.on("download", async (dl) => got.push([dl.suggestedFilename(), fs.readFileSync(await dl.path(), "utf8")]));
   const exp = await t.$("main button[data-export]:visible"); if (!exp) return "no Export";
@@ -253,8 +266,10 @@ async function phoneCards(letter, list) {
     await o.t.waitForTimeout(700);
     const cards = async (t) => { await stripP4a(t); return t.evaluate(() => [...document.querySelectorAll("main table")].map((tb) => ({ cards: tb.hasAttribute("data-cards"),
       rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`)) }))); };
-    const [a, b] = [await cards(o.t), await cards(n.t)];
-    check(`${letter}.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page} at 412: the same cards`, j(a) === j(b), j(a) === j(b) ? `${a.length} tables, ${a.map((x) => x.rows.length).join("+")} rows` : `old ${j(a).slice(0, 400)} new ${j(b).slice(0, 400)}`);
+    let [a, b] = [await cards(o.t), await cards(n.t)];
+    // F2: the Tax page's Actions cell held only Challan (not built, no longer drawn), so on a phone the empty cell is hidden
+    if (page.endsWith("tax-deductions.html")) a = JSON.parse(j(a).replaceAll('"Actions|actions||flex"', '"Actions|actions||none"'));
+    check(`${letter}.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page} at 412: the same cards`, j(a) === j(b), j(a) === j(b) ? `${a.length} tables, ${a.map((x) => x.rows.length).join("+")} rows` : where(j(a), j(b)));
     await o.ctx.close(); await n.ctx.close();
   }
 }

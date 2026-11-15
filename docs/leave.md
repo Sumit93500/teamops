@@ -85,3 +85,7 @@ With comp-off on (off by default; the Shifts page's settings), approved overtime
 What the sample shows today (6 Oct 2026): Meera Joshi, under a year, took 9 earned days but has 7 under the new policy: 2 days would be loss of pay. Everyone over a year has accrued 9 earned days by then (about 12 a year, against today's flat 10).
 
 Tests: `tests/live/leavebands.mjs` (3 time zones; 45 mutants, all caught).
+
+## F2 (2026-11-15): new joiners
+
+People created in the app (`isAppCreated`: not in the seed) are under the leave policy from their first day, even before the policy's start date: balances by tenure band from the joining date, the yearly amount pro-rated by month (a month counts when the person is employed on its 15th), earned leave per 20 days worked and usable 6 months after joining, never a full-year grant and no inherited history. The seeded people keep their existing balances. Checks: `tests/live/employment.mjs` J and L.

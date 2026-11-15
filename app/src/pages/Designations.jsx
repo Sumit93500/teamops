@@ -56,7 +56,7 @@ export default function Designations() {
           <Link to={pageUrl("access/roles-list.html")} className="btn" {...perm("roles:manage")}>Manage roles</Link>
         </div>
       </div>
-      <div className="alert alert--info mb-4">The job titles, their default roles and who holds them are the app's own. Adding or editing a designation isn't built yet.</div>
+      <div className="alert alert--info mb-4">The job titles, their default roles and who holds them are the app's own; they're set up with the company and can't be edited here.</div>
       <div className="grid grid-main-aside">
         <section className="card">
           <div className="table__toolbar">

@@ -62,7 +62,7 @@ const errs = [];
 const NOW = "2026-11-16T10:00:00+05:30";
 const DEMO = "Northwind@2026";
 const INVALID = "That email and password don't match. Check them and try again.";
-const LOCKED = "Too many attempts. Try again in 15 minutes, or ask an Admin to unlock the account.";
+const LOCKED_RE = /^Too many attempts\. Try again after \d\d:\d\d, or ask your administrator to unlock your account\.$/;   // F2: the words carry the time
 const RESET_SENT = "If an account uses that email, a link to reset its password is on its way. The link works once, for 60 minutes.";
 const secrets = new Set();
 
@@ -132,7 +132,7 @@ if (ONLY.includes("L")) {
   for (let i = 0; i < 5; i++) await signIn(t, "kabir.shah@northwind.com", `nope-${i}`);
   const locked = await text(t, "#auth-message");
   await signIn(t, "kabir.shah@northwind.com", DEMO);
-  check("L6", "5 wrong tries lock; then even the right password is refused with the same words", locked === LOCKED && (await text(t, "#auth-message")) === LOCKED && path_(t).endsWith("auth/login.html"), locked);
+  check("L6", "5 wrong tries lock; then even the right password is refused with the same words", LOCKED_RE.test(locked ?? "") && (await text(t, "#auth-message")) === locked && path_(t).endsWith("auth/login.html"), locked);
   await n.ctx.clock.setFixedTime(new Date("2026-11-16T10:16:00+05:30"));
   await signIn(t, "kabir.shah@northwind.com", DEMO);
   check("L7", "16 minutes later the lock is over: Kabir signs in", path_(t).endsWith("dashboard/finance.html"), path_(t));
@@ -348,7 +348,8 @@ if (ONLY.includes("P")) {
   check("P3", "a row with a missing field is refused at the list; complete, it saves: the new phone and two contacts", /row 2: enter the relation/.test(rowErr ?? "") && (await text(t, '[data-field="phone"] dd')) === "+91 90000 11111" && (await t.locator('[data-list="emergencyContacts"] tbody tr').count()) === 2, rowErr);
   check("P4", "no Edit for the bank on my own profile: Ask for a change", (await t.$("#edit-pay")) === null && (await t.$("#ask-pay")) !== null);
   await t.click("#ask-pay"); await settle(t, 200);
-  await t.fill("#pf-bankAccount", "60200345678912"); await t.click('#profile-pay button[type="submit"]'); await settle(t, 400);
+  await t.fill("#pf-bankAccount", "60200345678912"); await t.fill("#pf-bankAccount-confirm", "60200345678912");   // F2: typed twice
+  await t.click('#profile-pay button[type="submit"]'); await settle(t, 400);
   check("P5", "Ask for the change: waiting, shown masked", /Bank account: •••• •••• 8912/.test(await text(t, "#profile-requests") ?? "") && /Waiting/.test(await text(t, "#profile-requests")));
   const htmlSelf = await t.content();
   check("P6", "the new number isn't in my page either (masked)", !htmlSelf.includes("60200345678912"));
@@ -378,7 +379,7 @@ if (ONLY.includes("M")) {
   console.log("\n--- M. My account pages ---");
   const n = await open("emp", "account/my-profile.html");
   const t = n.t;
-  for (const page of ["my-profile", "change-password", "sessions", "notifications"]) {
+  for (const page of ["my-profile", "change-password"]) {   // F2: Sessions and Notifications are placeholder pages (rebuilt, f2.mjs P)
     await t.goto(`${N}/pages/account/${page}.html`); await settle(t, 500);
     const tab = await t.evaluate(() => [...document.querySelectorAll(".acct-tabs a")].map((a) => a.textContent));
     check(`M1.${page}`, `${page}: the account tabs include Appearance`, tab.includes("Appearance"), j(tab));

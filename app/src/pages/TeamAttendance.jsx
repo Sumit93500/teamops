@@ -53,7 +53,7 @@ const PAGE_SIZE = 10;
 const WEEK = {
   present: ["p", "P", "present"], late: ["l", "L", "late"], "half-day": ["hd", "HD", "half day"], absent: ["a", "A", "absent"], "on-leave": ["lv", "LV", "on leave"],
   holiday: ["hol", "HOL", "holiday"], weekend: ["nd", "W", "weekend"], "not-yet": ["ny", "NY", "not in yet"], "no-data": ["nd", "ND", "no data"],
-  "not-joined": ["nd", "NJ", "before joining"], left: ["nd", "AL", "after leaving"],
+  "not-joined": ["nd", "NJ", "not yet joined"], left: ["nd", "AL", "after leaving"],
   "short-leave": ["hd", "SL", "short leave"], "weekly-off": ["nd", "WO", "weekly off"],   // SH1
 };
 const weekPart = (day) => WEEK[day.status] ?? ["nd", "?", day.status];

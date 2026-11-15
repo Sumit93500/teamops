@@ -70,7 +70,7 @@ for (const width of [1280, 412]) for (const theme of ["light", "dark"]) {
     shell: Boolean(document.querySelector(".sidebar .nav__item")), scroll: document.documentElement.scrollWidth <= innerWidth, cards: document.querySelector(".table").hasAttribute("data-cards"),
   }));
   const okG = g.stats === 4 && g.cols === 14 && g.readoutShown && g.bars === 3 && g.rows === 5 && /^Showing 1 to 5 of 10$/.test(g.pager) && g.sortable === 3 && g.search && g.exp && g.tabs === 3
-    && g.badges === 5 && g.person === "Arjun Kapoor" && g.steps === 3 && g.empty[0] === "No data in this range." && g.notBuilt >= 6 && g.shell && g.scroll && g.cards === (width === 412);
+    && g.badges === 5 && g.person === "Arjun Kapoor" && g.steps === 3 && g.empty[0] === "No data in this range." && g.notBuilt === 0 && g.shell && g.scroll && g.cards === (width === 412);
   check(`G.${tag}`, `everything drawn at ${width} ${theme}`, okG, j(g));
 
   // K: the chart
@@ -147,9 +147,9 @@ for (const width of [1280, 412]) for (const theme of ["light", "dark"]) {
   // B: tabs, toasts
   await t.click(".tabs__tab:nth-child(2)"); await t.waitForTimeout(100);
   const tabs = await t.evaluate(() => [...document.querySelectorAll(".tab-panel")].map((p) => !p.hidden));
-  await t.click("button[data-not-implemented='Bulk upload']"); await t.click("button:has-text('Success toast')"); await t.waitForTimeout(150);
+  await t.click("button:has-text('Success toast')"); await t.waitForTimeout(150);   // F2: Bulk upload (not built) isn't drawn any more
   const toasts = await t.evaluate(() => [...document.querySelectorAll(".toast")].map((e) => e.className + " | " + e.querySelector(".toast__text").textContent));
-  check(`B.${tag}`, "tabs switch; not-built and success toasts", j(tabs) === j([false, true, false]) && toasts.includes("toast toast--info | Bulk upload isn't available in this demo.") && toasts.includes("toast toast--success | Saved."), j([tabs, toasts]));
+  check(`B.${tag}`, "tabs switch; the success toast (F2: no not-built button)", j(tabs) === j([false, true, false]) && (await t.$("[data-not-implemented]")) === null && toasts.includes("toast toast--success | Saved."), j([tabs, toasts]));
   check(`E.${tag}`, "no page or console errors", !errs.length, j(errs));
 
   // N (D2a): the design foundation's components, drawn

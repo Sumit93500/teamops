@@ -1,7 +1,7 @@
 // The leave screens' shared pieces (P4b), built in the design system and read from the data layer (data/leave-policy.js,
 // data/pay-settings.js, data/employment.js). Nothing is worked out here. Every piece shows only from the leave policy's start
 // date (Settings: data/pay-settings.js leaveFrom); before it the leave pages are exactly what they were.
-//   leavePolicyOn()          whether the policy applies today
+//   leavePolicyOn(day?, userId?)  whether the policy applies (F2: always for a person created in the app)
 //   BAND_NAME                Intern / Under 1 year / Over 1 year
 //   bandChange(userId, day)  { date, to } the day the band changes (an employee under a year moves up on their anniversary)
 //   BandBadge                the band as a pill, with the next change in words
@@ -12,6 +12,7 @@ import { leavePolicyActive, leaveFrom } from "../../../assets/js/data/pay-settin
 import { compOffRule } from "../../../assets/js/data/shift-settings.js";   // SH1: comp-off in earned leave
 import { compOffFor } from "../../../assets/js/data/comp-off.js";
 import { employmentOf } from "../../../assets/js/data/employment.js";
+import { isAppCreated } from "../../../assets/js/data/employment-period.js";   // F2
 import { formatDay, formatDays, todayIso, monthName } from "../../../assets/js/ui/leave-view.js";
 import { useData } from "../data/hooks.js";
 import { Card, Pill } from "../components/Layout.jsx";
@@ -21,7 +22,8 @@ const TYPES = ["casual", "sick", "earned", "wfh", "unpaid"];
 const NAME = { casual: "Casual leave", sick: "Sick leave", earned: "Earned leave", wfh: "Work from home", unpaid: "Unpaid leave" };
 const days = (n) => formatDays(n);
 
-export const leavePolicyOn = (day = todayIso()) => leavePolicyActive(day);
+// F2: a person created in the app is under the policy from their first day (userId); the seeded people from its start date, as before
+export const leavePolicyOn = (day = todayIso(), userId = null) => leavePolicyActive(day) || isAppCreated(userId);
 
 export function bandChange(userId, day = todayIso()) {
   const e = employmentOf(userId);

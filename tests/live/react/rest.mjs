@@ -32,12 +32,17 @@ const ROLES = Object.keys(WHO);
 const UA = "Mozilla/5.0 (Linux; Android 14; Pixel 6a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 const SIZES = { 412: { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2.625, isMobile: true, hasTouch: true, userAgent: UA }, 1280: { viewport: { width: 1280, height: 900 } } };
 const browser = await chromium.launch({ channel: "msedge", headless: true, args: ["--disable-gpu", "--disable-partial-raster"] });
+// F2 (the brief, item 5): the app no longer draws a control with nothing behind it; the old pages' ones ([data-not-implemented])
+// are hidden as they appear (in every context: the app has none), so the rest compares as before.
+const F2_PAST = () => { const sweep = () => document.querySelectorAll("[data-not-implemented]:not([data-f2-past])").forEach((e) => { e.dataset.f2Past = ""; e.hidden = true; e.style.setProperty("display", "none", "important"); });
+  new MutationObserver(sweep).observe(document, { childList: true, subtree: true }); };
 let passed = 0, failed = 0;
 const check = (n, label, cond, detail = "") => { cond ? passed++ : failed++; console.log(`${cond ? "PASS" : "FAIL"}  ${String(n).padEnd(16)} ${label}${detail !== "" ? `  -> ${String(detail).slice(0, 500)}` : ""}`); };
 const j = JSON.stringify;
 
 async function open(base, who, page, { width = 1280, theme = "light" } = {}) {
   const ctx = await browser.newContext({ ...SIZES[width], timezoneId: "Asia/Kolkata" });
+  await ctx.addInitScript(F2_PAST);
   await useLocalFonts(ctx);
   await ctx.clock.setFixedTime(new Date(process.env.CLOCK ?? "2026-09-28T10:00:00+05:30"));
   await ctx.addInitScript(([w, th]) => {
@@ -83,6 +88,17 @@ function compare(n, label, a, b) {
   check(n, label, diff.length === 0, diff.length ? diff.map((k) => `${k}: ${where(j(a[k]), j(b[k]))}`).join(" ; ") : `${a.text.length} chars, ${a.controls.length} controls, ${a.tables.map((x) => x.length).join("+") || 0} rows`);
 }
 async function both(who, page) { return { o: await open(O, who, page), n: await open(N, who, page) }; }
+// F2 (the brief, item 5): a placeholder page's URL shows "This section is being rebuilt." (Rebuilding.jsx, shell/placeholders.js):
+// where the old site opens the page, the app shows that in place of the old sample (checked in full in f2.mjs P)
+const F2_PLACE = /^(inventory\/(my-assets|items|stock-movements|asset-assignment|vendors)|announcements\/announcements|recruitment\/(job-openings|candidates)|system\/(reports|audit-log|backup)|access\/(delegation|approval-workflows)|account\/(notifications|sessions))\.html/;
+async function rebuiltAll(letter, page) {
+  for (const who of ROLES) {
+    const x = await both(who, page);
+    const title = await x.n.t.evaluate(() => document.getElementById("rebuilding-title")?.textContent ?? null);
+    check(`${letter}.${who}.rebuilt`, `${who} on ${page}: where the old site opens it, the app says "This section is being rebuilt." (F2)`, x.o.at.endsWith(page) ? title === "This section is being rebuilt." : x.o.at === x.n.at, `${x.o.at} | ${x.n.at} | ${title}`);
+    await x.o.ctx.close(); await x.n.ctx.close();
+  }
+}
 async function ask(x, selector, yes) {
   x.msg = undefined;
   const handler = (dlg) => { x.msg = dlg.message(); yes ? dlg.accept() : dlg.dismiss(); };
@@ -106,6 +122,7 @@ const withoutL1 = (t) => t.evaluate((notice) => {
   const alert = document.querySelector(".settings .alert--info"); if (alert) alert.textContent = notice;
 }, L1_OLD_NOTICE);
 async function pages(letter, page, rolesFn) {
+  if (F2_PLACE.test(page)) return rebuiltAll(letter, page);   // F2
   for (const who of ROLES) {
     const x = await both(who, page);
     if (page === "system/settings.html" && x.n.at.endsWith(page)) await withoutL1(x.n.t);
@@ -132,7 +149,7 @@ async function pages(letter, page, rolesFn) {
 //      candidates, announcements (as opened; a placeholder's toast)
 const settle = (t, ms = 250) => t.waitForTimeout(ms);
 const same = (n, label, a, b) => { const bad = a.map((v, i) => j(v) === j(b[i])).indexOf(false); check(n, label, bad === -1 && a.length === b.length, bad === -1 ? `${a.length} steps` : `step ${bad}: ${where(j(a[bad]), j(b[bad]))}`); };
-const toastAfter = async (t, sel) => { const b = await t.$(sel); if (!b) return "none"; await b.click(); await settle(t, 300); return (await toasts(t)).at(-1) ?? "no toast"; };
+const toastAfter = async (t, sel) => { const b = await t.$(sel); if (!b || !(await b.isVisible())) return "none"; await b.click(); await settle(t, 300); return (await toasts(t)).at(-1) ?? "no toast"; };   // F2: "none" for a control drawn on neither side
 const firstPlaceholder = "main [data-not-implemented]:visible";
 const reload = async (t) => { await t.reload(); await t.waitForLoadState("load"); await settle(t, 400); };
 const errs = (t) => t.evaluate(() => [...document.querySelectorAll("main .form-error")].map((e) => [e.id, e.textContent, e.closest(".form-field")?.querySelector("input,textarea")?.id]));
@@ -187,7 +204,8 @@ if (ONLY.includes("S")) {
   console.log("--- S. System ---");
   // reports: its chart has the value readout at every width now (the chart ruling of 2026-11-10, ColumnChart), so the new
   // page's readout line is asserted, then set aside, and the rest compared with the old page; at 412 both have the line
-  for (const who of ROLES) {
+  if (F2_PLACE.test("system/reports.html")) await rebuiltAll("Sr", "system/reports.html");   // F2
+  else for (const who of ROLES) {
     const x = await both(who, "system/reports.html");
     if (x.o.at !== x.n.at || !x.n.at.endsWith("reports.html")) { check(`Sr.${who}`, `${who} on system/reports.html: lands where the old site does`, x.o.at === x.n.at, `${x.o.at} | ${x.n.at}`); }
     else {
@@ -203,7 +221,15 @@ if (ONLY.includes("S")) {
   }
   await sample("Sb", "system/backup.html");
   await searching("Sa", "system/audit-log.html", 'input[aria-label="Search the log"]', ["fail", "payroll", "zzz"]);
-  await pages("Ss", "system/settings.html", async (who, x) => {
+  // F2 (the brief, item 5): Settings keeps the company profile, payroll and appearance; its sample sections (company hours,
+  // security, modules) and its links to Backup and the Audit log are gone, so the old page's flow runs only with F2_OLD_SETTINGS
+  {
+    const n = await open(N, "admin", "system/settings.html");
+    const s = await n.t.evaluate(() => ({ security: Boolean(document.querySelector('#security, a[href="#security"]')), links: [...document.querySelectorAll("main a[href]")].map((a) => new URL(a.href).pathname).filter((p) => /backup|audit-log/.test(p)), sub: document.querySelector(".page-header__subtitle, .ds-page-header__subtitle")?.textContent }));
+    check("Ss.f2", "Settings: no sample sections, no links to Backup or the Audit log (F2)", !s.security && !s.links.length && /company profile, payroll and appearance/.test(s.sub ?? ""), j(s));
+    await n.ctx.close();
+  }
+  if (process.env.F2_OLD_SETTINGS) await pages("Ss", "system/settings.html", async (who, x) => {
     const flow = async (t) => {
       const out = [];
       await t.click('.settings__nav a[href="#security"]'); await settle(t, 600);
@@ -246,6 +272,7 @@ async function phoneCards(letter, list) {
     await o.t.waitForTimeout(700);
     const cards = (t) => t.evaluate(() => [...document.querySelectorAll("main table")].map((tb) => ({ cards: tb.hasAttribute("data-cards"),
       rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`)) })));
+    if (F2_PLACE.test(page)) { await o.ctx.close(); await n.ctx.close(); continue; }   // F2: a placeholder page (rebuilt; f2.mjs P)
     const [a, b] = [await cards(o.t), await cards(n.t)];
     check(`${letter}.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page} at 412: the same cards`, j(a) === j(b), j(a) === j(b) ? `${a.length} tables, ${a.map((x) => x.rows.length).join("+")} rows` : `old ${j(a).slice(0, 400)} new ${j(b).slice(0, 400)}`);
     await o.ctx.close(); await n.ctx.close();

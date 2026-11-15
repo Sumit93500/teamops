@@ -12,9 +12,41 @@
 .auth-row { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-3); flex-wrap: wrap; font-size: var(--ds-text-sm); }
 .auth-card .ds-note:focus-visible { outline: none; }   /* the message is read out (role alert / status); a ring on text isn't needed */
 .auth-links { display: flex; align-items: center; justify-content: center; gap: var(--ds-space-4); flex-wrap: wrap; font-size: var(--ds-text-sm); }
-.auth-demo { display: grid; gap: var(--ds-space-3); padding-top: var(--ds-space-5); border-top: 1px solid var(--ds-border); }
-.auth-demo__title { margin: 0; font-size: var(--ds-text-sm); font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+/* F2: the demo's accounts, a quiet section of its own under the card */
+.auth-stack { width: min(100%, 440px); display: grid; gap: var(--ds-space-4); }
+.auth-stack > .auth-card { width: 100%; }
+.auth-demo { display: grid; gap: var(--ds-space-2); padding: var(--ds-space-4) var(--ds-space-5); border: 1px dashed var(--ds-border-strong, var(--ds-border)); border-radius: var(--ds-radius-lg);
+  background: transparent; }
+.auth-demo .ds-hint { margin: 0; }
+.auth-demo__title { margin: 0; font-size: var(--ds-text-xs); font-weight: var(--ds-weight-semibold); color: var(--ds-text-2); text-transform: uppercase; letter-spacing: 0.04em; }
 .auth-demo__roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-2); }
+
+/* F2: two parts on a wide screen: the brand panel, then the card with the footer under it */
+.auth-split { display: grid; grid-template-columns: minmax(0, 1fr); }
+.auth-split__side { min-height: 100vh; display: flex; flex-direction: column; }
+.auth-brand { display: none; }
+@media (min-width: 960px) {
+  .auth-split { grid-template-columns: minmax(360px, 5fr) minmax(0, 7fr); }
+  .auth-brand { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: var(--ds-space-8); padding: var(--ds-space-8) var(--ds-space-8) var(--ds-space-8);
+    background: var(--ds-primary-soft); border-right: 1px solid var(--ds-border); color: var(--ds-text); overflow: hidden; }
+  .auth-card__brand { display: none; }
+}
+.auth-brand__name { display: flex; align-items: center; gap: var(--ds-space-3); font-size: var(--ds-text-md); font-weight: var(--ds-weight-semibold); }
+.auth-brand__body { flex: 1; display: grid; align-content: center; gap: var(--ds-space-8); max-width: 440px; }
+.auth-brand__line { margin: 0; font-size: var(--ds-text-2xl); font-weight: var(--ds-weight-semibold); line-height: 1.25; color: var(--ds-text); }
+.auth-brand__points { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--ds-space-5); }
+.auth-brand__points li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: var(--ds-space-4); align-items: start; }
+.auth-brand__points li > span:last-child { display: grid; gap: var(--ds-space-1); font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.auth-brand__points strong { font-size: var(--ds-text-base); font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+.auth-brand__icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--ds-radius-md); background: var(--ds-surface-1); color: var(--ds-primary);
+  border: 1px solid var(--ds-border); }
+.auth-brand__icon .icon { width: 20px; height: 20px; }
+
+/* the sign-in button while it waits */
+.auth-spinner { display: inline-block; width: 14px; height: 14px; margin-right: var(--ds-space-2); vertical-align: -2px; border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%; animation: auth-spin 0.8s linear infinite; }
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .auth-spinner { animation: none; } }
 .auth-demo code { font-size: var(--ds-text-sm); padding: 0 var(--ds-space-1); border-radius: var(--ds-radius-sm); background: var(--ds-surface-2); color: var(--ds-text); }
 
 /* a password field with its Show / Hide button */
@@ -41,4 +73,5 @@
 @media (max-width: 560px) {
   .auth-page__main { padding: var(--ds-space-5) var(--ds-space-4); place-items: start center; }
   .auth-card { padding: var(--ds-space-6) var(--ds-space-5); border-radius: var(--ds-radius-lg); }
+  .auth-demo__roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

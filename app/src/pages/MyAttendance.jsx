@@ -64,7 +64,7 @@ function cellLook(day, today) {
     case "holiday": return ["holiday", day.holiday?.name ?? "Holiday"];
     case "weekend": return ["weekend", ""];
     case "no-data": return ["future", "No data"];
-    case "not-joined": return ["future", "Before joining"];
+    case "not-joined": return ["future", "Not yet joined"];
     case "left": return ["future", "After leaving"];
     default: return ["future", day.date === today ? "Not in yet" : ""];
   }

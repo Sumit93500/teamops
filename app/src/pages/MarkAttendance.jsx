@@ -21,6 +21,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getUser } from "../../../assets/js/data/store.js";
+import { employmentPeriod } from "../../../assets/js/data/employment-period.js";   // F2
 import { ATTENDANCE_RULES as R, dayFor, monthFor, nowMinutes, toMinutes, checkInWindow } from "../../../assets/js/data/attendance-store.js";
 import { placesFor, judgePlace, checkInAt, checkOutAt, ACCURACY_LIMIT_M } from "../../../assets/js/data/locations-store.js";
 import { peekDevice, devicesFor, deviceToken, sharedWith, MAX_DEVICES } from "../../../assets/js/data/devices-store.js";
@@ -61,6 +62,13 @@ const m = (n) => `${Number(n).toLocaleString("en-IN")} m`;
 const dist = (n) => (n < 1000 ? m(Math.round(n)) : `${(n / 1000).toLocaleString("en-IN", { maximumFractionDigits: 1 })} km`);
 const isHome = (place) => place === "homePermanent" || place === "homeTemporary";
 
+// F2: "Joins on 1 Dec 2026" for a future joiner (the joining date, read through data/employment-period.js)
+function joinsText(user, bare = false) {
+  const from = employmentPeriod(user).from;
+  const words = from ? `${Number(from.slice(8))} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][Number(from.slice(5, 7)) - 1]} ${from.slice(0, 4)}` : user.dateOfJoining;
+  return bare ? words : from ? `Joins on ${words}` : "Not yet joined";
+}
+
 // Today's status: the pill, which button works, and the line under them (mark-attendance.js renderStatus, same words).
 function statusOf(day, user) {
   if (!day) return { pill: ["danger", "Account inactive"], why: user ? "Your account is inactive, so attendance can't be recorded." : "Your employee record wasn't found, so attendance can't be recorded." };
@@ -69,7 +77,7 @@ function statusOf(day, user) {
   if (day.status === "on-leave") return { pill: ["info", "On leave today"], why: `You're on approved ${day.leave ? typeLabel(day.leave.type).toLowerCase() : "leave"} today, so there's nothing to check in for.` };
   if (day.status === "weekend") return { pill: ["", "Weekend"], why: "No attendance is needed on weekends." };
   if (day.status === "holiday") return { pill: ["", `Holiday: ${day.holiday.name}`], why: "No attendance is needed on holidays." };
-  if (day.status === "not-joined") return { pill: ["", "Not joined yet"], why: `Attendance starts on your joining date, ${user.dateOfJoining}.` };
+  if (day.status === "not-joined") return { pill: ["", joinsText(user)], why: `Attendance starts on your joining date, ${joinsText(user, true)}.` };
   if (day.status === "absent") return { pill: ["danger", "Not checked in, the shift has ended"], why: `Check-in closed at ${twelveHour(checkInWindow(day).closes)}. If you were working today, use Request fix on My attendance.` };
   if (nowMinutes() < checkInWindow(day).opens) return { pill: ["warning", "Not checked in yet"], why: `Check-in opens at ${twelveHour(checkInWindow(day).opens)}.` };
   return { pill: ["warning", "Not checked in yet"], canIn: true, why: "" };
@@ -85,7 +93,7 @@ function shiftStatusOf(ps, user) {
   if (day.status === "weekly-off") return { pill: ["", "Weekly off"], why: ps.message };
   if (day.status === "on-leave") return { pill: ["info", "On leave today"], why: `You're on approved ${day.leave ? typeLabel(day.leave.type).toLowerCase() : "leave"} today, so there's nothing to check in for.` };
   if (day.status === "holiday") return { pill: ["", `Holiday: ${day.holiday?.name ?? ""}`], why: "No attendance is needed on holidays." };
-  if (day.status === "not-joined") return { pill: ["", "Not joined yet"], why: `Attendance starts on your joining date, ${user.dateOfJoining}.` };
+  if (day.status === "not-joined") return { pill: ["", joinsText(user)], why: `Attendance starts on your joining date, ${joinsText(user, true)}.` };
   if (day.status === "absent") return { pill: ["danger", "Not checked in, the shift has ended"], why: `${ps.message} If you were working, use Request fix on My attendance.` };
   return { pill: ["warning", "Not checked in yet"], why: ps.message };
 }

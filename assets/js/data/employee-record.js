@@ -16,6 +16,7 @@ import { load, save, remove } from "../core/storage.js";
 import { getUser, getAllDepartments, reportingManagerName, updateUser, updateOwnContact, setPayDetails } from "./store.js";
 import { hasPermission, ROLES } from "../config/roles.js";
 import { FIELDS, FIELD, PROFILE_SECTIONS, RULES } from "../config/employee-fields.js";
+import { bankFromIfsc } from "../config/ifsc-banks.js";   // F2
 import { managerOf } from "./reporting.js";
 import { approvalChainText } from "./leave-store.js";
 import { salaryFor } from "./payroll-store.js";
@@ -164,6 +165,22 @@ function historyText(field, value) {
   return field.sensitive ? maskValue(field, value) : String(value);
 }
 
+// F2: bank details hang together. Whenever any of them is entered (account, bank name, branch, holder) the IFSC is needed; and the
+// bank name fills in from the IFSC's first four letters when it isn't given (or still says the bank the old IFSC named).
+const BANK_KEYS = ["bankAccount", "bankName", "branch", "accountHolder"];
+function bankTogether(user, rec, cleaned, editable) {
+  const same = (k) => JSON.stringify(cleaned[k] ?? "") === JSON.stringify(rawValue(user, rec, FIELD[k]) ?? "");
+  if (![...BANK_KEYS, "ifsc"].some((k) => k in cleaned && !same(k))) return null;   // only when bank details change
+  const after = (k) => (k in cleaned ? cleaned[k] : rawValue(user, rec, FIELD[k]));
+  if (BANK_KEYS.some((k) => String(after(k) ?? "").trim()) && !String(after("ifsc") ?? "").trim()) return fail("Enter the IFSC: it's needed whenever bank details are entered.", "ifsc");
+  if ("ifsc" in cleaned && cleaned.ifsc && editable("bankName")) {
+    const named = bankFromIfsc(cleaned.ifsc), was = rawValue(user, rec, FIELD.bankName);
+    const given = "bankName" in cleaned && cleaned.bankName && cleaned.bankName !== was;
+    if (named && !given && (!was || was === bankFromIfsc(rawValue(user, rec, FIELD.ifsc)))) cleaned.bankName = named;
+  }
+  return null;
+}
+
 // ---------- writes ----------
 // changes: { field: value }. Every field must be one the actor may change directly; anything else (an unknown key, a
 // role, a permission, someone else's own-only field, a field they may only ask for) refuses the whole save.
@@ -184,6 +201,8 @@ export function saveFields(actorId, userId, changes = {}, now = Date.now()) {
   }
   const box = read();
   const rec = box.people[userId] ?? {};
+  const bank = bankTogether(user, rec, cleaned, (k) => editMode(actorId, relation, FIELD[k]) === "direct");   // F2
+  if (bank) return bank;
   const before = Object.fromEntries(Object.keys(cleaned).map((k) => [k, rawValue(user, rec, FIELD[k])]));
   const changed = Object.keys(cleaned).filter((k) => JSON.stringify(before[k]) !== JSON.stringify(cleaned[k]));
   if (!changed.length) return { ok: true, changed: [] };
@@ -227,6 +246,8 @@ export function requestChange(actorId, changes = {}, now = Date.now()) {
     // only what changes is asked for: a field sent as it already is (or left empty, as it was) isn't part of the request
     if (JSON.stringify(c.value) !== JSON.stringify(rawValue(user, rec, field) ?? "")) cleaned[key] = c.value;
   }
+  const bank = bankTogether(user, rec, cleaned, (k) => editMode(actorId, "self", FIELD[k]) === "request");   // F2
+  if (bank) return bank;
   if (!Object.keys(cleaned).length) return fail("Nothing to change: every value is as it is on file.");
   const request = { id: `PC-${box.nextReq}`, userId: actorId, changes: cleaned, status: "pending", requestedAt: new Date(now).toISOString(), decidedBy: null, decidedAt: null, note: "" };
   box.requests.push(request);

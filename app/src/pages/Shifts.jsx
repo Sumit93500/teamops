@@ -12,6 +12,7 @@ import { assignmentReader, allAssignmentRows, allSwaps, allDepartmentDefaults, s
 import { shiftRulesFrom, setShiftRulesFrom, latePolicy, setLatePolicy, compOffRule, setCompOff } from "../../../assets/js/data/shift-settings.js";
 import { officeNow, toMin, DAY } from "../../../assets/js/data/shift-engine.js";
 import { useData, useSession, useCan } from "../data/hooks.js";
+import { countText } from "../data/counts.js";   // F2: one counter wording
 import { bump } from "../data/bus.js";
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
@@ -161,7 +162,7 @@ function Changes() {
     { key: "state", label: "Status", render: (r) => (r.cancelled ? <Pill>Cancelled</Pill> : r.end < today ? <Pill>Past</Pill> : <Pill tone="success">In force</Pill>) },
   ];
   return (
-    <Card id="shift-changes" title="Assignments and swaps" meta={`Showing ${shown.length} of ${rows.length}`}>
+    <Card id="shift-changes" title="Assignments and swaps" meta={countText(shown.length, rows.length, "change", { filtered: shown.length !== rows.length })}>
       <FilterBar label="Filter the changes" active={Boolean(kind || range.preset)} onClearAll={() => { setKind(""); setRange({ preset: "", from: "", to: "" }); }}>
         <DateRange value={range} onChange={setRange} today={today} />
         <FilterSelect label="Change" value={kind} onChange={setKind} allLabel="All changes" options={[{ value: "assignment", label: "Assignments" }, { value: "swap", label: "Date swaps" }]} />
@@ -279,7 +280,7 @@ function Content() {
         <FilterSelect label="Status" value={status} onChange={setStatus} allLabel="All shifts" options={[{ value: "active", label: "Active" }, { value: "inactive", label: "Inactive" }]} />
         <FilterSearch label="Search" value={q} onChange={setQ} placeholder="Search shifts" />
       </FilterBar>
-      <Card id="shift-list" title="Shifts" meta={`Showing ${shown.length} of ${d.shifts.length}`}>
+      <Card id="shift-list" title="Shifts" meta={countText(shown.length, d.shifts.length, "shift", { filtered: shown.length !== d.shifts.length })}>
         {shown.length ? <Table bare pageSize={10} columns={ordered} rows={shown} rowKey={(s) => s.id} rowProps={(s) => ({ "data-shift": s.id })} />
           : <EmptyState title="No shifts match" text={status === "inactive" ? "No shift is inactive." : "Try another search."} />}
       </Card>

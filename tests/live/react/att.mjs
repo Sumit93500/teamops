@@ -36,12 +36,17 @@ const ROLES = Object.keys(WHO);
 const UA = "Mozilla/5.0 (Linux; Android 14; Pixel 6a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 const SIZES = { 412: { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2.625, isMobile: true, hasTouch: true, userAgent: UA }, 1280: { viewport: { width: 1280, height: 900 } } };
 const browser = await chromium.launch({ channel: "msedge", headless: true, args: ["--disable-gpu", "--disable-partial-raster"] });
+// F2 (the brief, item 5): the app no longer draws a control with nothing behind it; the old pages' ones ([data-not-implemented])
+// are hidden as they appear (in every context: the app has none), so the rest compares as before.
+const F2_PAST = () => { const sweep = () => document.querySelectorAll("[data-not-implemented]:not([data-f2-past])").forEach((e) => { e.dataset.f2Past = ""; e.hidden = true; e.style.setProperty("display", "none", "important"); });
+  new MutationObserver(sweep).observe(document, { childList: true, subtree: true }); };
 let passed = 0, failed = 0;
 const check = (n, label, cond, detail = "") => { cond ? passed++ : failed++; console.log(`${cond ? "PASS" : "FAIL"}  ${String(n).padEnd(16)} ${label}${detail !== "" ? `  -> ${String(detail).slice(0, 500)}` : ""}`); };
 const j = JSON.stringify;
 
 async function open(base, who, page, { width = 1280, theme = "light" } = {}) {
   const ctx = await browser.newContext({ ...SIZES[width], timezoneId: "Asia/Kolkata" });
+  await ctx.addInitScript(F2_PAST);
   await useLocalFonts(ctx);
   await ctx.clock.setFixedTime(new Date("2026-09-28T10:00:00+05:30"));
   await ctx.addInitScript(([w, th]) => {

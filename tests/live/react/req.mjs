@@ -32,12 +32,17 @@ const ROLES = Object.keys(WHO);
 const UA = "Mozilla/5.0 (Linux; Android 14; Pixel 6a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 const SIZES = { 412: { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2.625, isMobile: true, hasTouch: true, userAgent: UA }, 1280: { viewport: { width: 1280, height: 900 } } };
 const browser = await chromium.launch({ channel: "msedge", headless: true, args: ["--disable-gpu", "--disable-partial-raster"] });
+// F2 (the brief, item 5): the app no longer draws a control with nothing behind it; the old pages' ones ([data-not-implemented])
+// are hidden as they appear (in every context: the app has none), so the rest compares as before.
+const F2_PAST = () => { const sweep = () => document.querySelectorAll("[data-not-implemented]:not([data-f2-past])").forEach((e) => { e.dataset.f2Past = ""; e.hidden = true; e.style.setProperty("display", "none", "important"); });
+  new MutationObserver(sweep).observe(document, { childList: true, subtree: true }); };
 let passed = 0, failed = 0;
 const check = (n, label, cond, detail = "") => { cond ? passed++ : failed++; console.log(`${cond ? "PASS" : "FAIL"}  ${String(n).padEnd(16)} ${label}${detail !== "" ? `  -> ${String(detail).slice(0, 500)}` : ""}`); };
 const j = JSON.stringify;
 
 async function open(base, who, page, { width = 1280, theme = "light" } = {}) {
   const ctx = await browser.newContext({ ...SIZES[width], timezoneId: "Asia/Kolkata" });
+  await ctx.addInitScript(F2_PAST);
   await useLocalFonts(ctx);
   await ctx.clock.setFixedTime(new Date(process.env.CLOCK ?? "2026-09-28T10:00:00+05:30"));
   await ctx.addInitScript(([w, th]) => {
@@ -63,7 +68,7 @@ const read = (t) => t.evaluate(() => {
     // SH1 (the brief): the type filter gains "Overtime" and Who approves what gains "Overtime: Manager; HR or an Admin for people
     // without one" (the eighth kind, checked in sh1.mjs O); read without them too.
     text: tx(m.innerText).replace(" Asset Salary Location Profile Overtime ", " Asset Salary ").replace(" Overtime Manager; HR or an Admin for people without one", "").replace(" Asset Salary Location Profile ", " Asset Salary ").replace(" Asset Salary Location ", " Asset Salary ").replace(" Home location changes An Admin", "").replace(/(Rejected \d+) Location changes/, "$1"),
-    controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).filter((c) => !(c.tagName === "BUTTON" && c.getAttribute("role") === "tab" && tx(c.textContent) === "Location changes")).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.tagName === "SELECT" ? c.textContent.replace(/SalaryLocation(Profile)?(Overtime)?$/, "Salary") : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
+    controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).filter((c) => !(c.tagName === "BUTTON" && c.getAttribute("role") === "tab" && tx(c.textContent) === "Location changes")).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.tagName === "SELECT" ? c.textContent.replace(/SalaryLocation(Profile)?(Overtime)?(Sign-in)?$/, "Salary") : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
     tables: [...m.querySelectorAll("table")].map((tb) => [...tb.querySelectorAll("tbody tr")].filter(vis).map((r) => [...r.cells].map((c) => tx(c.innerText)))),
     hiddenIds: [...m.querySelectorAll("[id]")].filter((e) => e.hidden).map((e) => (/^reason-\d+$|^_r_\w*_$/.test(e.id) ? "reason" : e.id)).sort(),
     cal: [...m.querySelectorAll(".calendar__day")].map((c) => c.className.replace("calendar__day ", "")).join("|"),
@@ -75,10 +80,38 @@ function where(x, y) {
   let i = 0; while (i < x.length && x[i] === y[i]) i++;
   return `at ${i}: old …${x.slice(Math.max(0, i - 80), i + 220)}… new …${y.slice(Math.max(0, i - 80), i + 220)}…`;
 }
-function compare(n, label, a, b) {
+// F2 (the brief, items 4 and 5): the old inbox's sample requests (types Access, Purchase, System; nothing behind them) aren't shown
+// any more, nor the links to placeholder pages (Approval rules, Request an asset): read past on the old side. The inbox's free text
+// is left out on both sides (its tab counts include the samples); its rows, controls and the other pages' text still compare.
+// A counter with nothing filtered reads by the one rule ("Showing 0 of 0 pending requests" is "0 pending requests").
+const SAMPLE_TYPES = /^(Access|Purchase|System)$/;
+const EMPTY_ROW = /^Nothing (is waiting for you|here for these filters)\.$/;
+const emptyRows = (rows) => !rows.length || (rows.length === 1 && rows[0].length === 1 && EMPTY_ROW.test(rows[0][0]));
+const f2Req = (x, old) => {
+  if (!x || typeof x !== "object") return x;
+  if (Array.isArray(x)) {
+    const arr = x.map((v) => f2Req(v, old));
+    // a table's rows (arrays of cells): the old samples' rows read past
+    if (!(arr.length && arr.every((row) => Array.isArray(row) && row.every((c) => typeof c === "string")))) return arr;
+    const kept = old ? arr.filter((row) => !row.some((c) => SAMPLE_TYPES.test(c))) : arr;
+    return emptyRows(kept) ? [["(empty)"]] : kept;   // an empty table, shown empty or with its empty row
+  }
+  const o = { ...x };
+  if (typeof o.text === "string") {
+    if (/^Approvals Everything waiting/.test(o.text)) delete o.text;
+    else o.text = (old ? o.text.replace("Claim an expense Request an asset ", "Claim an expense ") : o.text).replace(/Showing (\d+) of \1 /g, "$1 ").replace(/\b1 requests\b/g, "1 request");
+  }
+  // the inbox's tab counts include the old samples: read as "Pending #" on both sides (the rows themselves still compare)
+  if (Array.isArray(o.controls)) o.controls = o.controls.map((c) => (c[0] === "BUTTON" && /^(Pending|Approved|Rejected) \d+$/.test(c[1]) ? [c[0], c[1].replace(/\d+$/, "#"), ...c.slice(2)] : c));
+  if (old && Array.isArray(o.controls)) o.controls = o.controls.filter((c) => !/Approval rules|Request an asset/.test(j(c)));
+  if (Array.isArray(o.tables)) o.tables = o.tables.map((rows) => (old ? rows.filter((row) => !row.some((c) => SAMPLE_TYPES.test(c))) : rows)).map((rows) => (emptyRows(rows) ? [["(empty)"]] : rows));
+  return o;
+};
+function compare(n, label, a0, b0) {
+  const a = f2Req(a0, true), b = f2Req(b0, false);
   if (!a || !b) { check(n, label, false, `old ${j(a)?.slice(0, 100)} new ${j(b)?.slice(0, 100)}`); return; }
   const diff = Object.keys(a).filter((k) => j(a[k]) !== j(b[k]));
-  check(n, label, diff.length === 0, diff.length ? diff.map((k) => `${k}: ${where(j(a[k]), j(b[k]))}`).join(" ; ") : `${a.text.length} chars, ${a.controls.length} controls, ${a.tables.map((x) => x.length).join("+") || 0} rows`);
+  check(n, label, diff.length === 0, diff.length ? diff.map((k) => `${k}: ${where(j(a[k]), j(b[k]))}`).join(" ; ") : `${(a.text ?? "").length} chars, ${a.controls.length} controls, ${a.tables.map((x) => x.length).join("+") || 0} rows`);
 }
 async function both(who, page) { return { o: await open(O, who, page), n: await open(N, who, page) }; }
 async function ask(x, selector, yes) {
@@ -114,7 +147,7 @@ async function pages(letter, page, rolesFn) {
 //   C  claim expense, as each role: as opened; an amount over the receipt limit (hint, chain); empty sent (the first error
 //      under its field); a whole claim sent: the toasts, the button, where it lands
 const settle = (t, ms = 250) => t.waitForTimeout(ms);
-const same = (n, label, a, b) => { const bad = a.map((v, i) => j(v) === j(b[i])).indexOf(false); check(n, label, bad === -1 && a.length === b.length, bad === -1 ? `${a.length} steps` : `step ${bad}: ${where(j(a[bad]), j(b[bad]))}`); };
+const same = (n, label, a0, b0) => { const a = f2Req(a0, true), b = f2Req(b0, false); const bad = a.map((v, i) => j(v) === j(b[i])).indexOf(false); check(n, label, bad === -1 && a.length === b.length, bad === -1 ? `${a.length} steps` : `step ${bad}: ${where(j(a[bad]), j(b[bad]))}`); };
 const modalState = (t) => t.evaluate(() => { const m = document.querySelector(".modal.is-open"); return m ? [m.querySelector(".modal__title")?.textContent, m.querySelector(".modal__desc")?.textContent, document.activeElement.id, [...m.querySelectorAll(".form-error")].map((e) => [e.id, e.textContent])] : null; });
 // The card as the old one drew it: round 13b's Reject / Approve (the footer's .btn-group) left out; K checks them.
 const cardState = (t) => t.evaluate(() => {
@@ -133,7 +166,7 @@ if (ONLY.includes("I")) {
     const steps = async (t) => {
       const out = [];
       for (const i of [1, 2, 0]) { await t.click(`.table__toolbar .tabs__tab >> nth=${i}`); await settle(t, 150); out.push(await read(t)); }
-      const types = await t.evaluate(() => [...document.querySelectorAll('select[aria-label="Filter by type"] option')].map((o) => o.value).filter((v) => v !== "location" && v !== "profile" && v !== "overtime"));   // SH1: Overtime (sh1.mjs); L2: Location is new (locs.mjs); E1: Profile (e1.mjs)
+      const types = await t.evaluate(() => [...document.querySelectorAll('select[aria-label="Filter by type"] option')].map((o) => o.value).filter((v) => v !== "location" && v !== "profile" && v !== "overtime" && v !== "sign-in"));   // SH1: Overtime (sh1.mjs); L2: Location is new (locs.mjs); E1: Profile (e1.mjs)
       for (const v of [...types.slice(1), ""]) { await t.selectOption('select[aria-label="Filter by type"]', v); await settle(t, 100); out.push((await read(t)).tables); }
       return out;
     };
@@ -277,7 +310,9 @@ async function phoneCards(letter, list) {
     await o.t.waitForTimeout(700);
     const cards = (t) => t.evaluate(() => [...document.querySelectorAll("main table")].map((tb) => ({ cards: tb.hasAttribute("data-cards"),
       rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`)) })));
-    const [a, b] = [await cards(o.t), await cards(n.t)];
+    // F2: the old inbox's sample requests add rows of the same shape: the inbox's rows are compared by their distinct part patterns
+    const f2Rows = (x) => (page.includes("approvals-inbox") ? x.map((tb) => ({ ...tb, rows: [...new Set(tb.rows.map((rw) => j(rw)))].map((s) => JSON.parse(s)) })) : x);
+    const [a, b] = [f2Rows(await cards(o.t)), f2Rows(await cards(n.t))];
     check(`${letter}.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page} at 412: the same cards`, j(a) === j(b), j(a) === j(b) ? `${a.length} tables, ${a.map((x) => x.rows.length).join("+")} rows` : `old ${j(a).slice(0, 400)} new ${j(b).slice(0, 400)}`);
     await o.ctx.close(); await n.ctx.close();
   }

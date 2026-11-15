@@ -26,6 +26,7 @@ import { useDecision, SALARY_FLOW, DecisionButtons } from "../components/Decisio
 import { Badge, badgeOf, PersonCell, NotBuilt, Reason } from "../components/Basics.jsx";
 import { rupees } from "../ui/payroll.jsx";
 import { useData, useCan, useSession } from "../data/hooks.js";
+import { countText } from "../data/counts.js";   // F2: one counter wording
 import { usesNewRules } from "../../../assets/js/data/pay-settings.js";
 import TemplateEditor from "../ui/templates.jsx";
 import { SalaryPlan } from "../ui/paycards.jsx";
@@ -240,7 +241,7 @@ export default function SalaryStructure() {
             </div>
           </div>
           <Table bare pager={false} oldExport exportName="employee-salaries" tbodyId="salary-rows" columns={salaryColumns} rows={shown} rowKey={(r) => r.user.id} rowProps={(r) => ({ "data-user-id": r.user.id })} empty="No employees match these filters." />
-          <div className="card__footer"><span className="card__meta" id="salary-rows-meta">{`Showing ${shown.length} of ${people(d.rows.length)}`}</span></div>
+          <div className="card__footer"><span className="card__meta" id="salary-rows-meta">{countText(shown.length, d.rows.length, "employee", { filtered: shown.length !== d.rows.length })}</span></div>
         </section>
       </div>
 

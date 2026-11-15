@@ -26,6 +26,7 @@ import { StatStrip, StatCard, Stepper, Badge, badgeOf, PersonCell, EmptyState, N
 import { KeepWhole, rupees, UnverifiedNote } from "../ui/payroll.jsx";
 import { Card } from "../components/Layout.jsx";
 import { useData, useCan } from "../data/hooks.js";
+import { countText } from "../data/counts.js";   // F2: one counter wording
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
 
@@ -118,7 +119,7 @@ function checks(run) {
 }
 function alertText(run, me, approveBlock) {
   const label = monthLabel(run.month);
-  if (run.status === "approved") return `${nameOf(run.approvedBy)} approved this run on ${dayOf(run.approvedAt)}. Its figures are final: the payslips for ${label} show them, and they can't be changed. Paying isn't built yet.`;
+  if (run.status === "approved") return `${nameOf(run.approvedBy)} approved this run on ${dayOf(run.approvedAt)}. Its figures are final: the payslips for ${label} show them, and they can't be changed. The salaries are paid outside OfficeOS for now.`;
   if (run.status === "prepared") {
     const preparer = nameOf(run.preparedBy);
     let lead;
@@ -211,7 +212,7 @@ function Run({ asked }) {
   const steps = [["Draft", "Worked out from the live records"],
     ["Prepared", run.status === "draft" ? "Not prepared yet" : `By ${nameOf(run.preparedBy)} on ${dayOf(run.preparedAt)}`],
     ["Approval", run.status === "approved" ? `By ${nameOf(run.approvedBy)} on ${dayOf(run.approvedAt)}` : approvers.join("; ") || "No one can approve it yet"],
-    ["Payment", "Not built yet"]].map(([t, detail], i) => ({ state: stepState(i + 1), title: t, detail }));
+    ["Payment", "Made outside OfficeOS for now"]].map(([t, detail], i) => ({ state: stepState(i + 1), title: t, detail }));
   const query = search.trim().toLowerCase();
   const shown = run.rows.filter((r) => (!status || r.status === status) && (!query || rowName(r).toLowerCase().includes(query)));
   const columns = [
@@ -300,7 +301,7 @@ function Run({ asked }) {
               </div>
             </div>
             <Table bare pager={false} tbodyId="run-rows" columns={columns} rows={shown} rowKey={(r) => r.userId} rowProps={(r) => ({ "data-user-id": r.userId })} empty="No employees match these filters." />
-            <div className="card__footer"><span className="card__meta" id="run-rows-meta">{`Showing ${shown.length} of ${people(run.rows.length)}`}</span></div>
+            <div className="card__footer"><span className="card__meta" id="run-rows-meta">{countText(shown.length, run.rows.length, "employee", { filtered: shown.length !== run.rows.length })}</span></div>
           </section>
           <aside className="stack">
             <section className="card">
@@ -326,7 +327,7 @@ function Run({ asked }) {
                   <div className="kv__row"><dt>Figures fixed on</dt><dd className={stored ? undefined : "text-muted"} id="run-fixed-on">{stored ? dayOf(run.preparedAt) : "Not fixed: worked out live"}</dd></div>
                   {newPay && <div className="kv__row"><dt>Figures</dt><dd id="run-rules-note">{final ? "Final: frozen when the run was approved. Later rule, template or declaration changes don't alter them." : "Draft, not final: worked out from the live records. Preparing stores them; approving freezes them."}</dd></div>}
                   <div className="kv__row"><dt>Pay date</dt><dd className="text-muted">Not set</dd></div>
-                  <div className="kv__row"><dt>Bank file</dt><dd className="text-muted">Not built yet</dd></div>
+                  <div className="kv__row"><dt>Bank file</dt><dd className="text-muted">Prepared outside OfficeOS for now</dd></div>
                 </dl>
               </div>
             </section>

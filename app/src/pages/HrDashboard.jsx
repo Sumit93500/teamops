@@ -32,6 +32,7 @@ import { StatStrip, StatCard } from "../components/Basics.jsx";
 import { BarChart, monthSpan } from "../components/charts/Charts.jsx";
 import { useDecision, DecisionButtons, LEAVE_FLOW, CORRECTION_FLOW } from "../components/Decision.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
+import { countText } from "../data/counts.js";   // F2: one counter wording
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
 import { stampsBy, flagText } from "../data/stamps.js";
@@ -70,7 +71,7 @@ function activityNodes(requests, today) {
       item.append(el("span", `activity__dot activity__dot--${decision.decision === "rejected" ? "danger" : "success"}`), text);
       return item;
     });
-  const statics = SAMPLE.activity.map((html) => { const t = document.createElement("template"); t.innerHTML = html; return t.content.firstElementChild; });
+  const statics = [].map((html) => { const t = document.createElement("template"); t.innerHTML = html; return t.content.firstElementChild; });
   return [...decided, ...statics];
 }
 function leaveRow(request) {
@@ -132,7 +133,6 @@ export default function HrDashboard() {
   const query = search.trim().toLowerCase();
   const rows = d.all.filter((r) => (!status || r.status === status) && (!query || nameOf(r.userId).toLowerCase().includes(query))).sort(newestSent);
   const shown = rows.slice(0, TABLE_ROWS);
-  const noun = `${status || query ? "matching " : ""}${rows.length === 1 ? "request" : "requests"}`;
 
   useEffect(() => { initExports(document.getElementById("main")); }, []);
   useEffect(() => { csvRows("hr-dashboard-leave-requests", () => rows.map(leaveRow)); });
@@ -151,15 +151,10 @@ export default function HrDashboard() {
             <Icon d={ICONS.mark} />
             Mark attendance
           </Link>
-          <Link className="btn btn--primary" to={pageUrl("recruitment/job-openings.html")} data-permission="recruitment:create" hidden={!canPost || undefined}>
-            <Icon d="M12 5v14M5 12h14" />
-            Post job opening
-          </Link>
         </div>
       </div>
       <div className="stack">
         <StatStrip label="Key numbers">
-          <StatCard id="positions" icon={ICONS.positions} tone={1} label="Open positions" value="9" note="Sample, not built yet" />
           <StatCard id="on-leave" icon={ICONS.onLeave} tone={2} label="On leave today" value={String(d.summary.onLeave)}
             note={d.summary.total ? `${percent(d.summary.onLeave, d.summary.total)} of ${d.summary.total} employees, ${d.summary.expected} expected at work` : "No active employees"} />
           <StatCard id="pending" icon={ICONS.pending} tone={3} label="Leave for you to decide" value={String(d.pendingLeave.length)}
@@ -210,14 +205,7 @@ export default function HrDashboard() {
           </section>
         </div>
 
-        <div className="grid grid-2">
-          <section className="card">
-            <div className="card__header">
-              <h3 className="card__title">Applicants by stage</h3>
-              <span className="card__meta">Sample, not built yet</span>
-            </div>
-            <div className="card__body" dangerouslySetInnerHTML={{ __html: SAMPLE.applicants }} />
-          </section>
+        <div className="stack">   {/* F2: the recruitment sample card is gone; Recent activity takes the row */}
           <section className="card">
             <div className="card__header">
               <h3 className="card__title">Recent activity</h3>
@@ -286,7 +274,7 @@ export default function HrDashboard() {
             </table>
           </div>
           <div className="card__footer">
-            <span className="card__meta" id="leave-rows-meta">{`Showing ${shown.length} of ${rows.length} ${noun}`}</span>
+            <span className="card__meta" id="leave-rows-meta">{countText(shown.length, rows.length, "request", { filtered: Boolean(status || query) })}</span>
             <Link className="btn btn--sm" to={pageUrl("leave/leave-approvals.html")}>View all</Link>
           </div>
         </section>

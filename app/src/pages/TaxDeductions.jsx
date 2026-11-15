@@ -146,13 +146,13 @@ export default function TaxDeductions() {
               </div>
               <div className="card__body">
                 <BarRows id="regime-bars" className={null} rows={[{ label: "New regime", value: String(onNew), percent: Math.round((onNew / top) * 100) }, { label: "Old regime", value: String(onOld), percent: Math.round((onOld / top) * 100) }]} empty={chart.empty} />
-                <p className="form-hint mt-2">From each person's salary record. Only the new regime has tax rules in this demo, and choosing a regime isn't built yet.</p>
+                <p className="form-hint mt-2">From each person's salary record. Under the old rules only the new regime has tax rates; from the statutory rules month each person chooses theirs.</p>
               </div>
             </section>
             <section className="card">
               <div className="card__header">
                 <h3 className="card__title">Tax declarations</h3>
-                <span className="card__meta">Not built yet</span>
+                <span className="card__meta">Before the statutory rules</span>
               </div>
               <div className="card__body">
                 <p className="form-hint">Tax declarations aren't collected yet, so everyone's TDS is worked out without any exemptions: the standard deduction only, on the sample slabs.</p>

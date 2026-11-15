@@ -21,6 +21,8 @@ import { load, save, remove } from "../core/storage.js";
 import { getUser, getAllUsers } from "./store.js";
 import { USERS } from "./users.js";
 import { DEMO } from "../config/demo.js";
+import { openUnlockRequest } from "./unlock-requests.js";   // F2: a lock opens an unlock request for the Admin
+import { officeNow, hhmm } from "./shift-engine.js";   // F2: "Try again after HH:MM" in office time
 import { hasPermission } from "../config/roles.js";
 import { logEvent } from "./audit-trail.js";
 import { queueMail } from "./mail-outbox.js";
@@ -46,7 +48,7 @@ export const COMMON_PASSWORDS = ["password", "password1", "password123", "passw0
 
 export const MESSAGES = {
   invalid: "That email and password don't match. Check them and try again.",
-  locked: `Too many attempts. Try again in ${LOCK_MINUTES} minutes, or ask an Admin to unlock the account.`,
+  locked: "Too many attempts. Try again later, or ask your administrator to unlock your account.",   // F2: lockedMessage() says until when
   disabled: "This account can't sign in. Ask an Admin.",
   inactive: "This account can't sign in any more. Ask HR.",
   noAccount: "That email and password don't match. Check them and try again.",
@@ -201,6 +203,9 @@ export async function createAccount(actorId, userId, now = Date.now()) {
 }
 
 // ---------- signing in ----------
+// F2: "Too many attempts. Try again after 10:45, or ask your administrator to unlock your account." (office time). The same words for
+// an email nobody has, so the answer never says who has an account.
+export const lockedMessage = (until) => `Too many attempts. Try again after ${hhmm(officeNow(until).minutes)}, or ask your administrator to unlock your account.`;
 function lockState(box, userId, email, now) {
   const slot = userId ? box.accounts[userId] : box.attempts[email];
   return slot && slot.lockedUntil && slot.lockedUntil > now ? slot.lockedUntil : null;
@@ -224,7 +229,8 @@ export async function signInWithPassword(email, password, now = Date.now()) {
   const key = String(email ?? "").trim().toLowerCase();
   const user = userByEmail(key);
   const box = read();
-  if (lockState(box, user?.id ?? null, key, now)) return fail(MESSAGES.locked, "locked");
+  const lockedUntil = lockState(box, user?.id ?? null, key, now);
+  if (lockedUntil) return fail(lockedMessage(lockedUntil), "locked");
   const account = user ? box.accounts[user.id] ?? null : null;
   const known = user && (account || seeded(user.id));
   const good = known ? await passwordMatches(account, password, user.id) : false;
@@ -234,8 +240,9 @@ export async function signInWithPassword(email, password, now = Date.now()) {
     if (locked && known) {
       logEvent({ userId: user.id, kind: "signin-failed", detail: `${LOCK_AFTER} failed sign-ins in a row.` }, now);
       logEvent({ userId: user.id, kind: "locked", detail: `Locked for ${LOCK_MINUTES} minutes.` }, now);
+      openUnlockRequest(user.id, now, box.accounts[user.id].lockedUntil, LOCK_AFTER);   // F2: once, at the lock (not per attempt)
     }
-    return fail(locked ? MESSAGES.locked : MESSAGES.invalid, locked ? "locked" : "invalid");
+    return fail(locked ? lockedMessage(lockState(box, known ? user.id : null, key, now)) : MESSAGES.invalid, locked ? "locked" : "invalid");
   }
   if (account?.status === "disabled") return fail(MESSAGES.disabled, "disabled");
   if (user.status === "inactive") return fail(MESSAGES.inactive, "inactive");

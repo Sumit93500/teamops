@@ -1,0 +1,6 @@
+/* F2: the neutral page a placeholder URL shows (pages/Rebuilding.jsx). Tokens only. */
+.rebuilding { display: grid; justify-items: center; gap: var(--ds-space-3); max-width: 520px; margin: var(--ds-space-8, 48px) auto; padding: var(--ds-space-6, 32px) var(--ds-space-5); text-align: center; background: var(--ds-surface-1); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-lg); }
+.rebuilding__icon { display: inline-grid; place-items: center; width: 48px; height: 48px; border-radius: var(--ds-radius-pill); background: var(--ds-primary-soft); color: var(--ds-primary); }
+.rebuilding__icon .icon { width: 24px; height: 24px; }
+.rebuilding__title { margin: 0; font-size: var(--ds-text-lg, 18px); font-weight: 650; color: var(--ds-text); }
+.rebuilding__text { margin: 0 0 var(--ds-space-2); color: var(--ds-text-2); font-size: var(--ds-text-base); }

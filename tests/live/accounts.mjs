@@ -147,13 +147,13 @@ let last = null;
 for (let i = 0; i < 4; i++) last = await C.signInWithPassword("arjun.kapoor@northwind.com", "wrong-guess-" + i, T0 + min(200));
 check("L1", "4 failures: still 'invalid', count 4", last.code === "invalid" && box().accounts[ARJUN].failedCount === 4);
 last = await C.signInWithPassword("arjun.kapoor@northwind.com", "wrong-guess-5", T0 + min(200));
-check("L2", "the 5th: locked, for 15 minutes", last.code === "locked" && last.error === C.MESSAGES.locked && C.accountOf(ARJUN, T0 + min(200)).status === "locked" && C.accountOf(ARJUN, T0 + min(200)).lockedUntil === T0 + min(215));
+check("L2", "the 5th: locked, for 15 minutes", last.code === "locked" && last.error === C.lockedMessage(T0 + min(215)) && /^Too many attempts\. Try again after \d\d:\d\d, or ask your administrator to unlock your account\.$/.test(last.error) && C.accountOf(ARJUN, T0 + min(200)).status === "locked" && C.accountOf(ARJUN, T0 + min(200)).lockedUntil === T0 + min(215));
 check("L3", "locked, even the right password is refused", (await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO_PW, T0 + min(214))).code === "locked");
 check("L4", "the lock and the burst are in the audit trail", events(ARJUN).includes("locked") && events(ARJUN).includes("signin-failed"));
 check("L5", "after 15 minutes the right password works again, and the count starts over", (await C.signInWithPassword("arjun.kapoor@northwind.com", DEMO_PW, T0 + min(215))).ok && box().accounts[ARJUN].failedCount === 0);
 const ghost = [];
 for (let i = 0; i < 5; i++) ghost.push(await C.signInWithPassword("nobody.here@northwind.com", "x" + i, T0 + min(220)));
-check("L6", "an unknown email locks the same way after 5 (no telling who has an account)", ghost.slice(0, 4).every((g) => g.code === "invalid") && ghost[4].code === "locked" && ghost[4].error === C.MESSAGES.locked);
+check("L6", "an unknown email locks the same way after 5 (no telling who has an account)", ghost.slice(0, 4).every((g) => g.code === "invalid") && ghost[4].code === "locked" && /^Too many attempts\. Try again after \d\d:\d\d, or ask your administrator to unlock your account\.$/.test(ghost[4].error));   // F2: the words carry the time
 for (let i = 0; i < 5; i++) await C.signInWithPassword("kabir.shah@northwind.com", "nope" + i, T0 + min(230));
 check("L7", "an Admin unlocks: Kabir signs in at once", C.unlockAccount(AARAV, KABIR, T0 + min(231)).ok && (await C.signInWithPassword("kabir.shah@northwind.com", DEMO_PW, T0 + min(231))).ok && events(KABIR).includes("unlocked"));
 for (let i = 0; i < 5; i++) await C.signInWithPassword("kabir.shah@northwind.com", "nope" + i, T0 + min(240));

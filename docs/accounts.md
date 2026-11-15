@@ -39,8 +39,19 @@ Every event (made, link used, password set or changed, reset asked for or issued
 - **Sessions on other devices:** there are no server sessions, so "sign out everywhere" and "sessions" stay samples; disabling ends a session only in this browser.
 - **Two-factor sign-in** and new-device emails.
 
+## Lockout requests (F2, 2026-11-15)
+
+**Files:** `assets/js/data/unlock-requests.js` (the stored requests), `assets/js/data/lockouts.js` (who sees and resolves them), the lock in `assets/js/data/credentials.js`.
+
+- When an account locks (the 5th failed sign-in in a row) one unlock request opens, once per lock (never per attempt), with the person, the time, the attempts and the lock's end. An email nobody has locks the same way and opens nothing.
+- It waits for whoever holds accounts:unlock (the Admin), never for the person themself: in the Approvals inbox (type Sign-in, the approval card: Unlock now / Dismiss), the bell, the sidebar count and the Admin dashboard's approvals (`waitingFor()`'s `unlock` kind).
+- Unlock now unlocks, clears the count and is audited (`unlocked`); Dismiss closes the request and the lock stays until it expires. A request stops waiting by itself when the lock expires or the person is unlocked another way (the profile's Unlock); it then reads `expired`. HR (accounts:reset only) can't unlock or dismiss.
+- The users list has a Locked badge and a Sign-in filter (Locked); the profile shows "Sign-in locked." with Unlock for the Admin.
+- The sign-in message while locked: "Too many attempts. Try again after HH:MM, or ask your administrator to unlock your account." (office time, `lockedMessage(until)`).
+
 ## Checks
 
 - `tests/live/accounts.mjs` (3 zones): permissions, the seeded upgrade, a new employee, links, forgot password, lockout, help from others, and a scan of every stored value, the audit trail, the outbox and the console for any password or token.
 - `tests/live/react/e1.mjs`: L (sign in), N (a new employee end to end), F (forgot and reset), R (an Admin's help), T (storage scans), K, E, W, X.
 - The security mutants (the round's scratch folder): 17 on the data layer and 3 on the page guards, each caught.
+- `tests/live/lockout.mjs` (3 zones, F2): the lock and its one request, who resolves it, Unlock now / Dismiss / expiry, an unknown email, the Admin's own lock; `tests/live/react/f2.mjs` L and U.

@@ -44,3 +44,15 @@ The user record keeps what it held before; the new fields are in `officeos:emplo
 
 - `tests/live/emprecord.mjs` (3 zones): the field list, who is who, what each sees, Show, edits and escalation, values, history, requests, completeness.
 - `tests/live/react/e1.mjs`: D (what each role's page holds in its HTML), P (own edits, a request through the approval card, history, completeness), M (the account tabs, change password), A (no "not available in this demo").
+
+## Bank and statutory details (F2, 2026-11-15)
+
+**Files:** `assets/js/config/ifsc-banks.js` (the bundled table of 51 main banks by IFSC code, `bankFromIfsc`), the rules in `assets/js/config/employee-fields.js`, `bankTogether` in `assets/js/data/employee-record.js`.
+
+- Everything is entered by hand: OfficeOS doesn't fetch or verify bank, PAN or Aadhaar details (the form and the profile say so). Branch is typed (branch lookup arrives with the backend).
+- IFSC: `^[A-Z]{4}0[A-Z0-9]{6}$`, saved in capitals; needed whenever bank details (account, bank name, branch, holder) are entered or changed, for a direct save and for the person's own change request. The bank name fills in from the IFSC's first four letters when it is empty or still names the old IFSC's bank; a name someone typed is never overwritten; an unknown code leaves it to type.
+- Account number 9 to 18 digits, typed twice (the confirm field, in the profile's edit and the employee form). PAN `^[A-Z]{5}[0-9]{4}[A-Z]$` with P (a person) as the 4th letter. Aadhaar 12 digits, not starting 0 or 1, with the Verhoeff check digit. PAN, account and Aadhaar are masked to the last 4 after saving (as in E1).
+- Unchanged values are never re-judged, so someone with details on file from before still saves other fields.
+- The employee form's Pay and tax section has the account (and confirm), IFSC, bank name, branch, holder's name, PAN and Aadhaar; the record's fields are saved after the employee, each through `saveFields`.
+- The profile shows a section's filled fields first; the empty ones are under "Not added (N)", collapsed, each with Add for whoever may fill it (Edit at that field, Ask for a change for the person's own bank fields, or the employee form). Completeness counts the same fields (its Missing list is the counted part of Not added).
+- Checks: `tests/live/bank.mjs` (3 zones) and `tests/live/react/f2.mjs` B and F.

@@ -69,3 +69,7 @@ From the shift rules start date (default 2026-12-01) each day is read by the per
 
 - The old site's Mark attendance has no place check (the React app does). F1 removed its "Location check" card, whose only line said location and network checks weren't part of the demo.
 - **Mark attendance on every dashboard (F1):** the Admin, HR and Finance dashboards have the Employee dashboard's Mark attendance in their headers (a secondary button beside the page's own main action); a manager has the Employee dashboard's.
+
+## The employment period (F2, 2026-11-15)
+
+`assets/js/data/employment-period.js`: `employmentPeriod(person)` = { from: the joining date, to: the exit date, away: periods away }, `employmentState(person, date)` (before / during / after), `joinsOn(person, today)`. Nothing is expected, counted or shown as absent before joining or after exit: those days read "Not yet joined" / left. Someone added in the employee form with the joining date left empty joins on the day they are added (the form sends today's date; `addUser` itself is unchanged, the data layer additive), so they never inherit earlier history. A future joiner's Mark attendance says "Joins on 1 Dec 2026" and check-in stays off until that day. The seeded people's existing attendance, leave and pay are byte-identical (dumped in 3 zones). Checks: `tests/live/employment.mjs`.

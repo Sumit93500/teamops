@@ -32,12 +32,17 @@ const ROLES = Object.keys(WHO);
 const UA = "Mozilla/5.0 (Linux; Android 14; Pixel 6a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 const SIZES = { 412: { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2.625, isMobile: true, hasTouch: true, userAgent: UA }, 1280: { viewport: { width: 1280, height: 900 } } };
 const browser = await chromium.launch({ channel: "msedge", headless: true, args: ["--disable-gpu", "--disable-partial-raster"] });
+// F2 (the brief, item 5): the app no longer draws a control with nothing behind it; the old pages' ones ([data-not-implemented])
+// are hidden as they appear (in every context: the app has none), so the rest compares as before.
+const F2_PAST = () => { const sweep = () => document.querySelectorAll("[data-not-implemented]:not([data-f2-past])").forEach((e) => { e.dataset.f2Past = ""; e.hidden = true; e.style.setProperty("display", "none", "important"); });
+  new MutationObserver(sweep).observe(document, { childList: true, subtree: true }); };
 let passed = 0, failed = 0;
 const check = (n, label, cond, detail = "") => { cond ? passed++ : failed++; console.log(`${cond ? "PASS" : "FAIL"}  ${String(n).padEnd(16)} ${label}${detail !== "" ? `  -> ${String(detail).slice(0, 500)}` : ""}`); };
 const j = JSON.stringify;
 
 async function open(base, who, page, { width = 1280, theme = "light" } = {}) {
   const ctx = await browser.newContext({ ...SIZES[width], timezoneId: "Asia/Kolkata" });
+  await ctx.addInitScript(F2_PAST);
   await useLocalFonts(ctx);
   await ctx.clock.setFixedTime(new Date(process.env.CLOCK ?? "2026-09-28T10:00:00+05:30"));
   await ctx.addInitScript(([w, th]) => {
@@ -76,6 +81,17 @@ function compare(n, label, a, b) {
   check(n, label, diff.length === 0, diff.length ? diff.map((k) => `${k}: ${where(j(a[k]), j(b[k]))}`).join(" ; ") : `${a.text.length} chars, ${a.controls.length} controls, ${a.tables.map((x) => x.length).join("+") || 0} rows`);
 }
 async function both(who, page) { return { o: await open(O, who, page), n: await open(N, who, page) }; }
+// F2 (the brief, item 5): a placeholder page's URL shows "This section is being rebuilt." (Rebuilding.jsx, shell/placeholders.js):
+// where the old site opens the page, the app shows that in place of the old sample (checked in full in f2.mjs P)
+const F2_PLACE = /^(inventory\/(my-assets|items|stock-movements|asset-assignment|vendors)|announcements\/announcements|recruitment\/(job-openings|candidates)|system\/(reports|audit-log|backup)|access\/(delegation|approval-workflows)|account\/(notifications|sessions))\.html/;
+async function rebuiltAll(letter, page) {
+  for (const who of ROLES) {
+    const x = await both(who, page);
+    const title = await x.n.t.evaluate(() => document.getElementById("rebuilding-title")?.textContent ?? null);
+    check(`${letter}.${who}.rebuilt`, `${who} on ${page}: where the old site opens it, the app says "This section is being rebuilt." (F2)`, x.o.at.endsWith(page) ? title === "This section is being rebuilt." : x.o.at === x.n.at, `${x.o.at} | ${x.n.at} | ${title}`);
+    await x.o.ctx.close(); await x.n.ctx.close();
+  }
+}
 async function ask(x, selector, yes) {
   x.msg = undefined;
   const handler = (dlg) => { x.msg = dlg.message(); yes ? dlg.accept() : dlg.dismiss(); };
@@ -89,6 +105,7 @@ async function ask(x, selector, yes) {
   await x.t.click(yes ? ".confirm-dialog [data-confirm-ok]" : ".confirm-dialog [data-confirm-cancel]"); await x.t.waitForTimeout(300);
 }
 async function pages(letter, page, rolesFn) {
+  if (F2_PLACE.test(page)) return rebuiltAll(letter, page);   // F2
   for (const who of ROLES) {
     const x = await both(who, page);
     if (x.o.at !== x.n.at || !x.o.at.endsWith(page)) {
@@ -114,7 +131,7 @@ async function pages(letter, page, rolesFn) {
 //      on the old page; Edit's and Add designation's toasts
 const settle = (t, ms = 250) => t.waitForTimeout(ms);
 const same = (n, label, a, b) => { const bad = a.map((v, i) => j(v) === j(b[i])).indexOf(false); check(n, label, bad === -1 && a.length === b.length, bad === -1 ? `${a.length} steps` : `step ${bad}: ${where(j(a[bad]), j(b[bad]))}`); };
-const toastAfter = async (t, sel) => { const b = await t.$(sel); if (!b) return "none"; await b.click(); await settle(t, 300); return (await toasts(t)).at(-1) ?? "no toast"; };
+const toastAfter = async (t, sel) => { const b = await t.$(sel); if (!b || !(await b.isVisible())) return "none"; await b.click(); await settle(t, 300); return (await toasts(t)).at(-1) ?? "no toast"; };   // F2: "none" for a control drawn on neither side
 const imp = (rel) => import(new URL("file:///" + path.join(PRIST, rel).replace(/\\/g, "/")).href);
 
 if (ONLY.includes("R")) {
@@ -200,7 +217,8 @@ if (ONLY.includes("D")) {
     const card = async (base) => { const y = await open(base, who, "access/designations.html", { width: 412 }); const r = await y.t.evaluate(() => {
       const tb = document.querySelector("main table"); const rows = [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].map((c) => `${c.dataset.label}|${c.dataset.cardPart}|${c.querySelector(".table__more") ? "more" : ""}|${getComputedStyle(c).display}`).join(","));
       return [tb.hasAttribute("data-cards"), [...new Set(rows)]]; }); await y.ctx.close(); return r; };
-    const [co, cn] = [await card(O), await card(N)];
+    let [co, cn] = [await card(O), await card(N)];
+    co = JSON.parse(j(co).replaceAll("Actions|actions||flex", "Actions|actions||none"));   // F2: Edit (not built) isn't drawn, so the empty Actions cell is hidden on a phone
     check(`D12.${who}`, `${who}: at 412 the rows are cards with the old sample's parts`, j(co) === j(cn), where(j(co), j(cn)));
   }
 }
@@ -214,6 +232,7 @@ async function phoneCards(letter, list) {
     // E1 (ruled): the app names E1's accounts module under People; the frozen old page puts it under 'Other' (one more group
     // heading row), so on the role editor the module rows are compared without the group headings
     const ruled = (x) => (page.includes("role-editor") ? x.map((tb) => ({ ...tb, rows: tb.rows.filter((r) => r.length > 1) })) : x);
+    if (F2_PLACE.test(page)) { await o.ctx.close(); await n.ctx.close(); continue; }   // F2: a placeholder page (rebuilt; f2.mjs P)
     const [a, b] = [ruled(await cards(o.t)), ruled(await cards(n.t))];
     check(`${letter}.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page} at 412: the same cards`, j(a) === j(b), j(a) === j(b) ? `${a.length} tables, ${a.map((x) => x.rows.length).join("+")} rows` : `old ${j(a).slice(0, 400)} new ${j(b).slice(0, 400)}`);
     await o.ctx.close(); await n.ctx.close();

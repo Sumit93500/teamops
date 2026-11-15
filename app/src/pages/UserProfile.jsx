@@ -41,6 +41,7 @@ import { relationOf } from "../../../assets/js/data/employee-record.js";
 import { PROFILE_SECTIONS } from "../../../assets/js/config/employee-fields.js";
 import { ProfileRecord, ChangeRequests, Completeness, History, AccountCard } from "../ui/profile.jsx";
 import { ShiftCard } from "../ui/shifts.jsx";   // SH1
+import { accountOf, unlockAccount, LOCK_AFTER } from "../../../assets/js/data/credentials.js";   // F2: the lock banner
 
 const PAGE = "users/user-profile.html";
 const LIST = pageUrl("users/users-list.html");
@@ -158,6 +159,8 @@ function Profile({ initial }) {
   const can = { edit: useCan("users:edit"), status: useCan("users:deactivate"), del: useCan("users:delete") };
   const user = useData(() => getUser(initial.id) ?? initial, [initial.id]);
   const relation = useData(() => relationOf(userId, initial.id), [userId, initial.id]);
+  const lock = useData(() => accountOf(initial.id).lockedUntil, [initial.id]);   // F2
+  const canUnlock = useCan("accounts:unlock") && userId !== initial.id;
   const people = relation === "people" || relation === "self";
   const [dialog, setDialog] = useState(false);
   const role = ROLES[user.role];
@@ -237,6 +240,12 @@ function Profile({ initial }) {
             <div className="ds-form-actions__buttons"><a className="ds-btn" href={`mailto:${user.email}`}>Email</a><Link className="ds-btn" to={pageUrl("attendance/team-attendance.html")}>View attendance</Link></div>
           </div>
         </section>
+        {lock && (
+          <div className="ds-note ds-note--warning profile-lock" id="profile-lock" role="status">
+            <span><strong>Sign-in locked.</strong>{` ${LOCK_AFTER} failed sign-ins in a row; it unlocks by itself at ${new Date(lock).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })}.`}</span>
+            {canUnlock && <button type="button" className="ds-btn ds-btn--sm" id="profile-unlock" onClick={() => { const r = unlockAccount(userId, user.id); toast(r.ok ? `${user.name} can sign in again.` : r.error, r.ok ? "success" : "danger"); bump(); }}>Unlock</button>}
+          </div>
+        )}
         <nav aria-label="Profile sections" className="ds-tabs">
           {PROFILE_SECTIONS.filter((s) => people || s.key !== "access").filter((s) => relation !== "manager" || s.key !== "pay").map((s) => <a key={s.key} className="ds-tabs__tab" href={`#profile-${s.key}`}>{s.title}</a>)}
           {(people || relation === "manager") && <a className="ds-tabs__tab" href="#profile-shift">Shift</a>}

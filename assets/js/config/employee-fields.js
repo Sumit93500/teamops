@@ -35,7 +35,7 @@ export const FIELDS = [
   { key: "name", label: "Full name", section: "personal", from: "user", kind: "text", see: "team", edit: "form", counts: true },
   { key: "photo", label: "Photo", section: "personal", from: "record", kind: "photo", see: "team", edit: "own", hint: "Photo upload arrives with file storage (a later round); your initials show until then." },
   { key: "dob", label: "Date of birth", section: "personal", from: "user", kind: "date", see: "people", edit: "hr", counts: true },
-  { key: "aadhaar", label: "Aadhaar", section: "personal", from: "record", kind: "text", see: "people", edit: "hr", sensitive: "pii", rule: "aadhaar", counts: true },
+  { key: "aadhaar", label: "Aadhaar", section: "personal", from: "record", kind: "text", see: "people", edit: "hr", sensitive: "pii", rule: "aadhaar", counts: true, hint: "12 digits, checked as typed; entered by hand, not fetched." },
   { key: "dependants", label: "Dependants and nominee", section: "personal", from: "record", kind: "list", see: "people", edit: "own",
     columns: [{ key: "name", label: "Name", required: true }, { key: "relation", label: "Relation", required: true }, { key: "dob", label: "Date of birth", kind: "date" }, { key: "nominee", label: "Nominee", kind: "yesno" }] },
   { key: "documents", label: "Documents", section: "personal", from: "record", kind: "list", see: "people", edit: "hr",
@@ -62,11 +62,12 @@ export const FIELDS = [
     columns: [{ key: "qualification", label: "Qualification", required: true }, { key: "institution", label: "Institution", required: true }, { key: "year", label: "Year", rule: "year" }] },
   { key: "skills", label: "Skills", section: "employment", from: "record", kind: "list", see: "team", edit: "hr", columns: [{ key: "skill", label: "Skill", required: true }] },
   // Pay and tax
-  { key: "bankAccount", label: "Bank account", section: "pay", from: "user", kind: "text", see: "pay", edit: "finance", sensitive: "pii", rule: "account", counts: true },
-  { key: "ifsc", label: "IFSC", section: "pay", from: "record", kind: "text", see: "pay", edit: "finance", rule: "ifsc", counts: true },
-  { key: "bankName", label: "Bank name", section: "pay", from: "record", kind: "text", see: "pay", edit: "finance" },
+  { key: "bankAccount", label: "Bank account", section: "pay", from: "user", kind: "text", see: "pay", edit: "finance", sensitive: "pii", rule: "account", counts: true, hint: "9 to 18 digits. Bank and PAN details are entered by hand: OfficeOS doesn't fetch them from the bank." },
+  { key: "ifsc", label: "IFSC", section: "pay", from: "record", kind: "text", see: "pay", edit: "finance", rule: "ifsc", counts: true, hint: "Needed with bank details. The bank name fills in from its first four letters." },
+  { key: "bankName", label: "Bank name", section: "pay", from: "record", kind: "text", see: "pay", edit: "finance", hint: "Filled from the IFSC for the main banks; type it for any other." },
+  { key: "branch", label: "Branch", section: "pay", from: "record", kind: "text", see: "pay", edit: "finance", hint: "Typed by hand: branch lookup arrives with the backend." },   // F2
   { key: "accountHolder", label: "Account holder's name", section: "pay", from: "record", kind: "text", see: "pay", edit: "finance" },
-  { key: "pan", label: "PAN", section: "pay", from: "user", kind: "text", see: "pay", edit: "finance", sensitive: "pii", rule: "pan", counts: true },
+  { key: "pan", label: "PAN", section: "pay", from: "user", kind: "text", see: "pay", edit: "finance", sensitive: "pii", rule: "pan", counts: true, hint: "Like ABCPE1234F; the 4th letter is P for a person. Masked once saved." },
   { key: "uan", label: "UAN (PF)", section: "pay", from: "record", kind: "text", see: "pay", edit: "finance", rule: "uan" },
   { key: "esi", label: "ESI number", section: "pay", from: "record", kind: "text", see: "pay", edit: "finance", rule: "esi" },
   { key: "salary", label: "Salary", section: "pay", from: "derived", kind: "text", see: "pay", edit: "none", sensitive: "salary" },
@@ -77,12 +78,26 @@ export const FIELDS = [
 ];
 export const FIELD = Object.fromEntries(FIELDS.map((f) => [f.key, f]));
 
+// F2: the Aadhaar check digit (Verhoeff): the 12th digit must agree with the first 11.
+const VD = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 0, 6, 7, 8, 9, 5], [2, 3, 4, 0, 1, 7, 8, 9, 5, 6], [3, 4, 0, 1, 2, 8, 9, 5, 6, 7], [4, 0, 1, 2, 3, 9, 5, 6, 7, 8],
+  [5, 9, 8, 7, 6, 0, 4, 3, 2, 1], [6, 5, 9, 8, 7, 1, 0, 4, 3, 2], [7, 6, 5, 9, 8, 2, 1, 0, 4, 3], [8, 7, 6, 5, 9, 3, 2, 1, 0, 4], [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]];
+const VP = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 5, 7, 6, 2, 8, 3, 0, 9, 4], [5, 8, 0, 3, 7, 9, 6, 1, 4, 2], [8, 9, 1, 6, 0, 4, 3, 5, 2, 7], [9, 4, 5, 3, 1, 2, 6, 8, 7, 0],
+  [4, 2, 8, 6, 5, 7, 3, 9, 0, 1], [2, 7, 9, 3, 8, 0, 6, 4, 1, 5], [7, 0, 4, 6, 9, 1, 3, 2, 5, 8]];
+export function verhoeffValid(digits) {
+  let c = 0;
+  [...String(digits)].reverse().forEach((d, i) => { c = VD[c][VP[i % 8][Number(d)]]; });
+  return c === 0;
+}
+// The PAN's 4th letter says who holds it: P a person (an employee's), C company, H HUF, F firm, A AOP, T trust, B BOI, L local
+// authority, J artificial juridical person, G government.
+export const PAN_HOLDER = Object.freeze({ P: "a person", C: "a company", H: "a Hindu undivided family", F: "a firm", A: "an association of persons", T: "a trust", B: "a body of individuals", L: "a local authority", J: "an artificial juridical person", G: "the government" });
+
 // The checks behind each rule: [test, words when it fails].
 export const RULES = {
   phone: [(v) => /^\+?[0-9 ()-]{7,20}$/.test(v) && v.replace(/\D/g, "").length >= 10, "Enter a phone number with at least 10 digits, like +91 98765 43210."],
   email: [(v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "Enter a valid email address, like name@example.com."],
-  aadhaar: [(v) => /^[2-9]\d{11}$/.test(v.replace(/\s/g, "")), "An Aadhaar number has 12 digits and doesn't start with 0 or 1."],
-  pan: [(v) => /^[A-Z]{5}\d{4}[A-Z]$/.test(v), "A PAN is 5 letters, 4 digits and a letter, like ABCDE1234F."],
+  aadhaar: [(v) => /^[2-9]\d{11}$/.test(v.replace(/\s/g, "")) && verhoeffValid(v.replace(/\s/g, "")), "An Aadhaar number has 12 digits, doesn't start with 0 or 1, and its last digit checks the others: check it for a typing slip."],   // F2: the checksum
+  pan: [(v) => /^[A-Z]{5}\d{4}[A-Z]$/.test(v) && v[3] === "P", "A person's PAN is 5 letters, 4 digits and a letter, with P as the 4th letter, like ABCPE1234F."],   // F2: the holder type
   ifsc: [(v) => /^[A-Z]{4}0[A-Z0-9]{6}$/.test(v), "An IFSC is 4 letters, a 0, then 6 letters or digits, like HDFC0001234."],
   account: [(v) => /^\d{9,18}$/.test(v), "A bank account number has 9 to 18 digits."],
   uan: [(v) => /^\d{12}$/.test(v), "A UAN has 12 digits."],

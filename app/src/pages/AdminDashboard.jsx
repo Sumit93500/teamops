@@ -39,6 +39,7 @@ import { StatStrip, StatCard } from "../components/Basics.jsx";
 import { ColumnChart } from "../components/Charts.jsx";
 import { BarChart } from "../components/charts/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
+import { countText } from "../data/counts.js";   // F2: one counter wording
 import { pageUrl } from "../routes.js";
 
 csvColumns("admin-dashboard-attendance", { Employee: { split: "Work email" } });   // Round Data export part 2
@@ -64,6 +65,7 @@ const APPROVAL_TEXT = {
   locations: (r) => [`Home location change: ${nameOf(r.userId)}`, `${r.kind === "permanent" ? "Permanent" : "Temporary"} home to ${r.place.address}`],
   profile: (r) => [`Bank and tax change: ${nameOf(r.userId)}`, changeText(r).map(([l, v]) => `${l}: ${v}`).join("; ")],   // E1
   overtime: (o) => [`Overtime: ${nameOf(o.userId)}`, `${formatDay(o.date)}: ${o.minutes} min on ${o.shiftName}`],   // SH1
+  unlock: (q) => [`Locked account: ${nameOf(q.userId)}`, `${q.attempts} failed sign-ins; Unlock now or Dismiss`],   // F2
 };
 function approvalItems(waiting, refresh) {
   const shown = waiting.slice(0, SHOWN_APPROVALS);
@@ -166,7 +168,8 @@ export default function AdminDashboard() {
   const current = Math.min(Math.max(1, page), pages);
   const shown = rows.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
   const span = shown.length ? `${(current - 1) * PAGE_SIZE + 1}–${(current - 1) * PAGE_SIZE + shown.length}` : "0";
-  const rowsMeta = `Showing ${span} of ${rows.length} ${rows.length === 1 ? "employee" : "employees"}${rows.length < d.all.length ? ` (${d.all.length} active)` : ""}`;
+  const filteredRows = rows.length < d.all.length;
+  const rowsMeta = filteredRows ? `${countText(shown.length, rows.length, "employee", { filtered: true })} (${d.all.length} active)` : countText(shown.length, rows.length, "employee", { range: span });
 
   // the rate chart (admin-dashboard.js renderChart)
   const [rate, present, expected] = ["Rate", "Present", "Expected"].map((name) => valuesOf(d.rate, name));

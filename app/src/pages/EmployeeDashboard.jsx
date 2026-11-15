@@ -41,7 +41,7 @@ const ICONS = {
 // The static samples that stay (the old page's [data-static] updates), read from its HTML.
 const STATIC_UPDATES = (() => {
   const doc = new DOMParser().parseFromString(pageHtml, "text/html");
-  return [...doc.querySelectorAll("#updates [data-static]")].map((n) => n.outerHTML);
+  return [];   // F2: the old page's sample update ("Announcement: team offsite") is not shown
 })();
 
 const isAsset = (r) => r.id.startsWith("ARQ-");
@@ -57,7 +57,7 @@ function barLook(date, minutes, mark) {
   switch (mark.kind) {
     case "off": return look("muted", 0, mark.holiday !== null ? `${mark.holiday}, day off` : "day off");
     case "no-data": return look("muted", 0, "no data");
-    case "not-joined": return look("muted", 0, "before joining");
+    case "not-joined": return look("muted", 0, "not yet joined");
     case "left": return look("muted", 0, "after leaving");
     case "on-leave": return look("leave", MARKER, "on leave");
     case "in-progress":
@@ -268,7 +268,6 @@ export default function EmployeeDashboard() {
           <section className="card">
             <div className="card__header">
               <h3 className="card__title">Updates</h3>
-              <Link className="link text-sm" to={pageUrl("announcements/announcements.html")}>All announcements</Link>
             </div>
             <Nodes className="activity" id="updates" build={() => updateNodes(d.leave, d.corrections, d.assets, today)} deps={[d, today]} />
           </section>

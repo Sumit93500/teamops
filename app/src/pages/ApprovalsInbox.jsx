@@ -31,12 +31,14 @@ import { openApprovalCard } from "../ui/ApprovalCard.jsx";
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
 import { StatStrip, StatCard, Badge, Tabs, NotBuilt } from "../components/Basics.jsx";
-import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, OVERTIME_FLOW, DecisionButtons } from "../components/Decision.jsx";
+import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, OVERTIME_FLOW, UNLOCK_FLOW, DecisionButtons } from "../components/Decision.jsx";
+import { allUnlockRequests } from "../../../assets/js/data/unlock-requests.js";   // F2
 import { allOvertimeDecisions, overtimeItem } from "../../../assets/js/data/overtime-store.js";
 import { otText } from "../ui/shifts.jsx";
 import { StatusBadge } from "../ui/leave.jsx";
 import { rupees } from "../ui/payroll.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
+import { countText } from "../data/counts.js";   // F2: one counter wording
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
 
@@ -44,7 +46,7 @@ const PAGE = "requests/approvals-inbox.html";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TABS = [["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]];
 const LOC_TAB = ["locations-view", "Location changes"];   // L4: HR's read-only tab
-const TYPES = ["Access", "Purchase", "System", "Leave", "Attendance", "Expense", "Asset", "Salary", "Location", "Profile", "Overtime"];   // E1: Profile, bank and tax changes; SH1: Overtime
+const TYPES = ["Access", "Purchase", "System", "Leave", "Attendance", "Expense", "Asset", "Salary", "Location", "Profile", "Overtime", "Sign-in"];   // E1: Profile, bank and tax changes; SH1: Overtime
 const STATS = [["Waiting for you", 3, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"], ["Approved this week", 2, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"],
   ["Rejected this week", 4, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M9 9l6 6M15 9l-6 6"], ["Average response", 1, "M4 20V10M10 20V4M16 20v-7M22 20H2"]];
 // The old page's sample rows (data-static in its HTML): pending ones wait for nobody, their buttons are placeholders.
@@ -79,7 +81,7 @@ const reachedAt = (claim, entry) => claim.history[claim.history.indexOf(entry) -
 function readInbox(userId, role) {
   const user = getUser(userId);
   const allLeave = can("leave:approve"), allCorrections = can("attendance:approve"), showSalary = can("salary:view");
-  const waiting = user ? waitingFor(userId, role) : { leave: [], corrections: [], expenses: [], assets: [], salary: [], locations: [], profile: [], overtime: [] };
+  const waiting = user ? waitingFor(userId, role) : { leave: [], corrections: [], expenses: [], assets: [], salary: [], locations: [], profile: [], overtime: [], unlock: [] };
   const asDecidedBy = (request) => {
     const i = request.history.map((h) => h.byUserId === userId && (h.decision === "approved" || h.decision === "rejected")).lastIndexOf(true);
     return i < 0 ? null : { ...request, status: request.history[i].decision, history: request.history.slice(0, i + 1) };
@@ -160,16 +162,24 @@ function readInbox(userId, role) {
   const otRow = (o) => ({ type: "overtime", kind: "overtime", id: o.id, userId: o.userId, title: otTitle(o), badge: "Overtime", by: nameOf(o.userId),
     details: `${formatDay(o.date)}: ${otText(o.minutes)} on ${o.shiftName}, out at ${o.checkOut}${o.status === "rejected" && o.decision?.note ? `. ${o.decision.note}` : ""}`, attrs: { "data-overtime": o.id },
     when: o.status === "pending" ? waitingSince(o.requestedAt) : formatDay(localDateOf(o.decision.at)), pending: o.status === "pending", record: o, permission: "overtime:approve" });
+  // F2: locked accounts waiting for the Admin (Unlock now / Dismiss) and the ones this Admin resolved
+  const timeOf = (ms) => new Date(ms).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
+  const ulPending = [...(waiting.unlock ?? [])];
+  const ulDecided = (s) => (user ? allUnlockRequests() : []).filter((q) => q.by === userId && (s === "approved" ? q.status === "unlocked" : q.status === "dismissed"))
+    .map((q) => ({ ...q, requestedAt: new Date(q.lockedAt).toISOString() })).sort((a, b) => b.at.localeCompare(a.at));
+  const ulRow = (q) => ({ type: "sign-in", kind: "unlock", id: q.id, userId: q.userId, title: `Locked account: ${nameOf(q.userId)}`, badge: "Sign-in", by: nameOf(q.userId),
+    details: `${q.attempts} failed sign-ins; locked until ${timeOf(q.lockedUntil)}`, attrs: { "data-unlock": q.id },
+    when: q.status === "pending" ? waitingSince(q.requestedAt) : formatDay(localDateOf(q.at)), pending: q.status === "pending", record: q, permission: "accounts:unlock" });
   const real = (which) => {
     if (which === "pending") {
       return [...leavePending.map((r) => [r.appliedOn, leaveRow(r)]), ...corrPending.map((r) => [r.appliedOn, corrRow(r)]), ...expPending.map((c) => [c.appliedOn, expRow(c)]),
-        ...assetPending.map((r) => [r.appliedOn, assetRow(r)]), ...salaryPending.map((p) => [p.enteredAt, salaryRow(p)]), ...locPending.map((r) => [localDateOf(r.requestedAt), locRow(r)]), ...profPending.map((r) => [localDateOf(r.requestedAt), profRow(r)]), ...otPending.map((o) => [localDateOf(o.requestedAt), otRow(o)])].sort((a, b) => a[0].localeCompare(b[0])).map((x) => x[1]);
+        ...assetPending.map((r) => [r.appliedOn, assetRow(r)]), ...salaryPending.map((p) => [p.enteredAt, salaryRow(p)]), ...locPending.map((r) => [localDateOf(r.requestedAt), locRow(r)]), ...profPending.map((r) => [localDateOf(r.requestedAt), profRow(r)]), ...otPending.map((o) => [localDateOf(o.requestedAt), otRow(o)]), ...ulPending.map((q) => [localDateOf(q.requestedAt), ulRow(q)])].sort((a, b) => a[0].localeCompare(b[0])).map((x) => x[1]);
     }
     return [...leaveDecided(which).map((r) => [decisionOf(r).at, leaveRow(r)]), ...corrDecided(which).map((r) => [decisionOf(r).at, corrRow(r)]),
       ...expDecided(which).map((x) => [x.entry.at, expRow(x.claim, x.entry)]), ...assetDecided(which).map((x) => [x.entry.at, assetRow(x.request, x.entry)]),
-      ...salaryDecided(which).map((p) => [new Date(p.decidedAt).toISOString(), salaryRow(p)]), ...locDecided(which).map((r) => [r.decidedAt, locRow(r)]), ...profDecided(which).map((r) => [r.decidedAt, profRow(r)]), ...otDecided(which).map((o) => [o.decision.at, otRow(o)])].sort((a, b) => b[0].localeCompare(a[0])).map((x) => x[1]);
+      ...salaryDecided(which).map((p) => [new Date(p.decidedAt).toISOString(), salaryRow(p)]), ...locDecided(which).map((r) => [r.decidedAt, locRow(r)]), ...profDecided(which).map((r) => [r.decidedAt, profRow(r)]), ...otDecided(which).map((o) => [o.decision.at, otRow(o)]), ...ulDecided(which).map((q) => [q.at, ulRow(q)])].sort((a, b) => b[0].localeCompare(a[0])).map((x) => x[1]);
   };
-  const samples = can("approvals:view");
+  const samples = false;   // F2: the old page's sample rows (role change, purchase order, backup restore) are not shown
   const inbox = (which) => (which === "pending" ? [...(samples ? SAMPLE_PENDING.map((s) => ({ ...s, sample: true })) : []), ...real("pending")]
     : [...(samples ? SAMPLE_DECIDED.filter((s) => s.status === which).map((s) => ({ ...s, sample: true, details: "—", decidedClone: true })) : []), ...real(which)]);
   const lists = Object.fromEntries(TABS.map(([k]) => [k, inbox(k)]));
@@ -216,7 +226,7 @@ function readInbox(userId, role) {
 export default function ApprovalsInbox() {
   const { userId, role } = useSession();
   const canWorkflows = useCan("workflows:view"), canDecideSamples = useCan("approvals:decide");
-  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW), overtime: useDecision(OVERTIME_FLOW) };
+  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW), overtime: useDecision(OVERTIME_FLOW), unlock: useDecision(UNLOCK_FLOW) };
   const [tab, setTab] = useState(0);
   const [type, setType] = useState("");
   const d = useData(() => readInbox(userId, role?.key), [userId, role?.key]);
@@ -232,7 +242,7 @@ export default function ApprovalsInbox() {
   </div>;
   const titleCell = (r) => {
     if (r.sample) {
-      return <div className="table__user">{!r.decidedClone && <div className={r.av}>{r.ini}</div>}<div><span className="table__user-name">{r.title}</span><span className="table__user-sub">Sample, not built yet</span></div></div>;
+      return <div className="table__user">{!r.decidedClone && <div className={r.av}>{r.ini}</div>}<div><span className="table__user-name">{r.title}</span></div></div>;
     }
     const open = (e) => openApprovalCard(r.kind, r.id, { opener: e.currentTarget, more: false, refresh: bump });
     return (
@@ -254,11 +264,11 @@ export default function ApprovalsInbox() {
       if (r.sample) return r.decidedClone ? null : sampleButtons;
       if (!r.pending) return null;
       const flow = flows[r.kind];
-      return <DecisionButtons permission={r.permission} onReject={() => flow.reject(r.record)} onApprove={() => flow.approve(r.record)} />;
+      return <DecisionButtons permission={r.permission} labels={r.kind === "unlock" ? UNLOCK_FLOW.labels.buttons : undefined} onReject={() => flow.reject(r.record)} onApprove={() => flow.approve(r.record)} />;
     } },
   ];
   const decidedColumns = [
-    { key: "title", label: "Request", render: (r) => (r.sample ? <div className="table__user"><div><span className="table__user-name">{r.title}</span><span className="table__user-sub">Sample, not built yet</span></div></div> : <span className="table__user-name">{r.title}</span>) },
+    { key: "title", label: "Request", render: (r) => (r.sample ? <div className="table__user"><div><span className="table__user-name">{r.title}</span></div></div> : <span className="table__user-name">{r.title}</span>) },
     { key: "type", label: "Type", render: (r) => <Badge square>{r.badge}</Badge> },
     { key: "by", label: "Requested by", render: (r) => r.by },
     { key: "decision", label: "Decision", render: (r) => <StatusBadge status={r.status} /> },
@@ -273,8 +283,8 @@ export default function ApprovalsInbox() {
     { key: "decided", label: "Decided", render: (r) => (r.decidedAt ? `${formatDay(localDateOf(r.decidedAt))}, ${r.decidedBy === r.userId ? "cancelled by them" : nameOf(r.decidedBy)}` : "—") },
   ];
   const WHO = [["Expense claims", chain.always], ["", `Then ${chain.extra} too, above ${rupees(EXPENSE_POLICY.adminAbove)}`], ["Leave requests", "Manager, then HR or an Admin"],
-    ["Attendance corrections", "Manager, then HR or an Admin"], ["Purchase orders", "Not built yet"], ["Role changes", "Not built yet"], ["Salary revisions", "Finance, then an Admin"],
-    ["Backup restore", "Not built yet"], ["Asset requests", "Manager, then an Admin"], ["Home location changes", "An Admin"], ["Overtime", "Manager; HR or an Admin for people without one"]];
+    ["Attendance corrections", "Manager, then HR or an Admin"], ["Salary revisions", "Finance, then an Admin"],
+    ["Asset requests", "Manager, then an Admin"], ["Home location changes", "An Admin"], ["Overtime", "Manager; HR or an Admin for people without one"], ["Locked accounts", "An Admin"]];
 
   return (
     <Frame page={PAGE}>
@@ -284,7 +294,6 @@ export default function ApprovalsInbox() {
           <p className="page-header__subtitle">Everything waiting for your decision</p>
         </div>
         <div className="page-header__actions">
-          <Link className="btn" to={pageUrl("access/approval-workflows.html")} data-permission="workflows:view" hidden={!canWorkflows || undefined}>Approval rules</Link>
         </div>
       </div>
       <div className="stack">
@@ -308,7 +317,7 @@ export default function ApprovalsInbox() {
             </> : <>
             <Table bare pager={false} tableClass="table table--fit" tableId="inbox-table" columns={columns} rows={shown} rowKey={(r) => `${r.kind ?? r.type}-${r.id ?? r.title}`}
               rowProps={(r) => ({ "data-type": r.type, ...(r.attrs ?? {}) })} empty={which === "pending" && !type ? "Nothing is waiting for you." : "Nothing here for these filters."} />
-            <div className="card__footer"><span className="card__meta">{`Showing ${shown.length} of ${all.length} ${which} requests`}</span></div>
+            <div className="card__footer"><span className="card__meta">{countText(shown.length, all.length, `${which} request`, { filtered: shown.length !== all.length })}</span></div>
             </>}
           </section>
           <aside className="stack">

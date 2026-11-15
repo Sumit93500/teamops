@@ -51,6 +51,7 @@ import { allRequests, balanceFor, LEAVE_POLICY, applyLeave, workingDays } from "
 import { leavePolicyActive } from "./pay-settings.js";
 import { employmentOf } from "./employment.js";
 import { compOffShield } from "./comp-off.js";   // SH1
+import { isAppCreated } from "./employment-period.js";   // F2
 
 const KEY = "leave-policy";
 export const LEAVE_BANDS = ["intern", "under1", "over1"];
@@ -262,7 +263,7 @@ export function resetLeavePolicy() {
 export const LOSS_OF_PAY = "loss-of-pay";
 export function applyLeaveUnderPolicy(userId, fields = {}, { acceptLossOfPay = false } = {}) {
   const from = String(fields?.from ?? "").trim();
-  if (!leavePolicyActive(from)) return applyLeave(userId, fields);
+  if (!leavePolicyActive(from) && !isAppCreated(userId)) return applyLeave(userId, fields);   // F2: people created in the app are under the policy from their first day
   const type = String(fields?.type ?? ""), to = String(fields?.to ?? "").trim(), duration = String(fields?.duration ?? "full");
   const days = POLICY_TYPES.includes(type) && dayNumber(to) !== null && to >= from ? workingDays(from, to, duration) : 0;
   const today = todayIso();

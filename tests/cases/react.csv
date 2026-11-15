@@ -10,12 +10,8 @@ react-access.Eboss,react-access,admin on access/role-editor.html?role=boss: land
 react-access.Enone1,react-access,admin on access/role-editor.html: as it opens,x1
 react-access.Enone2,react-access,admin: the tab's title and the crumb,x1
 react-access.Enone,react-access,hr on access/role-editor.html: lands where the old site does,x4 (4 roles)
-react-access.W1,react-access,admin on access/approval-workflows.html: as it opens,x1
-react-access.W2,react-access,admin: Edit on the first row: its toast,x1
-react-access.W,react-access,hr on access/approval-workflows.html: lands where the old site does,x4 (4 roles)
-react-access.G1,react-access,admin on access/delegation.html: as it opens,x1
-react-access.G2,react-access,admin: Delegate approvals: its toast,x1
-react-access.G,react-access,hr on access/delegation.html: lands where the old site does,x4 (4 roles)
+react-access.W.rebuilt,react-access,"admin on access/approval-workflows.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
+react-access.G.rebuilt,react-access,"admin on access/delegation.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
 react-access.D1,react-access,"admin: every designation, its department, default role and people holding it",x2 (2 roles)
 react-access.D2,react-access,admin: Engineering only,x2 (2 roles)
 react-access.D3,react-access,admin: Finance only,x2 (2 roles)
@@ -24,14 +20,11 @@ react-access.D5,react-access,admin: the default role options (Admin only for an 
 react-access.D6,react-access,admin: the department options: the store's active departments,x2 (2 roles)
 react-access.D7,react-access,admin: Manage roles shown only with roles:manage (Admin),x2 (2 roles)
 react-access.D8,react-access,admin: the header and the Add form as on the old page,x2 (2 roles)
-react-access.D9,react-access,admin: Edit's toast,x2 (2 roles)
 react-access.D10,react-access,admin: Add designation's toast,x2 (2 roles)
 react-access.D12,react-access,admin: at 412 the rows are cards with the old sample's parts,x2 (2 roles)
 react-access.D,react-access,fin: lands where the old site does,x3 (3 roles)
 react-access.P.roles-list,react-access,admin on access/roles-list.html at 412: the same cards,x1
 react-access.P.role-editor?role=hr,react-access,admin on access/role-editor.html?role=hr at 412: the same cards,x1
-react-access.P.approval-workflows,react-access,admin on access/approval-workflows.html at 412: the same cards,x1
-react-access.P.delegation,react-access,admin on access/delegation.html at 412: the same cards,x1
 react-access.X1,react-access,shots written,x1
 react-att.X1,react-att,shots written,x1
 react-att3.M1,react-att3,employee: not checked in yet; Check-In From lists only the head office (with its radius); Use my location; the line says to press it; a new device (0 of 2); Check in off; the privacy line,x1
@@ -248,8 +241,6 @@ react-e1.P10,react-e1,HR sees the completeness: a percentage and what's missing,
 react-e1.P11,react-e1,Arjun has no change history or completeness on his own page,x1
 react-e1.M1.my-profile,react-e1,my-profile: the account tabs include Appearance,x1
 react-e1.M1.change-password,react-e1,change-password: the account tabs include Appearance,x1
-react-e1.M1.sessions,react-e1,sessions: the account tabs include Appearance,x1
-react-e1.M1.notifications,react-e1,notifications: the account tabs include Appearance,x1
 react-e1.M2,react-e1,Appearance opens the appearance page (the A1 store),x1
 react-e1.M3,react-e1,"Change password: a wrong current one refused, the rules, then changed",x1
 react-e1.M4,react-e1,the new password signs in,x1
@@ -401,6 +392,53 @@ react-f1.E1.dark,react-f1,hr dark: the new text is 4.5:1 or more,x3 (3 roles)
 react-f1.E2.dark,react-f1,dark: the place line (not allowed) is 4.5:1 or more,x1
 react-f1.W1,react-f1,shots taken,x1
 react-f1.X1,react-f1,no page or console errors,x1
+react-f2.L1,react-f2,"1280: the brand panel beside the card, with the company's name, a product line and three points",x1
+react-f2.L2,react-f2,"the demo's accounts in their own section under the card (not inside it), 4 role buttons",x1
+react-f2.L3,react-f2,"the footer: ""© 2026 <company> · Powered by OfficeOS""",x1
+react-f2.L4,react-f2,"Show shows the password, Hide hides it",x1
+react-f2.L5,react-f2,"nothing typed, then a malformed email: each says what to do",x1
+react-f2.L6,react-f2,"a wrong password says so; the 5th: ""Too many attempts. Try again after 10:15, or ask your administrator ...""",x1
+react-f2.L7,react-f2,412: the brand panel is hidden; the card names the company,x1
+react-f2.L8,react-f2,"forgot, reset and set-password: the same brand panel, card and footer (no demo section)",x1
+react-f2.J1,react-f2,"Mark attendance: ""Joins on 1 Dec 2026""; check-in can't be used before then",x1
+react-f2.J2,react-f2,My attendance: no absences before joining (nothing counted),x1
+react-f2.O1,react-f2,"nothing filtered: ""N people, 1 joining soon"", every person listed, no ""Showing""",x1
+react-f2.O2,react-f2,"the joiner listed ""joins on 1 Dec 2026""; People working counts only those already working",x1
+react-f2.O3,react-f2,"a search on: ""Showing 1 of N people""",x1
+react-f2.P1,react-f2,no placeholder page is linked anywhere on any role's landing page (navigation included),x1
+react-f2.P2,react-f2,each of the 15 placeholder URLs shows the neutral page with Back to dashboard (the role's landing),x1
+react-f2.P3,react-f2,no placeholder or round wording in app/src outside comments (Gallery aside),x1
+react-f2.U1,react-f2,"the Admin's inbox: ""Locked account: Arjun Kapoor"", 5 failed sign-ins, with Dismiss and Unlock now",x1
+react-f2.U2,react-f2,the bell counts it,x1
+react-f2.U3,react-f2,"Unlock now asks ""Unlock this account now?"", then unlocks (no lock, the count cleared) and the row is gone",x1
+react-f2.U4,react-f2,the Admin's dashboard lists it with the other approvals,x1
+react-f2.U5,react-f2,the users list: a Locked badge on Arjun's row,x1
+react-f2.U6,react-f2,the Sign-in filter: Locked shows Arjun alone,x1
+react-f2.U7,react-f2,"the profile: ""Sign-in locked."" with Unlock for the Admin; Unlock lifts it",x1
+react-f2.U8,react-f2,HR sees the banner without Unlock (accounts:unlock is the Admin's),x1
+react-f2.U9,react-f2,HR's inbox has no unlock request,x1
+react-f2.B1,react-f2,"Pay and tax: filled fields shown (account, PAN, salary), the empty ones under ""Not added (N)"", collapsed",x1
+react-f2.B2,react-f2,"no wall of ""Not given"" on the profile",x1
+react-f2.B3,react-f2,Add on IFSC opens the edit form at the IFSC,x1
+react-f2.B4,react-f2,"the help says bank details are entered by hand, and the branch is typed",x1
+react-f2.B5,react-f2,"typing the IFSC: capitals, and the bank name fills in (HDFC Bank)",x1
+react-f2.B6,react-f2,"the account typed differently twice: said at the confirm field, nothing saved",x1
+react-f2.B7,react-f2,saved: the IFSC and HDFC Bank shown; the account masked to its last 4,x1
+react-f2.B8,react-f2,"the person's own Add opens ""Ask for a change"" (Finance or HR checks it)",x1
+react-f2.F1,react-f2,"the note: entered by hand, not fetched or verified",x1
+react-f2.F2,react-f2,"IFSC in capitals, the bank name ICICI Bank",x1
+react-f2.F3,react-f2,"an unknown bank code: the name stays to type, with a hint saying so",x1
+react-f2.F4,react-f2,"a company's PAN and a mistyped Aadhaar: each refused at its field, nothing saved",x1
+react-f2.F5,react-f2,"Add employee with the joining date left empty: Review says ""16 Nov 2026 (today)"" and the record joins on 16 Nov 2026",x1
+react-f2.K1,react-f2,"sign-in's Tab order: email, password, Show, Forgot password, Sign in",x1
+react-f2.K2,react-f2,"""Not added"" opens with Enter",x1
+react-f2.C1.light,react-f2,"light: the brand panel, demo section, Not added, lock banner and rebuilt page are 4.5:1 or more",x1
+react-f2.C1.dark,react-f2,"dark: the brand panel, demo section, Not added, lock banner and rebuilt page are 4.5:1 or more",x1
+react-f2.W.412.light,react-f2,412 light: no sideways scroll on the 16 changed pages,x1
+react-f2.W.1280.light,react-f2,1280 light: no sideways scroll on the 16 changed pages,x1
+react-f2.W.412.dark,react-f2,412 dark: no sideways scroll on the 16 changed pages,x1
+react-f2.W.1280.dark,react-f2,1280 dark: no sideways scroll on the 16 changed pages,x1
+react-f2.X1,react-f2,no page or console errors,x1
 react-fin.G1,react-fin,admin on payroll/salary-structure.html: as it opens,x2 (2 roles)
 react-fin.G2,react-fin,"admin: search, department, no matches; Breakdown on the third row",x2 (2 roles)
 react-fin.G3,react-fin,"admin: Export: the employee salaries file byte for byte (the components file is gone with the table, P4a)",x2 (2 roles)
@@ -428,7 +466,7 @@ react-gallery.K.1280.light,react-gallery,"the readout: hint, click, focus; a pat
 react-gallery.T.1280.light,react-gallery,"sort both ways, search, no matches, export",x1
 react-gallery.D1.1280.light,react-gallery,"confirm: words, role, focus on Cancel; yes on its button; Esc says no and returns focus",x1
 react-gallery.D2.1280.light,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
-react-gallery.B.1280.light,react-gallery,tabs switch; not-built and success toasts,x1
+react-gallery.B.1280.light,react-gallery,tabs switch; the success toast (F2: no not-built button),x1
 react-gallery.E.1280.light,react-gallery,no page or console errors,x1
 react-gallery.N.1280.light,react-gallery,"design foundation drawn: header, 4 KPIs (arrow + words), hero (pills, hatched band named), filters, segmented, toggle, pills, select field, icon buttons",x1
 react-gallery.K1.1280.light,react-gallery,"FilterBar by keyboard: tab order, a preset in words, Custom's dates, Clear All resets",x1
@@ -441,7 +479,7 @@ react-gallery.K.1280.dark,react-gallery,"the readout: hint, click, focus; a patt
 react-gallery.T.1280.dark,react-gallery,"sort both ways, search, no matches, export",x1
 react-gallery.D1.1280.dark,react-gallery,"confirm: words, role, focus on Cancel; yes on its button; Esc says no and returns focus",x1
 react-gallery.D2.1280.dark,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
-react-gallery.B.1280.dark,react-gallery,tabs switch; not-built and success toasts,x1
+react-gallery.B.1280.dark,react-gallery,tabs switch; the success toast (F2: no not-built button),x1
 react-gallery.E.1280.dark,react-gallery,no page or console errors,x1
 react-gallery.N.1280.dark,react-gallery,"design foundation drawn: header, 4 KPIs (arrow + words), hero (pills, hatched band named), filters, segmented, toggle, pills, select field, icon buttons",x1
 react-gallery.K1.1280.dark,react-gallery,"FilterBar by keyboard: tab order, a preset in words, Custom's dates, Clear All resets",x1
@@ -454,7 +492,7 @@ react-gallery.K.412.light,react-gallery,"the readout: hint, click, focus; a patt
 react-gallery.T.412.light,react-gallery,"sort both ways, search, no matches, export",x1
 react-gallery.D1.412.light,react-gallery,"confirm: words, role, focus on Cancel; yes on its button; Esc says no and returns focus",x1
 react-gallery.D2.412.light,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
-react-gallery.B.412.light,react-gallery,tabs switch; not-built and success toasts,x1
+react-gallery.B.412.light,react-gallery,tabs switch; the success toast (F2: no not-built button),x1
 react-gallery.E.412.light,react-gallery,no page or console errors,x1
 react-gallery.N.412.light,react-gallery,"design foundation drawn: header, 4 KPIs (arrow + words), hero (pills, hatched band named), filters, segmented, toggle, pills, select field, icon buttons",x1
 react-gallery.K1.412.light,react-gallery,"FilterBar by keyboard: tab order, a preset in words, Custom's dates, Clear All resets",x1
@@ -467,7 +505,7 @@ react-gallery.K.412.dark,react-gallery,"the readout: hint, click, focus; a patte
 react-gallery.T.412.dark,react-gallery,"sort both ways, search, no matches, export",x1
 react-gallery.D1.412.dark,react-gallery,"confirm: words, role, focus on Cancel; yes on its button; Esc says no and returns focus",x1
 react-gallery.D2.412.dark,react-gallery,"the form modal: focus, Tab trap, Esc closes clean; typed: Esc / close / backdrop ask; Keep editing keeps the text; Discard closes",x1
-react-gallery.B.412.dark,react-gallery,tabs switch; not-built and success toasts,x1
+react-gallery.B.412.dark,react-gallery,tabs switch; the success toast (F2: no not-built button),x1
 react-gallery.E.412.dark,react-gallery,no page or console errors,x1
 react-gallery.N.412.dark,react-gallery,"design foundation drawn: header, 4 KPIs (arrow + words), hero (pills, hatched band named), filters, segmented, toggle, pills, select field, icon buttons",x1
 react-gallery.K1.412.dark,react-gallery,"FilterBar by keyboard: tab order, a preset in words, Custom's dates, Clear All resets",x1
@@ -804,42 +842,16 @@ react-req.P.approvals-inbox,react-req,admin on requests/approvals-inbox.html at 
 react-req.P.my-requests,react-req,emp on requests/my-requests.html at 412: the same cards,x1
 react-req.P.claim-expense,react-req,emp on requests/claim-expense.html at 412: the same cards,x1
 react-req.X1,react-req,shots written,x1
-react-rest.As1,react-rest,admin on account/sessions.html: as it opens,x5 (5 roles)
-react-rest.As2,react-rest,admin: the first placeholder's toast,x5 (5 roles)
-react-rest.An1,react-rest,admin on account/notifications.html: as it opens,x5 (5 roles)
-react-rest.An2,react-rest,admin: the first placeholder's toast,x5 (5 roles)
-react-rest.Sr0,react-rest,admin: the chart's readout line under it,x3 (3 roles)
-react-rest.Sr1,react-rest,admin on system/reports.html: as it opens (the readout set aside),x3 (3 roles)
-react-rest.Sr2,react-rest,admin: the first placeholder's toast,x3 (3 roles)
-react-rest.Sr3,react-rest,"admin: at 412, tapping September shows its value",x3 (3 roles)
-react-rest.Sr,react-rest,emp on system/reports.html: lands where the old site does,x2 (2 roles)
-react-rest.Sb1,react-rest,admin on system/backup.html: as it opens,x1
-react-rest.Sb2,react-rest,admin: the first placeholder's toast,x1
-react-rest.Sb,react-rest,hr on system/backup.html: lands where the old site does,x4 (4 roles)
-react-rest.Sa1,react-rest,admin on system/audit-log.html: as it opens,x2 (2 roles)
-react-rest.Sa2,react-rest,"admin: search fail, payroll, zzz, cleared",x2 (2 roles)
-react-rest.Sa3,react-rest,admin: the first placeholder's toast,x2 (2 roles)
-react-rest.Sa,react-rest,fin on system/audit-log.html: lands where the old site does,x3 (3 roles)
-react-rest.Ss1,react-rest,admin on system/settings.html: as it opens,x1
-react-rest.Ss2,react-rest,admin: Security marked; the Always on lines; a placeholder (A1: Appearance is checked in prefs.mjs),x1
-react-rest.Ss,react-rest,hr on system/settings.html: lands where the old site does,x4 (4 roles)
-react-rest.Rj1,react-rest,admin on recruitment/job-openings.html: as it opens,x2 (2 roles)
-react-rest.Rj2,react-rest,"admin: the Closed tab marked; search design, zzz, cleared; a placeholder",x2 (2 roles)
-react-rest.Rj,react-rest,fin on recruitment/job-openings.html: lands where the old site does,x3 (3 roles)
-react-rest.Rc1,react-rest,admin on recruitment/candidates.html: as it opens,x2 (2 roles)
-react-rest.Rc2,react-rest,admin: the first placeholder's toast,x2 (2 roles)
-react-rest.Rc,react-rest,fin on recruitment/candidates.html: lands where the old site does,x3 (3 roles)
-react-rest.Ra1,react-rest,admin on announcements/announcements.html: as it opens,x5 (5 roles)
-react-rest.Ra2,react-rest,admin: the first placeholder's toast,x5 (5 roles)
-react-rest.P.sessions,react-rest,emp on account/sessions.html at 412: the same cards,x1
-react-rest.P.notifications,react-rest,emp on account/notifications.html at 412: the same cards,x1
-react-rest.P.reports,react-rest,admin on system/reports.html at 412: the same cards,x1
-react-rest.P.audit-log,react-rest,admin on system/audit-log.html at 412: the same cards,x1
-react-rest.P.backup,react-rest,admin on system/backup.html at 412: the same cards,x1
+react-rest.As.rebuilt,react-rest,"admin on account/sessions.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
+react-rest.An.rebuilt,react-rest,"admin on account/notifications.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
+react-rest.Sr.rebuilt,react-rest,"admin on system/reports.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
+react-rest.Sb.rebuilt,react-rest,"admin on system/backup.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
+react-rest.Sa.rebuilt,react-rest,"admin on system/audit-log.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
+react-rest.Ss.f2,react-rest,"Settings: no sample sections, no links to Backup or the Audit log (F2)",x1
+react-rest.Rj.rebuilt,react-rest,"admin on recruitment/job-openings.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
+react-rest.Rc.rebuilt,react-rest,"admin on recruitment/candidates.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
+react-rest.Ra.rebuilt,react-rest,"admin on announcements/announcements.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
 react-rest.P.settings,react-rest,admin on system/settings.html at 412: the same cards,x1
-react-rest.P.job-openings,react-rest,hr on recruitment/job-openings.html at 412: the same cards,x1
-react-rest.P.candidates,react-rest,hr on recruitment/candidates.html at 412: the same cards,x1
-react-rest.P.announcements,react-rest,emp on announcements/announcements.html at 412: the same cards,x1
 react-sh1.R,react-sh1,admin: opens the Shifts page,x2 (2 roles)
 react-sh1.R#2,react-sh1,fin: sent to 403 (shifts:manage),x3 (3 roles)
 react-sh1.S1,react-sh1,"four shifts: General (default), Early, Night (overnight), Part-time, each with its rules in words",x1
@@ -953,7 +965,7 @@ react-side.A2,react-side,"collapsed: the label shows as a chip on hover (""Atten
 react-side.A3,react-side,"collapsed: the active item is marked (aria-current, its own background)",x1
 react-side.A4,react-side,collapsed: no group headings; the brand is its mark only; the count is a small number on the icon; the person's avatar stays in the header,x1
 react-side.A5,react-side,expanded: every item shows its icon and label; the group headings; no section buttons; the brand's name; the avatar and name; the count; Dashboard current,x1
-react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (34), the same links as collapsed",x5 (5 roles)
+react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (22), the same links as collapsed",x5 (5 roles)
 react-side.K1.expanded,react-side,"expanded: Tab goes brand, the toggle, then the first item (Dashboard)",x1
 react-side.K2.expanded,react-side,"expanded: Enter toggles, Space toggles back, focus stays on the toggle",x1
 react-side.K1.collapsed,react-side,"collapsed: Tab goes brand, the toggle, then the first item (Dashboard)",x1

@@ -65,10 +65,6 @@ export default function ChangePassword() {
         <Link to={pageUrl("account/change-password.html")} className="tabs__tab is-active">Password</Link>
         {" "}
         <Link to={pageUrl(APPEARANCE)} className="tabs__tab">Appearance</Link>
-        {" "}
-        <Link to={pageUrl("account/sessions.html")} className="tabs__tab">Sessions</Link>
-        {" "}
-        <Link to={pageUrl("account/notifications.html")} className="tabs__tab">Notifications</Link>
       </nav>
       <div className="grid grid-main-aside">
         <form className="card" method="post" onSubmit={submit} onInput={(e) => { if (e.target.name === "confirm") setError(null); }}>

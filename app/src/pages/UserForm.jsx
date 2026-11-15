@@ -32,7 +32,9 @@ import { PageHeader, Card, Pill } from "../components/Layout.jsx";
 import { Field, Input, Select, Switch, Kv, initialsOf } from "../components/Form.jsx";
 import "../design/sections.css";
 import { leavePolicyOn, bandText } from "../ui/leaveband.jsx";
-import { SECTIONS } from "../../../assets/js/config/employee-fields.js";
+import { SECTIONS, RULES as FIELD_RULES } from "../../../assets/js/config/employee-fields.js";
+import { bankFromIfsc } from "../../../assets/js/config/ifsc-banks.js";   // F2
+import { profileView, saveFields } from "../../../assets/js/data/employee-record.js";   // F2
 import { createAccount } from "../../../assets/js/data/credentials.js";
 import { ShareDetails } from "../ui/profile.jsx";
 
@@ -46,6 +48,8 @@ const toInputDate = (text) => {
   const month = m ? MONTHS.indexOf(m[2]) : -1;
   return month === -1 ? "" : `${m[3]}-${String(month + 1).padStart(2, "0")}-${m[1].padStart(2, "0")}`;
 };
+// F2: a new employee saved with the joining date left empty joins on the day they are added (never as if long-serving)
+const todayIso = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 const toDisplayDate = (iso) => { const m = String(iso ?? "").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[1]}` : ""; };
 const withValue = (list, value, label = value) => (value && !list.some((o) => o[0] === value) ? [...list, [value, label]] : list);
 export const OVERRIDES_HINT = "Applied on top of the default role, everywhere the app checks: extra permissions are added, denied ones taken away. Only an Admin can change them, and not on their own record. Approvals, dashboards, Admin-only powers, managing people and everyone's own pages stay with the role.";
@@ -61,7 +65,21 @@ const RULES = [
   ["work-email", "contact", (f) => (!f.email.trim() ? "Enter the work email." : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()) ? "" : "Enter a valid email address, like name@northwind.com.")],
   ["department", "employment", (f) => (f.department ? "" : "Choose a department.")],
   ["designation", "employment", (f) => (f.designation ? "" : "Choose a designation.")],
+  // F2: bank and statutory details, checked when they change (a value already on file isn't re-judged)
+  ["bank-account", "pay", (f) => payCheck(f, "bank", "account")],
+  ["bank-confirm", "pay", (f) => (f.bank.trim() && f.bank.trim() !== f.was.bank && f.bank.replace(/\s/g, "") !== f.bankConfirm.replace(/\s/g, "") ? "The two account numbers don't match. Type it again." : "")],
+  ["ifsc", "pay", (f) => ([f.bank, f.bankName, f.branch, f.holder].some((v) => v.trim()) && !f.ifsc.trim() && ["bank", "bankName", "branch", "holder", "ifsc"].some((k) => f[k].trim() !== f.was[k]) ? "Enter the IFSC: it's needed whenever bank details are entered." : payCheck(f, "ifsc", "ifsc"))],
+  ["pan", "pay", (f) => payCheck(f, "pan", "pan")],
+  ["aadhaar", "pay", (f) => payCheck(f, "aadhaar", "aadhaar")],
 ];
+// a changed value against the employee record's rule (config/employee-fields.js RULES); "" when it passes, is empty or unchanged
+function payCheck(f, key, rule) {
+  const v = f[key].trim();
+  if (!v || v === f.was[key]) return "";
+  const clean = key === "pan" || key === "ifsc" ? v.toUpperCase().replace(/\s/g, "") : key === "bank" ? v.replace(/\s/g, "") : v;
+  const [test, words] = FIELD_RULES[rule];
+  return test(clean) ? "" : words;
+}
 const problemsOf = (f) => Object.fromEntries(RULES.map(([id, section, rule]) => [id, { section, text: rule(f) }]).filter(([, p]) => p.text));
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
@@ -77,15 +95,29 @@ function Form({ editing, editId, startAt }) {
   const offices = useData(() => getOffices());
   const [first, ...rest] = String(editing?.name ?? "").split(" ");
   const managerKey0 = editing ? editing.reportingManagerId ?? (editing.reportingManager ? `name:${editing.reportingManager}` : "") : "";
+  // F2: the record's bank fields as this person sees them (Aadhaar is masked: left empty, it keeps the one on file)
+  const [onFile] = useState(() => {
+    const view = editing ? profileView(userId, editing.id) : null;
+    const v = Object.fromEntries((view?.sections ?? []).flatMap((s) => s.fields).map((x) => [x.key, x.masked ? "" : String(x.value ?? "")]));
+    return { ifsc: v.ifsc ?? "", bankName: v.bankName ?? "", branch: v.branch ?? "", holder: v.accountHolder ?? "", aadhaar: "", aadhaarOnFile: Boolean((view?.sections ?? []).flatMap((s) => s.fields).find((x) => x.key === "aadhaar")?.masked) };
+  });
   const [f0] = useState(() => ({
     first: editing ? first : "", last: editing ? rest.join(" ") : "", email: editing?.email ?? "", phone: editing?.phone ?? "", dob: editing?.dob ?? "",
     bank: editing?.bankAccount ?? "", pan: editing?.pan ?? "", department: editing?.department ?? "", designation: editing?.designation ?? "",
+    bankConfirm: "", ifsc: onFile.ifsc, bankName: onFile.bankName, branch: onFile.branch, holder: onFile.holder, aadhaar: "",
+    was: { bank: editing?.bankAccount ?? "", pan: editing?.pan ?? "", ifsc: onFile.ifsc, bankName: onFile.bankName, branch: onFile.branch, holder: onFile.holder, aadhaar: "" },
     manager: managerKey0, joining: toInputDate(editing?.dateOfJoining), empType: editing?.employmentType || "Full-time", location: editing?.location || (offices.find((o) => o.type === "head") ?? offices[0])?.name || "Remote",
     active: editing ? editing.status !== "inactive" : true,
     office: editing ? officeIdOf(editing.id) : officeIdOf(null), home: editing ? isHomeEligible(editing.id) : false,
   }));
   const [f, setF] = useState(f0);
   const set = (k) => (v) => setF((s) => ({ ...s, [k]: v && v.target ? v.target.value : v }));
+  // F2: PAN and IFSC in capitals as typed; a new IFSC fills the bank name when it is empty or still names the old IFSC's bank
+  const setUpper = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value.toUpperCase() }));
+  const setIfsc = (e) => setF((s) => {
+    const ifsc = e.target.value.toUpperCase(), named = bankFromIfsc(ifsc);
+    return { ...s, ifsc, bankName: named && (!s.bankName.trim() || s.bankName === bankFromIfsc(s.ifsc)) ? named : s.bankName };
+  });
   const [ticked0] = useState(() => ({ grant: new Set(overridesOf(editing).grants), deny: new Set(overridesOf(editing).denies) }));
   const [ticked, setTicked] = useState(ticked0);
   const [emailError, setEmailError] = useState(null);
@@ -176,7 +208,7 @@ function Form({ editing, editId, startAt }) {
     const overrides = byRole !== "admin" || (editing && editing.id === userId) ? {} : { grantPermissions: offeredTicked("grant"), denyPermissions: offeredTicked("deny") };
     const record = {
       name: `${f.first.trim()} ${f.last.trim()}`, email: f.email.trim(), department: f.department, designation: f.designation, role: roleOnSave, status,
-      phone: f.phone.trim(), dob: f.dob, dateOfJoining: toDisplayDate(f.joining), employmentType: f.empType, location: f.location,
+      phone: f.phone.trim(), dob: f.dob, dateOfJoining: toDisplayDate(f.joining || (editing ? "" : todayIso())), employmentType: f.empType, location: f.location,
       ...manager, ...overrides, bankAccount: account || null, bankAccountLast4: digits ? digits.slice(-4) : null, pan: f.pan.trim().toUpperCase() || null,
     };
     const result = editing ? updateUser(userId, editing.id, record) : addUser(userId, record);
@@ -187,6 +219,11 @@ function Form({ editing, editId, startAt }) {
     }
     // L1: the office and home check-in, after the employee (each by its own permission; unchanged ones aren't sent)
     const id = result.record.id;
+    // F2: the record's bank fields (IFSC, bank name, branch, holder) and Aadhaar, after the employee, only the ones that changed
+    const recordChanges = Object.fromEntries([["ifsc", f.ifsc.trim()], ["bankName", f.bankName.trim()], ["branch", f.branch.trim()], ["accountHolder", f.holder.trim()]]
+      .filter(([k, v]) => v !== f.was[k === "accountHolder" ? "holder" : k]));
+    if (f.aadhaar.trim()) recordChanges.aadhaar = f.aadhaar.trim();
+    if (Object.keys(recordChanges).length) { const rr = saveFields(userId, id, recordChanges); if (!rr.ok) toast(rr.error, "danger"); }
     if (canManageOffices && f.office && f.office !== officeIdOf(id)) setEmployeeOffice(userId, id, f.office);
     if (canEditPeople && f.home !== isHomeEligible(id)) setHomeEligible(userId, id, f.home);
     bump();
@@ -210,9 +247,10 @@ function Form({ editing, editId, startAt }) {
   const review = {
     personal: [["First name", f.first.trim()], ["Last name", f.last.trim()], ["Date of birth", toDisplayDate(f.dob)], ["Employee ID", editing ? editing.id : peekNextId()]],
     contact: [["Work email", f.email.trim()], ["Phone", f.phone.trim()]],
-    employment: [["Department", label(deptOptions, f.department)], ["Designation", f.designation], ["Reporting manager", label(managerOptions, f.manager)], ["Date of joining", toDisplayDate(f.joining)],
+    employment: [["Department", label(deptOptions, f.department)], ["Designation", f.designation], ["Reporting manager", label(managerOptions, f.manager)], ["Date of joining", f.joining || editing ? toDisplayDate(f.joining) : `${toDisplayDate(todayIso())} (today)`],
       ["Employment type", f.empType], ["Work location", f.location], ["Office", label(officeOptions, f.office)], ["Home check-in", f.home ? "Can check in from home" : "Office only"]],
-    pay: [["Bank account number", f.bank.trim()], ["PAN", f.pan.trim().toUpperCase()]],
+    pay: [["Bank account number", f.bank.trim()], ["IFSC", f.ifsc.trim()], ["Bank name", f.bankName.trim()], ["Branch", f.branch.trim()], ["Account holder's name", f.holder.trim()], ["PAN", f.pan.trim().toUpperCase()],
+      ["Aadhaar", f.aadhaar.trim() ? `•••• •••• ${f.aadhaar.replace(/\s/g, "").slice(-4)}` : onFile.aadhaarOnFile ? "On file" : ""]],
     access: [["Default role", ROLES[roleOnSave]?.label ?? roleOnSave], ["Extra permissions", offeredTicked("grant").join(", ") || "None"], ["Denied permissions", offeredTicked("deny").join(", ") || "None"],
       ...(editing ? [["Account", f.active ? "Active" : "Inactive"]] : [])],
   };
@@ -301,10 +339,19 @@ function Form({ editing, editId, startAt }) {
           </div>
         </>)}
         {sectionCard("pay", (
+          <>
+          <p className="ds-note" id="pay-entered">Bank, PAN and Aadhaar details are entered by hand here. OfficeOS doesn't fetch or verify them with the bank or the tax department.</p>
           <div className="ds-form-grid">
-            <Field id="bank-account" label="Bank account number"><Input id="bank-account" type="text" inputMode="numeric" autoComplete="off" placeholder="e.g. 9024 5713 7305" value={f.bank} onChange={set("bank")} /></Field>
-            <Field id="pan" label="PAN"><Input id="pan" type="text" autoComplete="off" placeholder="ABCDE1234F" value={f.pan} onChange={set("pan")} /></Field>
+            <Field id="bank-account" label="Bank account number" error={err("bank-account")} hint="9 to 18 digits."><Input id="bank-account" type="text" inputMode="numeric" autoComplete="off" placeholder="e.g. 9024 5713 7305" value={f.bank} error={err("bank-account")} hint="9 to 18 digits." onChange={set("bank")} /></Field>
+            <Field id="bank-confirm" label="Confirm bank account number" error={err("bank-confirm")} hint={f.bank.trim() && f.bank.trim() !== f.was.bank ? "Type the account number again." : undefined}><Input id="bank-confirm" type="text" inputMode="numeric" autoComplete="off" value={f.bankConfirm} error={err("bank-confirm")} disabled={!f.bank.trim() || f.bank.trim() === f.was.bank} onPaste={(e) => e.preventDefault()} onChange={set("bankConfirm")} /></Field>
+            <Field id="ifsc" label="IFSC" error={err("ifsc")} hint="Needed with bank details, like SBIN0001234. The bank name fills in from it."><Input id="ifsc" type="text" autoComplete="off" placeholder="SBIN0001234" maxLength={11} value={f.ifsc} error={err("ifsc")} hint="Needed with bank details, like SBIN0001234. The bank name fills in from it." onChange={setIfsc} /></Field>
+            <Field id="bank-name" label="Bank name" hint={f.ifsc.trim().length >= 4 && !bankFromIfsc(f.ifsc) ? "This IFSC's bank isn't in our list: type the bank's name." : undefined}><Input id="bank-name" type="text" autoComplete="off" value={f.bankName} onChange={set("bankName")} /></Field>
+            <Field id="branch" label="Branch" hint="Typed by hand: branch lookup arrives with the backend."><Input id="branch" type="text" autoComplete="off" value={f.branch} hint="Typed by hand: branch lookup arrives with the backend." onChange={set("branch")} /></Field>
+            <Field id="account-holder" label="Account holder's name"><Input id="account-holder" type="text" autoComplete="off" value={f.holder} onChange={set("holder")} /></Field>
+            <Field id="pan" label="PAN" error={err("pan")} hint="Like ABCPE1234F; the 4th letter is P for a person."><Input id="pan" type="text" autoComplete="off" placeholder="ABCPE1234F" maxLength={10} value={f.pan} error={err("pan")} hint="Like ABCPE1234F; the 4th letter is P for a person." onChange={setUpper("pan")} /></Field>
+            <Field id="aadhaar" label="Aadhaar" error={err("aadhaar")} hint={onFile.aadhaarOnFile ? "On file and hidden. Leave empty to keep it." : "12 digits."}><Input id="aadhaar" type="text" inputMode="numeric" autoComplete="off" maxLength={14} value={f.aadhaar} error={err("aadhaar")} hint={onFile.aadhaarOnFile ? "On file and hidden. Leave empty to keep it." : "12 digits."} onChange={set("aadhaar")} /></Field>
           </div>
+          </>
         ))}
         {sectionCard("access", <>
           <div className="ds-form-grid">

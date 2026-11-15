@@ -46,7 +46,15 @@ const COMPANY = "Northwind Technologies Pvt. Ltd.";
 // L2 (ruled): Offices is the last item of the sidebar's Attendance section, for every role.
 const OFFICES_ITEM = ["Offices", "/pages/company/offices.html", false, null, null, "icon", "M12 22s7-6.2 7-12a7 "];
 const withOffices = (sections) => sections?.map((s) => (s.title === "Attendance" ? { ...s, items: [...s.items, OFFICES_ITEM] } : s));
-const ruledShell = (s) => ({ ...s, brand: s.brand === "O OfficeOS" ? `N${COMPANY}` : s.brand, crumbs: s.crumbs?.replace(/^Workspace\//, `${COMPANY}/`), sections: withOffices(s.sections) });
+// F2 (the brief, item 5): the placeholder pages are out of the sidebar and the search (app/src/shell/placeholders.js; their URLs
+// show "This section is being rebuilt.", f2.mjs P): the old side's links to them are read past, and a section left empty with them.
+const F2_PLACE = /^\/pages\/(inventory\/(my-assets|items|stock-movements|asset-assignment|vendors)|announcements\/announcements|recruitment\/(job-openings|candidates)|system\/(reports|audit-log|backup)|access\/(delegation|approval-workflows)|account\/(notifications|sessions))\.html/;
+const withoutPlaceholders = (sections) => sections?.map((s) => { const items = s.items.filter((it) => !F2_PLACE.test(it[1] ?? ""));
+  // a group F2 left with one item is drawn as a single link by the app's own rule (the Admin's System: Settings): read past on both sides
+  return items.length === 1 && s.items.length > 1 ? { title: s.title, f2: true } : { ...s, items }; }).filter((s) => s.f2 || s.items.length);
+const f2Singles = (old, nw) => { const titles = (old.sections ?? []).filter((s) => s.f2).map((s) => s.title);
+  return { ...nw, sections: nw.sections?.map((s) => (titles.includes(s.title) ? { title: s.title, f2: true } : s)) }; };
+const ruledShell = (s) => ({ ...s, brand: s.brand === "O OfficeOS" ? `N${COMPANY}` : s.brand, crumbs: s.crumbs?.replace(/^Workspace\//, `${COMPANY}/`), sections: withoutPlaceholders(withOffices(s.sections)) });
 const ruledPhone = (s) => (s.toggle?.[0] ? { ...s, shown: [s.shown[0], `About ${COMPANY}`, ...s.shown.slice(1)] } : s);
 // L1 (ruled): the brand panel's "© 2026 OfficeOS. All rights reserved." line is gone; the footer says "© <year> <company> · Powered by OfficeOS"
 const ruledAuth = (s) => ({ ...s, text: s.text?.replace(/^O OfficeOS /, `N ${COMPANY} `).replace(/ © 2026 OfficeOS\. All rights reserved\./, ""), title: s.title?.replace(/\| OfficeOS$/, `| ${COMPANY}`) });
@@ -106,7 +114,8 @@ if (ONLY.includes("D")) {
   console.log("--- D. The drawn shell at 1280 ---");
   for (const who of Object.keys(PAGES)) for (const page of PAGES[who]) {
     const o = await open(O, who, page), n = await open(N, who, page);
-    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, ruledShell(await readShell(o.t)), await readShell(n.t));
+    const od = ruledShell(await readShell(o.t));
+    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, od, f2Singles(od, await readShell(n.t)));
     if (o.errs.length || n.errs.length) check(`D.${who}.err`, "no page errors", false, j([o.errs, n.errs]));
     await o.ctx.close(); await n.ctx.close();
   }
@@ -149,7 +158,9 @@ if (ONLY.includes("Q")) {
       return t.evaluate(() => { const l = document.getElementById("search-results"); return [l.hidden, [...l.children].map((c) => [c.textContent.trim(), c.getAttribute("href"), c.classList.contains("is-active"), c.getAttribute("role")])]; });
     };
     for (const q of ["le", "pay", "arj", "zzz"]) {
-      const [a, b] = [await res(o.t, q), await res(n.t, q)];
+      let [a0, b] = [await res(o.t, q), await res(n.t, q)];
+      const a = [a0[0], a0[1].filter(([, h]) => !h || !F2_PLACE.test(new URL(h, "http://x/pages/leave/").pathname))];   // F2: placeholder pages read past
+      if (a[1].length < a0[1].length) b = [b[0], b[1].slice(0, a[1].length)];   // F2: the result limit lets later matches in where they were
       const norm = (r) => j([r[0], r[1].map(([x, h, act, role]) => [x, h ? new URL(h, "http://x/pages/leave/").pathname + new URL(h, "http://x/pages/leave/").search : null, act, role])]);
       check(`Q.${who}.${q}`, `${who} searches "${q}"`, norm(a) === norm(b), norm(a) === norm(b) ? `${b[1].length} results` : `old ${norm(a)} new ${norm(b)}`);
     }

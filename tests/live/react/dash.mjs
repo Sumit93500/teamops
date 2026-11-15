@@ -34,12 +34,17 @@ const WHO = { admin: ["Aarav Mehta", "EMP-1001"], hr: ["Priya Nair", "EMP-1003"]
 const UA = "Mozilla/5.0 (Linux; Android 14; Pixel 6a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 const SIZES = { 412: { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2.625, isMobile: true, hasTouch: true, userAgent: UA }, 1280: { viewport: { width: 1280, height: 900 } } };
 const browser = await chromium.launch({ channel: "msedge", headless: true, args: ["--disable-gpu", "--disable-partial-raster"] });
+// F2 (the brief, item 5): the app no longer draws a control with nothing behind it; the old pages' ones ([data-not-implemented])
+// are hidden as they appear (in every context: the app has none), so the rest compares as before.
+const F2_PAST = () => { const sweep = () => document.querySelectorAll("[data-not-implemented]:not([data-f2-past])").forEach((e) => { e.dataset.f2Past = ""; e.hidden = true; e.style.setProperty("display", "none", "important"); });
+  new MutationObserver(sweep).observe(document, { childList: true, subtree: true }); };
 let passed = 0, failed = 0;
 const check = (n, label, cond, detail = "") => { cond ? passed++ : failed++; console.log(`${cond ? "PASS" : "FAIL"}  ${String(n).padEnd(14)} ${label}${detail !== "" ? `  -> ${String(detail).slice(0, 500)}` : ""}`); };
 const j = JSON.stringify;
 
 async function open(base, who, page, { width = 1280, theme = "light", prep = null } = {}) {
   const ctx = await browser.newContext({ ...SIZES[width], timezoneId: "Asia/Kolkata", acceptDownloads: true });
+  await ctx.addInitScript(F2_PAST);
   await useLocalFonts(ctx);
   await ctx.clock.setFixedTime(new Date("2026-09-28T10:00:00+05:30"));
   await ctx.addInitScript(([w, th]) => {
@@ -99,7 +104,21 @@ const read = (t) => t.evaluate(() => {
   shiftsMark?.replaceWith(shiftsCard);
   return out;
 });
-function compare(n, label, a, b, skip = []) {
+// F2 (the brief, items 4 and 5): every list's counter follows one rule ("9 employees" with nothing filtered, "Showing 4 of 9
+// employees" with a filter or search on; app/src/data/counts.js, checked in f2.mjs O), so a counter is read as its numbers on
+// both sides; and the placeholder items F2 took away (Post job opening, Open positions, the sample announcement, links to
+// placeholder pages) are read past on the old side.
+const countCanon = (s) => s.replace(/^Showing (?:\d+–)?(\d+) of (\d+)(?: matching)? /, "#$1/$2 ").replace(/^(\d+) (?=[a-z])/, "#$1/$1 ");
+const canon = (v) => (typeof v === "string" ? countCanon(v) : Array.isArray(v) ? v.map(canon) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, canon(x)])) : v);
+const PLACEHOLDER = /\/pages\/(inventory|announcements|recruitment|system\/(reports|audit-log|backup)|access\/(delegation|approval-workflows)|account\/(notifications|sessions))/;
+const pastOld = (a) => a && ({ ...a,
+  buttons: a.buttons.filter((b) => b !== "Post job opening"),
+  stats: a.stats.filter((s) => s[0] !== "positions" && s[4] !== "Sample, not built yet"),
+  cards: a.cards.map(([id, t]) => [id, typeof t === "string" ? t.replace(/ ?(Announcement|Interview scheduled): [^]*?Sample, not built yet/g, "").trim() : t]),
+  metas: a.metas.filter((m) => m !== "Sample, not built yet"),
+  links: a.links.filter(([, p]) => !PLACEHOLDER.test(p)) });
+function compare(n, label, a0, b0, skip = []) {
+  const a = canon(pastOld(a0)), b = canon(b0);
   const diff = Object.keys(a).filter((k) => !skip.includes(k) && j(a[k]) !== j(b[k]));
   check(n, label, diff.length === 0, diff.length ? diff.map((k) => `${k}: old ${j(a[k])} new ${j(b[k])}`).join(" ; ") : `${a.stats.length} stats, ${a.bars?.length ?? 0} bars, ${a.tables.map((x) => x[1].length).join("+")} rows`);
 }
@@ -128,7 +147,7 @@ if (ONLY.includes("A")) {
       return out;
     };
     const [sa, sb] = [await steps(x.o.t), await steps(x.n.t)];
-    check(`A2.${who}`, `${who}: search, department, Next`, j(sa) === j(sb), j(sa) === j(sb) ? j(sb) : `old ${j(sa)} new ${j(sb)}`);
+    check(`A2.${who}`, `${who}: search, department, Next`, j(canon(sa)) === j(canon(sb)), j(canon(sa)) === j(canon(sb)) ? j(sb) : `old ${j(sa)} new ${j(sb)}`);   // F2: counters by their numbers
     if (who === "admin") {
       const files = async (t) => {
         const exp = await t.$('main .page-header__actions button[data-export]'); if (!exp) return [];
@@ -193,7 +212,7 @@ if (ONLY.includes("H")) {
       return out;
     };
     const [sa, sb] = [await steps(x.o.t), await steps(x.n.t)];
-    check(`H2.${who}`, `${who}: search and status filter`, j(sa) === j(sb), j(sa) === j(sb) ? j(sb).slice(0, 200) : `old ${j(sa)} new ${j(sb)}`);
+    check(`H2.${who}`, `${who}: search and status filter`, j(canon(sa)) === j(canon(sb)), j(canon(sa)) === j(canon(sb)) ? j(sb).slice(0, 200) : `old ${j(sa)} new ${j(sb)}`);   // F2: counters by their numbers
     if (x.o.errs.length || x.n.errs.length) check(`H9.${who}`, "no page errors", false, j([x.o.errs, x.n.errs]));
     await x.o.ctx.close(); await x.n.ctx.close();
   }
@@ -205,7 +224,7 @@ if (ONLY.includes("H")) {
   for (const x of [o, n]) await ask(x, firstApprove, true);
   const [ta, tb] = [await toasts(o.t), await toasts(n.t)];
   const [pa, pb] = [await read(o.t), await read(n.t)];
-  check("H4", "Approve, then Yes: the same toast and the same page after (stats, list, activity, table)", j(ta) === j(tb) && tb.length === 1 && j(pa) === j(pb), j([ta, tb]) + (j(pa) === j(pb) ? "" : ` page differs: ${Object.keys(pa).filter((k) => j(pa[k]) !== j(pb[k])).join(",")}`));
+  check("H4", "Approve, then Yes: the same toast and the same page after (stats, list, activity, table)", j(ta) === j(tb) && tb.length === 1 && j(canon(pastOld(pa))) === j(canon(pb)), j([ta, tb]) + (j(canon(pastOld(pa))) === j(canon(pb)) ? "" : ` page differs: ${Object.keys(pa).filter((k) => j(pa[k]) !== j(pb[k])).join(",")}`));
   const rej = async (t) => {
     await t.click("#approvals-list .list__item:first-child .btn:not(.btn--primary)"); await t.waitForTimeout(250);
     const opened = await t.evaluate(() => { const m = [...document.querySelectorAll(".modal.is-open")].at(-1); return m ? [m.querySelector(".modal__title").textContent, m.querySelector(".modal__desc").textContent, document.activeElement.id] : null; });

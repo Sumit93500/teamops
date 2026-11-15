@@ -62,12 +62,7 @@ function Bell() {
   const inbox = useData(() => canOpenPage(INBOX), [userId, role?.key]);
   const n = useData(() => waitingCount(userId, role?.key), [userId, role?.key]);
   const open = useBellOpen();
-  if (!inbox) {
-    return (
-      <button className="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-label="Notifications" data-not-implemented="Notifications"
-        onClick={(e) => { e.preventDefault(); showToast("Notifications isn't available in this demo.", "info"); }}><Icon d={BELL} /></button>
-    );
-  }
+  if (!inbox) return null;   // F2: no bell for someone with no approvals inbox (it only said it wasn't available)
   // The list of what waits, and each item's card (ui/ApprovalCard.jsx, round 13b: drawn on <body> by the shell's CardHost).
   // F1: open or not is one store (useBellOpen), so aria-expanded / -controls always say what's on screen.
   const onClick = (e) => toggleBellPanel(e.currentTarget);

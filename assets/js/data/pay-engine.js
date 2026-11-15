@@ -39,6 +39,7 @@ import { taxYearMonths, lossOfPayAmount } from "./payroll.js";
 import { approvedRow } from "./pay-snapshots.js";
 import { statutoryFrom, leaveFrom } from "./pay-settings.js";
 import { lossOfPayDaysIn } from "./leave-policy.js";
+import { isAppCreated } from "./employment-period.js";   // F2
 import { shiftMonthLossOfPay } from "./shift-days.js";   // SH1
 import { shiftRulesMonth } from "./shift-settings.js";   // SH1
 
@@ -51,7 +52,7 @@ import { shiftRulesMonth } from "./shift-settings.js";   // SH1
 export const policyLossOfPayFrom = () => { const a = statutoryFrom(), b = leaveFrom().slice(0, 7); return a > b ? a : b; };
 function policyLossOfPay(userId, year, month, old) {
   const key = `${year}-${String(month).padStart(2, "0")}`;
-  if (key < policyLossOfPayFrom()) return { days: 0, amount: 0 };
+  if (key < (isAppCreated(userId) ? statutoryFrom() : policyLossOfPayFrom())) return { days: 0, amount: 0 };   // F2: people created in the app are under the leave policy before its start month too
   const days = Math.min(lossOfPayDaysIn(userId, year, month), Math.max(0, old.workingDays - old.lop.days));
   return { days, amount: days > 0 ? lossOfPayAmount(old.monthlyGross, days, old.workingDays) : 0 };
 }

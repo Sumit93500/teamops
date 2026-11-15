@@ -23,6 +23,7 @@ import { Badge, badgeOf, Tabs, Stepper } from "../components/Basics.jsx";
 import { StatusBadge } from "../ui/leave.jsx";
 import { rupees } from "../ui/payroll.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
+import { countText } from "../data/counts.js";   // F2: one counter wording
 import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
 
@@ -124,9 +125,6 @@ export default function MyRequests() {
         <div className="page-header__actions">
           <Link className="btn" to={pageUrl("leave/apply-leave.html")} data-permission="leave:create" hidden={!canLeave || undefined}>Apply for leave</Link>
           <Link className="btn" to={pageUrl("requests/claim-expense.html")} data-permission="expenses:create" hidden={!canClaim || undefined}>Claim an expense</Link>
-          <Link className="btn btn--primary" to={`${pageUrl("inventory/my-assets.html")}#request`} data-permission="assets:request" hidden={!canAsset || undefined}>
-            <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>{" "}Request an asset
-          </Link>
         </div>
       </div>
       <div className="grid grid-main-aside">
@@ -139,7 +137,7 @@ export default function MyRequests() {
           </div>
           <Table bare pager={false} tableClass="table table--fit" columns={columns} rows={shown} rowKey={(x) => `${x.kind}-${x.id}`}
             rowProps={(x) => (x.kind === "expense" ? { "data-claim-id": x.id } : x.kind === "asset" ? { "data-request-id": x.id } : {})} empty="No requests match these filters." />
-          <div className="card__footer"><span className="card__meta">{`Showing ${shown.length} of ${d.rows.length} requests`}</span></div>
+          <div className="card__footer"><span className="card__meta">{countText(shown.length, d.rows.length, "request", { filtered: shown.length !== d.rows.length })}</span></div>
         </section>
         <aside className="stack">
           <section className="card" id="request-progress" hidden={!p || undefined}>

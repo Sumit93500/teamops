@@ -84,10 +84,10 @@ export default function TeamLeave() {
   }
   const active = d.people.filter((u) => u.status !== "inactive").map((u) => ({ id: u.id, user: u, balance: balanceFor(u.id) }));
   // P4b: from the policy's start date the band and the policy's balances (a person on a band with none of a type reads 0)
-  const policyOn = leavePolicyOn();
+  const policyOn = leavePolicyOn() || active.some((x) => leavePolicyOn(undefined, x.id));   // F2: people created in the app are under the policy from their first day
   const balanceColumns = [{ key: "employee", label: "Employee", render: (r) => <PersonCell userId={r.id} name={r.user.name} sub={departmentName(r.user.department)} to={profileTo(r.id)} /> },
-    ...(policyOn ? [{ key: "band", label: "Band", render: (r) => <BandBadge userId={r.id} next={false} /> }] : []),
-    ...CAPPED.map((type) => ({ key: type, label: typeLabel(type), render: (r) => { if (!policyOn) return `${r.balance[type].left} days left`; const t = leaveAccount(r.id, today)?.types[type]; return t ? `${t.left} days left${t.lop ? `, ${t.lop} loss of pay` : ""}` : "—"; } }))];
+    ...(policyOn ? [{ key: "band", label: "Band", render: (r) => (leavePolicyOn(undefined, r.id) ? <BandBadge userId={r.id} next={false} /> : "—") }] : []),
+    ...CAPPED.map((type) => ({ key: type, label: typeLabel(type), render: (r) => { if (!policyOn || !leavePolicyOn(undefined, r.id)) return `${r.balance[type].left} days left`; const t = leaveAccount(r.id, today)?.types[type]; return t ? `${t.left} days left${t.lop ? `, ${t.lop} loss of pay` : ""}` : "—"; } }))];
   const requests = [...d.requests].sort((a, b) => b.appliedOn.localeCompare(a.appliedOn) || b.id.localeCompare(a.id, "en", { numeric: true }));
   const requestColumns = [
     { key: "employee", label: "Employee", render: (r) => person(r.userId) },

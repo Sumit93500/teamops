@@ -161,7 +161,7 @@ if (ONLY.includes("L")) {
     return { tabs, head: [...tb.querySelectorAll("thead th")].map(tx), rows: [...tb.querySelectorAll("tbody tr")].map((r) => [...r.cells].filter((c) => !c.hidden).map(tx)),
       edits: [...tb.querySelectorAll("tbody a")].filter((a) => a.textContent.trim() === "Edit" && a.getClientRects().length).map((a) => new URL(a.href).pathname + new URL(a.href).search),
       names: [...tb.querySelectorAll("tbody a")].filter((a) => a.textContent.trim() !== "Edit").map((a) => new URL(a.href).pathname + new URL(a.href).search),
-      selects: [...document.querySelectorAll("main select")].map((s) => [...s.options].map((o) => o.textContent.trim())) };
+      selects: [...document.querySelectorAll("main select")].map((s) => [...s.options].map((o) => o.textContent.trim())).filter((o) => o[0] !== "Any sign-in") };   // F2: the Sign-in filter (f2.mjs U)
   });
   const searchSel = 'main input[type="search"]';
   const pickSelect = async (t, i, label) => { const s = (await t.$$("main select"))[i]; await s.selectOption({ label }); await settle(t, 150); };
@@ -338,12 +338,12 @@ if (ONLY.includes("S")) {
   check("S7", "Create with Employment still empty: back to Employment, its errors, focus on Department, the count", s.current === "employment" && s.focus === "department"
     && j(s.fieldErrors) === j([["department-error", "Choose a department."], ["designation-error", "Choose a designation."]]) && s.errors === "1 section needs attention", j(s));
   await n.t.selectOption("#department", { label: "Engineering" }); await n.t.selectOption("#designation", { label: "Software Engineer" }); await n.t.fill("#joining", "2026-10-05");
-  await n.t.click('[data-step="pay"]'); await n.t.fill("#pan", "abcde1234f"); await n.t.click('[data-step="review"]'); await settle(n.t);
+  await n.t.click('[data-step="pay"]'); await settle(n.t); await n.t.fill("#pan", "abcpe1234f"); await settle(n.t); await n.t.click('[data-step="review"]'); await settle(n.t);   // F2: a person's PAN (P as the 4th letter)
   const rv = await n.t.evaluate(() => Object.fromEntries([...document.querySelectorAll("#review dt")].map((dt) => [dt.textContent, dt.nextElementSibling.innerText.trim()])));
   s = await state(n.t);
   check("S8", "Review: every value read-only (names, email, department by name, designation, joining as \"5 Oct 2026\", PAN in capitals, the role, \"Not given\" for blanks); Create employee",
     rv["First name"] === "Neha" && rv["Work email"] === "neha.verma@northwind.com" && rv.Department === "Engineering" && rv.Designation === "Software Engineer" && rv["Date of joining"] === "5 Oct 2026"
-    && rv.PAN === "ABCDE1234F" && rv["Default role"] === "Employee" && rv.Phone === "Not given" && s.buttons.at(-1) === "Create employee", j([rv, s.buttons]));
+    && rv.PAN === "ABCPE1234F" && rv["Default role"] === "Employee" && rv.Phone === "Not given" && s.buttons.at(-1) === "Create employee", j([s, rv]));
   await n.t.click('#review [data-edit="contact"]'); await settle(n.t);
   const edit = (await state(n.t)).current;
   await n.t.click('[data-step="review"]'); await n.t.click('.uf-actions button[type="submit"]'); await settle(n.t, 300);
@@ -352,7 +352,7 @@ if (ONLY.includes("S")) {
   await n.t.waitForURL(/users-list/, { timeout: 4000 }).catch(() => {});
   const made = await n.t.evaluate(() => JSON.parse(localStorage.getItem("officeos:users")).records.find((u) => u.email === "neha.verma@northwind.com"));
   check("S9", "Review's Edit goes to its section; Create: \"Employee saved.\", the list, the record saved (no leave question after saving)",
-    edit === "contact" && tt.at(-1) === "Employee saved." && new URL(n.t.url()).pathname.endsWith("users-list.html") && made?.name === "Neha Verma" && made.pan === "ABCDE1234F" && n.dialogs.length === 0, j([edit, tt, made?.name]));
+    edit === "contact" && tt.at(-1) === "Employee saved." && new URL(n.t.url()).pathname.endsWith("users-list.html") && made?.name === "Neha Verma" && made.pan === "ABCPE1234F" && n.dialogs.length === 0, j([edit, tt, made?.name]));
   await n.ctx.close();
   // the email already used: Contact details, the store's words, focus
   n = await open(N, "admin", "users/user-form.html");
@@ -690,11 +690,11 @@ if (ONLY.includes("K")) {
   await n.t.focus('main input[type="search"]');
   const order = [];
   for (let i = 0; i < 3; i++) { await n.t.keyboard.press("Tab"); order.push(await n.t.evaluate(() => document.activeElement.labels?.[0]?.textContent ?? document.activeElement.textContent.trim())); }
-  await n.t.fill('main input[type="search"]', "ka"); await n.t.keyboard.press("Tab"); await n.t.keyboard.press("Tab"); await n.t.keyboard.press("Tab");
+  await n.t.fill('main input[type="search"]', "ka"); await n.t.keyboard.press("Tab"); await n.t.keyboard.press("Tab"); await n.t.keyboard.press("Tab"); await n.t.keyboard.press("Tab");   // F2: past the Sign-in filter
   const clear = await n.t.evaluate(() => document.activeElement.textContent.trim());
   await n.t.keyboard.press("Enter"); await settle(n.t, 150);
   const cleared = await n.t.evaluate(() => document.querySelector('main input[type="search"]').value);
-  check("K1", "users list: search, Department, Role, then the table (Clear All is off and skipped while nothing is set); with a search typed, Tab reaches Clear All and Enter clears", j(order) === j(["Department", "Role", "Aarav Mehta"]) && clear === "Clear All" && cleared === "", j([order, clear, cleared]));
+  check("K1", "users list: search, Department, Role, then the table (Clear All is off and skipped while nothing is set); with a search typed, Tab reaches Clear All and Enter clears", j(order) === j(["Department", "Role", "Sign-in"]) && clear === "Clear All" && cleared === "", j([order, clear, cleared]));
   await n.t.focus('main [role="tab"][data-status="inactive"]'); await n.t.keyboard.press("Enter"); await settle(n.t, 150);
   const rows = await n.t.evaluate(() => document.querySelectorAll("main table tbody tr").length);
   check("K2", "a status tab works from the keyboard (Inactive: 1 row)", rows === 1, rows);

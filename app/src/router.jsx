@@ -36,20 +36,10 @@ import MyRequests from "./pages/MyRequests.jsx";
 import ClaimExpense from "./pages/ClaimExpense.jsx";
 import RolesList from "./pages/RolesList.jsx";
 import RoleEditor from "./pages/RoleEditor.jsx";
-import ApprovalWorkflows from "./pages/ApprovalWorkflows.jsx";
 import Designations from "./pages/Designations.jsx";
-import Delegation from "./pages/Delegation.jsx";
 import MyProfile from "./pages/MyProfile.jsx";
 import ChangePassword from "./pages/ChangePassword.jsx";
-import Notifications from "./pages/Notifications.jsx";
-import Sessions from "./pages/Sessions.jsx";
-import Reports from "./pages/Reports.jsx";
-import AuditLog from "./pages/AuditLog.jsx";
-import Backup from "./pages/Backup.jsx";
 import Settings from "./pages/Settings.jsx";
-import JobOpenings from "./pages/JobOpenings.jsx";
-import Candidates from "./pages/Candidates.jsx";
-import Announcements from "./pages/Announcements.jsx";
 import About from "./pages/About.jsx";
 import Offices from "./pages/Offices.jsx";
 import MyLocations from "./pages/MyLocations.jsx";
@@ -60,6 +50,8 @@ import UsersList from "./pages/UsersList.jsx";
 import UserForm from "./pages/UserForm.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import Departments from "./pages/Departments.jsx";
+import Rebuilding from "./pages/Rebuilding.jsx";   // F2
+import { isPlaceholder } from "./shell/placeholders.js";
 import { Login, ForgotPassword, ResetPassword, SetPassword, SET_PASSWORD } from "./pages/AuthPages.jsx";
 import MailOutbox, { MAIL_OUTBOX } from "./pages/MailOutbox.jsx";
 import { sessionAllowed, mustChangePassword } from "../../assets/js/data/credentials.js";
@@ -92,20 +84,10 @@ const PORTED = {
   "requests/claim-expense.html": ClaimExpense,
   "access/roles-list.html": RolesList,
   "access/role-editor.html": RoleEditor,
-  "access/approval-workflows.html": ApprovalWorkflows,
   "access/designations.html": Designations,
-  "access/delegation.html": Delegation,
   "account/my-profile.html": MyProfile,
   "account/change-password.html": ChangePassword,
-  "account/notifications.html": Notifications,
-  "account/sessions.html": Sessions,
-  "system/reports.html": Reports,
-  "system/audit-log.html": AuditLog,
-  "system/backup.html": Backup,
   "system/settings.html": Settings,
-  "recruitment/job-openings.html": JobOpenings,
-  "recruitment/candidates.html": Candidates,
-  "announcements/announcements.html": Announcements,
   // L1: the users pages, built in the design system
   "users/users-list.html": UsersList,
   "users/user-form.html": UserForm,
@@ -123,6 +105,7 @@ const AUTH_PAGES = { "auth/login.html": Login, "auth/forgot-password.html": Forg
 function pageElement(page) {
   if (AUTH_PAGES[page]) { const Page = AUTH_PAGES[page]; return <Page />; }
   if (PUBLIC_PAGES.includes(page)) return <PublicPage page={page} />;
+  if (isPlaceholder(page)) return <Rebuilding page={page} />;   // F2: one neutral page for every placeholder
   const Page = PORTED[page];
   return Page ? <Page /> : <NotPorted page={page} />;
 }

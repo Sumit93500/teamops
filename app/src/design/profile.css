@@ -31,6 +31,16 @@ a.table__user-name:hover { text-decoration: underline; }
 .pf-list__head { width: 100%; display: flex; justify-content: space-between; gap: var(--ds-space-3); font-size: var(--ds-text-sm); color: var(--ds-text); }
 .pf-list p { margin: 0; }
 
+/* F2: the empty fields of a section, collapsed under "Not added (N)", each with Add */
+.pf-none { margin: 0; }
+.pf-missing { margin-top: var(--ds-space-4); border-top: 1px solid var(--ds-border); padding-top: var(--ds-space-3); }
+.pf-kv + .pf-missing, .pf-none + .pf-missing { margin-top: var(--ds-space-3); }
+.pf-missing > summary { cursor: pointer; width: fit-content; padding: var(--ds-space-1) 0; border-radius: var(--ds-radius-sm); font-size: var(--ds-text-sm); font-weight: var(--ds-weight-medium); color: var(--ds-text-2); }
+.pf-missing > summary:hover { color: var(--ds-text); }
+.pf-missing > summary:focus-visible { box-shadow: var(--ds-focus); outline: none; }
+.pf-missing__list { margin: var(--ds-space-2) 0 0; padding: 0; list-style: none; display: grid; gap: var(--ds-space-1); }
+.pf-missing__list > li { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-3); min-height: 32px; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+
 .pf-progress { height: 8px; border-radius: var(--ds-radius-pill); background: var(--ds-surface-3); overflow: hidden; }
 .pf-progress > span { display: block; height: 100%; width: var(--pct); background: var(--ds-primary); border-radius: inherit; }
 

@@ -6,8 +6,11 @@
 import { useLayoutEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getAllUsers } from "../../../assets/js/data/store.js";
+import { joinsOn } from "../../../assets/js/data/employment-period.js";   // F2
+import { todayIso } from "../../../assets/js/ui/leave-view.js";
 import { getOffices, createOffice, updateOffice, deactivateOffice, reactivateOffice, setEmployeeOffice, officeIdOf, OFFICE_STATES, OFFICE_RADIUS, SAMPLE_NOTE } from "../../../assets/js/data/offices-store.js";
 import { useData, useSession, useCan, signOutNow } from "../data/hooks.js";
+import { countText } from "../data/counts.js";   // F2: one counter wording
 import { bump } from "../data/bus.js";
 import { tabTitle } from "../data/company.js";
 import { pageUrl, OFFICES, ABOUT } from "../routes.js";
@@ -17,10 +20,12 @@ import Modal from "../components/Modal.jsx";
 import { useConfirm } from "../components/Confirm.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { PageHeader, Card, Pill, KpiCard } from "../components/Layout.jsx";
+import { FilterBar, FilterSelect, FilterSearch } from "../components/Controls.jsx";
 import { Field, Input, Select, Person } from "../components/Form.jsx";
 import { ICON, Icon } from "../components/icons.jsx";
 
 export const PRIVACY = "Your location is read only when you check in or out, never in the background.";
+const formatJoin = (iso) => `${Number(iso.slice(8))} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
 const PLUS = "M12 5v14M5 12h14";
 const PIN = "M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5";
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
@@ -98,8 +103,16 @@ function Content() {
   const toast = useToast();
   const confirm = useConfirm();
   const offices = useData(() => getOffices({ includeInactive: true }));
-  const people = useData(() => getAllUsers().filter((u) => u.status !== "inactive").map((u) => ({ ...u, office: officeIdOf(u.id) })));
+  // F2: active people by their office in the record (those on leave included, leavers excluded). Someone who joins later is listed
+  // ("Joins on ...") so an Admin can place them first, but isn't counted as working at the office until they join.
+  const everyone = useData(() => { const today = todayIso(); return getAllUsers().filter((u) => u.status !== "inactive").map((u) => ({ ...u, office: officeIdOf(u.id), joins: joinsOn(u, today) })); });
+  const people = everyone.filter((p) => !p.joins);
+  const soon = everyone.length - people.length;
   const [modal, setModal] = useState(null);
+  const [officeF, setOfficeF] = useState("");
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  const shownPeople = everyone.filter((p) => (!officeF || p.office === officeF) && (!q || p.name.toLowerCase().includes(q)));
   const count = (id) => people.filter((p) => p.office === id).length;
   const active = offices.filter((o) => o.active);
 
@@ -135,7 +148,7 @@ function Content() {
       </span>) }] : []),
   ];
   const peopleColumns = [
-    { key: "name", label: "Employee", render: (p) => <Person name={p.name} sub={p.designation} /> },
+    { key: "name", label: "Employee", sort: (p) => p.name, render: (p) => <Person name={p.name} sub={p.joins ? `${p.designation}, joins on ${formatJoin(p.joins)}` : p.designation} /> },
     { key: "office", label: "Office", render: (p) => (canManage
       ? <div className="ds-control ds-control--select"><select aria-label={`Office for ${p.name}`} value={p.office ?? ""} onChange={(e) => move(p, e.target.value)}>{active.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></div>
       : offices.find((o) => o.id === p.office)?.name ?? "—") },
@@ -149,13 +162,18 @@ function Content() {
         <div className="ds-grid" role="group" aria-label="Key numbers">
           <KpiCard id="offices" label="Active offices" value={String(active.length)} icon={ICON.building} />
           <KpiCard id="branches" label="Branches" value={String(active.filter((o) => o.type === "branch").length)} icon={ICON.map} />
-          <KpiCard id="people" label="People placed" value={String(people.length)} icon={ICON.users} />
+          <KpiCard id="people" label="People working" value={String(people.length)} icon={ICON.users} />
         </div>
         <Card id="offices-card" title="All offices" meta={plural(offices.length, "office", "offices")}>
           <Table bare columns={columns} rows={offices} empty="No offices yet." tableId="offices-table" />
         </Card>
-        <Card id="people-card" title="Who works where" meta={canManage ? "Change an office to move someone" : "Only an Admin can move people"}>
-          <Table bare columns={peopleColumns} rows={people} tableId="office-people" />
+        <Card id="people-card" title="Who works where" meta={`${countText(shownPeople.length, everyone.length, ["person", "people"], { filtered: Boolean(officeF || q) })}${soon && !officeF && !q ? `, ${soon} joining soon` : ""}`}>
+          <p className="ds-hint" id="people-note">{canManage ? "Change an office to move someone. " : "Only an Admin can move people. "}Active people, those on leave included; someone who has left isn't listed.</p>
+          <FilterBar label="Filter the people" active={Boolean(officeF || q)} onClearAll={() => { setOfficeF(""); setQuery(""); }}>
+            <FilterSelect label="Office" value={officeF} onChange={setOfficeF} allLabel="All offices" options={offices.filter((o) => o.active).map((o) => ({ value: o.id, label: o.name }))} />
+            <FilterSearch label="Search" value={query} onChange={setQuery} placeholder="Search by name" />
+          </FilterBar>
+          <Table bare columns={peopleColumns} rows={shownPeople} rowKey={(p) => p.id} empty="Nobody matches these filters." tableId="office-people" />
         </Card>
         <p className="ds-privacy">{PRIVACY}</p>
       </div>

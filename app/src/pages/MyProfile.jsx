@@ -180,10 +180,6 @@ export default function MyProfile() {
         <Link to={pageUrl("account/change-password.html")} className="tabs__tab">Password</Link>
         {" "}
         <Link to={pageUrl(APPEARANCE)} className="tabs__tab">Appearance</Link>
-        {" "}
-        <Link to={pageUrl("account/sessions.html")} className="tabs__tab">Sessions</Link>
-        {" "}
-        <Link to={pageUrl("account/notifications.html")} className="tabs__tab">Notifications</Link>
       </nav>
       <div className="stack">
         <section className="card profile">

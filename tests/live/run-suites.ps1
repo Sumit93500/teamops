@@ -189,6 +189,10 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "emprecord.mjs") { Run "emprecord-$t" @("emprecord.mjs") }
   # SH1: shift-based attendance (shifts, assignments, the shift engine, the punch path, overtime, comp-off, the pay hook)
   if (Test-Path "shifts.mjs") { Run "shifts-$t" @("shifts.mjs") }
+  # F2: the employment period and new joiners; lockout requests; bank and statutory details
+  if (Test-Path "employment.mjs") { Run "employment-$t" @("employment.mjs") }
+  if (Test-Path "lockout.mjs") { Run "lockout-$t" @("lockout.mjs") }
+  if (Test-Path "bank.mjs") { Run "bank-$t" @("bank.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

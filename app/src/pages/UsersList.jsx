@@ -17,7 +17,8 @@ import { resetInventoryData } from "../../../assets/js/data/inventory-store.js";
 import { resetAssetRequestData } from "../../../assets/js/data/asset-requests-store.js";
 import { resetLocationData } from "../../../assets/js/data/locations-store.js";
 import { resetShiftData } from "../../../assets/js/data/overtime-store.js";   // SH1
-import { resetCredentials } from "../../../assets/js/data/credentials.js";
+import { resetCredentials, accountOf } from "../../../assets/js/data/credentials.js";
+import { resetUnlockRequests } from "../../../assets/js/data/unlock-requests.js";   // F2
 import { resetMailOutbox } from "../../../assets/js/data/mail-outbox.js";
 import { resetAuditTrail } from "../../../assets/js/data/audit-trail.js";
 import { resetEmployeeRecords } from "../../../assets/js/data/employee-record.js";
@@ -52,20 +53,21 @@ function Content() {
   const canEdit = useCan("users:edit"), canCreate = useCan("users:create");
   const confirm = useConfirm();
   const [params] = useSearchParams();
-  const users = useData(() => getAllUsers());
+  const users = useData(() => { const now = Date.now(); return getAllUsers().map((u) => ({ ...u, locked: accountOf(u.id, now).status === "locked" })); });   // F2: locked sign-ins
   const departments = useData(() => getAllDepartments());
   const [status, setStatus] = useState("all");
   const [query, setQuery] = useState("");
   const [dept, setDept] = useState(() => { const p = params.get("dept"); return p && getAllDepartments().some((d) => d.code === p) ? p : ""; });
   const [roleKey, setRoleKey] = useState("");
+  const [signIn, setSignIn] = useState("");   // F2: "locked"
   const [page, setPage] = useState(1);
   const reset = (f) => (v) => { f(v); setPage(1); };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return users.filter((u) => (status === "all" || u.status === status) && (!dept || u.department === dept) && (!roleKey || u.role === roleKey)
+    return users.filter((u) => (status === "all" || u.status === status) && (!dept || u.department === dept) && (!roleKey || u.role === roleKey) && (!signIn || u.locked)
       && (!q || [u.name, u.email, u.id].some((v) => String(v ?? "").toLowerCase().includes(q))));
-  }, [users, status, query, dept, roleKey]);
+  }, [users, status, query, dept, roleKey, signIn]);
   const counts = { all: users.length, active: 0, "on-leave": 0, inactive: 0 };
   users.forEach((u) => { if (u.status in counts) counts[u.status] += 1; });
 
@@ -74,7 +76,7 @@ function Content() {
   const resetAll = async () => {
     if (!(await confirm({ message: RESET_CONFIRM, confirmLabel: "Reset demo data", danger: true }))) return;
     resetDemoData(); resetLeaveData(); resetAttendanceData(); resetPayrollData(); resetExpenseData(); resetInventoryData(); resetAssetRequestData(); resetLocationData(); resetShiftData(); resetPayRules(); resetPayStructures(); resetPaySettings(); resetLeavePolicy();
-    resetCredentials(); resetMailOutbox(); resetAuditTrail(); resetEmployeeRecords();   // E1: sign-in accounts, the outbox, the audit trail, the extra record fields
+    resetCredentials(); resetUnlockRequests(); resetMailOutbox(); resetAuditTrail(); resetEmployeeRecords();   // E1: sign-in accounts, the outbox, the audit trail, the extra record fields
     window.location.reload();
   };
 
@@ -84,7 +86,7 @@ function Content() {
     { key: "designation", label: "Designation", render: (u) => u.designation ?? "" },
     { key: "department", label: "Department", render: (u) => departmentName(u.department) },
     { key: "role", label: "Role", render: (u) => <Pill tone="info">{roleLabel(u.role)}</Pill> },
-    { key: "status", label: "Status", render: (u) => <Pill tone={STATUS[u.status]?.tone ?? ""}>{statusLabel(u.status)}</Pill> },
+    { key: "status", label: "Status", render: (u) => <span className="ds-chips"><Pill tone={STATUS[u.status]?.tone ?? ""}>{statusLabel(u.status)}</Pill>{u.locked && <Pill tone="danger" data-locked={u.id}>Locked</Pill>}</span> },
     { key: "actions", label: "Actions", actions: true, render: (u) => (canEdit ? <Link className="ds-btn ds-btn--sm" to={pageUrl(`users/user-form.html?id=${encodeURIComponent(u.id)}`)}>Edit</Link> : null) },
   ];
 
@@ -105,10 +107,11 @@ function Content() {
               </button>
             ))}
           </div>
-          <FilterBar label="Filter users" active={Boolean(query || dept || roleKey)} onClearAll={() => { setQuery(""); setDept(""); setRoleKey(""); setPage(1); }}>
+          <FilterBar label="Filter users" active={Boolean(query || dept || roleKey || signIn)} onClearAll={() => { setQuery(""); setDept(""); setRoleKey(""); setSignIn(""); setPage(1); }}>
             <FilterSearch label="Search users" value={query} onChange={reset(setQuery)} placeholder="Search by name or ID" />
             <FilterSelect label="Department" value={dept} onChange={reset(setDept)} allLabel="All departments" options={departments.map((d) => ({ value: d.code, label: d.name }))} />
             <FilterSelect label="Role" value={roleKey} onChange={reset(setRoleKey)} allLabel="All roles" options={Object.values(ROLES).map((r) => ({ value: r.key, label: r.label }))} />
+            <FilterSelect label="Sign-in" value={signIn} onChange={reset(setSignIn)} allLabel="Any sign-in" options={[{ value: "locked", label: `Locked (${users.filter((u) => u.locked).length})` }]} />
           </FilterBar>
           <Table bare columns={columns} rows={filtered} page={page} onPageChange={setPage} empty="No employees match these filters." tableId="users-table" />
         </div>

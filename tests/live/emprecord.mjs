@@ -38,8 +38,8 @@ const keys = (view) => view.sections.flatMap((s) => s.fields.map((f) => f.key));
 const fieldOf = (view, key) => view.sections.flatMap((s) => s.fields).find((f) => f.key === key);
 // Arjun's sensitive values on record, to look for in what each viewer is given
 S.setPayDetails(AARAV, ARJUN, { bankAccount: "50100234567891", pan: "ABCPK1234Q" });
-E.saveFields(PRIYA, ARJUN, { aadhaar: "2345 6789 0123" });
-const SECRET = ["50100234567891", "ABCPK1234Q", "234567890123"];
+E.saveFields(PRIYA, ARJUN, { aadhaar: "2345 6709 0123" });   // F2: a number that passes the Aadhaar check digit
+const SECRET = ["50100234567891", "ABCPK1234Q", "234567090123"];
 
 section("D. One list of fields");
 check("D1", "the profile's sections are the form's first five, in order; Review is the form's own sixth", j(F.PROFILE_SECTIONS.map((s) => s.key)) === j(["personal", "contact", "employment", "pay", "access"]) && F.SECTIONS.length === 6 && F.SECTIONS[5].key === "review");
@@ -113,11 +113,11 @@ check("H4", "every change is in the audit trail too, without values", AU.eventsF
 section("Q. Change requests");
 const q1 = E.requestChange(ARJUN, { bankAccount: "60200345678912", ifsc: "ICIC0004321", uan: "100200300400" });   // the UAN as it is on file
 check("Q1", "Arjun asks to change his bank account and IFSC: waiting", q1.ok && q1.record.status === "pending" && E.profileChangesFor(ARJUN).length === 1);
-check("Q2a", "only what changes is asked for: the IFSC sent as it is isn't in the request", j(Object.keys(q1.record.changes)) === j(["bankAccount", "ifsc"]) && !E.requestChange(ANANYA, { ifsc: "" }).ok);
+check("Q2a", "only what changes is asked for: the UAN sent as it is isn't in the request (F2: the new IFSC's bank name comes with it)", j(Object.keys(q1.record.changes)) === j(["bankAccount", "ifsc", "bankName"]) && !E.requestChange(ANANYA, { ifsc: "" }).ok);
 check("Q2", "one waiting at a time; only bank and tax fields can be asked for", !E.requestChange(ARJUN, { pan: "ABCPK9999Q" }).ok && !E.requestChange(ANANYA, { phone: "+91 90000 44444" }).ok && !E.requestChange(ANANYA, { role: "admin" }).ok);
 check("Q3", "it waits for Finance and HR, not for Arjun or his manager", E.pendingProfileChanges(KABIR).length === 1 && E.pendingProfileChanges(PRIYA).length === 1 && E.pendingProfileChanges(ARJUN).length === 0 && E.pendingProfileChanges(SNEHA).length === 0);
 check("Q4", "Arjun can't approve his own", E.decideChange(ARJUN, q1.record.id, "approved").error === "Nobody decides their own request.");
-check("Q5", "the request reads masked", j(E.changeText(q1.record)) === j([["Bank account", "•••• •••• 8912"], ["IFSC", "ICIC0004321"]]));
+check("Q5", "the request reads masked", j(E.changeText(q1.record)) === j([["Bank account", "•••• •••• 8912"], ["IFSC", "ICIC0004321"], ["Bank name", "ICICI Bank"]]));
 const ok = E.decideChange(KABIR, q1.record.id, "approved");
 check("Q6", "Finance approves: the bank account and IFSC change, in the history as a request", ok.ok && S.getUser(ARJUN).bankAccount === "60200345678912" && S.getUser(ARJUN).bankAccountLast4 === "8912" && fieldOf(E.profileView(PRIYA, ARJUN), "ifsc").value === "ICIC0004321" && E.historyFor(PRIYA, ARJUN).some((h) => h.how === "request" && h.field === "bankAccount" && h.actorId === KABIR));
 check("Q7", "decided once: deciding again is refused", E.decideChange(PRIYA, q1.record.id, "rejected", "no").error === "This request was already decided.");
@@ -135,7 +135,7 @@ check("L5", "a link is exactly where the profile opens: linkable <=> the profile
 section("C. Completeness");
 const c0 = E.completeness(ANANYA);
 check("C1", "a percentage and the missing fields' names", Number.isInteger(c0.percent) && c0.percent < 100 && c0.missing.includes("Aadhaar") && c0.missing.includes("IFSC"), j(c0));
-E.saveFields(PRIYA, ANANYA, { aadhaar: "345678901234" });
+E.saveFields(PRIYA, ANANYA, { aadhaar: "234567150123" });   // F2: passes the check digit
 const c1 = E.completeness(ANANYA);
 check("C2", "filling a field raises it and takes it off the list", c1.percent > c0.percent && !c1.missing.includes("Aadhaar"));
 check("C3", "an unknown person: null", E.completeness("EMP-9999") === null);

@@ -105,3 +105,11 @@ See [../tests/TEST-CATALOG.md](../tests/TEST-CATALOG.md).
 They live in `tests/live/react/` and run with `python tools/run-tests.py --react`, which needs Microsoft Edge.
 
 The repo run compares against the repo's old pages, so it leaves out the sections where a round gave the new page "No data in this range." and the old page has nothing: attendance's Y (my attendance's earlier months) and payroll's R and V (payroll run, payslip view). Rounds 9b, 11 and 13c ran those against a reference tree with the new wording, outside the repo.
+
+## F2 (2026-11-15)
+
+- Sign-in pages (`AuthPages.jsx`, `design/auth.css`): a brand panel (the company's mark and name from its profile, a product line, three points; 960 px and wider) beside the sign-in card; the demo's accounts in their own quiet section under the card (demo mode only); the footer "© year company · Powered by OfficeOS". Forgot, reset and set-password share the layout.
+- Counters (`app/src/data/counts.js`, `countText`): "11 people" with nothing filtered, "Showing 4 of 11 people" with a filter or search on, "Showing 1–10 of 14" for a page of a longer list.
+- Placeholder pages (`app/src/shell/placeholders.js`): out of every role's navigation and search; their URLs show `Rebuilding.jsx` ("This section is being rebuilt." and Back to dashboard). A control with nothing behind it (`NotBuilt`) isn't drawn. The list, by planned round, is in the workspace's notes/react-parking-lot.md.
+- Lockout requests in the inbox, the bell and the Admin dashboard; the users list's Locked badge and filter; the profile's lock banner. The profile's Not added groups; the bank fields in the profile and the employee form.
+- Checks: `tests/live/react/f2.mjs` (L sign-in, J joiner, O counters, P rebuilt sections and the wording grep, U lockout, B and F bank details, K, C, W, X). The parity harnesses read the counters by their numbers and read past the placeholder items F2 took away.

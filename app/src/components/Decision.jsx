@@ -19,6 +19,7 @@ import { describeRequest } from "../../../assets/js/ui/asset-request-view.js";
 import { decideLocationChange } from "../../../assets/js/data/locations-store.js";
 import { decideChange, changeText } from "../../../assets/js/data/employee-record.js";
 import { decideOvertimeItem } from "../../../assets/js/data/overtime-store.js";
+import { resolveUnlockRequest } from "../../../assets/js/data/lockouts.js";
 import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
 import { bump } from "../data/bus.js";
 import { useToast } from "../ui/Toast.jsx";
@@ -128,6 +129,26 @@ export const OVERTIME_FLOW = {
   },
 };
 
+// F2: a locked account waiting for the Admin: Unlock now (clears the lock and the count; audited) or Dismiss (the lock stays until it
+// expires). Dismiss asks for nothing more than a yes in its own small form (a note is optional).
+const timeOf = (ms) => new Date(ms).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
+export const UNLOCK_FLOW = {
+  decide: (id, actorUserId, _role, action) => resolveUnlockRequest(actorUserId, id, action === "approve" ? "unlock" : "dismiss"),
+  describe: (q) => `${nameOf(q.userId)}: locked after ${q.attempts} failed sign-ins, until ${timeOf(q.lockedUntil)}`,
+  noteId: "dismiss-unlock-note",
+  noteOptional: true,
+  labels: {
+    title: "Dismiss the unlock request",
+    question: "Unlock this account now?",
+    confirm: "Unlock now",
+    buttons: ["Dismiss", "Unlock now"],
+    submit: "Dismiss",
+    placeholder: "Optional: why it stays locked",
+    approved: "Unlocked. They can sign in now.",
+    rejected: "Dismissed. The account stays locked until the lock expires.",
+  },
+};
+
 const decider = () => ({ id: getCurrentUserId(), role: getCurrentRole()?.key });
 
 export function useDecision(flow) {
@@ -140,7 +161,7 @@ export function useDecision(flow) {
   const done = (result, onDone) => { bump(); onDone?.(result); };
 
   async function approve(request, onDone) {
-    if (!(await confirm({ message: `Approve this request?\n${flow.describe(request)}`, confirmLabel: "Approve" }))) return;
+    if (!(await confirm({ message: `${flow.labels.question ?? "Approve this request?"}\n${flow.describe(request)}`, confirmLabel: flow.labels.confirm ?? "Approve" }))) return;
     const { id, role } = decider();
     const result = flow.decide(request.id, id, role, "approve");
     if (result.ok) showToast(typeof flow.labels.approved === "function" ? flow.labels.approved(result) : flow.labels.approved, "success");
@@ -169,8 +190,8 @@ export function useDecision(flow) {
       <form noValidate onSubmit={submit} id={`${flow.noteId}-form`}>
         <div className="form">
           <div className="form-field">
-            <label className="form-label form-label--required" htmlFor={flow.noteId}>Reason</label>
-            <textarea className="textarea" id={flow.noteId} required placeholder={flow.labels.placeholder ?? "The employee sees this note"} value={note}
+            <label className={`form-label${flow.noteOptional ? "" : " form-label--required"}`} htmlFor={flow.noteId}>{flow.noteOptional ? "Note (optional)" : "Reason"}</label>
+            <textarea className="textarea" id={flow.noteId} required={!flow.noteOptional} placeholder={flow.labels.placeholder ?? "The employee sees this note"} value={note}
               aria-describedby={error ? `${flow.noteId}-error` : undefined} onChange={(e) => { setNote(e.target.value); setError(null); }} />
             {error && <span className="form-error" id={`${flow.noteId}-error`}>{error}</span>}
           </div>
@@ -182,11 +203,12 @@ export function useDecision(flow) {
 }
 
 // Reject + Approve for one pending request (leave-decision.js decisionButtons).
-export function DecisionButtons({ onReject, onApprove, permission }) {
+// labels (F2): [reject, approve] words, e.g. ["Dismiss", "Unlock now"] for an unlock request
+export function DecisionButtons({ onReject, onApprove, permission, labels = ["Reject", "Approve"] }) {
   return (
     <div className="btn-group">
-      <button className="btn btn--sm" type="button" data-permission={permission} onClick={onReject}>Reject</button>
-      <button className="btn btn--primary btn--sm" type="button" data-permission={permission} onClick={onApprove}>Approve</button>
+      <button className="btn btn--sm" type="button" data-permission={permission} onClick={onReject}>{labels[0]}</button>
+      <button className="btn btn--primary btn--sm" type="button" data-permission={permission} onClick={onApprove}>{labels[1]}</button>
     </div>
   );
 }

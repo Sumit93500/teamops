@@ -122,7 +122,7 @@ export default function MyLeave() {
         <div>
           <h1>My leave</h1>
           <p className="page-header__subtitle">Your balances and every request you have made</p>
-          {leavePolicyOn() && <p className="page-header__subtitle" id="my-band"><BandBadge userId={userId} /></p>}
+          {leavePolicyOn(undefined, userId) && <p className="page-header__subtitle" id="my-band"><BandBadge userId={userId} /></p>}
         </div>
         <div className="page-header__actions">
           <Link className="btn" to={pageUrl("leave/holidays.html")}>Holidays</Link>
@@ -134,7 +134,7 @@ export default function MyLeave() {
       </div>
 
       <div className="stack">
-        {leavePolicyOn() ? <PolicyBalances userId={userId} /> : <Balances userId={userId} />}
+        {leavePolicyOn(undefined, userId) ? <PolicyBalances userId={userId} /> : <Balances userId={userId} />}
 
         <div className="grid grid-main-aside">
           <section className="card">

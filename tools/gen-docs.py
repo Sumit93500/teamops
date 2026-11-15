@@ -30,7 +30,7 @@ AREAS = ["rbac", "attendance", "leave", "payroll", "expenses", "assets", "reques
 NAMED = {
     "rbac": "adminguard deactguard demoteguard deptguard departments userguard users-list user-profile my-profile managerid mgrscope mgrfall "
             "overrides recordrole roleview sessrole financeperm holders nottheirs reactivate rejoin joiners joindate joinguard newhire "
-            "newstarts notjoined leavers firstleft tenure comeback delnames store authpages authnotes acctpages signnotes accounts emprecord",
+            "newstarts notjoined leavers firstleft tenure comeback delnames store authpages authnotes acctpages signnotes accounts emprecord employment lockout bank",
     "attendance": "attendance mark myatt reg team workedday bothdates cells view decidegap absence latepause relief shifts",
     "locations": "company offices homes devices places punch14 perms14 chosen f1data",
     "leave": "leave leavebal holiguard holileave holipast leavebands",
@@ -41,7 +41,7 @@ NAMED = {
     "requests": "approvals chain decision forward closing deferred delask delopen cardbell bellphone accesscard resetcard",
     "charts": "admdash hrdash findash dash boards chartdata emptyrange legend dots findsort",
     "guards": "cssguard jsguard pagefreeze noflash contrast phone shell rail",
-    "react": "smoke gallery parity att leave-react pay fin req access rest c13 design charts users locs att3 side prefs f1 e1",
+    "react": "smoke gallery parity att leave-react pay fin req access rest c13 design charts users locs att3 side prefs f1 e1 f2",
 }
 AREA_OF = {s: a for a, names in NAMED.items() for s in names.split()}
 

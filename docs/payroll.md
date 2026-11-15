@@ -114,3 +114,7 @@ Nothing here is on a page yet, and the existing payroll above computes as before
 **Not computed:** surcharge (no number known; flagged above 50,00,000), the senior-citizen slabs, the ESI contribution-period rule, Maharashtra's women's PT slab.
 
 Tests: `tests/live/paystructure.mjs` (3 time zones; 68 mutants, all caught).
+
+## F2 (2026-11-15): new joiners
+
+A joiner's first month is pro-rated from the joining date (the working days before it are "not joined": loss of pay, not absence); no payslip or pay row for months before joining; unpaid leave under the policy is charged for people created in the app from their first month (`policyLossOfPay`). The seeded people's pay is byte-identical. Checks: `tests/live/employment.mjs`.

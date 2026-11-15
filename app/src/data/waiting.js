@@ -7,13 +7,15 @@ import { pendingLocationChanges } from "../../../assets/js/data/locations-store.
 import { getUser } from "../../../assets/js/data/store.js";
 import { pendingProfileChanges } from "../../../assets/js/data/employee-record.js";
 import { pendingOvertime } from "../../../assets/js/data/overtime-store.js";
+import { pendingUnlockRequests } from "../../../assets/js/data/lockouts.js";
 
 // { leave, corrections, expenses, assets, salary, locations, profile, overtime }: arrays, in store order. E1: profile, a person's own bank or
 // tax change waiting for Finance (salary:edit) or HR / Admin (users:edit), never for themself (data/employee-record.js).
+// F2: unlock, a locked account waiting for the Admin (accounts:unlock; data/lockouts.js), while the lock is on.
 // SH1: overtime, a day's overtime waiting for the person's manager (HR or an Admin for someone without one; data/overtime-store.js).
 export function waitingFor(userId, roleKey) {
   const known = Boolean(getUser(userId));
-  return { ...oldWaitingFor(userId, roleKey), locations: known ? pendingLocationChanges(userId, roleKey) : [], profile: known ? pendingProfileChanges(userId) : [], overtime: known ? pendingOvertime(userId) : [] };
+  return { ...oldWaitingFor(userId, roleKey), locations: known ? pendingLocationChanges(userId, roleKey) : [], profile: known ? pendingProfileChanges(userId) : [], overtime: known ? pendingOvertime(userId) : [], unlock: known ? pendingUnlockRequests(userId) : [] };
 }
 
 export function waitingCount(userId, roleKey) {

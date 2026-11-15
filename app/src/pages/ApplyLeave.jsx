@@ -90,7 +90,7 @@ export default function ApplyLeave() {
   } else { steps.push({ state: "", title: "Approval", detail: "HR or an Admin" }); chainText = "Your request goes to HR or an Admin."; }
 
   // P4b: from the policy's start date, the days a request takes beyond the balance are said, and asked about before they are sent
-  const policyOn = leavePolicyOn(/^\d{4}-\d{2}-\d{2}$/.test(form.from) ? form.from : todayIso());   // P5: by the leave's first day, as the store binds
+  const policyOn = leavePolicyOn(/^\d{4}-\d{2}-\d{2}$/.test(form.from) ? form.from : todayIso(), user.id);   // P5: by the leave's first day, as the store binds
   const onDay = form.from && form.from > todayIso() ? form.from : todayIso();
   const outcome = policyOn && days ? requestOutcome(user.id, form.type, days, onDay) : null;
   const submit = async (e) => {

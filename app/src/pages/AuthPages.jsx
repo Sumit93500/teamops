@@ -18,26 +18,56 @@ import { pageUrl } from "../routes.js";
 import { CompanyMark, PoweredBy } from "../shell/Brand.jsx";
 import { Field } from "../components/Form.jsx";
 import { DEMO } from "../../../assets/js/config/demo.js";
+import { Icon, ICON } from "../components/icons.jsx";
 import "../design/auth.css";
 
 export const SET_PASSWORD = "auth/set-password.html";
 const DEMO_USERS = { admin: ["Admin", "EMP-1001"], hr: ["HR Manager", "EMP-1003"], fin: ["Finance", "EMP-1008"], emp: ["Employee", "EMP-1105"] };
 const landingOf = (user) => pageUrl(ROLES[user.role]?.landing ?? "dashboard/employee.html");
 
-function AuthLayout({ title, lead, docTitle, children }) {
+// F2: the brand panel beside the card (wide screens only; the card keeps the company's name on a phone or a tablet): the
+// company's mark and name from the company profile, what OfficeOS is for, and three short points. No product's branding but ours.
+const POINTS = [
+  [ICON.clock, "Attendance that adds up", "Check in from the office or home; shifts, late marks and overtime are worked out for you."],
+  [ICON.calendar, "Leave without the chase", "Ask in a minute and see your balance; your approver hears straight away."],
+  [ICON.layers, "Pay you can follow", "Payslips, tax and every deduction, line by line."],
+];
+function BrandPanel() {
+  return (
+    <aside className="auth-brand" aria-label={`About ${COMPANY.shortName}`}>
+      <div className="auth-brand__name"><CompanyMark className="brand-mark auth-brand__mark" /><span>{COMPANY.name}</span></div>
+      <div className="auth-brand__body">
+        <p className="auth-brand__line">People, attendance, leave and pay, in one calm place.</p>
+        <ul className="auth-brand__points">
+          {POINTS.map(([d, head, text]) => (
+            <li key={head}><span className="auth-brand__icon"><Icon d={d} /></span><span><strong>{head}</strong><span>{text}</span></span></li>
+          ))}
+        </ul>
+      </div>
+    </aside>
+  );
+}
+
+function AuthLayout({ title, lead, docTitle, children, after = null }) {
   const heading = useRef(null);
   useLayoutEffect(() => { document.title = tabTitle(docTitle ?? title); document.documentElement.dataset.role = "admin"; window.scrollTo(0, 0); }, [title, docTitle]);
   return (
-    <div className="auth-page">
-      <main className="auth-page__main" id="main">
-        <section className="auth-card" aria-labelledby="auth-title">
-          <div className="auth-card__brand"><CompanyMark /><span>{COMPANY.name}</span></div>
-          <h1 className="auth-card__title" id="auth-title" tabIndex={-1} ref={heading}>{title}</h1>
-          {lead && <p className="auth-card__lead" id="auth-lead">{lead}</p>}
-          {children}
-        </section>
-      </main>
-      <PoweredBy className="app-footer--auth" withCompany />
+    <div className="auth-page auth-split">
+      <BrandPanel />
+      <div className="auth-split__side">
+        <main className="auth-page__main" id="main">
+          <div className="auth-stack">
+            <section className="auth-card" aria-labelledby="auth-title">
+              <div className="auth-card__brand"><CompanyMark /><span>{COMPANY.name}</span></div>
+              <h1 className="auth-card__title" id="auth-title" tabIndex={-1} ref={heading}>{title}</h1>
+              {lead && <p className="auth-card__lead" id="auth-lead">{lead}</p>}
+              {children}
+            </section>
+            {after}
+          </div>
+        </main>
+        <PoweredBy className="app-footer--auth" withCompany />
+      </div>
     </div>
   );
 }
@@ -106,6 +136,7 @@ export function Login() {
   const submit = async (e) => {
     e.preventDefault();
     if (!email.trim() || !password) { setError("Enter your work email and your password."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Enter your work email, like name@company.com."); return; }   // F2
     setBusy(true); setError("");
     const r = await signInWithPassword(email, password);
     setBusy(false);
@@ -117,27 +148,27 @@ export function Login() {
     if (!user || !sessionAllowed(user.id)) { setError("This demo account can't sign in. Ask an Admin."); return; }
     done(user, mustChangePassword(user.id));
   };
+  // E1b: the demo hint and the role buttons only in demo mode (config/demo.js); F2: in their own quiet section under the card
+  const demoSection = DEMO.mode && (
+    <section className="auth-demo" aria-labelledby="demo-title">
+      <p className="auth-demo__title" id="demo-title">Demo accounts</p>
+      <p className="ds-hint">Sign in with any demo work email, like arjun.kapoor@northwind.com, and the password <code>{DEMO.password}</code>, or pick a role:</p>
+      <div className="auth-demo__roles">
+        {Object.entries(DEMO_USERS).map(([key, [label]]) => <button key={key} type="button" className="ds-btn ds-btn--sm" data-demo-role={key} onClick={() => demo(key)}>{label}</button>)}
+      </div>
+    </section>
+  );
   return (
-    <AuthLayout title="Sign in" lead="Use your work email and password." docTitle="Sign in">
+    <AuthLayout title="Sign in" lead="Use your work email and password." docTitle="Sign in" after={demoSection}>
       {error && <Message>{error}</Message>}
-      <form noValidate onSubmit={submit} aria-describedby={error ? "auth-message" : undefined}>
+      <form noValidate onSubmit={submit} aria-describedby={error ? "auth-message" : undefined} aria-busy={busy ? "true" : undefined}>
         <Field id="email" label="Work email" required>
           <div className="ds-control"><input id="email" type="email" value={email} autoComplete="username" placeholder="name@company.com" onChange={(e) => setEmail(e.target.value)} /></div>
         </Field>
         <PasswordInput id="password" label="Password" value={password} onChange={setPassword} autoComplete="current-password" />
         <div className="auth-row"><span /><Link className="link" to={pageUrl("auth/forgot-password.html")}>Forgot password?</Link></div>
-        <button type="submit" className="ds-btn ds-btn--primary" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+        <button type="submit" className="ds-btn ds-btn--primary" disabled={busy}>{busy ? <><span className="auth-spinner" aria-hidden="true" />Signing in…</> : "Sign in"}</button>
       </form>
-      {/* E1b: the demo hint and the role buttons are shown only in demo mode (config/demo.js) */}
-      {DEMO.mode && (
-        <div className="auth-demo" aria-labelledby="demo-title">
-          <p className="auth-demo__title" id="demo-title">Demo accounts</p>
-          <p className="ds-hint">Sign in with any demo work email, like arjun.kapoor@northwind.com, and the password <code>{DEMO.password}</code>, or pick a role:</p>
-          <div className="auth-demo__roles">
-            {Object.entries(DEMO_USERS).map(([key, [label]]) => <button key={key} type="button" className="ds-btn" data-demo-role={key} onClick={() => demo(key)}>{label}</button>)}
-          </div>
-        </div>
-      )}
     </AuthLayout>
   );
 }

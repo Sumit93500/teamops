@@ -5,7 +5,7 @@
 //   Badge                 .badge (tone, dot, square)
 //   PersonCell            .table__user (avatar, name, sub-line)                                  (leave-view personCell)
 //   Stepper               .stepper (done, current, not reached)                                  (leave-view step)
-//   NotBuilt              a control the demo doesn't have: "<what> isn't available in this demo." (ui/placeholder.js)
+//   NotBuilt              a control with nothing behind it: not drawn (F2)
 //   Tabs                  .tabs (role tablist) > .tabs__tab, and the panel shown                 (ui/tabs.js)
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -82,12 +82,10 @@ export function Stepper({ steps, vertical = true, id }) {
   );
 }
 
-export function NotBuilt({ what, className = "btn", children, ...props }) {
-  const showToast = useToast();
-  return (
-    <button {...props} className={className} type="button" data-not-implemented={what}
-      onClick={(e) => { e.preventDefault(); showToast(`${what} isn't available in this demo.`, "info"); }}>{children ?? what}</button>
-  );
+// F2: a control with nothing behind it isn't drawn (it used to toast "<what> isn't available in this demo."); the controls it hides are
+// listed in the workspace's notes/react-parking-lot.md with the round that builds them.
+export function NotBuilt() {
+  return null;
 }
 
 // Controlled (round 10): active + onChange(index), for a page whose tabs filter one table; tabs without content draw no panels.

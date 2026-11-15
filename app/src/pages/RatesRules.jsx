@@ -9,6 +9,7 @@ import { allRules, ruleStatus, verifyRule, addRule, PAY_RULE_KEYS, CONFIDENCE, A
 import { OFFICE_STATES } from "../../../assets/js/data/offices-store.js";
 import { formatDay } from "../../../assets/js/ui/leave-view.js";
 import { useData, useSession, useCan, signOutNow } from "../data/hooks.js";
+import { countText } from "../data/counts.js";   // F2: one counter wording
 import { bump } from "../data/bus.js";
 import { tabTitle } from "../data/company.js";
 import { pageUrl, RATES_RULES } from "../routes.js";
@@ -127,7 +128,7 @@ function Content() {
         <FilterSelect label="Rule" value={rule} onChange={setRule} allLabel="All rules" options={PAY_RULE_KEYS} />
         <FilterSearch label="Search" value={query} onChange={setQuery} placeholder="Search the rows" />
       </FilterBar>
-      <Card id="rate-rows" title="Dated rows" meta={`Showing ${shown.length} of ${rows.length}`}>
+      <Card id="rate-rows" title="Dated rows" meta={countText(shown.length, rows.length, "row", { filtered: shown.length !== rows.length })}>
         <Table bare pageSize={15} columns={columns} rows={shown} rowKey={(r) => r.id} rowProps={(r) => ({ "data-rule": r.id })} empty="No rows match these filters." />
       </Card>
       <AddRow open={adding} onClose={() => setAdding(false)} />

@@ -36,6 +36,8 @@ export function otText(minutes) {
 export function shiftBadge(day) {
   if (day.status === "short-leave") return el("span", "badge badge--warning badge--dot", "Short leave");
   if (day.status === "weekly-off") return el("span", "badge badge--dot", "Weekly off");
+  if (day.status === "not-joined") return el("span", "badge badge--dot", "Not yet joined");   // F2: the old badge says "Before joining"
+  if (day.status === "left") return el("span", "badge badge--dot", "After leaving");
   const badge = dayBadge(day);
   if (day.overdue && day.lateAfter) badge.title = `Not checked in by ${day.lateAfter}`;
   return badge;

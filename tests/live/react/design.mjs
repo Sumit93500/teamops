@@ -136,7 +136,7 @@ for (const [who, p, title] of [["out", "auth/login.html", "Sign in"], ["out", "a
     const { ctx, t } = await open(who, `/pages/${p}`, width);
     const s = await t.evaluate(() => {
       // E1: Sign in and Forgot password are the app's own pages: the brand is the card's, the main is .auth-page__main
-      const e1 = document.querySelector(".auth-card__brand");
+      const e1 = [...document.querySelectorAll(".auth-brand__name, .auth-card__brand")].find((x) => x.getClientRects().length) ?? null;   // F2: the brand panel at 960 px and wider
       const logo = e1 ?? document.querySelector(".auth__logo"), footer = document.querySelector(".app-footer"), main = document.querySelector("main.auth, main.auth-page__main");
       return { logo: logo?.innerText.replace(/\s+/g, " ").trim() ?? null, mark: logo?.querySelector(".brand-mark")?.textContent ?? null, label: e1 ? "E1" : document.querySelector(".auth__brand")?.getAttribute("aria-label") ?? null,
         footer: footer?.innerText.trim(), after: Boolean(main && footer && main.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING), title: document.title,

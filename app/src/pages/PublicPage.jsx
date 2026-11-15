@@ -77,7 +77,7 @@ export default function PublicPage({ page }) {
 
     on(root, "click", (e) => {
       const placeholder = e.target.closest("[data-not-implemented]");
-      if (placeholder) { e.preventDefault(); showToast(`${placeholder.dataset.notImplemented} isn't available in this demo.`, "info"); return; }
+      if (placeholder) { e.preventDefault(); return; }   // F2: a control with nothing behind it does nothing (no demo wording)
       const demo = e.target.closest("[data-demo-role]");
       if (demo) { e.preventDefault(); if (ROLES[demo.dataset.demoRole]) signInDemo(demo.dataset.demoRole); return; }
       const a = e.target.closest("a[href]");
