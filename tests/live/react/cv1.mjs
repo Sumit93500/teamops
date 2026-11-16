@@ -1,12 +1,15 @@
-// CV1's harness (msedge, headless): client / official visits in the React app. Read by meaning (words, attributes, storage), never by pixels.
-// usage: node cv1.mjs <app dist> <repo root> <shots dir>   [ONLY=ABCDEFGHKWX]
+// CV1 / CV1b's harness (msedge, headless): client / official visits in the React app. Read by meaning (words, attributes, storage), never by pixels.
+// usage: node cv1.mjs <app dist> <repo root> <shots dir>   [ONLY=ABCDEFGHJNYKWX]
 // Clock: Mon 21 Dec 2026 10:00 IST (the shift rules apply from 1 Dec). Geolocation granted (Mumbai, 30 m) unless a case says otherwise.
 //   A  My visits (Arjun): empty state, Request a visit (the dialog's errors under their fields), the pending row, status filter, the shared date range
 //   B  Team visits (Sneha, Arjun's manager): the waiting row; Reject needs a reason; Approve; All visits; Assign a visit (Rohan), starts approved
 //   C  Mark attendance (Arjun): "Client / official visit": the location read with its accuracy, check in, check out (the visit completes)
 //   D  the day everywhere: My attendance's cell and legend, Team attendance (HR) "On a visit" tab and chip, "On site today" on the dashboards
 //   E  a same-day visit started from Mark attendance waits in the manager's inbox, the sidebar count and the bell; Approve / Reject there
-//   F  location denied / unavailable: the words, the reason, "Accept without location" with a note, then the day counts
+//   F  location denied / unavailable: the words, the reason, the approver's card in the inbox and the bell (Reject with a reason, Accept with a note), then the day counts
+//   J  a visit day left without a check-out: Incomplete, HR's Complete day (a manager has no button), the trail
+//   N  the numbers: a visit day raises Present on the Admin dashboard, Team attendance, the HR dashboard's shifts and the Employee dashboard, and the rate does not fall
+//   Y  the Shifts page's night-shift window (1 to 12 hours)
 //   G  the visit page: the punch trail with coordinates, accuracy and an Open in maps link; someone who may not see it is told so
 //   H  keyboard: the dialog opens with focus inside it, Esc closes it, the segmented choice works with the arrow keys
 //   C2 contrast: the chips, pills and notes, light and dark (4.5:1)
@@ -21,7 +24,7 @@ const EDGE = path.join(HERE, "..", "edge");
 const { chromium } = createRequire(path.join(EDGE, "x.js"))("playwright-core");
 const { useLocalFonts } = await import(new URL("file:///" + path.join(EDGE, "lib", "local-fonts.mjs").replace(/\\/g, "/")).href);
 const [DIST, ROOT, SHOTS] = process.argv.slice(2);
-const ONLY = process.env.ONLY ?? "ABCDEFGHKWX";
+const ONLY = process.env.ONLY ?? "ABCDEFGHJNYKWX";
 fs.mkdirSync(SHOTS, { recursive: true });
 const t0 = Date.now();
 const srv = spawn("python", [path.join(HERE, "spa-serve.py"), "9976", DIST], { stdio: "ignore" });
@@ -243,12 +246,30 @@ if (ONLY.includes("F")) {
   await n.t.click("#visit-check-in-btn"); await settle(n.t, 500);
   const v = (await stored(n.t, "officeos:visits")).visits[0];
   check("F3", "checked in without a location: kept, flagged as needing an OK, no coordinates", v.days[TODAY].in.needsOk && v.days[TODAY].in.lat === null && /waiting for an OK/.test(await text(n.t, "#visit-in-note") ?? ""), j(v.days[TODAY]?.in));
+  // the same punch, in the inbox and the bell: one card, Accept with a note or Reject with a reason
+  await go(n, "mgr", "requests/approvals-inbox.html");
+  const rows = await n.t.locator("#inbox-table tr[data-visit-location]").count();
+  const rowText = await text(n.t, "#inbox-table tr[data-visit-location]");
+  check("F3b", "the manager's inbox has ONE card for it: 'Visit location', the place, the day, the reason, with Reject and Accept", rows === 1 && /Visit location: Arjun Kapoor/.test(rowText ?? "") && /No signal in the basement/.test(rowText) && await n.t.locator("#inbox-table tr[data-visit-location]").getByRole("button", { name: "Accept", exact: true }).count() === 1 && await n.t.locator("#inbox-table tr[data-visit-location]").getByRole("button", { name: "Reject", exact: true }).count() === 1, rowText);
+  await n.t.locator(".topbar__icon-btn--dot[aria-haspopup]").click(); await settle(n.t, 300);
+  const bellTxt = await text(n.t, "#bell-panel");
+  check("F3c", "the bell lists it once", (bellTxt?.match(/Visit location/g) ?? []).length === 1 && /Arjun Kapoor/.test(bellTxt), bellTxt);
+  await n.t.keyboard.press("Escape"); await settle(n.t, 250);
+  await n.t.locator("#inbox-table tr[data-visit-location]").getByRole("button", { name: "Reject", exact: true }).click(); await settle(n.t, 300);
+  await n.t.click('button[form="visit-location-note-form"]'); await settle(n.t, 250);
+  check("F3d", "Reject needs a reason (said at the field)", /3 to 200/.test(await text(n.t, "#visit-location-note-error") ?? ""), await text(n.t, "#visit-location-note-error"));
+  await n.t.fill("#visit-location-note", "Please check in with your location"); await n.t.click('button[form="visit-location-note-form"]'); await settle(n.t, 500);
+  const vr = (await stored(n.t, "officeos:visits")).visits[0];
+  check("F3e", "rejected: the punch is taken back, the visit is approved again, the card is gone", !vr.days[TODAY].in && vr.status === "approved" && await n.t.locator("#inbox-table tr[data-visit-location]").count() === 0, j([vr.status, vr.days[TODAY]]));
+  await go(n, "emp", "attendance/mark-attendance.html");
+  await n.t.getByRole("radio", { name: "Client / official visit" }).click(); await settle(n.t);
+  await n.t.check("#visit-unavailable"); await n.t.fill("#visit-reason", "Still no signal"); await n.t.click("#visit-check-in-btn"); await settle(n.t, 500);
   await go(n, "mgr", "visits/team-visits.html");
-  check("F4", "Sneha's waiting list has it: 'Accept without location'", await n.t.locator("#waiting-table").getByRole("button", { name: "Accept without location" }).count() === 1, await text(n.t, "#waiting-table"));
-  await n.t.locator("#waiting-table").getByRole("button", { name: "Accept without location" }).click(); await settle(n.t, 300);
-  await n.t.click('button[form="visit-ok-form"]'); await settle(n.t);
-  check("F5", "accepting needs a note", /3 to 200/.test(await text(n.t, "#visit-ok-note-error") ?? ""), await text(n.t, "#visit-ok-note-error"));
-  await n.t.fill("#visit-ok-note", "Spoke to the client, was there"); await n.t.click('button[form="visit-ok-form"]'); await settle(n.t, 500);
+  check("F4", "Sneha's Team visits waiting list has it too (the same card, once): Reject and Accept", await n.t.locator("#waiting-table tr[data-visit]").count() === 1 && await n.t.locator("#waiting-table").getByRole("button", { name: "Accept", exact: true }).count() === 1, await text(n.t, "#waiting-table"));
+  await n.t.locator("#waiting-table").getByRole("button", { name: "Accept", exact: true }).click(); await settle(n.t, 300);
+  await n.t.click('button[form="visit-location-note-form"]'); await settle(n.t);
+  check("F5", "accepting needs a note", /3 to 200/.test(await text(n.t, "#visit-location-note-error") ?? ""), await text(n.t, "#visit-location-note-error"));
+  await n.t.fill("#visit-location-note", "Spoke to the client, was there"); await n.t.click('button[form="visit-location-note-form"]'); await settle(n.t, 500);
   const v2 = (await stored(n.t, "officeos:visits")).visits[0];
   check("F6", "accepted: the OK is kept with who and why, and the day now counts as on-site", v2.days[TODAY].in.okBy === "EMP-1029" && v2.days[TODAY].in.okNote === "Spoke to the client, was there", j(v2.days[TODAY]?.in?.okBy));
   await go(n, "emp", "attendance/my-attendance.html");
@@ -264,8 +285,10 @@ if (ONLY.includes("G")) {
   await go(n, "emp", `visits/visit.html?id=${id}`);
   const trail = await text(n.t, "#visit-trail");
   check("G1", "the trail has the day, the times, coordinates and accuracy", /10:00/.test(trail ?? "") && /18:45/.test(trail) && /19\.07600, 72\.87770/.test(trail) && /accurate to 30 m/.test(trail), trail);
-  const href = await n.t.locator("#visit-trail a", { hasText: "Open in maps" }).first().getAttribute("href");
-  check("G2", "'Open in maps' is an external link (a new tab) to the coordinates", /^https:\/\/www\.google\.com\/maps\?q=19\.076,72\.8777$/.test(href ?? "") && await n.t.locator("#visit-trail a", { hasText: "Open in maps" }).first().getAttribute("target") === "_blank", href);
+  const hrefs = await n.t.locator("#visit-trail a", { hasText: "Open in maps" }).evaluateAll((l) => l.map((a) => [a.getAttribute("href"), a.getAttribute("target")]));
+  check("G2", "check-in AND check-out each have 'Open in maps' (external, a new tab) to their coordinates", hrefs.length === 2 && hrefs.every(([h, t]) => /^https:\/\/www\.google\.com\/maps\?q=19\.076,72\.8777$/.test(h ?? "") && t === "_blank"), j(hrefs));
+  const lines = await n.t.locator("#visit-trail .visit-punch-row").allInnerTexts();
+  check("G2b", "one trail, a day at a time: a line for the check-in and one for the check-out, each with time, coordinates and accuracy", lines.length === 2 && /10:00/.test(lines[0]) && /18:45/.test(lines[1]) && lines.every((l) => /19\.07600, 72\.87770, accurate to 30 m/.test(l)), j(lines));
   check("G3", "the summary and the history are there", /Quarterly review/.test(await text(n.t, "#visit-summary") ?? "") && /Approved/.test(await text(n.t, "#visit-history") ?? ""));
   await go(n, "mgr", `visits/visit.html?id=${id}`);
   check("G4", "her manager can open it", /Acme Corp/.test(await bodyText(n.t)) && !/can't open/.test(await bodyText(n.t)));
@@ -290,6 +313,118 @@ if (ONLY.includes("H")) {
   await n.t.getByRole("radio", { name: "Office or home" }).focus(); await n.t.keyboard.press("ArrowRight"); await settle(n.t, 250);
   check("H3", "the arrow key moves the segmented choice to the visit way (radio group)", await n.t.getByRole("radio", { name: "Client / official visit" }).getAttribute("aria-checked") === "true" && await visible(n.t, "#visit-mode"));
   await n.ctx.close();
+}
+
+// ---------- J ----------
+if (ONLY.includes("J")) {
+  console.log("\n--- J. A visit day left without a check-out ---");
+  const n = await make("emp");
+  await go(n, "emp", "visits/my-visits.html"); await request(n, { from: TODAY });
+  await go(n, "mgr", "visits/team-visits.html"); await clickIn(n.t, "#waiting-table", "Approve"); await confirmYes(n.t, "Approve");
+  await go(n, "emp", "attendance/mark-attendance.html");
+  await n.t.getByRole("radio", { name: "Client / official visit" }).click(); await settle(n.t);
+  await n.t.click("#visit-locate-btn"); await settle(n.t, 600); await n.t.click("#visit-check-in-btn"); await settle(n.t, 500);
+  const vid = (await stored(n.t, "officeos:visits")).visits[0].id;
+  await n.ctx.clock.setFixedTime(new Date("2026-12-22T10:00:00+05:30"));
+  await go(n, "mgr", `visits/visit.html?id=${vid}`);
+  check("J1", "the next day Sneha (a manager) sees the day flagged Incomplete and has no Complete day button", /Incomplete/.test(await text(n.t, "#visit-trail") ?? "") && await n.t.getByRole("button", { name: "Complete day" }).count() === 0, await text(n.t, "#visit-trail"));
+  await go(n, "hr", "attendance/team-attendance.html"); await n.t.fill("#team-date", TODAY); await settle(n.t, 600);
+  const row = (await n.t.locator("#team-rows tr", { hasText: "Arjun Kapoor" }).allInnerTexts())[0] ?? "";
+  check("J2", "Team attendance (HR) shows 21 Dec as On-site, Incomplete, with a 'Complete visit day' link", /On-site \/ Client visit/.test(row) && /Incomplete/.test(row) && await n.t.locator("#team-rows tr", { hasText: "Arjun Kapoor" }).getByRole("link", { name: /Complete .*visit day/ }).count() === 1, row);
+  await n.t.locator("#team-rows tr", { hasText: "Arjun Kapoor" }).getByRole("link", { name: /Complete .*visit day/ }).click(); await settle(n.t, 600);
+  check("J3", "the link opens the visit page", /visits\/visit\.html\?id=/.test(n.t.url()), n.t.url());
+  await n.t.getByRole("button", { name: "Complete day" }).click(); await settle(n.t, 300);
+  await n.t.click('button[form="complete-visit-day-form"]'); await settle(n.t, 250);
+  check("J4a", "Complete day without a check-out time says so at the field", /Enter the check-out time/.test(await text(n.t, "#cvd-time-error") ?? ""), await text(n.t, "#cvd-time-error"));
+  await n.t.fill("#cvd-time", "17:30"); await n.t.click('button[form="complete-visit-day-form"]'); await settle(n.t, 250);
+  check("J4b", "...and without a reason says that at its field", /3 to 200/.test(await text(n.t, "#cvd-reason-error") ?? ""), await text(n.t, "#cvd-reason-error"));
+  await n.t.fill("#cvd-time", "17:30"); await n.t.fill("#cvd-reason", "Client confirmed he left at 17:30"); await n.t.click('button[form="complete-visit-day-form"]'); await settle(n.t, 500);
+  const v = (await stored(n.t, "officeos:visits")).visits[0];
+  check("J5", "completed by Priya: the check-out 17:30 is stored with who and why, the trail shows it and 'Completed by Priya Nair: full day', Incomplete is gone", v.days[TODAY].out?.time === "17:30" && v.days[TODAY].decision?.by === "EMP-1003" && /Completed by Priya Nair: full day/.test(await text(n.t, "#visit-trail") ?? "") && !/Incomplete/.test(await text(n.t, "#visit-trail") ?? "") && /17:30/.test(await text(n.t, "#visit-trail") ?? ""), j(v.days[TODAY]));
+  const audit = await stored(n.t, "officeos:audit-trail");
+  check("J6", "it is in the audit trail", audit.events.some((e) => e.kind === "visit-day-completed" && e.actorId === "EMP-1003"));
+  await n.ctx.close();
+}
+
+// ---------- N ----------
+if (ONLY.includes("N")) {
+  console.log("\n--- N. Every count sees the visit day ---");
+  const n = await make("emp");
+  const ints = (t) => (t ?? "").match(/\d+(?:\.\d+)?/g)?.map(Number) ?? [];
+  const grab = async () => {
+    const out = {};
+    await go(n, "admin", "dashboard/admin.html"); out.admin = ints(await text(n.t, '[data-stat="present"]'));            // [present, percent, expected]
+    await go(n, "hr", "dashboard/hr.html"); out.hr = ints(await n.t.locator('tr[data-shift="SH-1"] td').nth(3).innerText());   // [in, expected]
+    await go(n, "hr", "attendance/team-attendance.html"); out.team = ints(await text(n.t, '[data-stat="present"]'));      // [present, percent, expected]
+    await go(n, "emp", "dashboard/employee.html"); out.emp = ints(await text(n.t, '[data-stat="present"] .stat__value'));  // [worked, so far]
+    await go(n, "emp", "attendance/my-attendance.html"); out.my = ints((await n.t.locator(".stat", { hasText: "Days present" }).first().locator(".stat__value").innerText()));
+    return out;
+  };
+  const before = await grab();
+  await go(n, "emp", "visits/my-visits.html"); await request(n, { from: TODAY });
+  await go(n, "mgr", "visits/team-visits.html"); await clickIn(n.t, "#waiting-table", "Approve"); await confirmYes(n.t, "Approve");
+  await go(n, "emp", "attendance/mark-attendance.html");
+  await n.t.getByRole("radio", { name: "Client / official visit" }).click(); await settle(n.t);
+  await n.t.click("#visit-locate-btn"); await settle(n.t, 600); await n.t.click("#visit-check-in-btn"); await settle(n.t, 500);
+  const after = await grab();
+  const ratio = (a) => a[0] / a[1];
+  check("N1", "Admin dashboard, Present today: one more, and the share of those expected does not fall", after.admin[0] === before.admin[0] + 1 && after.admin[1] >= before.admin[1], j([before.admin, after.admin]));
+  check("N2", "HR dashboard, Shifts today (General, In): one more in, same expected", after.hr[0] === before.hr[0] + 1 && after.hr[1] === before.hr[1], j([before.hr, after.hr]));
+  check("N3", "Team attendance, Present: one more, and the share does not fall", after.team[0] === before.team[0] + 1 && after.team[1] >= before.team[1], j([before.team, after.team]));
+  check("N4", "Employee dashboard, Days present: one more day worked, and the share of days so far does not fall", after.emp[0] === before.emp[0] + 1 && ratio(after.emp) >= ratio(before.emp), j([before.emp, after.emp]));
+  check("N5", "My attendance, Days present: the same", after.my[0] === before.my[0] + 1 && ratio(after.my) >= ratio(before.my), j([before.my, after.my]));
+  await n.ctx.close();
+}
+
+// ---------- Y ----------
+if (ONLY.includes("Y")) {
+  console.log("\n--- Y. The night shift's check-out window ---");
+  const n = await make("hr");
+  await go(n, "hr", "attendance/shifts.html");
+  check("Y1", "HR sees the window card with 6 hours and the plain-words help", await visible(n.t, "#night-window") && (await n.t.inputValue("#set-night-hours")) === "6" && /ends the next morning/.test(await text(n.t, "#night-window") ?? "") && /13:00/.test(await text(n.t, "#night-window") ?? ""), await text(n.t, "#night-window"));
+  const said = [];
+  for (const bad of ["13", "0", "", "2.5"]) { await n.t.fill("#set-night-hours", bad); await n.t.click("#save-night-hours"); await settle(n.t, 250); said.push(await text(n.t, "#set-night-hours-error")); }
+  check("Y2", "13, 0, nothing and 2.5 are each refused at the field, in words", said.every((m) => /1 to 12|Enter the hours/.test(m ?? "")), j(said));
+  await n.t.fill("#set-night-hours", "3"); await n.t.click("#save-night-hours"); await settle(n.t, 400);
+  const nf = await stored(n.t, "officeos:night-fix");
+  check("Y3", "3 hours is saved (a toast; stored as 180 minutes)", nf?.windowMin === 180 && /3 hours after the shift ends/.test(await toast(n.t)), j(nf));
+  await go(n, "admin", "attendance/shifts.html");
+  check("Y4", "the Admin sees the card too, with the saved 3", await visible(n.t, "#night-window") && (await n.t.inputValue("#set-night-hours")) === "3");
+  await go(n, "emp", "attendance/shifts.html");
+  check("Y5", "an employee can't open the Shifts page (the 403 page)", /errors\/403/.test(n.t.url()), n.t.url());
+  await n.ctx.close();
+}
+
+// ---------- Z ----------
+// CV1b's changed states, as shots at 412 and 1280, light and dark (the full pass is CV1c): the visit trail, the inbox card, the accept dialog,
+// the complete-day dialog, the Shifts window card and Team attendance's Incomplete row; and no sideways scroll on each.
+if (ONLY.includes("Z")) {
+  console.log("\n--- Z. CV1b's changed screens ---");
+  for (const theme of ["light", "dark"]) for (const width of [412, 1280]) {
+    const n = await make("emp", { width, theme });
+    await go(n, "emp", "visits/my-visits.html"); await request(n, { from: TODAY, siteName: "Acme Corp, Pune" });
+    await go(n, "mgr", "visits/team-visits.html"); await clickIn(n.t, "#waiting-table", "Approve"); await confirmYes(n.t, "Approve");
+    await go(n, "emp", "attendance/mark-attendance.html");
+    await n.t.getByRole("radio", { name: "Client / official visit" }).click(); await settle(n.t);
+    await n.t.check("#visit-unavailable"); await n.t.fill("#visit-reason", "No signal in the basement"); await n.t.click("#visit-check-in-btn"); await settle(n.t, 500);
+    const vid = (await stored(n.t, "officeos:visits")).visits[0].id;
+    const wide = [];
+    const shot = async (name, full = true) => { const over = await n.t.evaluate(() => document.documentElement.scrollWidth - window.innerWidth); if (over > 1) wide.push([name, over]); await n.t.screenshot({ path: path.join(SHOTS, `z-${name}-${width}-${theme}.png`), fullPage: full }); };
+    await go(n, "mgr", `visits/visit.html?id=${vid}`); await shot("visit-trail");
+    await n.t.getByRole("button", { name: /^Accept check-in without location/ }).click(); await settle(n.t, 300); await shot("accept-dialog", false); await n.t.keyboard.press("Escape"); await settle(n.t, 250);
+    await go(n, "mgr", "requests/approvals-inbox.html"); await shot("inbox-card");
+    await go(n, "mgr", `visits/visit.html?id=${vid}`);
+    await n.t.getByRole("button", { name: /^Accept check-in without location/ }).click(); await settle(n.t, 250);
+    await n.t.fill("#visit-location-note", "Spoke to the client, was there"); await n.t.click('button[form="visit-location-note-form"]'); await settle(n.t, 500);
+    await go(n, "emp", "attendance/mark-attendance.html"); await n.t.getByRole("radio", { name: "Client / official visit" }).click(); await settle(n.t);
+    await n.ctx.clock.setFixedTime(new Date("2026-12-22T10:00:00+05:30"));
+    await go(n, "hr", `visits/visit.html?id=${vid}`); await shot("visit-incomplete");
+    await n.t.getByRole("button", { name: "Complete day" }).click(); await settle(n.t, 300); await shot("complete-dialog", false); await n.t.keyboard.press("Escape"); await settle(n.t, 250);
+    await go(n, "hr", "attendance/team-attendance.html"); await n.t.fill("#team-date", TODAY); await settle(n.t, 600); await shot("team-incomplete");
+    await go(n, "hr", "attendance/shifts.html"); await shot("shifts-window");
+    check(`Z.${width}.${theme}`, `${width} ${theme}: the 7 changed states have no sideways scroll`, !wide.length, j(wide));
+    await n.ctx.close();
+  }
 }
 
 // ---------- S ----------

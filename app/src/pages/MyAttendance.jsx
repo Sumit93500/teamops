@@ -41,7 +41,7 @@ const pad = (n) => String(n).padStart(2, "0");
 const ordinal = (n) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
 const forChart = (d) => (d.status === "on-site" ? { ...d, status: "present" } : d.status === "visit-planned" ? { ...d, status: "not-yet" } : d);   // CV1
 const isOffOrEmpty = (day) => ["weekend", "weekly-off", "holiday", "no-data", "not-joined", "left"].includes(day.status);
-const soFar = (days, today) => days.filter((d) => d.date <= today && !isOffOrEmpty(d) && d.status !== "not-yet");
+const soFar = (days, today) => days.filter((d) => d.date <= today && !isOffOrEmpty(d) && d.status !== "not-yet" && !(d.status === "visit-planned" && !d.incomplete));   // CV1b: a visit not started yet is not a day so far
 const ICONS = ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6", "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2", "M4 20V10M10 20V4M16 20v-7M22 20H2", "M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"];
 const TONES = [1, 3, 2, 4];
 const SUMMARY_LABEL = { present: "On time", late: "Late", "half-day": "Half day", "on-leave": "On leave", absent: "Absent" };

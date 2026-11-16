@@ -7,7 +7,7 @@ import { managerOf, directReportsOf, isManager } from "../../../assets/js/data/r
 import { visitsFor, COUNTING } from "../../../assets/js/data/visits-store.js";
 import { hasPermission } from "../../../assets/js/config/roles.js";
 import { formatDay, nameOf } from "../../../assets/js/ui/leave-view.js";
-import { requestVisit, assignVisit, okVisitLocation, phaseOf, onSiteToday, MAX_DAYS, SITE_MAX, PURPOSE_MAX, ADDRESS_MAX } from "../../../assets/js/data/visits.js";
+import { requestVisit, assignVisit, okVisitLocation, completeVisitDay, phaseOf, onSiteToday, MAX_DAYS, SITE_MAX, PURPOSE_MAX, ADDRESS_MAX } from "../../../assets/js/data/visits.js";
 import { KIND_LABEL, VISIT_KINDS } from "../../../assets/js/data/visits-store.js";
 import { officeNow } from "../../../assets/js/data/shift-engine.js";
 import { shiftRulesFrom } from "../../../assets/js/data/shift-settings.js";
@@ -136,6 +136,45 @@ export function AssignVisitModal({ open, onClose }) {
             {e("people") && <span className="ds-field__error" id="visit-people-error" role="alert">{e("people")}</span>}
             <span className="ds-field__helper">{`${f.picked.length} selected`}</span>
           </div>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+// CV1b: may this person complete a visit's days (HR and the Admin: attendance:approve and attendance:view-all; never for their own visit)?
+export function mayCompleteVisitDay(userId, visit) {
+  const me = getUser(userId);
+  return Boolean(me) && me.status !== "inactive" && visit.personId !== userId && hasPermission(me, "attendance:approve") && hasPermission(me, "attendance:view-all");
+}
+
+// CV1b: "Complete day" (HR, Admin): a visit day with a check-in and no check-out gets its check-out time, or is marked a full or a half day, with a reason.
+export function CompleteVisitDayModal({ visit, date, onClose }) {
+  const { userId } = useSession();
+  const toast = useToast();
+  const [f, setF] = useState({ how: "time", outTime: "", reason: "" });
+  const [err, setErr] = useState(null);
+  const day = visit.days?.[date] ?? {};
+  const set = (k) => (e) => { setF((s) => ({ ...s, [k]: e.target.value })); setErr(null); };
+  const save = (e) => {
+    e.preventDefault();
+    if (f.how === "time" && !f.outTime) { setErr({ field: "outTime", text: "Enter the check-out time." }); return; }
+    const r = completeVisitDay(userId, visit.id, date, f.how === "time" ? { outTime: f.outTime, reason: f.reason } : { outcome: f.how, reason: f.reason });
+    if (!r.ok) { setErr({ field: r.field ?? "reason", text: r.error }); return; }
+    toast(`${nameOf(visit.personId)}'s ${formatDay(date, true)} is complete.`, "success"); bump(); onClose();
+  };
+  const e = (k) => (err?.field === k ? err.text : undefined);
+  return (
+    <Modal open onClose={onClose} id="complete-visit-day-modal" size="sm" title="Complete the visit day"
+      desc={`${nameOf(visit.personId)}, ${formatDay(date, true)}: checked in at ${day.in?.time ?? "?"} for the visit to ${visit.siteName}, no check-out. Until you decide, the day is flagged Incomplete: not absent, no loss of pay.`}
+      footer={<><button className="ds-btn" type="button" onClick={onClose}>Cancel</button><button className="ds-btn ds-btn--primary" type="submit" form="complete-visit-day-form">Complete day</button></>}>
+      <form id="complete-visit-day-form" noValidate onSubmit={save}>
+        <div className="ds-form-grid">
+          <Field id="cvd-how" label="What to record" required error={e("outcome")} hint="A day marked half costs half a day's pay.">
+            <Select id="cvd-how" value={f.how} onChange={set("how")} options={[["time", "Add the check-out time"], ["full", "Mark the day full"], ["half", "Mark the day half"]]} />
+          </Field>
+          {f.how === "time" && <Field id="cvd-time" label="Check-out" required error={e("outTime")}><Input id="cvd-time" type="time" value={f.outTime} onChange={set("outTime")} /></Field>}
+          <Field id="cvd-reason" label="Reason" required full error={e("reason")} hint="Kept with the visit and in the audit trail."><TextArea id="cvd-reason" rows={2} maxLength={200} value={f.reason} onChange={set("reason")} /></Field>
         </div>
       </form>
     </Modal>

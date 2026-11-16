@@ -13,8 +13,8 @@ import Table from "../components/Table.jsx";
 import { PageHeader, Card } from "../components/Layout.jsx";
 import { EmptyState, NO_DATA, Tabs } from "../components/Basics.jsx";
 import { DateRange, FilterBar, FilterSelect, FilterSearch } from "../components/Controls.jsx";
-import { useDecision, VISIT_FLOW, DecisionButtons } from "../components/Decision.jsx";
-import { VisitStatus, AssignVisitModal, LocationOkModal, assignable, kindLabel, visitDates, visitDays, PIN } from "../ui/visits.jsx";
+import { useDecision, VISIT_FLOW, VISIT_LOCATION_FLOW, DecisionButtons } from "../components/Decision.jsx";
+import { VisitStatus, AssignVisitModal, assignable, kindLabel, visitDates, visitDays, PIN } from "../ui/visits.jsx";
 import { STATUS_OPTIONS } from "./MyVisits.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { countText } from "../data/counts.js";
@@ -28,12 +28,12 @@ function Content() {
   const { userId } = useSession();
   const canView = useCan("visits:view-all");
   const flow = useDecision(VISIT_FLOW);
+  const locFlow = useDecision(VISIT_LOCATION_FLOW);   // CV1b: the same Accept / Reject as the inbox and the card
   const [tab, setTab] = useState(0);
   const [status, setStatus] = useState("");
   const [q, setQ] = useState("");
   const [range, setRange] = useState(NONE);
   const [assigning, setAssigning] = useState(false);
-  const [okItem, setOkItem] = useState(null);
   const today = officeNow().date;
   const d = useData(() => ({
     all: visitsVisibleTo(userId).filter((v) => v.personId !== userId),
@@ -52,7 +52,7 @@ function Content() {
     { key: "what", label: "Needs", render: (x) => (x.kind === "location" ? <span className="visit-chip visit-chip--warn"><svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d={PIN} /></svg>An OK for the location</span> : "Approval") },
     { key: "why", label: "Why", render: (x) => <span className="text-sm">{x.kind === "location" ? x.reason : x.reason}</span> },
     { key: "actions", label: "Actions", actions: true, render: (x) => (x.kind === "location"
-      ? <button className="ds-btn ds-btn--sm ds-btn--primary" type="button" onClick={() => setOkItem(x)}>Accept without location</button>
+      ? <DecisionButtons permission="visits:approve" labels={["Reject", "Accept"]} onReject={() => locFlow.reject(x)} onApprove={() => locFlow.approve(x)} />
       : <DecisionButtons permission="visits:approve" onReject={() => flow.reject(x)} onApprove={() => flow.approve(x)} />) },
   ];
   const allColumns = [
@@ -95,8 +95,7 @@ function Content() {
             </>}
       </div>
       <AssignVisitModal open={assigning} onClose={() => setAssigning(false)} />
-      <LocationOkModal item={okItem} onClose={() => setOkItem(null)} />
-      <span style={{ display: "contents" }}>{flow.modal}</span>
+      <span style={{ display: "contents" }}>{flow.modal}{locFlow.modal}</span>
     </>
   );
 }

@@ -42,5 +42,24 @@
 .visit-onsite__item { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--ds-radius-pill); background: var(--ds-surface-2); border: 1px solid var(--ds-border); font-size: var(--ds-text-sm); }
 .visit-onsite__item small { color: var(--ds-text-2); }
 
+/* CV1b: the punch trail, a day at a time; each punch on its own line */
+.visit-punches { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--ds-space-2); }
+.visit-punch-row { display: grid; grid-template-columns: 6rem 4rem minmax(0, 1fr) auto auto; align-items: center; gap: var(--ds-space-2) var(--ds-space-3); padding: var(--ds-space-2) var(--ds-space-3); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-2); }
+.visit-punch-row--empty { color: var(--ds-text-2); }
+.visit-punch-row__label { font-size: var(--ds-text-xs); color: var(--ds-text-2); text-transform: uppercase; letter-spacing: .04em; }
+.visit-punch-row__time { font-weight: 650; color: var(--ds-text); }
+.visit-punch-row__where { min-width: 0; font-size: var(--ds-text-sm); color: var(--ds-text-2); overflow-wrap: anywhere; }
+.visit-punch-row__flags { display: flex; flex-wrap: wrap; gap: 4px; }
+.visit-punch-row__flags:empty { display: none; }
+.visit-punch-row__note { grid-column: 1 / -1; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.visit-trail__date { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2); }
+.visit-trail__note { margin: 0; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.visit-trail__actions { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
+.visit-trail__actions:empty { display: none; }
+@media (max-width: 640px) {
+  .visit-punch-row { grid-template-columns: 5rem minmax(0, 1fr); }
+  .visit-punch-row__where, .visit-punch-row__flags, .visit-punch-row__map { grid-column: 1 / -1; }
+}
+
 /* the dialogs' first label sits clear of their description */
-#request-visit-form, #assign-visit-form, #visit-ok-form { margin-top: var(--ds-space-3); }
+#request-visit-form, #assign-visit-form, #visit-ok-form, #complete-visit-day-form { margin-top: var(--ds-space-3); }

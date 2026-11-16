@@ -94,7 +94,12 @@ function row(r, on) {
   const [badge, ...more] = statusNodes(r.day);
   status.append(badge, ...more);
   showReason(badge, badge.title);
-  if (on?.current?.complete && r.day.incomplete && r.day.rules === "shift") {
+  if (on?.current?.complete && r.day.onSite && r.day.incomplete && r.day.visit?.id) {   // CV1b: a visit day is completed on the visit's own page
+    const a = el("a", "btn btn--sm", "Complete visit day");
+    a.href = pageUrl(`visits/visit.html?id=${encodeURIComponent(r.day.visit.id)}`); a.dataset.route = "";
+    a.setAttribute("aria-label", `Complete ${r.user?.name ?? r.day.userId}'s visit day`);
+    status.append(" ", a);
+  } else if (on?.current?.complete && r.day.incomplete && r.day.rules === "shift") {
     const fix = el("button", "btn btn--sm", "Complete day");
     fix.type = "button";
     fix.setAttribute("aria-label", `Complete ${r.user?.name ?? r.day.userId}'s day`);

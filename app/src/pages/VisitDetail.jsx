@@ -1,44 +1,47 @@
-// One visit (CV1, 2026-11-16), opened from My visits, Team visits and the approvals: who, where, why, the days, and the punch trail (each
-// day's check-in and check-out with time, coordinates, accuracy and an "Open in maps" link, flags for a low accuracy or a location
-// that wasn't available and the approver's OK). The person, their manager, HR and Admin may open it; anyone else is told they can't.
-// Approve / Reject (while it waits), Cancel (before it starts) and "Accept without location" are here too.
+// One visit (CV1, 2026-11-16), opened from My visits, Team visits and the approvals: who, where, why, the days, and the punch trail. CV1b: the trail is
+// one list, a day at a time, each day's check-in and check-out on their own line with the time, the coordinates, the accuracy and an "Open in maps" link
+// for each (the flags: low accuracy, a location that wasn't available, the approver's OK or the day completed by HR). The person, their manager, HR
+// and Admin may open it; anyone else is told they can't. Approve / Reject (while it waits), Cancel (before it starts), Accept or Reject a punch made
+// without a location, and "Complete day" (HR, Admin: a check-out time, or the day marked full or half, with a reason) are here too.
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getUser } from "../../../assets/js/data/store.js";
 import { getVisit } from "../../../assets/js/data/visits-store.js";
 import { visitTrail, mayViewVisit, mayDecideVisit, mayCancelVisit, cancelVisit } from "../../../assets/js/data/visits.js";
+import { officeNow } from "../../../assets/js/data/shift-engine.js";
 import { formatDay, nameOf, localDateOf } from "../../../assets/js/ui/leave-view.js";
 import OwnPage from "../ui/OwnPage.jsx";
 import { PageHeader, Card, Pill } from "../components/Layout.jsx";
 import { Kv } from "../components/Form.jsx";
 import { EmptyState } from "../components/Basics.jsx";
 import { useConfirm } from "../components/Confirm.jsx";
-import { useDecision, VISIT_FLOW } from "../components/Decision.jsx";
+import { useDecision, VISIT_FLOW, VISIT_LOCATION_FLOW } from "../components/Decision.jsx";
 import { useToast } from "../ui/Toast.jsx";
-import { VisitStatus, LocationOkModal, kindLabel, visitDates, visitDays, PIN } from "../ui/visits.jsx";
+import { VisitStatus, CompleteVisitDayModal, mayCompleteVisitDay, kindLabel, visitDates, visitDays, PIN } from "../ui/visits.jsx";
 import { useData, useSession } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
 import { pageUrl, MY_VISITS, TEAM_VISITS, VISIT_PAGE } from "../routes.js";
 
-const ACTION_WORDS = { requested: "Asked for", "started-same-day": "Started today", assigned: "Assigned", approved: "Approved", rejected: "Rejected", cancelled: "Cancelled", started: "Started", "check-in": "Checked in", "check-out": "Checked out", completed: "Completed", "location-ok": "Location accepted" };
+const ACTION_WORDS = { requested: "Asked for", "started-same-day": "Started today", assigned: "Assigned", approved: "Approved", rejected: "Rejected", cancelled: "Cancelled", started: "Started", "check-in": "Checked in", "check-out": "Checked out", completed: "Completed", "location-ok": "Location accepted", "location-rejected": "Location rejected", "day-completed": "Day completed" };
 
-function Punch({ label, p, maps }) {
-  if (!p) return <div className="visit-punch"><span className="visit-punch__label">{label}</span><span className="visit-punch__meta">Not yet</span></div>;
+// One punch on its own line: label, time, where, flags, map.
+function PunchRow({ label, p, maps }) {
+  if (!p) return <li className="visit-punch-row visit-punch-row--empty"><span className="visit-punch-row__label">{label}</span><span className="visit-punch-row__time">Not yet</span></li>;
   return (
-    <div className="visit-punch">
-      <span className="visit-punch__label">{label}</span>
-      <span className="visit-punch__time">{p.time}</span>
-      {p.source === "gps"
-        ? <span className="visit-punch__meta">{`${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}, accurate to ${p.accuracy} m`}</span>
-        : <span className="visit-punch__meta">{`Location unavailable: ${p.reason}`}</span>}
-      <span className="visit-punch__flags">
+    <li className="visit-punch-row" data-punch={label.toLowerCase()}>
+      <span className="visit-punch-row__label">{label}</span>
+      <span className="visit-punch-row__time">{p.time}</span>
+      <span className="visit-punch-row__where">
+        {p.source === "gps" ? `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}, accurate to ${p.accuracy} m` : p.source === "hr" ? `Set by ${nameOf(p.okBy)}${p.okNote ? `: ${p.okNote}` : ""}` : `Location unavailable: ${p.reason}`}
+      </span>
+      <span className="visit-punch-row__flags">
         {p.lowAccuracy && <Pill tone="warning">Low accuracy</Pill>}
         {p.source === "unavailable" && !p.okBy && <Pill tone="warning">Waiting for an OK</Pill>}
-        {p.okBy && <Pill tone="success">{`OK'd by ${nameOf(p.okBy)}`}</Pill>}
+        {p.source === "unavailable" && p.okBy && <Pill tone="success">{`OK'd by ${nameOf(p.okBy)}`}</Pill>}
       </span>
-      {p.okNote && <span className="visit-punch__meta">{p.okNote}</span>}
-      {maps && <a className="ds-btn ds-btn--sm" href={maps} target="_blank" rel="noopener noreferrer">Open in maps<span className="visually-hidden"> (opens in a new tab)</span></a>}
-    </div>
+      {maps && <a className="ds-btn ds-btn--sm visit-punch-row__map" href={maps} target="_blank" rel="noopener noreferrer">Open in maps<span className="visually-hidden"> (opens in a new tab)</span></a>}
+      {p.source === "unavailable" && p.okNote && <span className="visit-punch-row__note">{p.okNote}</span>}
+    </li>
   );
 }
 
@@ -47,13 +50,15 @@ function Content({ id }) {
   const toast = useToast();
   const confirm = useConfirm();
   const flow = useDecision(VISIT_FLOW);
-  const [okItem, setOkItem] = useState(null);
-  const d = useData(() => { const v = getVisit(id); return v ? { v, can: mayViewVisit(userId, v), decide: mayDecideVisit(userId, v.personId), cancel: mayCancelVisit(userId, v) } : null; }, [id, userId]);
+  const locFlow = useDecision(VISIT_LOCATION_FLOW);
+  const [completing, setCompleting] = useState(null);
+  const d = useData(() => { const v = getVisit(id); return v ? { v, can: mayViewVisit(userId, v), decide: mayDecideVisit(userId, v.personId), cancel: mayCancelVisit(userId, v), complete: mayCompleteVisitDay(userId, v) } : null; }, [id, userId]);
   if (!d) return <><PageHeader title="Visit" /><EmptyState title="That visit doesn't exist" text="It may have been removed, or the link is wrong." to={pageUrl(MY_VISITS)} linkText="My visits" /></>;
   if (!d.can) return <><PageHeader title="Visit" /><EmptyState title="You can't open this visit" text="Only the person, their manager, HR and an Admin can see a visit." to={pageUrl(MY_VISITS)} linkText="My visits" /></>;
   const { v } = d;
   const person = getUser(v.personId);
   const trail = visitTrail(v);
+  const today = officeNow().date;
   const started = Object.values(v.days).some((x) => x.in || x.out);
   const waiting = v.status === "pending" || (v.status === "in-progress" && v.approvalPending);
   const forApproval = { id: v.id, userId: v.personId, siteName: v.siteName, date: v.fromDate, toDate: v.toDate, sameDay: v.sameDay };
@@ -66,6 +71,8 @@ function Content({ id }) {
     {waiting && d.decide && <><button className="ds-btn" type="button" onClick={() => flow.reject(forApproval)}>Reject</button><button className="ds-btn ds-btn--primary" type="button" onClick={() => flow.approve(forApproval)}>Approve</button></>}
     {d.cancel && (v.status === "pending" || v.status === "approved") && !started && <button className="ds-btn ds-btn--danger" type="button" onClick={cancel}>Cancel visit</button>}
   </>;
+  const locItem = (t, side) => ({ id: `${v.id}:${t.date}:${side}`, userId: v.personId, siteName: v.siteName, date: t.date, side, reason: t[side].reason });
+  const validIn = (t) => t.in && (!t.in.needsOk || t.in.okBy);
   return (
     <>
       <PageHeader title={v.siteName} subtitle={`${kindLabel(v.kind)} for ${person?.name ?? v.personId}`} actions={actions}
@@ -90,19 +97,31 @@ function Content({ id }) {
         </div>
         <Card id="visit-trail" title="Check-in trail" meta={started ? `${trail.filter((t) => t.in).length} of ${trail.length} days started` : "Nothing punched yet"}>
           <ul className="visit-trail">
-            {trail.map((t) => (
-              <li className="visit-trail__day" key={t.date} data-date={t.date}>
-                <span className="visit-trail__date"><svg className="icon" viewBox="0 0 24 24" aria-hidden="true" width="14" height="14"><path d={PIN} /></svg>{` ${formatDay(t.date, true)}`}</span>
-                <div className="visit-trail__punches"><Punch label="Check-in" p={t.in} maps={t.inMaps} /><Punch label="Check-out" p={t.out} maps={t.outMaps} /></div>
-                {["in", "out"].map((side) => { const p = t[side]; return p && p.needsOk && !p.okBy && d.decide ? <div key={side}><button className="ds-btn ds-btn--sm ds-btn--primary" type="button" onClick={() => setOkItem({ visitId: v.id, name: person?.name, date: t.date, side, reason: p.reason })}>{`Accept ${side === "out" ? "check-out" : "check-in"} without location`}</button></div> : null; })}
-              </li>
-            ))}
+            {trail.map((t) => {
+              const done = v.days[t.date]?.decision ?? null;
+              const canComplete = d.complete && validIn(t) && !done && t.date <= today;
+              return (
+                <li className="visit-trail__day" key={t.date} data-date={t.date}>
+                  <span className="visit-trail__date"><svg className="icon" viewBox="0 0 24 24" aria-hidden="true" width="14" height="14"><path d={PIN} /></svg>{` ${formatDay(t.date, true)}`}
+                    {done && <Pill tone={done.outcome === "half" ? "warning" : "success"}>{`Completed by ${nameOf(done.by)}: ${done.outcome === "half" ? "half day" : "full day"}`}</Pill>}
+                    {!done && validIn(t) && !t.out && t.date < today && <Pill tone="warning">Incomplete</Pill>}
+                  </span>
+                  <ul className="visit-punches"><PunchRow label="Check-in" p={t.in} maps={t.inMaps} /><PunchRow label="Check-out" p={t.out} maps={t.outMaps} /></ul>
+                  {done && <p className="visit-trail__note">{done.reason}</p>}
+                  <div className="visit-trail__actions">
+                    {["in", "out"].map((side) => { const p = t[side]; return p && p.needsOk && !p.okBy && d.decide ? (
+                      <span key={side} className="ds-btn-group"><button className="ds-btn ds-btn--sm" type="button" onClick={() => locFlow.reject(locItem(t, side))}>{`Reject ${side === "out" ? "check-out" : "check-in"}`}</button><button className="ds-btn ds-btn--sm ds-btn--primary" type="button" onClick={() => locFlow.approve(locItem(t, side))}>{`Accept ${side === "out" ? "check-out" : "check-in"} without location`}</button></span>) : null; })}
+                    {canComplete && <button className="ds-btn ds-btn--sm" type="button" onClick={() => setCompleting({ visit: v, date: t.date })}>Complete day</button>}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </Card>
         <p className="ds-note"><Link className="link" to={pageUrl(v.personId === userId ? MY_VISITS : TEAM_VISITS)}>Back to the list</Link></p>
       </div>
-      <LocationOkModal item={okItem} onClose={() => setOkItem(null)} />
-      <span style={{ display: "contents" }}>{flow.modal}</span>
+      {completing && <CompleteVisitDayModal visit={completing.visit} date={completing.date} onClose={() => setCompleting(null)} />}
+      <span style={{ display: "contents" }}>{flow.modal}{locFlow.modal}</span>
     </>
   );
 }

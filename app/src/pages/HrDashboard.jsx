@@ -117,7 +117,7 @@ export default function HrDashboard() {
       people, dates, month, chart: leaveRequestsByMonthChart(today, CHART_MONTHS), all: allRequests(), decided: [...allRequests(), ...(canCorrect ? allRegularizations() : [])],
       flagged: canAll ? flaggedSince(isoFromDayNumber(dayNumber(today) - 6), today) : [],
       // SH1: today by shift: who is on each active shift, how many are in (present, late, a half day or short leave), the incomplete days
-      byShift: canAll ? (() => { const days = shiftTeamFor(today); return getShifts().map((s) => { const on = days.filter((x) => x.shiftId === s.id); return { ...s, on: on.length, expected: on.filter((x) => x.expected).length, inNow: on.filter((x) => ["present", "late", "half-day", "short-leave"].includes(x.status)).length, incomplete: on.filter((x) => x.incomplete).length }; }).filter((s) => s.on > 0); })() : [] };
+      byShift: canAll ? (() => { const days = shiftTeamFor(today); return getShifts().map((s) => { const on = days.filter((x) => x.shiftId === s.id); return { ...s, on: on.length, expected: on.filter((x) => x.expected).length, inNow: on.filter((x) => ["present", "late", "half-day", "short-leave", "on-site"].includes(x.status)).length, incomplete: on.filter((x) => x.incomplete).length }; }).filter((s) => s.on > 0); })() : [] };
   }, [userId, role?.key, today, canCorrect, canAll]);
 
   // stats (hr-dashboard.js renderStats, renderJoiners)

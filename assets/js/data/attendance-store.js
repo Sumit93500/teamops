@@ -27,6 +27,7 @@ import { allRequests, managerFor, PAST_DAY_WINDOW } from "./leave-store.js";
 import { joinedOn } from "./employment-period.js";   // F2b
 import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
 import { nightCheckOutJudge } from "./night-fix.js";   // CV1
+import { oldDayWithVisit } from "./visit-days.js";   // CV1b
 
 // The General shift, the only one for now.
 export const ATTENDANCE_RULES = {
@@ -424,7 +425,7 @@ function deriveDay(ctx, user, date) {
   }
 
   if (day.minutesWorked !== null) day.hours = Math.round(day.minutesWorked / 6) / 10;   // one decimal
-  return day;
+  return oldDayWithVisit(day, ctx.today, ctx.now);   // CV1b: a day with an approved visit and a check-in reads present; any other day comes back as it is
 }
 
 // ---------- reads ----------

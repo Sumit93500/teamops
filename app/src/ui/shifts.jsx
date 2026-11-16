@@ -59,7 +59,7 @@ export function shiftBadge(day) {
 // The badge plus "Incomplete" (a day without a check-out, under the shift rules: HR completes it).
 export function statusNodes(day) {
   const nodes = [shiftBadge(day)];
-  if (day.incomplete && day.rules === "shift") {
+  if (day.incomplete && (day.rules === "shift" || day.onSite)) {   // CV1b: a visit day with no check-out is Incomplete too
     const tag = el("span", "badge badge--warning badge--square", "Incomplete");
     tag.title = "No check-out recorded: HR can complete the day";
     nodes.push(" ", tag);

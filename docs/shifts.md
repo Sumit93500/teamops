@@ -80,6 +80,8 @@ From the shift rules month, `payFor` (the new engine) **replaces** the old row's
 | `shifts:swap-team` | everyone: swap one date for your direct reports (only a manager has any) |
 | `overtime:approve` | everyone: decide your direct reports' overtime; HR and the Admin for people without a manager |
 
+The night shift's check-out correction window (default 6 hours, 1 to 12) is a card on the Shifts page for HR and the Admin (CV1b; see [attendance.md](attendance.md)).
+
 None is overridable. Admin 102, HR 58, Finance 48, Employee 30 (CV1 added the four `visits` ones: see [rbac.md](rbac.md)).
 
 ## The screens

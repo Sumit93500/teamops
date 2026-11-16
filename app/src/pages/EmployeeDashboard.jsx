@@ -184,7 +184,7 @@ export default function EmployeeDashboard() {
   // stats (employee-dashboard.js renderPresent, renderBalanceStat, renderOpenRequests, renderPayslip)
   let present = { value: "–", note: "Attendance isn't tracked", tone: "" };
   if (d.summary) {
-    const soFar = d.summary.days.filter((x) => x.date <= today && !isOff(x) && !["no-data", "not-joined", "left", "not-yet"].includes(x.status));
+    const soFar = d.summary.days.filter((x) => x.date <= today && !isOff(x) && !["no-data", "not-joined", "left", "not-yet"].includes(x.status) && !(x.status === "visit-planned" && !x.incomplete));   // CV1b: a visit not started yet is not a day so far
     const late = d.summary.lateMarks;
     present = { value: soFar.length ? `${d.summary.daysWorked} / ${soFar.length}` : "–", note: late ? plural(late, "late mark", "late marks") : "No late marks", tone: late ? "down" : "" };
   }

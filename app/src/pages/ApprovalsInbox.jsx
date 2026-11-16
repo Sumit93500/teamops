@@ -31,7 +31,7 @@ import { openApprovalCard } from "../ui/ApprovalCard.jsx";
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
 import { StatStrip, StatCard, Badge, Tabs, NotBuilt } from "../components/Basics.jsx";
-import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, OVERTIME_FLOW, UNLOCK_FLOW, VISIT_FLOW, DecisionButtons } from "../components/Decision.jsx";
+import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, OVERTIME_FLOW, UNLOCK_FLOW, VISIT_FLOW, VISIT_LOCATION_FLOW, DecisionButtons } from "../components/Decision.jsx";
 import { allUnlockRequests } from "../../../assets/js/data/unlock-requests.js";   // F2
 import { allVisits } from "../../../assets/js/data/visits-store.js";   // CV1
 import { allOvertimeDecisions, overtimeItem } from "../../../assets/js/data/overtime-store.js";
@@ -82,7 +82,7 @@ const reachedAt = (claim, entry) => claim.history[claim.history.indexOf(entry) -
 function readInbox(userId, role) {
   const user = getUser(userId);
   const allLeave = can("leave:approve"), allCorrections = can("attendance:approve"), showSalary = can("salary:view");
-  const waiting = user ? waitingFor(userId, role) : { leave: [], corrections: [], expenses: [], assets: [], salary: [], locations: [], profile: [], overtime: [], unlock: [], visits: [] };
+  const waiting = user ? waitingFor(userId, role) : { leave: [], corrections: [], expenses: [], assets: [], salary: [], locations: [], profile: [], overtime: [], unlock: [], visits: [], visitLocations: [] };
   const asDecidedBy = (request) => {
     const i = request.history.map((h) => h.byUserId === userId && (h.decision === "approved" || h.decision === "rejected")).lastIndexOf(true);
     return i < 0 ? null : { ...request, status: request.history[i].decision, history: request.history.slice(0, i + 1) };
@@ -179,10 +179,15 @@ function readInbox(userId, role) {
   const visitRow = (v) => ({ type: "visit", kind: "visits", id: v.id, userId: v.userId ?? v.personId, title: `Visit: ${nameOf(v.userId ?? v.personId)}`, badge: "Visit", by: nameOf(v.userId ?? v.personId),
     details: `${v.siteName}, ${visitDates({ fromDate: v.fromDate ?? v.date, toDate: v.toDate })}${v.sameDay ? ", started today" : ""}${v.status === "rejected" && v.decisionReason ? `. ${v.decisionReason}` : ""}`, attrs: { "data-visit": v.id },
     when: v.status === undefined || v.status === "pending" || v.approvalPending ? waitingSince(v.requestedAt ?? v.createdAt) : formatDay(localDateOf(v.approvedAt)), pending: v.status === undefined || v.status === "pending" || Boolean(v.approvalPending), record: v, permission: "visits:approve" });
+  // CV1b: location-unavailable punches waiting for this person (Accept with a note, Reject with a reason)
+  const visitLocPending = [...(waiting.visitLocations ?? [])].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  const visitLocRow = (v) => ({ type: "visit", kind: "visitLocations", id: v.id, userId: v.userId, title: `Visit location: ${nameOf(v.userId)}`, badge: "Visit", by: nameOf(v.userId),
+    details: `${v.siteName}, ${v.side === "out" ? "check-out" : "check-in"} ${formatDay(v.date)} without a location: ${v.reason}`, attrs: { "data-visit-location": v.id },
+    when: waitingSince(v.requestedAt), pending: true, record: v, permission: "visits:approve", labels: ["Reject", "Accept"] });
   const real = (which) => {
     if (which === "pending") {
       return [...leavePending.map((r) => [r.appliedOn, leaveRow(r)]), ...corrPending.map((r) => [r.appliedOn, corrRow(r)]), ...expPending.map((c) => [c.appliedOn, expRow(c)]),
-        ...assetPending.map((r) => [r.appliedOn, assetRow(r)]), ...salaryPending.map((p) => [p.enteredAt, salaryRow(p)]), ...locPending.map((r) => [localDateOf(r.requestedAt), locRow(r)]), ...profPending.map((r) => [localDateOf(r.requestedAt), profRow(r)]), ...otPending.map((o) => [localDateOf(o.requestedAt), otRow(o)]), ...ulPending.map((q) => [localDateOf(q.requestedAt), ulRow(q)]), ...visitPending.map((v) => [localDateOf(v.requestedAt), visitRow(v)])].sort((a, b) => a[0].localeCompare(b[0])).map((x) => x[1]);
+        ...assetPending.map((r) => [r.appliedOn, assetRow(r)]), ...salaryPending.map((p) => [p.enteredAt, salaryRow(p)]), ...locPending.map((r) => [localDateOf(r.requestedAt), locRow(r)]), ...profPending.map((r) => [localDateOf(r.requestedAt), profRow(r)]), ...otPending.map((o) => [localDateOf(o.requestedAt), otRow(o)]), ...ulPending.map((q) => [localDateOf(q.requestedAt), ulRow(q)]), ...visitPending.map((v) => [localDateOf(v.requestedAt), visitRow(v)]), ...visitLocPending.map((v) => [localDateOf(v.requestedAt), visitLocRow(v)])].sort((a, b) => a[0].localeCompare(b[0])).map((x) => x[1]);
     }
     return [...leaveDecided(which).map((r) => [decisionOf(r).at, leaveRow(r)]), ...corrDecided(which).map((r) => [decisionOf(r).at, corrRow(r)]),
       ...expDecided(which).map((x) => [x.entry.at, expRow(x.claim, x.entry)]), ...assetDecided(which).map((x) => [x.entry.at, assetRow(x.request, x.entry)]),
@@ -236,7 +241,7 @@ function readInbox(userId, role) {
 export default function ApprovalsInbox() {
   const { userId, role } = useSession();
   const canWorkflows = useCan("workflows:view"), canDecideSamples = useCan("approvals:decide");
-  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW), overtime: useDecision(OVERTIME_FLOW), unlock: useDecision(UNLOCK_FLOW), visits: useDecision(VISIT_FLOW) };
+  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW), overtime: useDecision(OVERTIME_FLOW), unlock: useDecision(UNLOCK_FLOW), visits: useDecision(VISIT_FLOW), visitLocations: useDecision(VISIT_LOCATION_FLOW) };
   const [tab, setTab] = useState(0);
   const [type, setType] = useState("");
   const d = useData(() => readInbox(userId, role?.key), [userId, role?.key]);
@@ -274,7 +279,7 @@ export default function ApprovalsInbox() {
       if (r.sample) return r.decidedClone ? null : sampleButtons;
       if (!r.pending) return null;
       const flow = flows[r.kind];
-      return <DecisionButtons permission={r.permission} labels={r.kind === "unlock" ? UNLOCK_FLOW.labels.buttons : undefined} onReject={() => flow.reject(r.record)} onApprove={() => flow.approve(r.record)} />;
+      return <DecisionButtons permission={r.permission} labels={r.kind === "unlock" ? UNLOCK_FLOW.labels.buttons : r.labels} onReject={() => flow.reject(r.record)} onApprove={() => flow.approve(r.record)} />;
     } },
   ];
   const decidedColumns = [

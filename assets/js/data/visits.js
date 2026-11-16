@@ -9,7 +9,7 @@
 //   decide    the person's manager, else HR / Admin (attendance:view-all); never the person themselves; a rejection needs a reason.
 //   cancel    before anything is punched: the person for a visit they asked for; the assigner, the person's manager, HR / Admin for any.
 // Validation: kind, site (2-80 characters) and purpose (5-300) required; dates real, end not before start, at most 31 days, not in the past, from
-// the shift rules start (data/shift-settings.js), from the person's joining date (data/employment-period.js; a leaver is inactive, and an inactive person has no visits), no overlap with approved
+// the person's joining date (data/employment-period.js; a leaver is inactive, and an inactive person has no visits), no overlap with approved
 // leave or another visit; a weekly off or holiday inside the range is left out unless the assigner allows it (a single such day is refused).
 // Punching: location is required for the check-in and the check-out (no 150 m office rule: any place). A reading worse than 200 m is
 // refused; one over 100 m is accepted and flagged. Where the browser gives no location the person may say "location unavailable" with a reason: the
@@ -17,6 +17,7 @@
 //
 //   requestVisit(personId, fields, now?)        assignVisit(assignerId, personIds, fields, now?)
 //   decideVisit(deciderId, visitId, decision, note, now?)   cancelVisit(actorId, visitId, note?, now?)
+//   completeVisitDay(actorId, visitId, date, { outTime, outcome, reason }, now?)   rejectVisitLocation(deciderId, visitId, date, side, note, now?)
 //   visitCheckIn(personId, reading, opts?, now?)   visitCheckOut(personId, reading, opts?, now?)   okVisitLocation(deciderId, visitId, date, side, note, now?)
 //   mayDecideVisit(deciderId, personId)   mayAssignFor(assignerId, personId)   mayCancelVisit(actorId, visit)   mayViewVisit(viewerId, visit)
 //   pendingVisitItems(deciderId)   visitsVisibleTo(viewerId)   onSiteToday(viewerId, now?)   phaseOf(visit, today)   mapsUrl(punch)   visitTrail(visit)
@@ -26,7 +27,6 @@ import { hasPermission } from "../config/roles.js";
 import { managerOf, directReportsOf } from "./reporting.js";
 import { employmentPeriod } from "./employment-period.js";
 import { allRequests } from "./leave-store.js";
-import { shiftRulesFrom, shiftRulesApply } from "./shift-settings.js";
 import { shiftDayFor } from "./shift-days.js";
 import { storedRecord } from "./attendance-store.js";
 import { officeNow, addDays, dayNo, toMin, hhmm } from "./shift-engine.js";
@@ -94,7 +94,6 @@ function validate(personId, f, today, assigner) {
   if (toDate < fromDate) return fail("The last day can't be before the first day.", "toDate");
   if (dayNo(toDate) - dayNo(fromDate) + 1 > MAX_DAYS) return fail(`A visit can be ${MAX_DAYS} days at most. Split a longer one.`, "toDate");
   if (fromDate < today) return fail("A visit can't start in the past.", "fromDate");
-  if (!shiftRulesApply(fromDate)) return fail(`Visits start with the shift rules, on ${shiftRulesFrom()}.`, "fromDate");
   const period = employmentPeriod(person);
   if (period.from && fromDate < period.from) return fail(`${person.name} joins on ${period.from}; a visit can't start before that.`, "fromDate");
   const clash = allRequests().find((r) => r.userId === personId && r.status === "approved" && r.type !== "wfh" && r.from <= toDate && r.to >= fromDate);
@@ -281,6 +280,63 @@ export function okVisitLocation(deciderId, visitId, date, side, noteText, now = 
   note(row, deciderId, "location-ok", `${date} ${side === "out" ? "check-out" : "check-in"}: ${why}`);
   if (!writeBox(box)) return fail(SAVE_FAILED);
   logEvent({ actorId: deciderId, userId: row.personId, kind: "visit-location-ok", detail: `${row.id}: ${date} ${side === "out" ? "check-out" : "check-in"} accepted without a location` });
+  return { ok: true, record: copy(row) };
+}
+
+// HR or an Admin (attendance:approve and attendance:view-all; never for their own visit): a visit day with a check-in that was left without a
+// check-out is completed by setting the check-out time, or by marking the day full or half, with a reason. fields: { outTime "HH:MM", outcome "full" | "half", reason }.
+// Until then the day is flagged Incomplete (not absent, no loss of pay); only a day marked half costs half a day.
+export function completeVisitDay(actorId, visitId, date, fields = {}, now = officeNow()) {
+  const actor = active(actorId);
+  if (!actor || !hasPermission(actor, "attendance:approve") || !hasPermission(actor, "attendance:view-all")) return fail("Only HR or an Admin can complete a visit day.");
+  const box = readBox();
+  const row = box.visits.find((v) => v.id === visitId);
+  if (!row) return fail("That visit doesn't exist.");
+  if (row.personId === actor.id) return fail("You can't complete your own visit day: ask HR.");
+  if (!COUNTING.includes(row.status) || !row.dates.includes(date)) return fail("That isn't a day of this visit.", "date");
+  if (date > now.date) return fail("That day hasn't happened yet.", "date");
+  const day = row.days[date];
+  if (!day?.in || (day.in.needsOk && !day.in.okBy)) return fail("There is no check-in that day to complete.", "date");
+  if (day.decision) return fail("This day has already been completed.");
+  const outTime = text(fields.outTime), outcome = text(fields.outcome);
+  if (outcome && outcome !== "full" && outcome !== "half") return fail("Choose a full or a half day.", "outcome");
+  if (!outTime && !outcome) return fail("Give the check-out time, or mark the day full or half.", "outcome");
+  if (outTime) {
+    if (day.out) return fail(`A check-out at ${day.out.time} is already recorded.`, "outTime");
+    if (toMin(outTime) === null) return fail("Enter the check-out as HH:MM.", "outTime");
+    if (toMin(outTime) < toMin(day.in.time)) return fail(`The check-out can't be before the check-in (${day.in.time}).`, "outTime");
+  }
+  const why = text(fields.reason);
+  if (why.length < NOTE_MIN || why.length > NOTE_MAX) return fail(`Give a reason of ${NOTE_MIN} to ${NOTE_MAX} characters.`, "reason");
+  if (outTime) day.out = { time: outTime, lat: null, lng: null, accuracy: null, source: "hr", lowAccuracy: false, reason: "", needsOk: false, okBy: actor.id, okAt: stamp(), okNote: why };
+  day.decision = { outcome: outcome || "full", by: actor.id, at: stamp(), reason: why };
+  if (row.dates[row.dates.length - 1] === date) row.status = "completed";
+  note(row, actor.id, "day-completed", `${date}: ${outTime ? `check-out ${outTime}` : `marked ${day.decision.outcome}`}: ${why}`);
+  if (!writeBox(box)) return fail(SAVE_FAILED);
+  logEvent({ actorId: actor.id, userId: row.personId, kind: "visit-day-completed", detail: `${row.id}: ${date} ${outTime ? `check-out ${outTime}` : `marked ${day.decision.outcome}`}` });
+  return { ok: true, record: copy(row) };
+}
+
+// The approver's "no" to a punch made as "location unavailable": the punch is taken back (the person checks in again with a location) and the
+// reason is kept in the visit's history. side: "in" | "out".
+export function rejectVisitLocation(deciderId, visitId, date, side, noteText, now = officeNow()) {
+  const box = readBox();
+  const row = box.visits.find((v) => v.id === visitId);
+  if (!row) return fail("That visit doesn't exist.");
+  if (!mayDecideVisit(deciderId, row.personId)) return fail("You can't decide this visit.");
+  const which = side === "out" ? "out" : "in";
+  const p = row.days[date]?.[which];
+  if (!p || !p.needsOk) return fail("That punch isn't waiting for an OK.");
+  if (p.okBy) return fail("That punch has already been given an OK.");
+  const why = text(noteText);
+  if (why.length < NOTE_MIN || why.length > NOTE_MAX) return fail(`Give a reason of ${NOTE_MIN} to ${NOTE_MAX} characters.`, "note");
+  if (which === "in") row.days[date] = { in: null, out: null }; else row.days[date].out = null;
+  if (which === "out" && row.status === "completed" && row.dates[row.dates.length - 1] === date) row.status = "in-progress";   // the last day is no longer closed
+  const punches = Object.values(row.days).some((d) => d.in || d.out);
+  if (!punches && row.status === "in-progress" && !row.approvalPending) row.status = "approved";
+  note(row, deciderId, "location-rejected", `${date} ${which === "out" ? "check-out" : "check-in"}: ${why}`);
+  if (!writeBox(box)) return fail(SAVE_FAILED);
+  logEvent({ actorId: deciderId, userId: row.personId, kind: "visit-location-rejected", detail: `${row.id}: ${date} ${which === "out" ? "check-out" : "check-in"} without a location not accepted (${why})` });
   return { ok: true, record: copy(row) };
 }
 

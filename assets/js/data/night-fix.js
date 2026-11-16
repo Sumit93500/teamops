@@ -11,7 +11,7 @@
 //
 //   nightCheckOutJudge(userId, date, record, time)  -> null (not a night shift's day) | { ok: true, nextDay, outAt, until } | { ok: false, error }
 //   correctionContext(userId, date, time?)          -> { shiftName, start, end, crossesMidnight, nextDay, until, window } for the form
-//   nightFixWindow()  setNightFixWindow(actorUserId, minutes)  resetNightFix()
+//   nightFixWindow()  setNightFixWindow(actorUserId, minutes)  nightFixHours()  setNightFixHours(actorUserId, hours)  resetNightFix()
 
 import { remove } from "../core/storage.js";
 import { getUser } from "./store.js";
@@ -33,6 +33,15 @@ export function setNightFixWindow(actorUserId, minutes) {
   if (!u || u.status === "inactive" || !hasPermission(u, "shifts:manage")) return { ok: false, error: "Only HR or an Admin can change this window." };
   if (!Number.isInteger(minutes) || minutes < 0 || minutes > NIGHT_WINDOW_MAX) return { ok: false, error: `Use a whole number of minutes from 0 to ${NIGHT_WINDOW_MAX}.` };
   return store.write({ ...store.read(), windowMin: minutes }) ? { ok: true, windowMin: minutes } : { ok: false, error: "Couldn't save. Browser storage may be full or disabled." };
+}
+// CV1b: the same setting in whole hours, 1 to 12, for the Shifts page (shifts:manage: HR, Admin). -> { ok, hours } | { ok: false, error, field: "hours" }
+export const nightFixHours = () => Math.round((nightFixWindow() / 60) * 100) / 100;
+export function setNightFixHours(actorUserId, hours) {   // the permission is checked by setNightFixWindow below
+  if (typeof hours === "string" && hours.trim() === "") return { ok: false, error: "Enter the hours, from 1 to 12.", field: "hours" };
+  const h = Number(hours);
+  if (!Number.isInteger(h) || h < 1 || h > 12) return { ok: false, error: "Use a whole number of hours from 1 to 12.", field: "hours" };
+  const r = setNightFixWindow(actorUserId, h * 60);
+  return r.ok ? { ok: true, hours: h } : r;
 }
 export function resetNightFix() {
   remove(KEY);

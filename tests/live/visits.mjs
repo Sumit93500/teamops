@@ -1,11 +1,13 @@
 // usage: node visits.mjs   (run through PowerShell with $env:TZ set for the time-zone runs)
-// CV1: client / official / off-site visits (data/visits-store.js, data/visits.js, data/visit-days.js) and the night shift's next-morning fix (data/night-fix.js).
+// CV1 / CV1b: client / official / off-site visits (data/visits-store.js, data/visits.js, data/visit-days.js) and the night shift's next-morning fix (data/night-fix.js).
 //   V  validation: fields, dates, employment period, leave and visit overlap, weekly offs and holidays, month end
 //   F  the flow: asking, assigning, deciding (who may, who may not), same-day visits, cancelling
 //   P  punching: location required, accuracy, "location unavailable" and the approver's OK, completing
 //   D  the day: On-site, Visit not started, half day, never late / absent / overtime, a night shift's visit, a month across the month end
 //   N  night shift: a missed check-out fixed the next morning, wrong days and times refused, the window, day shifts unchanged
 //   R  permissions, who sees what, what waits, the audit trail; reads write nothing
+//   W  CV1b: a visit before the shift rules start (and across their start), a full day whatever the hours, Incomplete, HR completes a visit day,
+//      a location-unavailable punch rejected, every attendance count sees the visit day, the night-shift window in hours
 let NOW = 0;
 const RealDate = Date;
 globalThis.Date = class extends RealDate { constructor(...a) { super(...(a.length ? a : [NOW])); } static now() { return NOW; } static UTC(...a) { return RealDate.UTC(...a); } };
@@ -18,6 +20,7 @@ const L = await import("./js/data/leave-store.js");
 const V = await import("./js/data/visits.js");
 const VS = await import("./js/data/visits-store.js");
 const SD = await import("./js/data/shift-days.js");
+const P = await import("./js/data/payroll-store.js");
 const SA = await import("./js/data/shift-assignments.js");
 const NF = await import("./js/data/night-fix.js");
 const AU = await import("./js/data/audit-trail.js");
@@ -51,7 +54,7 @@ check("V5", "an address over 200 characters is refused", req(ARJUN, { address: "
 check("V6", "a made-up date and an end before the start are refused", req(ARJUN, { fromDate: "2026-02-30" }, n0).field === "fromDate" && req(ARJUN, { fromDate: "2026-12-24", toDate: "2026-12-23" }, n0).field === "toDate");
 check("V7", "more than 31 days is refused, exactly 31 is not", req(ARJUN, { fromDate: "2027-01-05", toDate: "2027-02-10" }, n0).field === "toDate" && req(ARJUN, { fromDate: "2027-01-05", toDate: "2027-02-04" }, n0).ok);
 check("V8", "a visit can't start in the past", req(ARJUN, { fromDate: "2026-12-18", toDate: "2026-12-18" }, n0).error === "A visit can't start in the past.");
-{ const e = fresh("2026-11-20", "10:00"); const r = req(ARJUN, { fromDate: "2026-11-25", toDate: "2026-11-25" }, e); check("V9", "before the shift rules start (1 Dec 2026) it is refused, saying when", !r.ok && /2026-12-01/.test(r.error), r.error); n0 = fresh(); }
+{ const e = fresh("2026-11-20", "10:00"); const r = req(ARJUN, { fromDate: "2026-11-25", toDate: "2026-11-25" }, e); check("V9", "before the shift rules start (1 Dec 2026) a visit is allowed (CV1b: it counts under today's rules too)", r.ok && r.record.dates[0] === "2026-11-25", r.ok ? "" : r.error); n0 = fresh(); }
 { const id = (S.addUser(ADMIN, { name: "New Joiner", email: "nj.v@northwind.com", department: "ENG", designation: "Software Engineer", role: "emp", dateOfJoining: "5 Jan 2027", employmentType: "Full-time" }), S.getAllUsers().find((u) => u.email === "nj.v@northwind.com").id);
   const r = V.assignVisit(PRIYA, [id], { ...FIELDS, fromDate: "2026-12-22", toDate: "2026-12-22" }, n0);
   check("V10", "before the person's joining date is refused (the employment period)", !r.ok && /joins on 2027-01-05/.test(r.error), r.error);
@@ -181,9 +184,9 @@ n0 = fresh();
 n0 = fresh();
 { const d1 = "2026-12-22"; const ids = [[ARJUN, "10:00", "13:00"], [ROHAN, "10:00", "11:59"], [VIKRAM, "09:00", "17:00"]].map(([p, a, b], i) => { const r = V.assignVisit(PRIYA, [p], { ...FIELDS, fromDate: d1, toDate: d1 }, n0); V.visitCheckIn(p, GPS(), {}, clock(d1, a)); V.visitCheckOut(p, GPS(), {}, clock(d1, b)); return r.records[0].id; });
   const dd = (p) => SD.shiftDayFor(p, d1, clock("2026-12-23", "09:00"));
-  check("D8", "3 hours (under General's 8 h half-day threshold) is a half day, not absent", dd(ARJUN).status === "half-day" && dd(ARJUN).onSite === true);
-  check("D9", "just under the threshold is a half day, just at it is On-site", dd(ROHAN).status === "half-day" && dd(VIKRAM).status === "on-site" && dd(VIKRAM).hours === 8 && !!ids);
-  check("D10", "a half day on a visit costs what any half day costs (0.5), no more", SD.shiftMonthLossOfPay(ARJUN, 2026, 12, clock("2027-01-20", "10:00")).halfDay === 0.5 && SD.shiftMonthLossOfPay(VIKRAM, 2026, 12, clock("2027-01-20", "10:00")).days === SD.shiftMonthLossOfPay(VIKRAM, 2026, 12, clock("2027-01-20", "10:00")).penaltyHalfDays * 0.5 + SD.shiftMonthLossOfPay(VIKRAM, 2026, 12, clock("2027-01-20", "10:00")).absent);
+  check("D8", "3 hours is still a FULL day (CV1b: the hours are shown, never a half day), not absent", dd(ARJUN).status === "on-site" && dd(ARJUN).onSite === true && dd(ARJUN).hours === 3);
+  check("D9", "just under General's 8 h threshold and just at it are both On-site", dd(ROHAN).status === "on-site" && dd(VIKRAM).status === "on-site" && dd(VIKRAM).hours === 8 && !!ids);
+  check("D10", "a visit day costs no loss of pay whatever its hours", [ARJUN, ROHAN, VIKRAM].every((p) => { const l = SD.shiftMonthLossOfPay(p, 2026, 12, clock("2027-01-20", "10:00")); return !l.open.some((o) => o.date === d1) && l.halfDay === 0 && l.absent === 0; }));
   const mo = SD.shiftMonthFor(VIKRAM, 2026, 12, clock("2027-01-20", "10:00"));
   check("D11", "the month counts the on-site day and its days worked include it", mo.counts.onSite === 1 && mo.daysWorked >= 1); }
 n0 = fresh();
@@ -280,6 +283,117 @@ check("R4", "none of the four can be overridden onto or off a person", !RO.OVERR
 { mem.clear(); clock("2026-12-21", "10:00"); const before = [...mem.keys()].sort().join();
   V.visitsVisibleTo(PRIYA); V.pendingVisitItems(PRIYA); V.onSiteToday(PRIYA); VS.allVisits(); VS.visitOnDate(ARJUN, "2026-12-22"); SD.shiftDayFor(ARJUN, "2026-12-22", { date: "2026-12-21", minutes: 600 });
   check("R12", "reading never writes the visits key (nothing is saved until someone asks for a visit)", !mem.has("officeos:visits") && !before.includes("officeos:visits")); }
+
+section("W. CV1b: before the rules start, a full day, HR completes it, locations, the numbers");
+const GPSw = (acc = 20) => ({ lat: 19.076, lng: 72.8777, accuracyM: acc });
+const punch = (who, date, inT, outT) => { const a = V.visitCheckIn(who, GPSw(), {}, clock(date, inT)); const b = outT ? V.visitCheckOut(who, GPSw(), {}, clock(date, outT)) : null; return [a, b]; };
+// W1-W5: a current November date, end to end, for a person created in the app (no sample days: a day with no check-in is a real absence)
+const hireNH = () => { S.addUser(ADMIN, { name: "Nia Hart", email: "nia.cv1b@northwind.com", department: "ENG", designation: "Software Engineer", role: "emp", dateOfJoining: "2 Nov 2026", employmentType: "Full-time" }); const id = S.getAllUsers().find((u) => u.email === "nia.cv1b@northwind.com").id; P.setSalary(ADMIN, id, { gross: 62000, effectiveFrom: "2026-01-01" }); return id; };
+{ fresh("2026-11-20", "10:00"); const n1 = clock("2026-11-20", "10:00"); const NH = hireNH();
+  const r = req(NH, { fromDate: "2026-11-24", toDate: "2026-11-24" }, n1); const ap = V.decideVisit(PRIYA, r.record.id, "approved", "", n1);
+  const [pi, po] = punch(NH, "2026-11-24", "10:00", "18:40");
+  clock("2026-12-10", "10:00");
+  const old = A.dayFor(NH, "2026-11-24"), mo = A.monthFor(NH, 2026, 11), run = P.payrollRunFor(NH, 2026, 11), sh = SD.shiftDayFor(NH, "2026-11-24", clock("2026-12-10", "10:00"));
+  check("W1", "a visit on a current November date: asked, approved, checked in and out, all ok", r.ok && ap.ok && pi.ok && po.ok && po.completed, j([r.ok, ap.ok, pi.ok, po.ok]));
+  check("W2", "the current rules read that day as present (On-site), never absent, with the visit's times", old.status === "present" && old.onSite === true && old.checkIn === "10:00" && old.checkOut === "18:40" && old.minutesLate === 0 && old.visit.siteName === FIELDS.siteName, j([old.status, old.checkIn, old.checkOut]));
+  check("W3", "the month counts it as a day worked (present) and not as an absence", mo.days.find((d) => d.date === "2026-11-24").status === "present" && mo.counts.present >= 1, j(mo.counts));
+  check("W4", "...and the shift view (which reads the old days before the rules start) says On-site too", sh.status === "on-site" && sh.onSite === true);
+  // the control: the same approved visit with NO check-in is charged as the absence it was
+  fresh("2026-11-20", "10:00"); const NC = hireNH(); const rc = req(NC, { fromDate: "2026-11-24", toDate: "2026-11-24" }, clock("2026-11-20", "10:00")); V.decideVisit(PRIYA, rc.record.id, "approved", "", clock("2026-11-20", "10:00"));
+  clock("2026-12-10", "10:00"); const runc = P.payrollRunFor(NC, 2026, 11);
+  check("W5", "payroll: with the check-in the visit day is not charged; the same visit with no check-in is one more absence day (the control)", A.dayFor(NC, "2026-11-24").status === "absent" && runc.lop.absenceDays === run.lop.absenceDays + 1 && run.lop.absenceDays >= 1, j([run.lop, runc.lop])); }
+// W6-W8: across the shift rules start (30 Nov to 2 Dec) and the month end
+{ fresh("2026-11-20", "10:00"); const n1 = clock("2026-11-20", "10:00"); const NH = hireNH();
+  const r = req(NH, { fromDate: "2026-11-30", toDate: "2026-12-02" }, n1); V.decideVisit(PRIYA, r.record.id, "approved", "", n1);
+  for (const d of ["2026-11-30", "2026-12-01", "2026-12-02"]) punch(NH, d, "09:30", "18:30");
+  const now = clock("2026-12-31", "10:00");
+  const nov = A.monthFor(NH, 2026, 11), dec = SD.shiftMonthFor(NH, 2026, 12, now), lop = SD.shiftMonthLossOfPay(NH, 2026, 12, now);
+  check("W6", "a visit across the rules start: the dates are 30 Nov, 1 Dec and 2 Dec", j(r.record.dates) === j(["2026-11-30", "2026-12-01", "2026-12-02"]), j(r.record.dates));
+  check("W7", "30 Nov (current rules) reads present, 1 and 2 Dec (shift rules) read On-site; none is absent", nov.days.find((d) => d.date === "2026-11-30").status === "present" && ["2026-12-01", "2026-12-02"].every((d) => dec.days.find((x) => x.date === d).status === "on-site"), j(nov.days.find((d) => d.date === "2026-11-30").status));
+  check("W8", "no loss of pay for any of the three days: the shift month has no open or settled loss on 1 and 2 Dec and counts both On-site", !lop.open.some((o) => ["2026-12-01", "2026-12-02"].includes(o.date)) && dec.counts.onSite === 2 && P.payrollRunFor(NH, 2026, 11).lop.absenceDays === nov.days.filter((d) => d.status === "absent" && d.date >= "2026-11-02").length && !nov.days.some((d) => d.date === "2026-11-30" && d.status === "absent"), j([lop.open.map((o) => o.date), P.payrollRunFor(NH, 2026, 11).lop.absenceDays])); }
+// W9-W11: a full day whatever the hours; a missing check-out is Incomplete, not absent
+n0 = fresh("2026-12-21", "10:00");
+{ const id = V.assignVisit(PRIYA, [ARJUN], { ...FIELDS, fromDate: "2026-12-22", toDate: "2026-12-23" }, n0).records[0].id;
+  punch(ARJUN, "2026-12-22", "10:00", "11:00");
+  const d1 = SD.shiftDayFor(ARJUN, "2026-12-22", clock("2026-12-23", "09:00")), o1 = A.dayFor(ARJUN, "2026-12-22");
+  check("W9", "one hour on site is a full day in both readings (hours shown, never a half day)", d1.status === "on-site" && d1.hours === 1 && o1.status === "present" && o1.hours === 1, j([d1.status, o1.status]));
+  V.visitCheckIn(ARJUN, GPSw(), {}, clock("2026-12-23", "09:00"));
+  const later = clock("2026-12-25", "09:00"), d2 = SD.shiftDayFor(ARJUN, "2026-12-23", later), o2 = A.dayFor(ARJUN, "2026-12-23");
+  check("W10", "a check-in with no check-out, after the day: flagged Incomplete in both readings, not absent", d2.status === "on-site" && d2.incomplete === true && o2.status === "present" && o2.incomplete === true, j([d2.status, d2.incomplete, o2.status, o2.incomplete]));
+  const l = SD.shiftMonthLossOfPay(ARJUN, 2026, 12, clock("2027-01-20", "10:00"));
+  check("W11", "...and it costs no loss of pay until HR decides", l.absent === 0 && l.halfDay === 0 && !l.open.some((o) => o.date === "2026-12-23"), j(l));
+  // W12-W22: Complete visit day
+  const C = (who, over = {}, date = "2026-12-23") => V.completeVisitDay(who, id, date, { reason: "Client confirmed the visit", ...over }, later);
+  check("W12", "a manager can't complete a visit day (Sneha); nor can an employee", !C(SNEHA, { outTime: "17:00" }).ok && !C(ROHAN, { outTime: "17:00" }).ok && !C(ARJUN, { outTime: "17:00" }).ok && /Only HR or an Admin/.test(C(SNEHA, { outTime: "17:00" }).error));
+  check("W13", "it needs a check-out time or a full / half mark", C(PRIYA, {}).field === "outcome" && C(PRIYA, { outcome: "most" }).field === "outcome");
+  check("W14", "it needs a reason of 3 to 200 characters", C(PRIYA, { outTime: "17:00", reason: "no" }).field === "reason" && C(PRIYA, { outTime: "17:00", reason: "x".repeat(201) }).field === "reason" && C(PRIYA, { outTime: "17:00", reason: "" }).field === "reason");
+  check("W15", "the check-out can't be before the check-in, and must be a real time", C(PRIYA, { outTime: "08:00" }).field === "outTime" && C(PRIYA, { outTime: "25:00" }).field === "outTime");
+  check("W16", "a day with no check-in, a day of another visit and a future day are refused", V.completeVisitDay(PRIYA, id, "2026-12-24", { outcome: "full", reason: "abc" }, later).ok === false && C(PRIYA, { outcome: "full" }, "2026-12-30").ok === false && V.completeVisitDay(PRIYA, id, "2026-12-23", { outcome: "full", reason: "abc" }, clock("2026-12-22", "20:00")).ok === false);
+  const done = C(PRIYA, { outTime: "17:00" });
+  const d3 = SD.shiftDayFor(ARJUN, "2026-12-23", later), o3 = A.dayFor(ARJUN, "2026-12-23");
+  check("W17", "HR sets the check-out: the day is complete (17:00, 8 h), no longer Incomplete, in both readings", done.ok && d3.incomplete === false && d3.checkOut === "17:00" && d3.hours === 8 && d3.status === "on-site" && o3.incomplete === false && o3.checkOut === "17:00", j([done.ok, d3.incomplete, d3.checkOut]));
+  check("W18", "it is audited (visit-day-completed) and in the visit's history, and the visit is completed (last day)", auditKinds().includes("visit-day-completed") && VS.getVisit(id).history.some((h) => h.action === "day-completed" && h.by === PRIYA) && VS.getVisit(id).status === "completed");
+  check("W19", "a day can't be completed twice", C(PRIYA, { outcome: "half" }).error === "This day has already been completed.");
+  check("W20", "HR can't complete their own visit day (the Admin assigns Priya one)", (() => { const a = V.assignVisit(ADMIN, [PRIYA], { ...FIELDS, fromDate: "2026-12-28", toDate: "2026-12-28" }, n0); punch(PRIYA, "2026-12-28", "10:00"); return a.ok && /own/.test(V.completeVisitDay(PRIYA, a.records[0].id, "2026-12-28", { outcome: "full", reason: "abc" }, clock("2026-12-29", "09:00")).error ?? ""); })());
+  // half: only when HR marks it
+  const id2 = V.assignVisit(PRIYA, [ROHAN], { ...FIELDS, fromDate: "2026-12-29", toDate: "2026-12-29" }, n0).records[0].id; punch(ROHAN, "2026-12-29", "10:00");
+  const lat2 = clock("2026-12-30", "09:00");
+  const h = V.completeVisitDay(ADMIN, id2, "2026-12-29", { outcome: "half", reason: "Left the site at noon" }, lat2);
+  const hs = SD.shiftDayFor(ROHAN, "2026-12-29", lat2), ho = A.dayFor(ROHAN, "2026-12-29");
+  check("W21", "HR marks a day half: it is a half day in both readings (the only way a visit day is half) and costs half a day", h.ok && hs.status === "half-day" && hs.onSite && ho.status === "half-day" && SD.shiftMonthLossOfPay(ROHAN, 2026, 12, clock("2027-01-20", "10:00")).halfDay === 0.5, j([h.ok, hs.status, ho.status]));
+  check("W21b", "HR can also mark a day half that has a check-out (a short visit confirmed by phone)", (() => { const id4 = V.assignVisit(PRIYA, [ANANYA], { ...FIELDS, fromDate: "2026-12-29", toDate: "2026-12-29" }, n0).records[0].id; punch(ANANYA, "2026-12-29", "10:00", "17:00"); const r = V.completeVisitDay(PRIYA, id4, "2026-12-29", { outcome: "half", reason: "Visit cut short" }, lat2); return r.ok && SD.shiftDayFor(ANANYA, "2026-12-29", lat2).status === "half-day" && A.dayFor(ANANYA, "2026-12-29").status === "half-day"; })());
+  check("W22", "marking a day full (the Admin) clears Incomplete with no check-out and no cost", (() => { const id3 = V.assignVisit(PRIYA, [VIKRAM], { ...FIELDS, fromDate: "2026-12-29", toDate: "2026-12-29" }, n0).records[0].id; punch(VIKRAM, "2026-12-29", "10:00"); const r = V.completeVisitDay(ADMIN, id3, "2026-12-29", { outcome: "full", reason: "Confirmed by phone" }, lat2); return r.ok && SD.shiftDayFor(VIKRAM, "2026-12-29", lat2).incomplete === false && SD.shiftMonthLossOfPay(VIKRAM, 2026, 12, clock("2027-01-20", "10:00")).days === 0; })()); }
+// W23-W27: a location-unavailable punch the approver turns down
+n0 = fresh("2026-12-21", "10:00");
+{ const id = approvedFor(ARJUN, { fromDate: "2026-12-22", toDate: "2026-12-22" }, n0).id; const t = clock("2026-12-22", "11:00");
+  V.visitCheckIn(ARJUN, null, { unavailable: true, reason: "No signal in the basement" }, t);
+  const item = V.pendingVisitItems(SNEHA).find((x) => x.kind === "location");
+  check("W22b", "a punch waiting for the location OK is not counted by the current rules either (not on site, not present)", A.dayFor(ARJUN, "2026-12-22").onSite !== true && SD.shiftDayFor(ARJUN, "2026-12-22", t).status === "visit-planned");
+  check("W23", "the location item is one waiting item for the manager only (no duplicate), with its visit and side", V.pendingVisitItems(SNEHA).filter((x) => x.kind === "location").length === 1 && V.pendingVisitItems(PRIYA).length === 0 && item.visitId === id && item.side === "in" && item.userId === ARJUN && new Set(V.pendingVisitItems(SNEHA).map((x) => x.id)).size === V.pendingVisitItems(SNEHA).length);
+  check("W24", "only the person's approver may turn it down: not HR (he has a manager), not a colleague, not himself; it needs a reason", !V.rejectVisitLocation(PRIYA, id, "2026-12-22", "in", "Not accepted", t).ok && !V.rejectVisitLocation(ROHAN, id, "2026-12-22", "in", "Not accepted", t).ok && !V.rejectVisitLocation(ARJUN, id, "2026-12-22", "in", "Not accepted", t).ok && V.rejectVisitLocation(SNEHA, id, "2026-12-22", "in", "no", t).field === "note");
+  const rj = V.rejectVisitLocation(SNEHA, id, "2026-12-22", "in", "Please check in with your location", t);
+  check("W25", "turned down: the punch is taken back, the visit goes back to approved, nothing waits, it is audited and in the history", rj.ok && !VS.getVisit(id).days["2026-12-22"].in && VS.getVisit(id).status === "approved" && V.pendingVisitItems(SNEHA).length === 0 && auditKinds().includes("visit-location-rejected") && VS.getVisit(id).history.some((h) => h.action === "location-rejected"), j(rj.ok && VS.getVisit(id).status));
+  check("W26", "...and the day reads as not started again (never counted)", SD.shiftDayFor(ARJUN, "2026-12-22", t).status === "visit-planned" && A.dayFor(ARJUN, "2026-12-22").onSite !== true);
+  check("W27", "he can check in again, now with a location", V.visitCheckIn(ARJUN, GPSw(), {}, clock("2026-12-22", "11:30")).ok && !V.rejectVisitLocation(SNEHA, id, "2026-12-22", "in", "Not accepted", t).ok); }
+// W27b: turning down a check-out made without a location re-opens the last day
+n0 = fresh("2026-12-21", "10:00");
+{ const id = approvedFor(ARJUN, { fromDate: "2026-12-22", toDate: "2026-12-22" }, n0).id;
+  V.visitCheckIn(ARJUN, GPSw(), {}, clock("2026-12-22", "10:00")); const o = V.visitCheckOut(ARJUN, null, { unavailable: true, reason: "Battery died" }, clock("2026-12-22", "17:00"));
+  const rj = V.rejectVisitLocation(SNEHA, id, "2026-12-22", "out", "Please check out with your location", clock("2026-12-22", "17:30"));
+  check("W27b", "a rejected check-out is taken back and the last day is open again (the visit is no longer completed), so they can check out again", o.ok && o.completed && rj.ok && !VS.getVisit(id).days["2026-12-22"].out && VS.getVisit(id).status === "in-progress" && V.visitCheckOut(ARJUN, GPSw(), {}, clock("2026-12-22", "18:00")).ok && VS.getVisit(id).status === "completed"); }
+// W28-W33: every count sees the visit day as present
+n0 = fresh("2026-12-21", "10:00");
+{ const D0 = "2026-12-22"; const id = approvedFor(ARJUN, { fromDate: D0, toDate: D0 }, n0).id;
+  const at = clock(D0, "15:00");
+  const ch = await import("./js/data/chart-data.js");
+  const before = A.summaryFor(D0), bAll = A.summaryRange("2026-12-15", D0), bRange = bAll.at(-1), bChart = ch.attendanceRateChart(bAll, D0);
+  punch(ARJUN, D0, "10:00"); clock(D0, "15:00");   // the same instant for both measures
+  const after = A.summaryFor(D0), aAll = A.summaryRange("2026-12-15", D0), aRange = aAll.at(-1), aChart = ch.attendanceRateChart(aAll, D0);
+  check("W28", "summaryFor (HR dashboard's numbers, Team attendance): the visit day raises present by one and does not lower the rate", after.present === before.present + 1 && after.expected >= before.expected && after.present / after.expected > before.present / before.expected, j([before.present, after.present, before.expected, after.expected]));
+  check("W29", "summaryRange (the Admin and HR attendance-rate charts, Present today): the same, on the day's own row", aRange.present === bRange.present + 1 && aRange.date === D0 && aRange.absent <= bRange.absent, j([bRange.present, aRange.present]));
+  const pv = (c, n) => ch.valuesOf(c, n);
+  check("W30", "the attendance-rate chart (Admin dashboard): the day's Present value rises by one and its Rate does not fall", pv(aChart, "Present").at(-1) === pv(bChart, "Present").at(-1) + 1 && pv(aChart, "Rate").at(-1) >= pv(bChart, "Rate").at(-1) && j(pv(aChart, "Present").slice(0, -1)) === j(pv(bChart, "Present").slice(0, -1)), j([pv(bChart, "Present").at(-1), pv(aChart, "Present").at(-1), pv(bChart, "Rate").at(-1), pv(aChart, "Rate").at(-1)]));
+  const my = SD.shiftMonthFor(ARJUN, 2026, 12, at), myOld = A.monthFor(ARJUN, 2026, 12);
+  check("W31", "My attendance's month (daysWorked, counts) and the old month both count the visit day", my.days.find((d) => d.date === D0).status === "on-site" && my.daysWorked === my.counts.present + my.counts.late + my.counts.halfDay + my.counts.shortLeave + my.counts.onSite && my.counts.onSite === 1 && myOld.days.find((d) => d.date === D0).status === "present" && myOld.counts.present >= 1);
+  const teamDays = SD.shiftTeamFor(D0, at);
+  check("W32", "the team's shift-day list marks the person On-site (what Team attendance and the dashboards' tables draw)", teamDays.find((d) => d.userId === ARJUN).status === "on-site");
+  check("W33", "the old-site pages' own data (teamFor / rangeFor) read it as present too", A.teamFor(D0).find((d) => d.userId === ARJUN).status === "present" && A.rangeFor(ARJUN, D0, D0)[0].status === "present" && !!id); }
+// W34-W39: the night shift's window, in hours
+n0 = fresh("2026-12-01", "10:00");
+SA.assignShift(PRIYA, ROHAN, "SH-3", "2026-12-01", null, "night", "2026-12-01");
+n0 = clock("2026-12-16", "15:00");
+A.writeShiftCheckIn(ROHAN, "2026-12-15", "22:05", "office", null);
+{ const clear = () => A.regularizationsFor(ROHAN).filter((r) => r.status === "pending").forEach((r) => A.cancelRegularization(r.id, ROHAN));
+  const fix = (time) => A.requestRegularization(ROHAN, { date: "2026-12-15", issue: "missed-check-out", time, reason: "Forgot to check out" });
+  check("W34", "the window is 6 hours by default, in hours", NF.nightFixHours() === 6 && NF.nightFixWindow() === 360);
+  check("W35", "only shifts:manage (HR, Admin) can set it: the manager and the employee can't", !NF.setNightFixHours(SNEHA, 3).ok && !NF.setNightFixHours(ARJUN, 3).ok && NF.nightFixHours() === 6);
+  check("W36", "1 to 12 whole hours only: 0, 13, 6.5, -1, text and nothing are refused with the hours field named", [0, 13, 6.5, -1, "abc", ""].every((h) => { const r = NF.setNightFixHours(PRIYA, h); return !r.ok && r.field === "hours"; }) && NF.nightFixHours() === 6);
+  check("W37", "1 and 12 are accepted", NF.setNightFixHours(PRIYA, 1).ok && NF.nightFixHours() === 1 && NF.setNightFixHours(ADMIN, 12).ok && NF.nightFixHours() === 12);
+  NF.setNightFixHours(PRIYA, 2); clear();
+  check("W38", "changing it changes what Request fix accepts: with 2 hours, 09:00 is accepted and 09:01 is refused (7:00 + 2 h)", fix("09:00").ok && (() => { clear(); const r = fix("09:01"); return !r.ok && /09:00/.test(r.error); })());
+  NF.setNightFixHours(PRIYA, 8); clear();
+  check("W39", "with 8 hours, 15:00 is accepted and 15:01 refused; the context's limit follows", fix("15:00").ok && (() => { clear(); return !fix("15:01").ok; })() && NF.correctionContext(ROHAN, "2026-12-15", "06:45").until === "15:00");
+  NF.setNightFixHours(PRIYA, 6); clear(); }
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exitCode = 1;

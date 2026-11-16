@@ -11,6 +11,7 @@ import { getShifts, getShift, createShift, updateShift, deactivateShift, reactiv
 import { assignmentReader, allAssignmentRows, allSwaps, allDepartmentDefaults, setDepartmentShift, departmentShiftOn } from "../../../assets/js/data/shift-assignments.js";
 import { shiftRulesFrom, setShiftRulesFrom, latePolicy, setLatePolicy, compOffRule, setCompOff } from "../../../assets/js/data/shift-settings.js";
 import { officeNow, toMin, DAY } from "../../../assets/js/data/shift-engine.js";
+import { nightFixHours, setNightFixHours, NIGHT_WINDOW_DEFAULT } from "../../../assets/js/data/night-fix.js";   // CV1b
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { countText } from "../data/counts.js";   // F2: one counter wording
 import { bump } from "../data/bus.js";
@@ -208,9 +209,34 @@ function Settings() {
   );
 }
 
+// CV1b: the night-shift check-out correction window (HR, Admin: shifts:manage), in hours, 1 to 12, default 6.
+function NightFixWindow() {
+  const { userId } = useSession();
+  const toast = useToast();
+  const current = useData(() => nightFixHours(), []);
+  const [hours, setHours] = useState(String(current));
+  const [err, setErr] = useState(null);
+  const save = (e) => {
+    e.preventDefault();
+    const r = setNightFixHours(userId, hours.trim() === "" ? "" : Number(hours));
+    if (!r.ok) { setErr(r.error); return; }
+    setErr(null); toast(`A night shift's missed check-out can be added up to ${r.hours} ${r.hours === 1 ? "hour" : "hours"} after the shift ends.`, "success"); bump();
+  };
+  return (
+    <Card id="night-window" title="Check-out correction for night shifts" meta="HR and the Admin">
+      <form className="shift-settings__row" noValidate onSubmit={save}>
+        <Field id="set-night-hours" label="Window (hours)" error={err ?? undefined} hint={`A night shift ends the next morning. When someone forgets to check out, they can ask for the check-out to be added up to this many hours after the shift ends (1 to 12; ${NIGHT_WINDOW_DEFAULT / 60} by default). A shift ending at 07:00 with 6 hours accepts a check-out up to 13:00.`}>
+          <Input id="set-night-hours" type="number" min="1" max="12" step="1" inputMode="numeric" value={hours} onChange={(x) => { setHours(x.target.value); setErr(null); }} />
+        </Field>
+        <button className="ds-btn" type="submit" id="save-night-hours">Save window</button>
+      </form>
+    </Card>
+  );
+}
+
 function Content() {
   const { userId } = useSession();
-  const canAssign = useCan("shifts:assign"), canSettings = useCan("settings:edit");
+  const canAssign = useCan("shifts:assign"), canSettings = useCan("settings:edit"), canManage = useCan("shifts:manage");
   const confirm = useConfirm();
   const toast = useToast();
   const today = officeNow().date;
@@ -287,6 +313,7 @@ function Content() {
       <DepartmentDefaults canAssign={canAssign} />
       <Changes />
       {canSettings && <Settings />}
+      {canManage && <NightFixWindow />}
       {form && <ShiftForm editing={form.editing} onClose={() => setForm(null)} />}
       {canAssign && <AssignShiftModal open={bulk} onClose={() => setBulk(false)} />}
     </>

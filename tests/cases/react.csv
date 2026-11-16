@@ -174,12 +174,17 @@ react-cv1.E6,react-cv1,Reject with a reason: the visit is rejected and the day g
 react-cv1.F1,react-cv1,location blocked: the words say how to allow it or to say it isn't available; Check in stays off,x1
 react-cv1.F2,react-cv1,'My location isn't available' asks for a reason and keeps Check in off until it is given,x1
 react-cv1.F3,react-cv1,"checked in without a location: kept, flagged as needing an OK, no coordinates",x1
-react-cv1.F4,react-cv1,Sneha's waiting list has it: 'Accept without location',x1
+react-cv1.F3b,react-cv1,"the manager's inbox has ONE card for it: 'Visit location', the place, the day, the reason, with Reject and Accept",x1
+react-cv1.F3c,react-cv1,the bell lists it once,x1
+react-cv1.F3d,react-cv1,Reject needs a reason (said at the field),x1
+react-cv1.F3e,react-cv1,"rejected: the punch is taken back, the visit is approved again, the card is gone",x1
+react-cv1.F4,react-cv1,"Sneha's Team visits waiting list has it too (the same card, once): Reject and Accept",x1
 react-cv1.F5,react-cv1,accepting needs a note,x1
 react-cv1.F6,react-cv1,"accepted: the OK is kept with who and why, and the day now counts as on-site",x1
 react-cv1.F7,react-cv1,My attendance shows On-site for today,x1
 react-cv1.G1,react-cv1,"the trail has the day, the times, coordinates and accuracy",x1
-react-cv1.G2,react-cv1,'Open in maps' is an external link (a new tab) to the coordinates,x1
+react-cv1.G2,react-cv1,"check-in AND check-out each have 'Open in maps' (external, a new tab) to their coordinates",x1
+react-cv1.G2b,react-cv1,"one trail, a day at a time: a line for the check-in and one for the check-out, each with time, coordinates and accuracy",x1
 react-cv1.G3,react-cv1,the summary and the history are there,x1
 react-cv1.G4,react-cv1,her manager can open it,x1
 react-cv1.G5,react-cv1,someone else is told they can't open it,x1
@@ -188,6 +193,23 @@ react-cv1.G7,react-cv1,Team visits is not for someone who manages nobody (the 40
 react-cv1.H1,react-cv1,Enter on Request a visit opens the dialog with focus inside it,x1
 react-cv1.H2,react-cv1,Esc closes it (nothing was typed),x1
 react-cv1.H3,react-cv1,the arrow key moves the segmented choice to the visit way (radio group),x1
+react-cv1.J1,react-cv1,the next day Sneha (a manager) sees the day flagged Incomplete and has no Complete day button,x1
+react-cv1.J2,react-cv1,"Team attendance (HR) shows 21 Dec as On-site, Incomplete, with a 'Complete visit day' link",x1
+react-cv1.J3,react-cv1,the link opens the visit page,x1
+react-cv1.J4a,react-cv1,Complete day without a check-out time says so at the field,x1
+react-cv1.J4b,react-cv1,...and without a reason says that at its field,x1
+react-cv1.J5,react-cv1,"completed by Priya: the check-out 17:30 is stored with who and why, the trail shows it and 'Completed by Priya Nair: full day', Incomplete is gone",x1
+react-cv1.J6,react-cv1,it is in the audit trail,x1
+react-cv1.N1,react-cv1,"Admin dashboard, Present today: one more, and the share of those expected does not fall",x1
+react-cv1.N2,react-cv1,"HR dashboard, Shifts today (General, In): one more in, same expected",x1
+react-cv1.N3,react-cv1,"Team attendance, Present: one more, and the share does not fall",x1
+react-cv1.N4,react-cv1,"Employee dashboard, Days present: one more day worked, and the share of days so far does not fall",x1
+react-cv1.N5,react-cv1,"My attendance, Days present: the same",x1
+react-cv1.Y1,react-cv1,HR sees the window card with 6 hours and the plain-words help,x1
+react-cv1.Y2,react-cv1,"13, 0, nothing and 2.5 are each refused at the field, in words",x1
+react-cv1.Y3,react-cv1,3 hours is saved (a toast; stored as 180 minutes),x1
+react-cv1.Y4,react-cv1,"the Admin sees the card too, with the saved 3",x1
+react-cv1.Y5,react-cv1,an employee can't open the Shifts page (the 403 page),x1
 react-cv1.S1,react-cv1,everyone has My visits,x1
 react-cv1.S2,react-cv1,"Team visits: the managers (Sneha, Kabir), HR and the Admin have it; Arjun and Ananya, who manage nobody, don't",x1
 react-cv1.C2.light,react-cv1,"light: the pills, chips, hints and segmented choice are 4.5:1 or more",x1

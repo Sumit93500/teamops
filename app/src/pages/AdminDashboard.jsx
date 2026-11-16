@@ -67,6 +67,7 @@ const APPROVAL_TEXT = {
   profile: (r) => [`Bank and tax change: ${nameOf(r.userId)}`, changeText(r).map(([l, v]) => `${l}: ${v}`).join("; ")],   // E1
   overtime: (o) => [`Overtime: ${nameOf(o.userId)}`, `${formatDay(o.date)}: ${o.minutes} min on ${o.shiftName}`],   // SH1
   unlock: (q) => [`Locked account: ${nameOf(q.userId)}`, `${q.attempts} failed sign-ins; Unlock now or Dismiss`],   // F2
+  visitLocations: (v) => [`Visit location: ${nameOf(v.userId)}`, `${v.siteName}, ${v.side === "out" ? "check-out" : "check-in"} ${formatDay(v.date)} without a location`],   // CV1b
   visits: (v) => [`Visit: ${nameOf(v.userId)}`, `${v.siteName}, ${formatDay(v.date)}${v.toDate && v.toDate !== v.date ? ` to ${formatDay(v.toDate)}` : ""}${v.sameDay ? " (same day)" : ""}`],   // CV1
 };
 function approvalItems(waiting, refresh) {

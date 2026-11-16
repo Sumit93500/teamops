@@ -20,7 +20,7 @@ import { decideLocationChange } from "../../../assets/js/data/locations-store.js
 import { decideChange, changeText } from "../../../assets/js/data/employee-record.js";
 import { decideOvertimeItem } from "../../../assets/js/data/overtime-store.js";
 import { resolveUnlockRequest } from "../../../assets/js/data/lockouts.js";
-import { decideVisit } from "../../../assets/js/data/visits.js";   // CV1
+import { decideVisit, okVisitLocation, rejectVisitLocation } from "../../../assets/js/data/visits.js";   // CV1
 import { correctionContext } from "../../../assets/js/data/night-fix.js";
 import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
 import { bump } from "../data/bus.js";
@@ -165,18 +165,37 @@ export const VISIT_FLOW = {
   },
 };
 
+// CV1b: a punch made as "location unavailable" waiting for the person's approver. The item's id is "<visit>:<date>:<in|out>". Accepting asks for a
+// note (approveNote, the same form as a rejection), because the day then counts without a location; rejecting takes the punch back (they check in
+// again with a location) and needs a reason.
+const locParts = (id) => { const [visitId, date, side] = String(id).split(":"); return { visitId, date, side }; };
+export const VISIT_LOCATION_FLOW = {
+  decide: (id, actorUserId, _role, action, note) => { const p = locParts(id); return action === "approve" ? okVisitLocation(actorUserId, p.visitId, p.date, p.side, note ?? "") : rejectVisitLocation(actorUserId, p.visitId, p.date, p.side, note ?? ""); },
+  describe: (v) => `${nameOf(v.userId)}: ${v.side === "out" ? "check-out" : "check-in"} at ${v.siteName} on ${formatDay(v.date)} without a location ("${v.reason}")`,
+  noteId: "visit-location-note",
+  approveNote: { title: "Accept without a location", submit: "Accept", placeholder: "Why you accept it (kept with the visit)" },
+  labels: {
+    title: "Reject the punch",
+    submit: "Reject",
+    placeholder: "The employee sees this; they check in again with a location",
+    approved: "Accepted without a location. The day counts now.",
+    rejected: "Rejected. They can check in again with a location.",
+  },
+};
+
 const decider = () => ({ id: getCurrentUserId(), role: getCurrentRole()?.key });
 
 export function useDecision(flow) {
   const showToast = useToast();
   const confirm = useConfirm();
-  const [rejecting, setRejecting] = useState(null);   // { request, onDone }
+  const [rejecting, setRejecting] = useState(null);   // { request, onDone, mode }: mode "approve" only for a flow that asks for a note (approveNote)
   const [note, setNote] = useState("");
   const [error, setError] = useState(null);
   const failure = (fixed, result) => fixed ?? result.error;
   const done = (result, onDone) => { bump(); onDone?.(result); };
 
   async function approve(request, onDone) {
+    if (flow.approveNote) { setNote(""); setError(null); setRejecting({ request, onDone, mode: "approve" }); return; }
     if (!(await confirm({ message: `${flow.labels.question ?? "Approve this request?"}\n${flow.describe(request)}`, confirmLabel: flow.labels.confirm ?? "Approve" }))) return;
     const { id, role } = decider();
     const result = flow.decide(request.id, id, role, "approve");
@@ -187,27 +206,28 @@ export function useDecision(flow) {
   function reject(request, onDone) { setNote(""); setError(null); setRejecting({ request, onDone }); }
   function submit(e) {
     e.preventDefault();
-    const { request, onDone } = rejecting;
+    const { request, onDone, mode } = rejecting;
     const { id, role } = decider();
-    const result = flow.decide(request.id, id, role, "reject", note);
+    const result = flow.decide(request.id, id, role, mode === "approve" ? "approve" : "reject", note);
     if (!result.ok && result.field === "note") { setError(result.error); document.getElementById(flow.noteId)?.focus(); return; }
     setRejecting(null);
-    if (!result.ok) showToast(failure(flow.labels.rejectFailed, result), "danger");
+    if (mode === "approve") { if (!result.ok) showToast(failure(flow.labels.approveFailed, result), "danger"); else showToast(typeof flow.labels.approved === "function" ? flow.labels.approved(result) : flow.labels.approved, "success"); }
+    else if (!result.ok) showToast(failure(flow.labels.rejectFailed, result), "danger");
     else showToast(flow.labels.rejected, "success");
     done(result, onDone);
   }
 
   const modal = (
-    <Modal open={Boolean(rejecting)} onClose={() => setRejecting(null)} title={flow.labels.title} desc={rejecting ? flow.describe(rejecting.request) : ""} size="sm"
+    <Modal open={Boolean(rejecting)} onClose={() => setRejecting(null)} title={rejecting?.mode === "approve" ? flow.approveNote.title : flow.labels.title} desc={rejecting ? flow.describe(rejecting.request) : ""} size="sm"
       footer={<>
         <button className="btn" type="button" data-modal-close onClick={() => setRejecting(null)}>Cancel</button>
-        <button className="btn btn--danger" type="submit" form={`${flow.noteId}-form`}>{flow.labels.submit ?? "Reject request"}</button>
+        <button className={`btn ${rejecting?.mode === "approve" ? "btn--primary" : "btn--danger"}`} type="submit" form={`${flow.noteId}-form`}>{rejecting?.mode === "approve" ? flow.approveNote.submit : flow.labels.submit ?? "Reject request"}</button>
       </>}>
       <form noValidate onSubmit={submit} id={`${flow.noteId}-form`}>
         <div className="form">
           <div className="form-field">
             <label className={`form-label${flow.noteOptional ? "" : " form-label--required"}`} htmlFor={flow.noteId}>{flow.noteOptional ? "Note (optional)" : "Reason"}</label>
-            <textarea className="textarea" id={flow.noteId} required={!flow.noteOptional} placeholder={flow.labels.placeholder ?? "The employee sees this note"} value={note}
+            <textarea className="textarea" id={flow.noteId} required={!flow.noteOptional} placeholder={(rejecting?.mode === "approve" ? flow.approveNote.placeholder : flow.labels.placeholder) ?? "The employee sees this note"} value={note}
               aria-describedby={error ? `${flow.noteId}-error` : undefined} onChange={(e) => { setNote(e.target.value); setError(null); }} />
             {error && <span className="form-error" id={`${flow.noteId}-error`}>{error}</span>}
           </div>
