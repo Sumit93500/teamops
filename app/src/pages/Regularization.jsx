@@ -11,6 +11,7 @@ import { allRegularizations, pendingRegularizations, dayFor } from "../../../ass
 import { currentApproverName } from "../../../assets/js/data/leave-store.js";
 import { el, formatDay, statusBadge, departmentName, decisionOf, nameOf, personCell } from "../../../assets/js/ui/leave-view.js";
 import { issueLabel } from "../../../assets/js/ui/attendance-view.js";
+import { correctionContext } from "../../../assets/js/data/night-fix.js";   // CV1
 import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
 import Pagination from "../ui/Pagination.jsx";
@@ -44,7 +45,7 @@ function timesCell(request) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("class", "icon"); svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path"); path.setAttribute("d", "M5 12h14M13 6l6 6-6 6"); svg.append(path);
-  times.append(el("span", "reg-times__old", recordedTime(request) ?? "–"), svg, el("strong", "", request.time));
+  times.append(el("span", "reg-times__old", recordedTime(request) ?? "–"), svg, el("strong", "", `${request.time}${correctionContext(request.userId, request.date, request.time)?.nextDay ? " (next day)" : ""}`));   // CV1: a night shift's morning
   td.append(times);
   return td;
 }

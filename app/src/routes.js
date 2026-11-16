@@ -33,5 +33,11 @@ export const LEAVE_POLICY_PAGE = "leave/leave-policy.html";
 // Mail outbox (E1): the app's own; what OfficeOS would email (sign-in details, reset links). Admin only (accounts:unlock).
 export const MAIL_OUTBOX = "system/mail-outbox.html";
 
+// Visits (CV1): the app's own pages. My visits: everyone signed in; Team visits: managers, HR and Admin (isManager or visits:view-all);
+// Visit: one visit, for the person, their manager, HR and Admin (the page says who can't see it).
+export const MY_VISITS = "visits/my-visits.html";
+export const TEAM_VISITS = "visits/team-visits.html";
+export const VISIT_PAGE = "visits/visit.html";
+
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

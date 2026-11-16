@@ -26,6 +26,7 @@ import { dayNumber, isoFromDayNumber, isValidDate, isWeekend, getAllHolidays, da
 import { allRequests, managerFor, PAST_DAY_WINDOW } from "./leave-store.js";
 import { joinedOn } from "./employment-period.js";   // F2b
 import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
+import { nightCheckOutJudge } from "./night-fix.js";   // CV1
 
 // The General shift, the only one for now.
 export const ATTENDANCE_RULES = {
@@ -741,6 +742,9 @@ function checkAgainstRecord(record, issue, time, today, date) {
   if (!record?.checkIn) return fail("There's no check-in that day, so there's no check-out to add. Choose Missed check-in first.", "issue");
   if (record.checkOut) return fail(`A check-out at ${record.checkOut} is already recorded for that day.`, "issue");
   if (date === today) return fail("You can still check out today from Mark attendance.", "date");
+  // CV1: a night shift's check-out is the next morning, judged against the shift day (data/night-fix.js); day shifts fall through to the rule below
+  const night = nightCheckOutJudge(record.userId, date, record, time);
+  if (night) return night.ok ? null : fail(night.error, "time");
   if (t <= toMinutes(record.checkIn)) return fail(`The check-out time must be later than the check-in (${record.checkIn}).`, "time");
   return null;
 }

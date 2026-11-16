@@ -25,6 +25,7 @@ import { hoursChart, leaveBalanceChart, valuesOf } from "../../../assets/js/data
 import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
+import { VisitsToday } from "../ui/visits.jsx";   // CV1
 import { ColumnChart } from "../components/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
@@ -238,6 +239,7 @@ export default function EmployeeDashboard() {
           <StatCard id="payslip" icon={ICONS.payslip} tone={3} label="Next payslip" value={slip.value} note={slip.note} />
           <StatCard id="requests" icon={ICONS.requests} tone={4} label="Open requests" value={String(d.open.length)} note={parts.join(", ") || "None"} />
         </StatStrip>
+        <VisitsToday />
 
         <div className="grid grid-main-aside">
           <section className="card">

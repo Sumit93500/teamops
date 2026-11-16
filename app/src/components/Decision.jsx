@@ -20,6 +20,8 @@ import { decideLocationChange } from "../../../assets/js/data/locations-store.js
 import { decideChange, changeText } from "../../../assets/js/data/employee-record.js";
 import { decideOvertimeItem } from "../../../assets/js/data/overtime-store.js";
 import { resolveUnlockRequest } from "../../../assets/js/data/lockouts.js";
+import { decideVisit } from "../../../assets/js/data/visits.js";   // CV1
+import { correctionContext } from "../../../assets/js/data/night-fix.js";
 import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
 import { bump } from "../data/bus.js";
 import { useToast } from "../ui/Toast.jsx";
@@ -38,7 +40,7 @@ export const LEAVE_FLOW = {
 };
 export const CORRECTION_FLOW = {
   decide: decideRegularization,
-  describe: (r) => `${nameOf(r.userId)}: ${issueLabel(r)}, ${formatDay(r.date)}, corrected to ${r.time}`,
+  describe: (r) => `${nameOf(r.userId)}: ${issueLabel(r)}, ${formatDay(r.date)}, corrected to ${r.time}${correctionContext(r.userId, r.date, r.time)?.nextDay ? " (next day)" : ""}`,
   noteId: "reject-correction-note",
   labels: {
     title: "Reject correction request",
@@ -146,6 +148,20 @@ export const UNLOCK_FLOW = {
     placeholder: "Optional: why it stays locked",
     approved: "Unlocked. They can sign in now.",
     rejected: "Dismissed. The account stays locked until the lock expires.",
+  },
+};
+
+// CV1: a client / official visit waiting for the person's manager (HR or an Admin when they have none). A same-day visit is already under way: rejecting
+// it afterwards sends the day back to the ordinary rules. A rejection needs a reason, which the employee sees.
+const visitDates = (v) => (v.toDate && v.toDate !== v.date ? `${formatDay(v.date)} to ${formatDay(v.toDate)}` : formatDay(v.date));
+export const VISIT_FLOW = {
+  decide: (id, actorUserId, _role, action, note) => decideVisit(actorUserId, id, action === "approve" ? "approved" : "rejected", note ?? ""),
+  describe: (v) => `${nameOf(v.userId)}: visit to ${v.siteName}, ${visitDates(v)}${v.sameDay ? " (same day, already under way)" : ""}`,
+  noteId: "reject-visit-note",
+  labels: {
+    title: "Reject visit",
+    approved: "Visit approved.",
+    rejected: "Visit rejected.",
   },
 };
 

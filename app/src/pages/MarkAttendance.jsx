@@ -49,6 +49,9 @@ import { shiftDayFor, shiftMonthFor } from "../../../assets/js/data/shift-days.j
 import { getShift } from "../../../assets/js/data/shifts-store.js";
 import { officeNow, toMin as shiftMin, hhmm } from "../../../assets/js/data/shift-engine.js";
 import { ShiftLine, MOON } from "../ui/shifts.jsx";
+import { Segmented } from "../components/Controls.jsx";   // CV1: the visit way of checking in
+import VisitPunch from "../ui/VisitPunch.jsx";
+import { visitsFor } from "../../../assets/js/data/visits-store.js";
 
 const PAGE = "attendance/mark-attendance.html";
 const RECENT_DAYS = 5;
@@ -199,6 +202,8 @@ export default function MarkAttendance() {
   const [geo, read] = useReading();
   const [chosen, setChosen] = useState(null);   // the place the person picked, once they pick one
   const [error, setError] = useState("");
+  // CV1: "Client / official visit" is the third way to check in; the page opens on it while a visit check-in of today is still open
+  const [mode, setMode] = useState(() => { const t = officeNow().date; return visitsFor(userId).some((v) => v.dates.includes(t) && v.days?.[t]?.in && !v.days[t].out) ? "visit" : "place"; });
   const d = useData(() => {
     const now = officeNow();
     if (shiftRulesApply(now.date)) {
@@ -282,7 +287,8 @@ export default function MarkAttendance() {
             <div className="ds-stack punch">
               <div className="punch__time" id="punch-clock"><time dateTime={`${pad(Math.floor(d.minutes / 60))}:${pad(d.minutes % 60)}`}>{time.padStart(5, "0")}</time><small>{ampm}</small></div>
               <p className="ds-hint" id="punch-rule">{ruleLine}</p>
-              {(st.canIn || st.canOut) && canMark && (
+              {canMark && <Segmented label="How you are working" options={[{ value: "place", label: "Office or home" }, { value: "visit", label: "Client / official visit" }]} value={mode} onChange={(v) => { setMode(v); setError(""); }} />}
+              {mode === "place" && (st.canIn || st.canOut) && canMark && (
                 <>
                   <div className="ds-field">
                     <label className="ds-field__label" htmlFor="checkin-from">{st.canOut ? "Check-Out From" : "Check-In From"}</label>
@@ -302,13 +308,14 @@ export default function MarkAttendance() {
                   {moved && <p className="ds-note ds-note--warning" id="flag-notice">{`Flagged: you checked in at ${placeLabel(stamp.inPlace)} and you're at ${outAt.placeName} now. Checking out here flags the day for HR.`}</p>}
                 </>
               )}
-              <div className="punch__actions">
+              {mode === "place" && <div className="punch__actions">
                 {st.canOut
                   ? <button className="ds-btn ds-btn--primary ds-btn--lg" type="button" id="check-out-btn" disabled={!ready && !(moved && device.ok)} onClick={doOut}>Check out</button>
                   : <button className="ds-btn ds-btn--primary ds-btn--lg" type="button" id="check-in-btn" hidden={!canMark || undefined} disabled={!st.canIn || !ready} onClick={doIn}>Check in</button>}
-              </div>
-              <p className="ds-hint" id="punch-note" hidden={!st.why || undefined}>{st.why}</p>
-              <p className="ds-field__error" id="punch-error" role="alert" hidden={!error || undefined}>{error}</p>
+              </div>}
+              <p className="ds-hint" id="punch-note" hidden={mode !== "place" || !st.why || undefined}>{st.why}</p>
+              <p className="ds-field__error" id="punch-error" role="alert" hidden={mode !== "place" || !error || undefined}>{error}</p>
+              {mode === "visit" && canMark && <VisitPunch userId={userId} />}
               <p className="ds-privacy">{PRIVACY}</p>
             </div>
             <Kv id="punch-stats" rows={[

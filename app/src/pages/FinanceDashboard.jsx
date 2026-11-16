@@ -23,6 +23,7 @@ import { rupees } from "../../../assets/js/ui/money.js";
 import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
+import { VisitsToday } from "../ui/visits.jsx";   // CV1
 import { BarChart, monthSpan } from "../components/charts/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
@@ -160,6 +161,7 @@ export default function FinanceDashboard() {
           <StatCard id="net" permission="payroll:view" hidden={!canPay} icon={ICONS.net} tone={4} label={d.run ? `Net pay, ${short(d.run)}` : "Net pay"}
             value={d.run ? rupees(d.totals.net) : "—"} note={d.run ? "Draft, not paid yet" : ""} />
         </StatStrip>
+        <VisitsToday />
 
         <div className="grid grid-main-aside">
           <section className="card" id="fin-monthly" data-permission="payroll:view" hidden={!canPay || undefined}>

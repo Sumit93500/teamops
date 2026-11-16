@@ -20,6 +20,7 @@ import { Field, Input, Select, TextArea, Kv } from "../components/Form.jsx";
 import { DateRange } from "../components/Controls.jsx";
 import { EmptyState, NO_DATA } from "../components/Basics.jsx";
 import "../design/shifts.css";
+import "../design/visits.css";   // CV1
 
 export const MOON = "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z";
 export const SUN = "M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4";
@@ -33,7 +34,20 @@ export function otText(minutes) {
   return [h ? `${h}h` : "", m ? `${m}m` : ""].filter(Boolean).join(" ");
 }
 // The status badge of a shift day: short leave and weekly off are the shift's own; the rest are the old badges.
+// CV1: a day under an approved visit: its own chip (a pin icon and a hatched look, not colour alone); "Visit not started" and "OK needed" are the warning look.
+const VISIT_PIN = "M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5";
+export function visitBadge(day) {
+  const planned = day.status === "visit-planned", half = day.status === "half-day";
+  const chip = el("span", `visit-chip${planned ? " visit-chip--warn" : half ? " visit-chip--half" : ""}`);
+  const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  icon.setAttribute("class", "icon"); icon.setAttribute("viewBox", "0 0 24 24"); icon.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path"); path.setAttribute("d", VISIT_PIN); icon.append(path);
+  chip.append(icon, planned ? (day.visit?.awaitingOk ? "Visit: OK needed" : "Visit not started") : half ? "On-site, half day" : "On-site / Client visit");
+  chip.title = day.visit ? `${day.visit.siteName}${planned ? (day.visit.awaitingOk ? ": location unavailable, waiting for an OK" : ": no check-in yet") : ""}` : "On a visit";
+  return chip;
+}
 export function shiftBadge(day) {
+  if (day.onSite) return visitBadge(day);
   if (day.status === "short-leave") return el("span", "badge badge--warning badge--dot", "Short leave");
   if (day.status === "weekly-off") return el("span", "badge badge--dot", "Weekly off");
   if (day.status === "not-joined") return el("span", "badge badge--dot", "Not yet joined");   // F2: the old badge says "Before joining"

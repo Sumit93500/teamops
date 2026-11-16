@@ -65,6 +65,16 @@ The record then carries `checkInPlace`, `checkInDistanceM`, `checkInDeviceId` (a
 
 From the shift rules start date (default 2026-12-01) each day is read by the person's shift (the every-3rd late-mark rule stays, as a dated, Admin-editable policy): see [shifts.md](shifts.md). Before it everything above holds exactly. The old site keeps these rules and its sample Shifts page.
 
+## Client and official visits (CV1, 2026-11-16)
+
+A person works at a client's or another place for a day or more. Data: `assets/js/data/visits-store.js` (the saved visits and their per-day punches), `assets/js/data/visits.js` (asking, assigning, deciding, cancelling, checking in and out, what waits, who is on site today), `assets/js/data/visit-days.js` (how a visit day reads; `assets/js/data/shift-days.js` hands each day to it) and the permissions `visits:request`, `visits:approve`, `visits:assign`, `visits:view-all` (see [rbac.md](rbac.md)).
+
+- **Asking and assigning.** A person asks for a visit (kind, place, purpose, up to 31 days, from today, from the shift rules start date, not before their joining date); their manager decides it (HR or an Admin for someone with no manager now). A manager (direct reports), HR or an Admin assigns a visit to one or more people: it starts approved, and if any one person can't have it nothing is saved. A visit can't overlap approved leave or another visit; a weekly off or holiday inside a range is left out unless the assigner allows it. A same-day visit starts at once and its approval follows; rejected, the day goes back to the ordinary rules. A visit can be cancelled before anything is punched.
+- **Checking in and out.** Location is required for both, and there is no 150 m office rule. A reading worse than 200 m is refused; one over 100 m is accepted and flagged as low accuracy. Where the browser gives no location the person says so with a reason; the approver's explicit OK (with a note) makes the day count.
+- **The day.** An approved visit day with a valid check-in reads **On-site / Client visit**: present, never late, never absent, never overtime; under the shift's half-day threshold it is a half day (as any half day). No check-in yet reads **Visit not started** (flagged; not absent; after the day it is incomplete for HR). Days without a visit are untouched.
+- **Where.** Mark attendance (third choice "Client / official visit"), My visits, Team visits, the visit's own page (the punch trail with an Open in maps link), the approvals inbox, the bell, the dashboards' "On site today", My attendance and Team attendance (the chip, the "On a visit" tab).
+- **Night shift's next-morning fix.** `assets/js/data/night-fix.js`: a missed check-out on a night shift's start date is judged against the shift day: the time is read as the next morning and may be as late as the shift's end plus a window (default 6 hours; HR and the Admin set it). The form shows the shift and a "next day" label. Day shifts are judged as before.
+
 ## Not built yet
 
 - The old site's Mark attendance has no place check (the React app does). F1 removed its "Location check" card, whose only line said location and network checks weren't part of the demo.

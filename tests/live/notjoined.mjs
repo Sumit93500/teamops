@@ -184,7 +184,8 @@ section("X. Scope");
 const HERE = new URL(".", import.meta.url);
 const walk = (dir, base = "") => fs.readdirSync(new URL(`${dir}/${base}`, HERE), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(dir, `${base}${e.name}/`) : [`${base}${e.name}`])).sort();
 const { unF2b } = await import("./unf2b.mjs");
-const srcAt = (dir, p) => { const t = fs.readFileSync(new URL(`${dir}/${p}`, HERE), "utf8"); return dir === "./js" ? unF2b(t) : t; };
+const { unCV1 } = await import("./uncv1.mjs");   // CV1: the night-shift import and judgement put back
+const srcAt = (dir, p) => { const t = fs.readFileSync(new URL(`${dir}/${p}`, HERE), "utf8"); return dir === "./js" ? unCV1(unF2b(t)) : t; };
 const jsNow = walk("./js-pre12M"), jsPre = walk("./js-pre12L");   // Round 12M (layout; was the live js): 12L's own change set (js-pre12M = 0353366)
 const changedJs = jsNow.filter((p) => !jsPre.includes(p) || srcAt("./js-pre12M", p) !== srcAt("./js-pre12L", p));
 check("X1", "exactly one js file changed, none added or removed: data/attendance-store.js (the pages untouched)", j(changedJs) === j(["data/attendance-store.js"]) && j(jsNow) === j(jsPre), j(changedJs));

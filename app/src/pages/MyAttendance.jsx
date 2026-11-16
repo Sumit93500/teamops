@@ -32,12 +32,14 @@ import { stampsBy, stampKey } from "../data/stamps.js";
 import { placeNode, flagNode } from "../ui/attendance.jsx";
 import { shiftMonthFor } from "../../../assets/js/data/shift-days.js";
 import { latePolicy } from "../../../assets/js/data/shift-settings.js";
+import { correctionContext } from "../../../assets/js/data/night-fix.js";   // CV1
 import { ShiftLine, statusNodes, shiftCell, otCell } from "../ui/shifts.jsx";
 
 const PAGE = "attendance/my-attendance.html";
 const PAGE_SIZE = 10, MONTHS_BACK = 3;
 const pad = (n) => String(n).padStart(2, "0");
 const ordinal = (n) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
+const forChart = (d) => (d.status === "on-site" ? { ...d, status: "present" } : d.status === "visit-planned" ? { ...d, status: "not-yet" } : d);   // CV1
 const isOffOrEmpty = (day) => ["weekend", "weekly-off", "holiday", "no-data", "not-joined", "left"].includes(day.status);
 const soFar = (days, today) => days.filter((d) => d.date <= today && !isOffOrEmpty(d) && d.status !== "not-yet");
 const ICONS = ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6", "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2", "M4 20V10M10 20V4M16 20v-7M22 20H2", "M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6"];
@@ -58,6 +60,8 @@ function cellLook(day, today) {
     case "late": return ["late", day.incomplete ? "Late, no check-out" : `Late${wfh}`];
     case "half-day": return ["late", "Half day"];
     case "short-leave": return ["late", "Short leave"];
+    case "on-site": return ["present", day.incomplete ? "On-site, no check-out" : `On-site${day.visit?.siteName ? `: ${day.visit.siteName}` : ""}`];   // CV1
+    case "visit-planned": return ["future", day.visit?.awaitingOk ? "Visit: OK needed" : "Visit not started"];
     case "weekly-off": return ["weekend", "Weekly off"];
     case "absent": return ["absent", "Absent"];
     case "on-leave": return ["leave", "On leave"];
@@ -70,6 +74,7 @@ function cellLook(day, today) {
   }
 }
 function fixableIssue(day, today) {
+  if (day.onSite) return "";   // CV1: a visit day is completed by HR or the visit page, not by a correction request
   if (day.regularized || day.regularization?.status === "pending") return "";
   const age = dayNumber(today) - dayNumber(day.date);
   if (age < 0 || age > R.requestWindowDays) return "";
@@ -191,7 +196,7 @@ export default function MyAttendance() {
   const cells = [...Array(lead).fill(null), ...summary.days];
   while (cells.length % 7) cells.push(null);
   // summary, alert
-  const chart = monthAttendanceChart(done);
+  const chart = monthAttendanceChart(done.map(forChart));
   const counts = valuesOf(chart, "Days");
   const alert = summary.lateMarks && !penalised ? `You have ${plural(summary.lateMarks, "late mark", "late marks")} this month. Late marks don't cost pay under the shift rules.` : summary.lateMarks
     ? `You have ${plural(summary.lateMarks, "late mark", "late marks")} this month. Every ${ordinal(every)} late mark counts as half a day.${summary.penaltyHalfDays ? ` That's ${plural(summary.penaltyHalfDays, "half day", "half days")} this month.` : ` ${left === 1 ? "The next one" : `${left} more`} would count as half a day.`} Each half day is taken from your pay, not your leave balance, when payroll is processed.`
@@ -203,6 +208,9 @@ export default function MyAttendance() {
   const minDate = new Date((dayNumber(today) - R.requestWindowDays) * 86400000).toISOString().slice(0, 10);
   const fieldError = (name) => (error?.field === name ? <span className="form-error" id={`${FIELD_ID[name]}-error`}>{error.message}</span> : null);
   const set = (name) => (e) => { setModal({ ...modal, [name]: e.target.value }); setError(null); };
+  // CV1: the shift on the chosen date, and for a night shift's missed check-out the next-morning wording
+  const ctx = modal?.date ? correctionContext(userId, modal.date, modal.time) : null;
+  const nightOut = Boolean(ctx?.crossesMidnight && modal?.issue === "missed-check-out");
 
   return (
     <Frame page={PAGE}>
@@ -247,7 +255,7 @@ export default function MyAttendance() {
               </div>
               <div className="calendar__legend">
                 <span className="is-present">On time</span><span className="is-late">Late</span><span className="is-absent">Absent</span><span className="is-leave">On leave</span>
-                <span className="is-holiday">Holiday</span><span className="is-off">{summary.rules === "shift" ? "Weekly off" : "Weekend"}</span><span style={{ "--c": "var(--color-text-muted)" }}>No record</span>
+                <span className="is-holiday">Holiday</span><span className="is-present">On-site</span><span className="is-off">{summary.rules === "shift" ? "Weekly off" : "Weekend"}</span><span style={{ "--c": "var(--color-text-muted)" }}>No record</span>
               </div>
             </div>
           </section>
@@ -293,6 +301,7 @@ export default function MyAttendance() {
                 <div className="form-field">
                   <label className="form-label form-label--required" htmlFor="reg-date">Date</label>
                   <input className="input" id="reg-date" type="date" required min={minDate} max={today} value={modal.date} onChange={set("date")} aria-describedby={error?.field === "date" ? "reg-date-error" : undefined} />
+                  {ctx && <span className="form-hint" id="reg-shift">{`Shift that day: ${ctx.shiftName}, ${ctx.start} to ${ctx.end}${ctx.crossesMidnight ? " (next morning)" : ""}`}</span>}
                   {fieldError("date")}
                 </div>
                 <div className="form-field">
@@ -305,6 +314,7 @@ export default function MyAttendance() {
                 <div className="form-field">
                   <label className="form-label form-label--required" htmlFor="reg-time">Correct time</label>
                   <input className="input" id="reg-time" type="time" required value={modal.time} onChange={set("time")} aria-describedby={error?.field === "time" ? "reg-time-error" : undefined} />
+                  {nightOut && <span className="form-hint" id="reg-next-day">{`${ctx.nextDay ? "Next day: " : ""}a night shift's check-out is the next morning; it can be added up to ${ctx.until}.`}</span>}
                   {fieldError("time")}
                 </div>
                 <div className="form-field">

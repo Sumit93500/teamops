@@ -1,7 +1,7 @@
 // usage: node shifts.mjs   (run through PowerShell with $env:TZ set for the time-zone runs)
 // SH1: shift-based attendance (data/shifts-store.js, shift-assignments.js, shift-settings.js, shift-engine.js,
 // shift-days.js, shift-punch.js, overtime-store.js, comp-off.js; the hooks in pay-engine.js and leave-policy.js). ./js is the build.
-//   P  permissions: shifts:view / assign / swap-team, overtime:approve; the counts (98 in 42 modules)
+//   P  permissions: shifts:view / assign / swap-team, overtime:approve; the counts (102 in 43 modules)
 //   S  the shifts store: the seed, General = today's rules, every validation, dated versions, deactivate blocked while in use
 //   A  assignments: a person (with and without an end), a department default, a date swap (manager: own reports only),
 //      back-to-back overlap refused, history; shiftOn is the pure order swap > person > department > General
@@ -60,9 +60,9 @@ const NEEL = neel.record?.id ?? neel.user?.id ?? S.getAllUsers().find((u) => u.n
 // ---------- P ----------
 section("P. Permissions");
 const role = (k) => R.ROLES[k].permissions;
-check("P1", "98 permissions in 42 modules (94 / 41 before SH1)", P.ALL_PERMISSIONS.length === 98 && Object.keys(P.PERMISSIONS).length === 42, `${P.ALL_PERMISSIONS.length} / ${Object.keys(P.PERMISSIONS).length}`);
+check("P1", "102 permissions in 43 modules (98 / 42 before CV1)", P.ALL_PERMISSIONS.length === 102 && Object.keys(P.PERMISSIONS).length === 43, `${P.ALL_PERMISSIONS.length} / ${Object.keys(P.PERMISSIONS).length}`);
 check("P2", "the shifts module: manage, view, assign, swap-team; overtime: approve", j(P.PERMISSIONS.shifts) === j(["manage", "view", "assign", "swap-team"]) && j(P.PERMISSIONS.overtime) === j(["approve"]));
-check("P3", "role counts: Admin 98, HR 54, Finance 45, Employee 27", j(Object.values(R.ROLES).map((r) => r.permissions.length)) === j([98, 54, 45, 27]), j(Object.values(R.ROLES).map((r) => r.permissions.length)));
+check("P3", "role counts: Admin 102, HR 58, Finance 48, Employee 30", j(Object.values(R.ROLES).map((r) => r.permissions.length)) === j([102, 58, 48, 30]), j(Object.values(R.ROLES).map((r) => r.permissions.length)));
 check("P4", "everyone holds shifts:view, shifts:swap-team and overtime:approve (they act only on direct reports)", ["hr", "fin", "emp"].every((k) => ["shifts:view", "shifts:swap-team", "overtime:approve"].every((p) => role(k).includes(p))));
 check("P5", "shifts:assign and shifts:manage: Admin and HR only", role("hr").includes("shifts:assign") && role("hr").includes("shifts:manage") && !role("fin").includes("shifts:assign") && !role("emp").includes("shifts:assign") && !role("emp").includes("shifts:manage"));
 check("P6", "none of the new ones is overridable", ["shifts:view", "shifts:assign", "shifts:swap-team", "overtime:approve"].every((p) => !R.OVERRIDABLE.includes(p)));

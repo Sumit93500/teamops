@@ -131,6 +131,74 @@ react-charts.M.states,react-charts,"map: 36 named states, one Tab stop, hatched 
 react-charts.P.1280,react-charts,Admin dashboard headcount: BarChart of the store's active headcount per department,x1
 react-charts.P.412,react-charts,Admin dashboard headcount: BarChart of the store's active headcount per department,x1
 react-charts.E,react-charts,no page or console errors,x1
+react-cv1.A1,react-cv1,"an empty list says so, with a Request a visit button",x1
+react-cv1.A2,react-cv1,sending it empty names the first missing field under it (the place),x1
+react-cv1.A3,react-cv1,a purpose that is too short is refused under its field,x1
+react-cv1.A4,react-cv1,a day in the past is refused,x1
+react-cv1.A5,react-cv1,"sent: a toast, a Pending row with the place and the day, saved for Arjun with Sneha as the manager",x1
+react-cv1.A6,react-cv1,"the list shows the place, its kind, the dates and 'Pending' with an icon",x1
+react-cv1.A7,react-cv1,"the status filter narrows the list ('Approved' shows none, with a words empty state)",x1
+react-cv1.A8,react-cv1,a date range with no visit in it says 'No data in this range.',x1
+react-cv1.B1,react-cv1,Sneha: the waiting tab has Arjun's request with Approve and Reject,x1
+react-cv1.B2,react-cv1,Reject without a reason is refused at the field,x1
+react-cv1.B3,react-cv1,Approve: the visit is approved by Sneha and the waiting list is empty,x1
+react-cv1.B4,react-cv1,"All visits lists it as Approved, with who set it up",x1
+react-cv1.B5,react-cv1,assigning with nobody chosen is refused under the people,x1
+react-cv1.B6,react-cv1,"Sneha can assign only to her direct reports (Arjun, Rohan)",x1
+react-cv1.B7,react-cv1,"assigned: Rohan's visit starts approved, two days, assigned by Sneha",x1
+react-cv1.B8,react-cv1,"Rohan's My visits shows it, 'Assigned by Sneha Rao', no Cancel button",x1
+react-cv1.C1,react-cv1,the page offers 'Office or home' and 'Client / official visit',x1
+react-cv1.C2,react-cv1,"the visit mode shows today's approved visit (place, kind, purpose) and hides the office place controls",x1
+react-cv1.C3,react-cv1,Check in is off until the location is read; the line says to press Use my location,x1
+react-cv1.C4,react-cv1,"the location is read: 'accurate to within 30 m', Check in on",x1
+react-cv1.C5,react-cv1,"checked in: the punch has the time, coordinates and accuracy; the visit is in progress",x1
+react-cv1.C6,react-cv1,the page now offers Check out of visit,x1
+react-cv1.C7,react-cv1,after a reload the visit mode is open (a visit check-in is still open),x1
+react-cv1.C8,react-cv1,checked out: the visit is completed and the page says it is done,x1
+react-cv1.D1,react-cv1,"My attendance: today's cell says On-site with the place, and the legend has On-site",x1
+react-cv1.D2,react-cv1,"the daily log row has the chip 'On-site / Client visit' and the place, no Request fix",x1
+react-cv1.D3,react-cv1,Team attendance (HR) has an 'On a visit' tab counting Arjun,x1
+react-cv1.D4,react-cv1,"...and its row has the chip, the visit's place and 8 h 45 m worked",x1
+react-cv1.D5,react-cv1,the Present stat counts the visit day,x1
+react-cv1.D6,react-cv1,Sneha's dashboard has 'On site today' (she manages Arjun),x1
+react-cv1.D7,react-cv1,HR's dashboard has 'On site today',x1
+react-cv1.D8,react-cv1,the Admin's dashboard has 'On site today',x1
+react-cv1.D9,react-cv1,Arjun's dashboard shows 'Your visit today' with his check-in,x1
+react-cv1.D10,react-cv1,someone with no reports and no visit has no visit card,x1
+react-cv1.E1,react-cv1,"with no visit today, Mark attendance offers 'Start a visit now'",x1
+react-cv1.E2,react-cv1,started: a toast saying the manager approves it afterwards; the page shows the visit with the pending note,x1
+react-cv1.E3,react-cv1,"he can check in at once: same-day, approval pending, in progress",x1
+react-cv1.E4,react-cv1,Aarav's inbox (Kabir's manager) has it as a Visit row (started today) with Approve and Reject,x1
+react-cv1.E5,react-cv1,"the bell lists the visit, and the inbox's sidebar count is the bell's",x1
+react-cv1.E6,react-cv1,Reject with a reason: the visit is rejected and the day goes back to the ordinary rules (the day reads under the ordinary office rules),x1
+react-cv1.F1,react-cv1,location blocked: the words say how to allow it or to say it isn't available; Check in stays off,x1
+react-cv1.F2,react-cv1,'My location isn't available' asks for a reason and keeps Check in off until it is given,x1
+react-cv1.F3,react-cv1,"checked in without a location: kept, flagged as needing an OK, no coordinates",x1
+react-cv1.F4,react-cv1,Sneha's waiting list has it: 'Accept without location',x1
+react-cv1.F5,react-cv1,accepting needs a note,x1
+react-cv1.F6,react-cv1,"accepted: the OK is kept with who and why, and the day now counts as on-site",x1
+react-cv1.F7,react-cv1,My attendance shows On-site for today,x1
+react-cv1.G1,react-cv1,"the trail has the day, the times, coordinates and accuracy",x1
+react-cv1.G2,react-cv1,'Open in maps' is an external link (a new tab) to the coordinates,x1
+react-cv1.G3,react-cv1,the summary and the history are there,x1
+react-cv1.G4,react-cv1,her manager can open it,x1
+react-cv1.G5,react-cv1,someone else is told they can't open it,x1
+react-cv1.G6,react-cv1,a visit that doesn't exist says so,x1
+react-cv1.G7,react-cv1,Team visits is not for someone who manages nobody (the 403 page),x1
+react-cv1.H1,react-cv1,Enter on Request a visit opens the dialog with focus inside it,x1
+react-cv1.H2,react-cv1,Esc closes it (nothing was typed),x1
+react-cv1.H3,react-cv1,the arrow key moves the segmented choice to the visit way (radio group),x1
+react-cv1.S1,react-cv1,everyone has My visits,x1
+react-cv1.S2,react-cv1,"Team visits: the managers (Sneha, Kabir), HR and the Admin have it; Arjun and Ananya, who manage nobody, don't",x1
+react-cv1.C2.light,react-cv1,"light: the pills, chips, hints and segmented choice are 4.5:1 or more",x1
+react-cv1.C2.dark,react-cv1,"dark: the pills, chips, hints and segmented choice are 4.5:1 or more",x1
+react-cv1.W.412.light,react-cv1,412 light: no sideways scroll on the 12 new or changed pages,x1
+react-cv1.W.768.light,react-cv1,768 light: no sideways scroll on the 12 new or changed pages,x1
+react-cv1.W.1280.light,react-cv1,1280 light: no sideways scroll on the 12 new or changed pages,x1
+react-cv1.W.412.dark,react-cv1,412 dark: no sideways scroll on the 12 new or changed pages,x1
+react-cv1.W.768.dark,react-cv1,768 dark: no sideways scroll on the 12 new or changed pages,x1
+react-cv1.W.1280.dark,react-cv1,1280 dark: no sideways scroll on the 12 new or changed pages,x1
+react-cv1.X1,react-cv1,no page or console errors,x1
 react-dash.A1,react-dash,admin: the page as it opens,x2 (2 roles)
 react-dash.A2,react-dash,"admin: search, department, Next",x2 (2 roles)
 react-dash.A3,react-dash,"Export: the same two files, byte for byte",x1
@@ -965,7 +1033,7 @@ react-side.A2,react-side,"collapsed: the label shows as a chip on hover (""Atten
 react-side.A3,react-side,"collapsed: the active item is marked (aria-current, its own background)",x1
 react-side.A4,react-side,collapsed: no group headings; the brand is its mark only; the count is a small number on the icon; the person's avatar stays in the header,x1
 react-side.A5,react-side,expanded: every item shows its icon and label; the group headings; no section buttons; the brand's name; the avatar and name; the count; Dashboard current,x1
-react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (22), the same links as collapsed",x5 (5 roles)
+react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (24), the same links as collapsed",x5 (5 roles)
 react-side.K1.expanded,react-side,"expanded: Tab goes brand, the toggle, then the first item (Dashboard)",x1
 react-side.K2.expanded,react-side,"expanded: Enter toggles, Space toggles back, focus stays on the toggle",x1
 react-side.K1.collapsed,react-side,"collapsed: Tab goes brand, the toggle, then the first item (Dashboard)",x1

@@ -57,6 +57,10 @@ export const PERMISSIONS = {
   // holds it: a manager decides their direct reports'; HR and the Admin, who see everyone's attendance, decide for people
   // without a manager). Not overridable. 94 -> 98 in 42 modules; Admin 98, HR 54, Finance 45, Employee 27.
   overtime:      ["approve"],
+  // CV1 (2026-11-16): client / official visits. request: ask for a visit (everyone); approve: decide a visit (everyone holds it: a manager decides their
+  // direct reports', HR and Admin those of people without a manager); assign: put a visit on people (everyone holds it: a manager for direct reports,
+  // HR and Admin for anyone); view-all: every visit (HR, Admin). Not overridable. 98 -> 102 in 43 modules.
+  visits:        ["request", "approve", "assign", "view-all"],
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.

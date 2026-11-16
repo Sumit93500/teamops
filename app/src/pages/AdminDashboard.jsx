@@ -36,6 +36,7 @@ import { resolvePageLink } from "../../../assets/js/core/paths.js";
 import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
+import { VisitsToday } from "../ui/visits.jsx";   // CV1
 import { ColumnChart } from "../components/Charts.jsx";
 import { BarChart } from "../components/charts/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
@@ -66,6 +67,7 @@ const APPROVAL_TEXT = {
   profile: (r) => [`Bank and tax change: ${nameOf(r.userId)}`, changeText(r).map(([l, v]) => `${l}: ${v}`).join("; ")],   // E1
   overtime: (o) => [`Overtime: ${nameOf(o.userId)}`, `${formatDay(o.date)}: ${o.minutes} min on ${o.shiftName}`],   // SH1
   unlock: (q) => [`Locked account: ${nameOf(q.userId)}`, `${q.attempts} failed sign-ins; Unlock now or Dismiss`],   // F2
+  visits: (v) => [`Visit: ${nameOf(v.userId)}`, `${v.siteName}, ${formatDay(v.date)}${v.toDate && v.toDate !== v.date ? ` to ${formatDay(v.toDate)}` : ""}${v.sameDay ? " (same day)" : ""}`],   // CV1
 };
 function approvalItems(waiting, refresh) {
   const shown = waiting.slice(0, SHOWN_APPROVALS);
@@ -227,6 +229,7 @@ export default function AdminDashboard() {
             <StatCard id="stock" permission="inventory:view" hidden={!canStock} icon={ICONS.stock} tone={4} label="Items to reorder"
               value={d.alerts ? String(d.alerts.length) : "—"} note={d.alerts ? stockNote : ""} noteTone={d.alerts?.length ? "down" : ""} />
           </StatStrip>
+          <VisitsToday />
 
           <div className="grid grid-main-aside">
             <section className="card">

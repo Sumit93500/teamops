@@ -55,6 +55,9 @@ const withoutPlaceholders = (sections) => sections?.map((s) => { const items = s
 const f2Singles = (old, nw) => { const titles = (old.sections ?? []).filter((s) => s.f2).map((s) => s.title);
   return { ...nw, sections: nw.sections?.map((s) => (titles.includes(s.title) ? { title: s.title, f2: true } : s)) }; };
 const ruledShell = (s) => ({ ...s, brand: s.brand === "O OfficeOS" ? `N${COMPANY}` : s.brand, crumbs: s.crumbs?.replace(/^Workspace\//, `${COMPANY}/`), sections: withoutPlaceholders(withOffices(s.sections)) });
+// CV1: My visits and Team visits are the app's own sidebar items (the old site has none): read past on the app's side; cv1.mjs S checks who sees them
+const CV1_VISITS = /^\/pages\/visits\/(my|team)-visits\.html/;
+const withoutVisits = (s) => ({ ...s, sections: s.sections?.map((x) => (x.items ? { ...x, items: x.items.filter((it) => !CV1_VISITS.test(it[1] ?? "")) } : x)) });
 const ruledPhone = (s) => (s.toggle?.[0] ? { ...s, shown: [s.shown[0], `About ${COMPANY}`, ...s.shown.slice(1)] } : s);
 // L1 (ruled): the brand panel's "© 2026 OfficeOS. All rights reserved." line is gone; the footer says "© <year> <company> · Powered by OfficeOS"
 const ruledAuth = (s) => ({ ...s, text: s.text?.replace(/^O OfficeOS /, `N ${COMPANY} `).replace(/ © 2026 OfficeOS\. All rights reserved\./, ""), title: s.title?.replace(/\| OfficeOS$/, `| ${COMPANY}`) });
@@ -115,7 +118,7 @@ if (ONLY.includes("D")) {
   for (const who of Object.keys(PAGES)) for (const page of PAGES[who]) {
     const o = await open(O, who, page), n = await open(N, who, page);
     const od = ruledShell(await readShell(o.t));
-    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, od, f2Singles(od, await readShell(n.t)));
+    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, od, f2Singles(od, withoutVisits(await readShell(n.t))));
     if (o.errs.length || n.errs.length) check(`D.${who}.err`, "no page errors", false, j([o.errs, n.errs]));
     await o.ctx.close(); await n.ctx.close();
   }

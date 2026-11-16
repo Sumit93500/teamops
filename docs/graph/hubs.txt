@@ -1,26 +1,26 @@
 God nodes (most connected):
-  1. el() - 257 edges
-  2. getUser() - 257 edges
-  3. formatDay() - 192 edges
-  4. nameOf() - 145 edges
-  5. useSession() - 139 edges
-  6. useData() - 116 edges
-  7. pageUrl() - 112 edges
-  8. todayIso() - 106 edges
-  9. getAllUsers() - 104 edges
-  10. plural() - 95 edges
-  11. useToast() - 88 edges
-  12. getCurrentUserId() - 85 edges
-  13. dayNumber() - 80 edges
-  14. bump() - 80 edges
-  15. useCan() - 77 edges
-  16. can() - 74 edges
+  1. getUser() - 275 edges
+  2. el() - 258 edges
+  3. formatDay() - 203 edges
+  4. useSession() - 153 edges
+  5. nameOf() - 152 edges
+  6. useData() - 126 edges
+  7. pageUrl() - 124 edges
+  8. getAllUsers() - 107 edges
+  9. todayIso() - 106 edges
+  10. useToast() - 98 edges
+  11. plural() - 95 edges
+  12. bump() - 90 edges
+  13. getCurrentUserId() - 87 edges
+  14. useCan() - 81 edges
+  15. dayNumber() - 80 edges
+  16. can() - 75 edges
   17. Frame() - 71 edges
   18. monthName() - 68 edges
   19. rupees() - 66 edges
-  20. typeLabel() - 62 edges
-  21. Card() - 58 edges
-  22. departmentName() - 58 edges
-  23. Table() - 57 edges
-  24. load() - 57 edges
-  25. MarkAttendance() - 56 edges
+  20. Card() - 66 edges
+  21. hasPermission() - 65 edges
+  22. typeLabel() - 62 edges
+  23. Table() - 61 edges
+  24. MarkAttendance() - 59 edges
+  25. departmentName() - 58 edges

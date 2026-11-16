@@ -10,6 +10,7 @@ export const AUDIT_KINDS = [
   "account-created", "link-used", "password-set", "password-changed", "reset-requested", "reset-issued", "reset-used",
   "temp-issued", "signin-failed", "locked", "unlocked", "disabled", "enabled", "signin",
   "field-changed", "field-revealed", "change-requested", "change-approved", "change-rejected",
+  "visit-requested", "visit-assigned", "visit-approved", "visit-rejected", "visit-cancelled", "visit-started", "visit-completed", "visit-location-ok",
 ];
 export const AUDIT_LABEL = {
   "account-created": "Account created", "link-used": "Set-password link used", "password-set": "Password set",
@@ -18,6 +19,8 @@ export const AUDIT_LABEL = {
   locked: "Locked", unlocked: "Unlocked", disabled: "Sign-in disabled", enabled: "Sign-in enabled", signin: "Signed in",
   "field-changed": "Field changed", "field-revealed": "Sensitive field shown", "change-requested": "Change requested",
   "change-approved": "Change approved", "change-rejected": "Change rejected",
+  "visit-requested": "Visit requested", "visit-assigned": "Visit assigned", "visit-approved": "Visit approved", "visit-rejected": "Visit rejected",
+  "visit-cancelled": "Visit cancelled", "visit-started": "Visit started", "visit-completed": "Visit completed", "visit-location-ok": "Visit location accepted",
 };
 
 const empty = () => ({ version: 1, nextNum: 1, events: [] });

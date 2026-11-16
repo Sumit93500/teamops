@@ -50,12 +50,15 @@ import UsersList from "./pages/UsersList.jsx";
 import UserForm from "./pages/UserForm.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import Departments from "./pages/Departments.jsx";
+import MyVisits from "./pages/MyVisits.jsx";   // CV1
+import TeamVisits from "./pages/TeamVisits.jsx";
+import VisitDetail from "./pages/VisitDetail.jsx";
 import Rebuilding from "./pages/Rebuilding.jsx";   // F2
 import { isPlaceholder } from "./shell/placeholders.js";
 import { Login, ForgotPassword, ResetPassword, SetPassword, SET_PASSWORD } from "./pages/AuthPages.jsx";
 import MailOutbox, { MAIL_OUTBOX } from "./pages/MailOutbox.jsx";
 import { sessionAllowed, mustChangePassword } from "../../assets/js/data/credentials.js";
-import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT, OFFICES, MY_LOCATIONS, APPEARANCE, RATES_RULES, LEAVE_POLICY_PAGE } from "./routes.js";
+import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT, OFFICES, MY_LOCATIONS, APPEARANCE, RATES_RULES, LEAVE_POLICY_PAGE, MY_VISITS, TEAM_VISITS, VISIT_PAGE } from "./routes.js";
 import { useSession, signOutNow } from "./data/hooks.js";
 
 const PORTED = {
@@ -133,6 +136,9 @@ export const router = createBrowserRouter([{ element: <AccountGate />, children:
   { path: pageUrl(OFFICES), element: <Offices /> },   // L1: the offices, for anyone signed in
   { path: pageUrl(MY_LOCATIONS), element: <MyLocations /> },   // L2: your check-in places, for anyone signed in
   { path: pageUrl(APPEARANCE), element: <Appearance /> },   // A1: your appearance, for anyone signed in
+  { path: pageUrl(MY_VISITS), element: <MyVisits /> },   // CV1: your client / official visits, for anyone signed in
+  { path: pageUrl(TEAM_VISITS), element: <TeamVisits /> },   // CV1: the team's visits (a manager, HR, Admin)
+  { path: pageUrl(VISIT_PAGE), element: <VisitDetail /> },   // CV1: one visit and its punch trail
   { path: pageUrl(RATES_RULES), element: <RatesRules /> },   // P4a: the statutory rates and rules (Finance reads, Admin verifies)
   { path: pageUrl(LEAVE_POLICY_PAGE), element: <LeavePolicy /> },   // P4b: the tenure leave policy (HR reads, Admin edits)
   ...ALL_PAGES.map((page) => ({ path: pageUrl(page), element: <RequireRoute page={page}>{pageElement(page)}</RequireRoute> })),

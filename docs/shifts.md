@@ -70,7 +70,7 @@ From the shift rules month, `payFor` (the new engine) **replaces** the old row's
 - **Comp-off** (off by default): each approval adds its minutes to the person's bank; every `minutesPerDay` (480) makes a comp-off day, expiring `expiryDays` (90) after it is earned. Comp-off days count in earned leave (available and usable at once) while they last; an expired day still covers earned leave already taken with it. My leave shows the comp-off line when it is on or any was earned.
 - **Paying for overtime is not worked out** (a Finance rule; the parking lot).
 
-## Permissions (98 in 42 modules)
+## Permissions (102 in 43 modules)
 
 | permission | who |
 |---|---|
@@ -80,7 +80,7 @@ From the shift rules month, `payFor` (the new engine) **replaces** the old row's
 | `shifts:swap-team` | everyone: swap one date for your direct reports (only a manager has any) |
 | `overtime:approve` | everyone: decide your direct reports' overtime; HR and the Admin for people without a manager |
 
-None is overridable. Admin 98, HR 54, Finance 45, Employee 27.
+None is overridable. Admin 102, HR 58, Finance 48, Employee 30 (CV1 added the four `visits` ones: see [rbac.md](rbac.md)).
 
 ## The screens
 

@@ -4,6 +4,7 @@
 // Team attendance and the HR dashboard.
 import { Pill } from "../components/Layout.jsx";
 import { Icon } from "../components/icons.jsx";
+import { OnSiteChip } from "./visits.jsx";   // CV1
 import { placeLabel, iconOfPlace, flagText } from "../data/stamps.js";
 
 const DAY = {
@@ -14,6 +15,7 @@ const DAY = {
 const FLAG = "M4 22V4M4 4h12l-2 4 2 4H4";
 
 export function DayPill({ day }) {
+  if (day.onSite) return <OnSiteChip day={day} />;   // CV1: a day under a visit
   if (day.overdue) return <Pill tone="danger">Overdue</Pill>;
   const [tone, label] = DAY[day.status] ?? ["", day.status];
   if (day.incomplete && day.rules === "shift") return <span className="ds-chips"><Pill tone={tone}>{label}</Pill><Pill tone="warning">Incomplete</Pill></span>;   // SH1

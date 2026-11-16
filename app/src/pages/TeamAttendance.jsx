@@ -55,14 +55,15 @@ const WEEK = {
   holiday: ["hol", "HOL", "holiday"], weekend: ["nd", "W", "weekend"], "not-yet": ["ny", "NY", "not in yet"], "no-data": ["nd", "ND", "no data"],
   "not-joined": ["nd", "NJ", "not yet joined"], left: ["nd", "AL", "after leaving"],
   "short-leave": ["hd", "SL", "short leave"], "weekly-off": ["nd", "WO", "weekly off"],   // SH1
+  "on-site": ["p", "V", "on a visit"], "visit-planned": ["ny", "VN", "visit not started"],   // CV1
 };
 const weekPart = (day) => WEEK[day.status] ?? ["nd", "?", day.status];
 const NO_RECORD = ["no-data", "not-joined", "left"];
-const isPresent = (day) => ["present", "late", "half-day", "short-leave"].includes(day.status);
+const isPresent = (day) => ["present", "late", "half-day", "short-leave", "on-site"].includes(day.status);
 const isAbsent = (day) => day.status === "absent" || day.overdue;
 const isMissing = (day) => !day.checkIn && isAbsent(day);
-const TABS = { all: () => true, present: isPresent, late: (day) => day.status === "late", "on-leave": (day) => day.status === "on-leave", absent: isAbsent };
-const TAB_LABELS = [["all", "All"], ["present", "Present"], ["late", "Late"], ["on-leave", "On leave"], ["absent", "Absent"]];
+const TABS = { all: () => true, present: isPresent, late: (day) => day.status === "late", "on-leave": (day) => day.status === "on-leave", "on-site": (day) => Boolean(day.onSite), absent: isAbsent };
+const TAB_LABELS = [["all", "All"], ["present", "Present"], ["late", "Late"], ["on-site", "On a visit"], ["on-leave", "On leave"], ["absent", "Absent"]];   // CV1: On a visit
 const ICONS = {
   present: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6", 2], late: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2", 3],
   "on-leave": ["M4 6h16v14H4zM4 10h16M8 3v4M16 3v4", 1], absent: ["M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0", 4],
@@ -86,7 +87,7 @@ function placeWords(stamp) {
   return stamp.inPlace && stamp.outPlace && stamp.outPlace !== stamp.inPlace ? `${first}; out: ${words(stamp.outPlace, stamp.outDistance)}` : first;
 }
 // SH1: the summary counts a short leave as present (like a half day) and a weekly off as off
-const forSummary = (day) => (day.status === "short-leave" ? { ...day, status: "half-day" } : day.status === "weekly-off" ? { ...day, status: "weekend" } : day);
+const forSummary = (day) => (day.status === "short-leave" ? { ...day, status: "half-day" } : day.status === "weekly-off" ? { ...day, status: "weekend" } : day.status === "on-site" ? { ...day, status: "present" } : day.status === "visit-planned" ? { ...day, status: "not-yet", overdue: false } : day);   // CV1: a visit day is present; one not started is not in yet
 function row(r, on) {
   const tr = el("tr");
   const status = el("td");

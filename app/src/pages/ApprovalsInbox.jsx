@@ -31,8 +31,9 @@ import { openApprovalCard } from "../ui/ApprovalCard.jsx";
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
 import { StatStrip, StatCard, Badge, Tabs, NotBuilt } from "../components/Basics.jsx";
-import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, OVERTIME_FLOW, UNLOCK_FLOW, DecisionButtons } from "../components/Decision.jsx";
+import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, OVERTIME_FLOW, UNLOCK_FLOW, VISIT_FLOW, DecisionButtons } from "../components/Decision.jsx";
 import { allUnlockRequests } from "../../../assets/js/data/unlock-requests.js";   // F2
+import { allVisits } from "../../../assets/js/data/visits-store.js";   // CV1
 import { allOvertimeDecisions, overtimeItem } from "../../../assets/js/data/overtime-store.js";
 import { otText } from "../ui/shifts.jsx";
 import { StatusBadge } from "../ui/leave.jsx";
@@ -46,7 +47,7 @@ const PAGE = "requests/approvals-inbox.html";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TABS = [["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]];
 const LOC_TAB = ["locations-view", "Location changes"];   // L4: HR's read-only tab
-const TYPES = ["Access", "Purchase", "System", "Leave", "Attendance", "Expense", "Asset", "Salary", "Location", "Profile", "Overtime", "Sign-in"];   // E1: Profile, bank and tax changes; SH1: Overtime
+const TYPES = ["Access", "Purchase", "System", "Leave", "Attendance", "Expense", "Asset", "Salary", "Location", "Profile", "Overtime", "Sign-in", "Visit"];   // E1: Profile, bank and tax changes; SH1: Overtime
 const STATS = [["Waiting for you", 3, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2"], ["Approved this week", 2, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6"],
   ["Rejected this week", 4, "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M9 9l6 6M15 9l-6 6"], ["Average response", 1, "M4 20V10M10 20V4M16 20v-7M22 20H2"]];
 // The old page's sample rows (data-static in its HTML): pending ones wait for nobody, their buttons are placeholders.
@@ -81,7 +82,7 @@ const reachedAt = (claim, entry) => claim.history[claim.history.indexOf(entry) -
 function readInbox(userId, role) {
   const user = getUser(userId);
   const allLeave = can("leave:approve"), allCorrections = can("attendance:approve"), showSalary = can("salary:view");
-  const waiting = user ? waitingFor(userId, role) : { leave: [], corrections: [], expenses: [], assets: [], salary: [], locations: [], profile: [], overtime: [], unlock: [] };
+  const waiting = user ? waitingFor(userId, role) : { leave: [], corrections: [], expenses: [], assets: [], salary: [], locations: [], profile: [], overtime: [], unlock: [], visits: [] };
   const asDecidedBy = (request) => {
     const i = request.history.map((h) => h.byUserId === userId && (h.decision === "approved" || h.decision === "rejected")).lastIndexOf(true);
     return i < 0 ? null : { ...request, status: request.history[i].decision, history: request.history.slice(0, i + 1) };
@@ -170,14 +171,22 @@ function readInbox(userId, role) {
   const ulRow = (q) => ({ type: "sign-in", kind: "unlock", id: q.id, userId: q.userId, title: `Locked account: ${nameOf(q.userId)}`, badge: "Sign-in", by: nameOf(q.userId),
     details: `${q.attempts} failed sign-ins; locked until ${timeOf(q.lockedUntil)}`, attrs: { "data-unlock": q.id },
     when: q.status === "pending" ? waitingSince(q.requestedAt) : formatDay(localDateOf(q.at)), pending: q.status === "pending", record: q, permission: "accounts:unlock" });
+  // CV1: client / official visits waiting for this person, and the ones they decided
+  const visitPending = [...(waiting.visits ?? [])].sort((a, b) => a.requestedAt.localeCompare(b.requestedAt) || a.id.localeCompare(b.id, "en", { numeric: true }));
+  const visitDecided = (s) => (user ? allVisits() : []).filter((v) => v.approvedBy === userId && v.source === "self" && (s === "approved" ? ["approved", "in-progress", "completed"].includes(v.status) : v.status === "rejected"))
+    .sort((a, b) => (b.approvedAt ?? "").localeCompare(a.approvedAt ?? ""));
+  const visitDates = (v) => (v.toDate && v.toDate !== v.fromDate ? `${formatDay(v.fromDate)} to ${formatDay(v.toDate)}` : formatDay(v.fromDate));
+  const visitRow = (v) => ({ type: "visit", kind: "visits", id: v.id, userId: v.userId ?? v.personId, title: `Visit: ${nameOf(v.userId ?? v.personId)}`, badge: "Visit", by: nameOf(v.userId ?? v.personId),
+    details: `${v.siteName}, ${visitDates({ fromDate: v.fromDate ?? v.date, toDate: v.toDate })}${v.sameDay ? ", started today" : ""}${v.status === "rejected" && v.decisionReason ? `. ${v.decisionReason}` : ""}`, attrs: { "data-visit": v.id },
+    when: v.status === undefined || v.status === "pending" || v.approvalPending ? waitingSince(v.requestedAt ?? v.createdAt) : formatDay(localDateOf(v.approvedAt)), pending: v.status === undefined || v.status === "pending" || Boolean(v.approvalPending), record: v, permission: "visits:approve" });
   const real = (which) => {
     if (which === "pending") {
       return [...leavePending.map((r) => [r.appliedOn, leaveRow(r)]), ...corrPending.map((r) => [r.appliedOn, corrRow(r)]), ...expPending.map((c) => [c.appliedOn, expRow(c)]),
-        ...assetPending.map((r) => [r.appliedOn, assetRow(r)]), ...salaryPending.map((p) => [p.enteredAt, salaryRow(p)]), ...locPending.map((r) => [localDateOf(r.requestedAt), locRow(r)]), ...profPending.map((r) => [localDateOf(r.requestedAt), profRow(r)]), ...otPending.map((o) => [localDateOf(o.requestedAt), otRow(o)]), ...ulPending.map((q) => [localDateOf(q.requestedAt), ulRow(q)])].sort((a, b) => a[0].localeCompare(b[0])).map((x) => x[1]);
+        ...assetPending.map((r) => [r.appliedOn, assetRow(r)]), ...salaryPending.map((p) => [p.enteredAt, salaryRow(p)]), ...locPending.map((r) => [localDateOf(r.requestedAt), locRow(r)]), ...profPending.map((r) => [localDateOf(r.requestedAt), profRow(r)]), ...otPending.map((o) => [localDateOf(o.requestedAt), otRow(o)]), ...ulPending.map((q) => [localDateOf(q.requestedAt), ulRow(q)]), ...visitPending.map((v) => [localDateOf(v.requestedAt), visitRow(v)])].sort((a, b) => a[0].localeCompare(b[0])).map((x) => x[1]);
     }
     return [...leaveDecided(which).map((r) => [decisionOf(r).at, leaveRow(r)]), ...corrDecided(which).map((r) => [decisionOf(r).at, corrRow(r)]),
       ...expDecided(which).map((x) => [x.entry.at, expRow(x.claim, x.entry)]), ...assetDecided(which).map((x) => [x.entry.at, assetRow(x.request, x.entry)]),
-      ...salaryDecided(which).map((p) => [new Date(p.decidedAt).toISOString(), salaryRow(p)]), ...locDecided(which).map((r) => [r.decidedAt, locRow(r)]), ...profDecided(which).map((r) => [r.decidedAt, profRow(r)]), ...otDecided(which).map((o) => [o.decision.at, otRow(o)]), ...ulDecided(which).map((q) => [q.at, ulRow(q)])].sort((a, b) => b[0].localeCompare(a[0])).map((x) => x[1]);
+      ...salaryDecided(which).map((p) => [new Date(p.decidedAt).toISOString(), salaryRow(p)]), ...locDecided(which).map((r) => [r.decidedAt, locRow(r)]), ...profDecided(which).map((r) => [r.decidedAt, profRow(r)]), ...otDecided(which).map((o) => [o.decision.at, otRow(o)]), ...ulDecided(which).map((q) => [q.at, ulRow(q)]), ...visitDecided(which).map((v) => [v.approvedAt, visitRow(v)])].sort((a, b) => b[0].localeCompare(a[0])).map((x) => x[1]);
   };
   const samples = false;   // F2: the old page's sample rows (role change, purchase order, backup restore) are not shown
   const inbox = (which) => (which === "pending" ? [...(samples ? SAMPLE_PENDING.map((s) => ({ ...s, sample: true })) : []), ...real("pending")]
@@ -215,6 +224,7 @@ function readInbox(userId, role) {
     ...[...salaryByMe("approved"), ...salaryByMe("rejected")].map((p) => ({ title: salaryTitle(p), badge: "Salary", by: nameOf(p.enteredBy), status: p.status, date: localDateOf(p.decidedAt) })).filter((x) => x.date >= since),
     ...[...locDecided("approved"), ...locDecided("rejected")].map((r) => ({ title: locationTitle(r), badge: "Location", by: nameOf(r.userId), status: r.status, date: localDateOf(r.decidedAt) })).filter((x) => x.date >= since),
     ...[...profDecided("approved"), ...profDecided("rejected")].map((r) => ({ title: profTitle(r), badge: "Profile", by: nameOf(r.userId), status: r.status, date: localDateOf(r.decidedAt) })).filter((x) => x.date >= since),
+    ...[...visitDecided("approved"), ...visitDecided("rejected")].map((v) => ({ title: `Visit: ${nameOf(v.personId)}`, badge: "Visit", by: nameOf(v.personId), status: v.status === "rejected" ? "rejected" : "approved", date: localDateOf(v.approvedAt) })).filter((x) => x.date >= since),
     ...[...otDecided("approved"), ...otDecided("rejected")].map((o) => ({ title: otTitle(o), badge: "Overtime", by: nameOf(o.userId), status: o.status, date: localDateOf(o.decision.at) })).filter((x) => x.date >= since),
   ].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
   // L4: HR's read-only view of every home location change, newest request first
@@ -226,7 +236,7 @@ function readInbox(userId, role) {
 export default function ApprovalsInbox() {
   const { userId, role } = useSession();
   const canWorkflows = useCan("workflows:view"), canDecideSamples = useCan("approvals:decide");
-  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW), overtime: useDecision(OVERTIME_FLOW), unlock: useDecision(UNLOCK_FLOW) };
+  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW), overtime: useDecision(OVERTIME_FLOW), unlock: useDecision(UNLOCK_FLOW), visits: useDecision(VISIT_FLOW) };
   const [tab, setTab] = useState(0);
   const [type, setType] = useState("");
   const d = useData(() => readInbox(userId, role?.key), [userId, role?.key]);
@@ -284,7 +294,7 @@ export default function ApprovalsInbox() {
   ];
   const WHO = [["Expense claims", chain.always], ["", `Then ${chain.extra} too, above ${rupees(EXPENSE_POLICY.adminAbove)}`], ["Leave requests", "Manager, then HR or an Admin"],
     ["Attendance corrections", "Manager, then HR or an Admin"], ["Salary revisions", "Finance, then an Admin"],
-    ["Asset requests", "Manager, then an Admin"], ["Home location changes", "An Admin"], ["Overtime", "Manager; HR or an Admin for people without one"], ["Locked accounts", "An Admin"]];
+    ["Asset requests", "Manager, then an Admin"], ["Home location changes", "An Admin"], ["Overtime", "Manager; HR or an Admin for people without one"], ["Visits", "Manager; HR or an Admin for people without one"], ["Locked accounts", "An Admin"]];
 
   return (
     <Frame page={PAGE}>

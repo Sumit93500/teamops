@@ -194,6 +194,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "createdon.mjs") { Run "createdon-$t" @("createdon.mjs") }   # F2b: a person created with no joining date starts on the created day
   if (Test-Path "lockout.mjs") { Run "lockout-$t" @("lockout.mjs") }
   if (Test-Path "bank.mjs") { Run "bank-$t" @("bank.mjs") }
+  # CV1: client / official visits, and the night shift's next-morning fix
+  if (Test-Path "visits.mjs") { Run "visits-$t" @("visits.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

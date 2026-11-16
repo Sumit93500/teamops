@@ -1,0 +1,46 @@
+/* CV1 (2026-11-16): client / official visits. Tokens only. */
+.visit-chip { max-width: 100%; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--ds-radius-pill); font-size: var(--ds-text-xs); font-weight: 600; line-height: 1.5;
+  border: 1px dashed var(--ds-info); background: repeating-linear-gradient(135deg, var(--ds-info-soft) 0 6px, var(--ds-surface-1) 6px 9px); color: var(--ds-info); }
+.visit-chip .icon { width: 12px; height: 12px; flex: none; }
+.visit-chip--warn { border-color: var(--ds-warning); background: var(--ds-warning-soft); color: var(--ds-warning); }
+.visit-chip--half { border-style: solid; }
+
+.visit-site { display: grid; gap: 2px; min-width: 0; }
+.visit-site__name { font-weight: 600; color: var(--ds-text); overflow-wrap: anywhere; }
+.visit-site__sub { font-size: var(--ds-text-xs); color: var(--ds-text-2); overflow-wrap: anywhere; }
+
+.visit-people { display: grid; gap: 2px; max-height: 240px; overflow: auto; padding: var(--ds-space-2); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-1); }
+.visit-people__row { display: grid; grid-template-columns: 16px 1fr auto; gap: var(--ds-space-2); padding: 6px var(--ds-space-2); border-radius: var(--ds-radius-sm); }
+.visit-people__row:hover { background: var(--ds-surface-2); }
+.visit-people__row span:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
+.visit-people__sub { color: var(--ds-text-2); font-size: var(--ds-text-xs); }
+
+.visit-trail { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.visit-trail__day { display: grid; gap: var(--ds-space-2); padding: var(--ds-space-3) 0; border-top: 1px solid var(--ds-border); }
+.visit-trail__day:first-child { border-top: 0; }
+.visit-trail__date { font-weight: 600; color: var(--ds-text); }
+.visit-trail__punches { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--ds-space-3); }
+.visit-punch { display: grid; gap: 2px; padding: var(--ds-space-3); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-2); min-width: 0; }
+.visit-punch__label { font-size: var(--ds-text-xs); color: var(--ds-text-2); text-transform: uppercase; letter-spacing: .04em; }
+.visit-punch__time { font-size: var(--ds-text-md); font-weight: 650; color: var(--ds-text); }
+.visit-punch__meta { font-size: var(--ds-text-sm); color: var(--ds-text-2); overflow-wrap: anywhere; }
+.visit-punch__flags { display: flex; flex-wrap: wrap; gap: 4px; }
+.visit-history { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--ds-space-2); }
+.visit-history__item { display: flex; flex-wrap: wrap; gap: 4px var(--ds-space-3); font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.visit-history__item strong { color: var(--ds-text); font-weight: 600; }
+
+.visit-mode { display: grid; gap: var(--ds-space-3); }
+.visit-pick { display: grid; gap: var(--ds-space-2); }
+.visit-pick__option { display: grid; grid-template-columns: 16px 1fr; gap: var(--ds-space-2); padding: var(--ds-space-3); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-1); cursor: pointer; }
+.visit-pick__option:has(input:checked) { border-color: var(--ds-info); background: var(--ds-info-soft); }
+.visit-pick__option:focus-within { outline: 2px solid var(--ds-focus, var(--ds-info)); outline-offset: 2px; }
+.visit-pick__title { font-weight: 600; color: var(--ds-text); overflow-wrap: anywhere; }
+.visit-pick__sub { font-size: var(--ds-text-sm); color: var(--ds-text-2); overflow-wrap: anywhere; }
+.visit-reading { font-size: var(--ds-text-sm); }
+
+.visit-onsite { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
+.visit-onsite__item { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--ds-radius-pill); background: var(--ds-surface-2); border: 1px solid var(--ds-border); font-size: var(--ds-text-sm); }
+.visit-onsite__item small { color: var(--ds-text-2); }
+
+/* the dialogs' first label sits clear of their description */
+#request-visit-form, #assign-visit-form, #visit-ok-form { margin-top: var(--ds-space-3); }

@@ -6,16 +6,16 @@
 
 | key | label | permissions | landing page | Data scope (as the pages word it) |
 |---|---|---|---|---|
-| admin | Admin | all 98 | dashboard/admin.html | All records |
-| hr | HR Manager | 54 | dashboard/hr.html | All records |
-| fin | Finance Manager | 45 | dashboard/finance.html | All finance records |
-| emp | Employee | 27 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
+| admin | Admin | all 102 | dashboard/admin.html | All records |
+| hr | HR Manager | 58 | dashboard/hr.html | All records |
+| fin | Finance Manager | 48 | dashboard/finance.html | All finance records |
+| emp | Employee | 30 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
 
 Roles come from the configuration: they can't be created, edited or deleted in the app (the roles pages say so).
 
 ## Permissions
 
-- `module:action` strings, 42 modules, 98 in all (94 before SH1, 93 before E1b, 91 before E1, 90 before F1, 88 before P5, 86 before P4, 79 before L0). F1 (2026-11-14) added `attendance:any-office`: check in from any active office, not only your own (the Admin only, through every permission; not overridable), so Admin 91 and the others unchanged. P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
+- `module:action` strings, 43 modules, 102 in all (98 before CV1, 94 before SH1, 93 before E1b, 91 before E1, 90 before F1, 88 before P5, 86 before P4, 79 before L0). F1 (2026-11-14) added `attendance:any-office`: check in from any active office, not only your own (the Admin only, through every permission; not overridable), so Admin 91 and the others unchanged. P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
 - Examples: `payroll:create` (prepare a run), `payroll:approve`, `salary:view`, `dashboard:finance`, `users:delete` (Admin only), `pii:view` (bank account and PAN).
 - A page needs one permission (`config/routes.js`). A control on a page needs its own, through `data-permission="..."` on the static pages and `perm()` / `useCan()` in the React app.
 
@@ -30,6 +30,10 @@ E1b (2026-11-15) added `accounts:disable` (Admin only, not overridable: stop or 
 ## Shifts and overtime (SH1)
 
 SH1 (2026-11-15) added `shifts:view`, `shifts:assign` and `shifts:swap-team` to the module `shifts` (beside `shifts:manage`), and the module `overtime` with `overtime:approve`. Everyone holds `shifts:view`, `shifts:swap-team` and `overtime:approve` (self-service: they act only on your direct reports, so only a manager uses them; HR and the Admin decide overtime for people without a manager); HR and the Admin hold `shifts:manage` and `shifts:assign`. None is overridable. Admin 98, HR 54, Finance 45, Employee 27. See [shifts.md](shifts.md). The old site's role editor lists the new module under "Other" (as accounts was, ruled).
+
+## Visits (CV1)
+
+CV1 (2026-11-16) added the module `visits`: `visits:request` (ask for a visit; everyone), `visits:approve` (decide a visit; everyone holds it, and it acts on direct reports only: HR and the Admin decide for people without a manager, as overtime does), `visits:assign` (put a visit on people; everyone holds it: a manager for direct reports, HR and the Admin for anyone) and `visits:view-all` (every visit; HR and the Admin). None is overridable. 98 -> 102 in 43 modules; Admin 102, HR 58, Finance 48, Employee 30. See [attendance.md](attendance.md).
 
 ## Offices and locations (round 14, in the main list since L0)
 

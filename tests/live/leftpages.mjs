@@ -205,7 +205,8 @@ check("X2", "no page and no css changed", j(pagesNow) === j(walk("./html-pre12K"
 check("X3", "CRLF with no final newline in all 5; no import changed",
   FIVE.every((p) => { const s = srcAt("./js-pre14E1", p); return !s.endsWith("\n") && !/(^|[^\r])\n/.test(s) && j(s.match(/^import .*$/gm)) === j(srcAt("./js-pre12K", p).match(/^import .*$/gm)); }));
 const fn = (s, name) => s.slice(s.indexOf(`function ${name}(`), s.indexOf("\n}", s.indexOf(`function ${name}(`)));
-const aNowSrc = srcAt("./js", "data/attendance-store.js"), aPreSrc = srcAt("./js-pre12K", "data/attendance-store.js");
+const { unCV1 } = await import("./uncv1.mjs");   // CV1: the night-shift judgement put back
+const aNowSrc = unCV1(srcAt("./js", "data/attendance-store.js")), aPreSrc = srcAt("./js-pre12K", "data/attendance-store.js");
 check("X4", "generatedRecord(), recordOn(), dayRefusal() and checkAgainstRecord() unchanged (the record isn't removed, only not put on the day)",
   ["generatedRecord", "recordOn", "dayRefusal", "checkAgainstRecord"].every((f) => fn(aNowSrc, f) === fn(aPreSrc, f) && fn(aNowSrc, f).length > 30));
 

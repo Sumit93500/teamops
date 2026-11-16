@@ -25,10 +25,10 @@ const j = JSON.stringify;
 const PEOPLE = { admin: "EMP-1001", hr: "EMP-1003", fin: "EMP-1008", emp: "EMP-1105", manager: "EMP-1029" };
 
 section("A. The permissions");
-check("A1", "both are in PERMISSIONS, and ALL_PERMISSIONS has 98 (SH1: the shift and overtime ones; E1b: accounts:disable; P5: the two declarations ones; F1: attendance:any-office; E1: the two accounts ones)", j(P.PERMISSIONS["payroll-rules"]) === j(["verify"]) && j(P.PERMISSIONS["leave-policy"]) === j(["edit"]) && P.ALL_PERMISSIONS.length === 98 && P.ALL_PERMISSIONS.includes("payroll-rules:verify") && P.ALL_PERMISSIONS.includes("leave-policy:edit"));
+check("A1", "both are in PERMISSIONS, and ALL_PERMISSIONS has 102 (SH1: the shift and overtime ones; E1b: accounts:disable; P5: the two declarations ones; F1: attendance:any-office; E1: the two accounts ones)", j(P.PERMISSIONS["payroll-rules"]) === j(["verify"]) && j(P.PERMISSIONS["leave-policy"]) === j(["edit"]) && P.ALL_PERMISSIONS.length === 102 && P.ALL_PERMISSIONS.includes("payroll-rules:verify") && P.ALL_PERMISSIONS.includes("leave-policy:edit"));
 const held = Object.fromEntries(Object.entries(PEOPLE).map(([k, id]) => [k, ["payroll-rules:verify", "leave-policy:edit"].map((p) => R.hasPermission(S.getUser(id), p))]));
 check("A2", "the Admin holds both; HR, Finance, an employee and a manager hold neither", j(held) === j({ admin: [true, true], hr: [false, false], fin: [false, false], emp: [false, false], manager: [false, false] }), j(held));
-check("A3", "the roles' counts: admin 98, hr 54, fin 45, emp 27 (SH1: were 94, 50, 42, 24; E1b: admin was 93; F1: admin was 90; E1: 91 / 49)", j(Object.keys(R.ROLES).map((k) => R.ROLES[k].permissions.length)) === j([98, 54, 45, 27]));
+check("A3", "the roles' counts: admin 102, hr 58, fin 48, emp 30 (SH1: were 94, 50, 42, 24; E1b: admin was 93; F1: admin was 90; E1: 91 / 49)", j(Object.keys(R.ROLES).map((k) => R.ROLES[k].permissions.length)) === j([102, 58, 48, 30]));
 check("A4", "not overridable: a stored grant gives nothing, a deny takes nothing from the Admin", !R.hasPermission({ ...S.getUser(PEOPLE.hr), grantPermissions: ["payroll-rules:verify", "leave-policy:edit"] }, "payroll-rules:verify") && R.hasPermission({ ...S.getUser(PEOPLE.admin), denyPermissions: ["leave-policy:edit"] }, "leave-policy:edit") && !R.OVERRIDABLE.includes("payroll-rules:verify") && !R.OVERRIDABLE.includes("leave-policy:edit"));
 
 section("B. The defaults and the boundaries");

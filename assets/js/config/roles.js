@@ -24,6 +24,8 @@ const SELF_SERVICE = [
   // SH1: see your own shift (a manager also their team's), swap a date for your direct reports and decide their overtime
   // (both act only on direct reports: managing people is a relationship, not a permission)
   "shifts:view", "shifts:swap-team", "overtime:approve",
+  // CV1: ask for a client / official visit; decide and assign them for direct reports (a relationship, as overtime)
+  "visits:request", "visits:approve", "visits:assign",
 ];
 
 export const ROLES = {
@@ -50,6 +52,7 @@ export const ROLES = {
       "departments:create", "departments:edit",
       "designations:manage", "designations:create", "designations:edit",
       "attendance:view-all", "attendance:approve",
+      "visits:view-all",   // CV1: every visit
       "leave:approve",
       "holidays:manage", "shifts:manage",
       "shifts:assign",   // SH1: put people and departments on shifts, swap anyone's date

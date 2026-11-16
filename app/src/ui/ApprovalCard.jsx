@@ -29,9 +29,11 @@ import { formatDay, formatDays, requestDates, typeLabel, nameOf, initials, avata
 import { waitingFor } from "../data/waiting.js";
 import { getLocationChange, homeOf } from "../../../assets/js/data/locations-store.js";
 import { getProfileChange, changeText } from "../../../assets/js/data/employee-record.js";
-import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, OVERTIME_FLOW, UNLOCK_FLOW, DecisionButtons } from "../components/Decision.jsx";
+import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, OVERTIME_FLOW, UNLOCK_FLOW, VISIT_FLOW, DecisionButtons } from "../components/Decision.jsx";
 import { unlockRequestItem } from "../../../assets/js/data/lockouts.js";   // F2
 import { overtimeItem } from "../../../assets/js/data/overtime-store.js";
+import { getVisit } from "../../../assets/js/data/visits-store.js";   // CV1
+import { correctionContext } from "../../../assets/js/data/night-fix.js";
 import { rupees } from "./payroll.jsx";
 import { useData } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
@@ -42,17 +44,17 @@ export const GONE = "This request no longer exists.";
 export const DECIDED = "This request was already decided.";
 export const NOT_YOURS = "It's no longer waiting for you.";
 const capital = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
-const LOOKUP = { leave: getRequest, corrections: getRegularization, expenses: getExpense, assets: getAssetRequest, salary: (id) => salaryProposals().find((p) => p.id === id) ?? null, locations: getLocationChange, profile: getProfileChange, overtime: overtimeItem, unlock: unlockRequestItem };
-const WHAT = { leave: (r) => typeLabel(r.type), corrections: () => "Regularization", expenses: () => "Expense claim", assets: () => "Asset request", salary: () => "Salary change", locations: (r) => `${capital(r.kind)} home location change`, profile: () => "Bank and tax details change", overtime: () => "Overtime", unlock: () => "Locked account" };
+const LOOKUP = { leave: getRequest, corrections: getRegularization, expenses: getExpense, assets: getAssetRequest, salary: (id) => salaryProposals().find((p) => p.id === id) ?? null, locations: getLocationChange, profile: getProfileChange, overtime: overtimeItem, unlock: unlockRequestItem, visits: (id) => { const v = getVisit(id); return v ? { ...v, userId: v.personId } : null; } };
+const WHAT = { leave: (r) => typeLabel(r.type), corrections: () => "Regularization", expenses: () => "Expense claim", assets: () => "Asset request", salary: () => "Salary change", locations: (r) => `${capital(r.kind)} home location change`, profile: () => "Bank and tax details change", overtime: () => "Overtime", unlock: () => "Locked account", visits: (v) => (v.sameDay ? "Visit, started today" : "Client / official visit") };
 const CHAIN_STAGE = { manager: "Manager", hr: "HR" };
 const STAGE = {
   leave: (r) => CHAIN_STAGE[r.stage] ?? r.stage, corrections: (r) => CHAIN_STAGE[r.stage] ?? r.stage,
   expenses: (r) => capital(EXPENSE_STAGE[r.stage] ?? r.stage), assets: (r) => capital(ASSET_STAGE[r.stage] ?? r.stage),
 };
-const SINCE = { leave: (r) => r.history[0].at, corrections: (r) => r.history[0].at, expenses: (r) => r.history.at(-1).at, assets: (r) => r.history.at(-1).at, salary: (p) => p.enteredAt, locations: (r) => r.requestedAt, profile: (r) => r.requestedAt, overtime: (o) => o.requestedAt, unlock: (q) => q.requestedAt };
+const SINCE = { leave: (r) => r.history[0].at, corrections: (r) => r.history[0].at, expenses: (r) => r.history.at(-1).at, assets: (r) => r.history.at(-1).at, salary: (p) => p.enteredAt, locations: (r) => r.requestedAt, profile: (r) => r.requestedAt, overtime: (o) => o.requestedAt, unlock: (q) => q.requestedAt, visits: (v) => v.requestedAt ?? v.createdAt };
 const ROWS = {
   leave: (r) => [["Dates", requestDates(r)], ["Days", formatDays(r.days)], ["Applied", formatDay(r.appliedOn)]],
-  corrections: (r) => [["Date", formatDay(r.date)], ["Issue", ISSUE_LABEL[r.issue] ?? r.issue], ["Recorded", r.recordedTime], ["Corrected to", r.time], ["Applied", formatDay(r.appliedOn)]],
+  corrections: (r) => [["Date", formatDay(r.date)], ["Issue", ISSUE_LABEL[r.issue] ?? r.issue], ["Recorded", r.recordedTime], ["Corrected to", `${r.time}${correctionContext(r.userId, r.date, r.time)?.nextDay ? " (next day)" : ""}`], ["Applied", formatDay(r.appliedOn)]],   // CV1: a night shift's morning
   expenses: (c) => [["Amount", rupees(c.amount)], ["Category", categoryLabel(c.category)], ["Spent on", c.date ? formatDay(c.date) : ""], ["Receipt", c.receipt], ["Applied", formatDay(c.appliedOn)]],
   assets: (r) => [["Asset", assetTypeLabel(r.assetType)], ["Replaces", r.replacesTag], ["Applied", formatDay(r.appliedOn)]],
   salary: (p) => {
@@ -65,10 +67,11 @@ const ROWS = {
   },
   profile: (r) => [...changeText(r), ["Sent", formatDay(localDateOf(r.requestedAt))]],   // E1: sensitive values masked
   unlock: (q) => [["Failed sign-ins", String(q.attempts)], ["Locked at", new Date(q.lockedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })], ["Unlocks by itself at", new Date(q.lockedUntil).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })]],   // F2
+  visits: (v) => [["Where", v.siteName], ["Dates", v.toDate && v.toDate !== v.date ? `${formatDay(v.date)} to ${formatDay(v.toDate)}` : formatDay(v.date)], ...(v.sameDay ? [["Started", "Today, before approval"]] : [])],   // CV1
   overtime: (o) => [["Date", formatDay(o.date)], ["Shift", `${o.shiftName}, ends ${o.shiftEnd}`], ["Checked out", o.checkOut], ["Overtime", [Math.floor(o.minutes / 60) ? `${Math.floor(o.minutes / 60)} h` : "", o.minutes % 60 ? `${o.minutes % 60} min` : ""].filter(Boolean).join(" ")]],   // SH1
 };
 // The buttons' permission, as the inbox's rows carry it: the manager stage and salary changes go by relationship / record.
-const PERMISSION = { leave: "leave:approve", corrections: "attendance:approve", expenses: "expenses:approve", assets: "assets:approve", locations: "locations:review", overtime: "overtime:approve", unlock: "accounts:unlock" };
+const PERMISSION = { leave: "leave:approve", corrections: "attendance:approve", expenses: "expenses:approve", assets: "assets:approve", locations: "locations:review", overtime: "overtime:approve", unlock: "accounts:unlock", visits: "visits:approve" };
 
 export function waitingSince(timestamp) {
   const minutes = Math.max(0, Math.floor((Date.now() - Date.parse(timestamp)) / 60000));
@@ -244,7 +247,7 @@ export function CardHost() {
   const open = useBellOpen();
   const { pathname } = useLocation();
   const opened = useRef({ opener: null, refresh: null, stale: false, width: 0 });
-  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW), overtime: useDecision(OVERTIME_FLOW), unlock: useDecision(UNLOCK_FLOW) };
+  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW), overtime: useDecision(OVERTIME_FLOW), unlock: useDecision(UNLOCK_FLOW), visits: useDecision(VISIT_FLOW) };
   const focusBack = () => {
     const back = connected(opened.current.opener) ? opened.current.opener : currentBell();
     back?.focus?.();

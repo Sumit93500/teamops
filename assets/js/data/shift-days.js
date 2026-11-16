@@ -20,6 +20,7 @@ import { classifyDay, dayLossOfPay, officeNow, addDays, shiftShape, toMin, hhmm,
 import { assignmentReader } from "./shift-assignments.js";
 import { shiftReader, GENERAL_ID } from "./shifts-store.js";
 import { shiftRulesApply, shiftRulesMonth, lateHalfDays } from "./shift-settings.js";
+import { overlayVisit } from "./visit-days.js";   // CV1
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -45,8 +46,12 @@ function sampleTimes(old, rules, now) {
   return { checkIn: hhmm(inRel), checkOut: outRel !== null && outRel <= nowRel ? hhmm(outRel) : null };
 }
 
-// One old day -> the same day under the shift rules.
+// One old day -> the same day under the shift rules. CV1: a day with an approved visit reads as the visit gives it (data/visit-days.js); any other day is returned as it was.
 function shiftDay(old, ctx) {
+  const day = baseDay(old, ctx);
+  return overlayVisit(day, ctx.shift(day.shiftId, day.date), ctx.now);
+}
+function baseDay(old, ctx) {
   if (!shiftRulesApply(old.date)) return named(old, ctx.shift(GENERAL_ID, old.date), "before-start", { rules: "old" });
   const a = ctx.assign(old.userId, old.date);
   const rules = ctx.shift(a.shiftId, old.date);
@@ -85,6 +90,7 @@ export function shiftCounts(days) {
     present: count("present"), late: count("late"), halfDay: count("half-day"), shortLeave: count("short-leave"), absent: count("absent"),
     onLeave: count("on-leave"), holiday: count("holiday"), weekend: count("weekend"), weeklyOff: count("weekly-off"), notYet: count("not-yet"),
     noData: count("no-data"), notJoined: count("not-joined"), incomplete: days.filter((d) => d.incomplete).length,
+    ...(count("on-site") ? { onSite: count("on-site") } : {}), ...(count("visit-planned") ? { visitPlanned: count("visit-planned") } : {}),   // CV1: only when there are some
     overtimeMinutes: days.reduce((s, d) => s + (d.overtimeMinutes || 0), 0),
   };
 }
@@ -102,7 +108,7 @@ export function shiftMonthFor(userId, year, month, now) {
   const finished = days.filter((d) => d.checkOut && d.minutesWorked !== null);
   return {
     ...m, days, rules: "shift", counts,
-    daysWorked: counts.present + counts.late + counts.halfDay + counts.shortLeave,
+    daysWorked: counts.present + counts.late + counts.halfDay + counts.shortLeave + (counts.onSite || 0),
     lateMarks: counts.late,
     penaltyHalfDays: lateHalfDays(days.filter((d) => d.status === "late").map((d) => d.date)),
     averageMinutes: finished.length ? Math.round(finished.reduce((s, d) => s + d.minutesWorked, 0) / finished.length) : null,
