@@ -764,7 +764,7 @@ paystructure.A5,paystructure,nobody's sample joining date is after the first mon
 paystructure.A6,paystructure,"the user records are untouched: no joining date or type was added to the six, and nothing was saved for it",x3 (3 zones)
 paystructure.A7,paystructure,"an unknown person: null; the kind of a type: intern in any case, anything else an employee",x3 (3 zones)
 paystructure.A8,paystructure,someone added through the user form's fields: their record's joining date and type are read (an intern from 1 Oct 2026),x3 (3 zones)
-paystructure.A9,paystructure,"someone with nothing on their record and no sample: no joining date, Full-time by default",x3 (3 zones)
+paystructure.A9,paystructure,"someone with nothing on their record and no sample: the day they were created is their start, Full-time by default",x3 (3 zones)
 paystructure.A10,paystructure,a value saved on the profile replaces the sample: Ananya made Full-time on her record is an employee; her sample joining date still applies,x3 (3 zones)
 paystructure.A12,paystructure,a joining date saved on the profile wins over the sample: Rohan 1 Mar 2026 (the sample says 2 Feb),x3 (3 zones)
 paystructure.A11,paystructure,"cleared again, the sample is back (Intern)",x3 (3 zones)

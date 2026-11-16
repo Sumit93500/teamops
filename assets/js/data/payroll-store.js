@@ -27,6 +27,7 @@ import { dayNumber, isoFromDayNumber, dayOffChecker, isValidDate } from "./holid
 import { allRequests, PAST_DAY_WINDOW } from "./leave-store.js";
 import { monthFor, allRegularizations, ATTENDANCE_RULES, recordsStart } from "./attendance-store.js";
 import { computePay, taxYearMonths } from "./payroll.js";
+import { joinedOn } from "./employment-period.js";   // F2b
 
 // ---------- seed ----------
 
@@ -144,7 +145,7 @@ export const correctableUntil = (date) => isoFromDayNumber(dayNumber(date) + ATT
 // here).
 // -> { days (settled, deducted), open: [{ date, days, until, waiting }], uncounted }
 function absencesIn(user, attendance, today) {
-  const joined = joiningDate(user.dateOfJoining);
+  const joined = joinedOn(user);
   const pendingLeave = allRequests().filter((r) => r.userId === user.id && r.status === "pending" && r.type !== "wfh");
   let days = 0;
   let uncounted = 0;
@@ -213,8 +214,8 @@ function rowFor(userId, y, m, soFar) {
   const user = getUser(userId);
   const attendance = validMonth(y, m) ? monthFor(userId, y, m) : null;
   if (!user || !attendance) return null;
-  const joinedOn = joiningDate(user.dateOfJoining);
-  if (joinedOn && joinedOn.slice(0, 7) > `${y}-${pad(m)}`) return null;   // not joined yet (round 12D)
+  const joinedDay = joinedOn(user);
+  if (joinedDay && joinedDay.slice(0, 7) > `${y}-${pad(m)}`) return null;   // not joined yet (round 12D)
   if (awayThrough(user, attendance.days[0].date, attendance.days.at(-1).date)) return null;   // away all month (round 12H)
   const salary = salaryFor(userId, y, m);
   const absences = absencesIn(user, attendance, todayIso());
@@ -245,7 +246,7 @@ function rowFor(userId, y, m, soFar) {
       uncountedAbsences: absences.uncounted,
       pausedLateMarks: paused,
       beforeJoining: attendance.counts.notJoined,
-      joined: joiningDate(user.dateOfJoining),
+      joined: joinedOn(user),
       ...(left && left.slice(0, 7) === `${y}-${pad(m)}` ? { lastDay: left } : {}),
     },
   };

@@ -430,7 +430,7 @@ function Content() {
   useEffect(() => { document.title = tabTitle(notFound ? "Employee not found" : editing ? "Edit employee" : "Add employee"); });
   return (
     <>
-      <PageHeader title={heading} subtitle={notFound ? null : "Create the account, choose a designation, and the role is set for you."}
+      <PageHeader title={heading} subtitle={notFound ? null : editing ? "Change this person's details, section by section. Saved changes apply straight away." : "Create the account, choose a designation, and the role is set for you."}
         breadcrumb={[{ label: "Users", to: LIST }, { label: notFound ? "Not found" : heading }]} />
       {notFound
         ? <Card id="not-found"><EmptyState title="Employee not found" text={`There's no employee with ID ${editId}. They may have been deleted, or the link is wrong.`} to={LIST} linkText="Back to users" /></Card>

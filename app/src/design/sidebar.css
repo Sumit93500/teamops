@@ -96,3 +96,6 @@
 @media (min-width: 821px) and (prefers-reduced-motion: reduce) {
   .app { transition: none; }
 }
+
+/* F2b: the open sidebar's count on the current page's item (Approvals) is white on its pale chip; the rail's dark on-active colour left it nearly unreadable */
+html[data-nav-wide] .nav__section--single .nav__item.is-active .nav__count { color: #ffffff; }

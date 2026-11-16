@@ -100,9 +100,12 @@ function recentRows(days) {
 }
 
 const assetApprovers = (r) => assetWaitingOn(r).map(nameOf).join(", ");
+// F2b: an empty card says so instead of showing a blank box
+const emptyNote = (text) => { const box = el("div", "card__body"); box.append(el("p", "text-sm text-muted", text)); return box; };
+
 function requestItems(leave, corrections, assets) {
   const request = newestPending([...leave, ...corrections, ...assets]);
-  if (!request) return [];
+  if (!request) return [emptyNote("Nothing waiting for a decision.")];
   const item = el("div", "list__item");
   const content = el("div", "list__content");
   const waiting = isAsset(request) ? assetApprovers(request) : currentApproverName(request);
@@ -154,7 +157,8 @@ function updateNodes(leave, corrections, assets, today) {
   const all = [...decided, ...statics];
   const dated = all.filter((x) => x.date).sort((a, b) => b.date.localeCompare(a.date));
   const undated = all.filter((x) => !x.date);
-  return [...dated, ...undated].map((x) => x.item);
+  const items = [...dated, ...undated].map((x) => x.item);
+  return items.length ? items : [emptyNote("Nothing new yet.")];
 }
 
 const Icon = ({ d }) => <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg>;

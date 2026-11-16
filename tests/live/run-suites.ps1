@@ -191,6 +191,7 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "shifts.mjs") { Run "shifts-$t" @("shifts.mjs") }
   # F2: the employment period and new joiners; lockout requests; bank and statutory details
   if (Test-Path "employment.mjs") { Run "employment-$t" @("employment.mjs") }
+  if (Test-Path "createdon.mjs") { Run "createdon-$t" @("createdon.mjs") }   # F2b: a person created with no joining date starts on the created day
   if (Test-Path "lockout.mjs") { Run "lockout-$t" @("lockout.mjs") }
   if (Test-Path "bank.mjs") { Run "bank-$t" @("bank.mjs") }
   # P3: leave by tenure (data/leave-policy.js)

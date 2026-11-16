@@ -230,7 +230,7 @@ if (ONLY.includes("F")) {
   const priyaLink = priyaFresh;
   await n.ctx.clock.setFixedTime(new Date("2026-11-16T11:01:00+05:30"));
   await t.goto(priyaLink); await settle(t, 900);
-  check("F7", "61 minutes later Priya's link: 'This link has expired', with Ask for a new link", (await text(t, "h1")) === "This link has expired" && /expired/.test(await text(t, "#link-problem")) && (await text(t, "a.ds-btn--primary")) === "Ask for a new link");
+  check("F7", "61 minutes later Priya's link: 'This link has expired', with Ask for a new link", (await text(t, "h1")) === "This link has expired" && /^Ask for a new one\.$/.test(await text(t, "#link-problem")) /* F2b: the heading says it; the box no longer repeats it */ && (await text(t, "a.ds-btn--primary")) === "Ask for a new link");
   const tampered = priyaLink.slice(0, -2) + (priyaLink.endsWith("AA") ? "BB" : "AA");
   await t.goto(tampered); await settle(t, 900);
   check("F8", "a tampered token: 'This link isn't valid'", (await text(t, "h1")) === "This link isn't valid");

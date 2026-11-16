@@ -240,7 +240,8 @@ check("E1", "no page script failed anywhere in this suite", allJsErrors.length =
 section("X. Scope");
 const HERE = new URL(".", import.meta.url);
 const walk = (dir, base = "") => fs.readdirSync(new URL(`${dir}/${base}`, HERE), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(dir, `${base}${e.name}/`) : [`${base}${e.name}`])).sort();
-const srcAt = (dir, p) => fs.readFileSync(new URL(`${dir}/${p}`, HERE), "utf8");
+const { unF2b } = await import("./unf2b.mjs");
+const srcAt = (dir, p) => { const t = fs.readFileSync(new URL(`${dir}/${p}`, HERE), "utf8"); return dir === "./js" ? unF2b(t) : t; };
 const jsNow = walk("./js-pre12J"), jsPre = walk("./js-pre12I");   // Round 12K (layout; was the live js): 12I's own change set (js-pre12J = 82a8702)
 const changedJs = jsNow.filter((p) => !jsPre.includes(p) || srcAt("./js-pre12J", p) !== srcAt("./js-pre12I", p));
 const TWO = ["data/attendance-store.js", "data/leave-store.js"];

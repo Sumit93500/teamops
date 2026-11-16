@@ -47,7 +47,10 @@ check("B3", "Meera (16 Mar 2026): under1 on 15 Mar 2027, over1 on 16 Mar 2027", 
 check("B4", "an intern stays an intern after years", LP.tenureBand(ANANYA, "2030-01-01") === "intern" && LP.tenureBand("EMP-1061", "2026-10-06") === "intern");
 check("B5", "a 29 Feb joiner's anniversary is 28 Feb the next year; 31 Jan works as itself", LP.anniversaryOf("2028-02-29") === "2029-02-28" && LP.anniversaryOf("2026-01-31") === "2027-01-31" && LP.anniversaryOf("2026-02-30") === null);
 const none = S.addUser(PEOPLE.admin, { name: "Omar Sheikh", email: "omar.sheikh@northwind.com", department: "SAL", designation: "Sales Executive", role: "emp" });
-check("B6", "no joining date on file: over1 (the flat policy's band)", none.ok && LP.tenureBand(none.record.id, "2026-10-06") === "over1");
+// F2b (behaviour; was: no joining date on file read as over1): they started the day they were created in the app, so under a year from then
+const { createdOnOf } = await import("./js/data/created-on.js");
+const noneDay = createdOnOf(none.record?.id);
+check("B6", "no joining date on file: they started the day they were created (F2b): under1 from that day, over1 a year on", none.ok && !!noneDay && LP.tenureBand(none.record.id, noneDay) === "under1" && LP.tenureBand(none.record.id, LP.anniversaryOf(noneDay)) === "over1", String(noneDay));
 check("B7", "an unknown person, a bad date: null", LP.tenureBand("EMP-9999", "2026-10-06") === null && LP.tenureBand(ARJUN, "2026-13-01") === null && LP.tenureBand(ARJUN, null) === null && LP.leaveAccount("EMP-9999", "2026-10-06") === null);
 check("B8", "a user record or an id give the same band", LP.tenureBand(S.getUser(ROHAN), "2027-02-02") === "over1");
 const u = S.updateUser(PEOPLE.admin, ROHAN, { employmentType: "Intern" });

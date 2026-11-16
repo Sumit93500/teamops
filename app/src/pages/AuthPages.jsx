@@ -228,8 +228,8 @@ function LinkPage({ token, kindWanted }) {
     const heading = { expired: "This link has expired", used: "This link was already used", disabled: "This account can't sign in" }[state.code] ?? "This link isn't valid";
     return (
       <AuthLayout title={heading} docTitle={title}>
-        <Message id="link-problem">{state.error}</Message>
-        <div className="auth-links"><Link className="ds-btn ds-btn--primary" to={pageUrl("auth/forgot-password.html")}>Ask for a new link</Link><Link className="link" to={pageUrl("auth/login.html")}>Back to sign in</Link></div>
+        <Message id="link-problem">{state.error.startsWith(`${heading}.`) ? state.error.slice(heading.length + 1).trim() : state.error}</Message>
+        <div className="auth-links auth-links--start"><Link className="ds-btn ds-btn--primary" to={pageUrl("auth/forgot-password.html")}>Ask for a new link</Link><Link className="link" to={pageUrl("auth/login.html")}>Back to sign in</Link></div>
       </AuthLayout>
     );
   }
@@ -266,7 +266,7 @@ export function ResetPassword() {
     return (
       <AuthLayout title="This link isn't valid" docTitle="Reset password">
         <Message id="link-problem">This page opens from the link in a reset email. Ask for a new one.</Message>
-        <div className="auth-links"><Link className="ds-btn ds-btn--primary" to={pageUrl("auth/forgot-password.html")}>Ask for a new link</Link><Link className="link" to={pageUrl("auth/login.html")}>Back to sign in</Link></div>
+        <div className="auth-links auth-links--start"><Link className="ds-btn ds-btn--primary" to={pageUrl("auth/forgot-password.html")}>Ask for a new link</Link><Link className="link" to={pageUrl("auth/login.html")}>Back to sign in</Link></div>
       </AuthLayout>
     );
   }

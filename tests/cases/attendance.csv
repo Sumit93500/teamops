@@ -32,7 +32,7 @@ absence.D1,absence,"joiningDate reads the stored text ('12 Jan 2023', as profile
 absence.D2,absence,"a new hire: only 19 Oct (his joining day) and 21 Oct count, 2 days; the absent-looking days before 19 Oct don't",x3 (3 zones)
 absence.D3,absence,he has no September payslip (wholly before he joined); October's is his first,x3 (3 zones)
 absence.D4,absence,"the joining day is the first counted: joining 16 Oct counts 16, 19, 21 Oct (3); joining 22 Oct counts none; '2026-10-19' = '19 Oct 2026'",x3 (3 zones)
-absence.D5,absence,"no joining date, or one that can't be read: nothing is counted (lop 0, nothing open), and every no-check-in absent day is reported as uncounted",x3 (3 zones)
+absence.D5,absence,"no joining date, or one that can't be read: the person starts on the day they were created in the app (F2b), exactly as if that day were typed as the joining date",x3 (3 zones)
 absence.D6,absence,"the seed: Aarav, Priya, Kabir and Arjun have readable joining dates; Ananya, Meera, Sneha, Rohan and Vikram have none on file",x3 (3 zones)
 absence.D7,absence,"so Vikram's seeded absence (15 Sep) isn't counted (decision 3: no readable date, nothing counted): uncounted 1, his September pay = HEAD's (₹1,455 loss of pay)",x3 (3 zones)
 absence.D8,absence,"given a joining date, the same absence is settled (15 Sep + 7 days is long past): 0.5 late-mark + 1 absence = 1.5 days, ₹4,364, the investigation's figure",x3 (3 zones)

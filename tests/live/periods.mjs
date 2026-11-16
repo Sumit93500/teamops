@@ -409,7 +409,7 @@ const imports = (f) => src(f).split("\n").filter((l) => l.startsWith("import "))
 // imports nothing): deptguard.mjs X0 loads every store first and pins that
 // Round 11R (invariant; store.js also imports config/routes.js, for the landing-page deny rule: a leaf that imports nothing (overrides.mjs X5))
 check("F2", "no load-time import cycle: store.js imports only storage, users, holidays, the role table (round 10X) and the route table (round 11R); holidays.js imports only getUser from store.js (round 10W); payroll-store no longer defines the parser",
-  imports("data/store.js").every((l) => /core\/storage|\.\/users|\.\/holidays|\.\.\/config\/roles|\.\.\/config\/routes/.test(l)) && j(imports("data/holidays.js").filter((l) => /store\.js/.test(l)).map((l) => l.trim())) === j(['import { getUser } from "./store.js";'])
+  imports("data/store.js").every((l) => /core\/storage|\.\/users|\.\/holidays|\.\.\/config\/roles|\.\.\/config\/routes|\.\/created-on\.js/.test(l))   /* F2b: created-on.js imports only core/storage */ && j(imports("data/holidays.js").filter((l) => /store\.js/.test(l)).map((l) => l.trim())) === j(['import { getUser } from "./store.js";'])
   && !/export function joiningDate/.test(src("data/payroll-store.js")) && /export function joiningDate/.test(src("data/store.js")));
 // Round 11Y (layout; was the live payroll-store.js: 8F's statement read from the frozen result 11X left, js-pre11Y =
 // office-os 8ae4c9c; 11Y stops a leaver's unpaid leave at their last working day since (leavers.mjs P4))

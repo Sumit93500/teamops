@@ -21,6 +21,7 @@
 
 import { storedRecord, writeShiftCheckIn, writeShiftCheckOut, writeCompletedDay, MODES } from "./attendance-store.js";
 import { getUser, joiningDate } from "./store.js";
+import { joinedOn } from "./employment-period.js";   // F2b
 import { hasPermission } from "../config/roles.js";
 import { placeAndDeviceCheck, punchStamp } from "./locations-store.js";
 import { deviceToken } from "./devices-store.js";
@@ -66,7 +67,7 @@ function inPlan(userId, mode, now) {
   const chosen = mode ?? day.suggestedMode;
   if (!MODES.includes(chosen)) return fail("Choose Office or Work from home.", "mode");
   if (day.checkIn) return fail(`You already checked in today at ${day.checkIn}.`, "done");
-  const joined = joiningDate(user.dateOfJoining);
+  const joined = joinedOn(user);
   if (joined && now.date < joined) return fail(`You can't check in before your joining date (${joined}).`, "not-joined");
   if (day.status === "holiday") return fail("Today is a holiday, so no attendance is needed.", "off");
   if (day.status === "weekly-off") return fail("Today is your weekly off, so no attendance is needed.", "off");

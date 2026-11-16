@@ -164,7 +164,8 @@ check("E1", "no page script failed anywhere in this suite", allJsErrors.length =
 section("X. Scope");
 const HERE = new URL(".", import.meta.url);
 const walk = (dir, base = "") => fs.readdirSync(new URL(`${dir}/${base}`, HERE), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(dir, `${base}${e.name}/`) : [`${base}${e.name}`])).sort();
-const srcAt = (dir, p) => fs.readFileSync(new URL(`${dir}/${p}`, HERE), "utf8");
+const { unF2b } = await import("./unf2b.mjs");
+const srcAt = (dir, p) => { const t = fs.readFileSync(new URL(`${dir}/${p}`, HERE), "utf8"); return dir === "./js" ? unF2b(t) : t; };
 const jsNow = walk("./js-pre12A"), jsPre = walk("./js-pre11Z");   // Round 12A (layout)
 const changedJs = jsNow.filter((p) => !jsPre.includes(p) || srcAt("./js-pre12A", p) !== srcAt("./js-pre11Z", p));
 check("X1", "exactly one js file changed, none added or removed: data/store.js (the four stores and approval-chain.js untouched)", j(changedJs) === j(["data/store.js"]) && j(jsNow) === j(jsPre), j(changedJs));

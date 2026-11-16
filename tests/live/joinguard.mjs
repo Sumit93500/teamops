@@ -157,9 +157,11 @@ check("R6", "…and it comes before the time and reason checks: 9 Oct with a bad
 fresh();
 const r7 = joiner("2026-10-12");
 check("R7", "an ISO joining date works the same (2026-10-12): 9 Oct refused, naming it", j(res(missedIn(r7, "2026-10-09"))) === j([false, reqMsg("2026-10-12"), "date"]));
+const { createdOnOf } = await import("./js/data/created-on.js");
 const r8 = joiner(undefined);
 const r8a = missedIn(r8, "2026-10-09");
-check("R8", "no readable joining date: refuses nothing (9 Oct goes through, pending)", r8a.ok && r8a.record.status === "pending", j(res(r8a)));
+// F2b (behaviour; was: refuses nothing): no joining date on a person created in the app means they started the day they were created
+check("R8", "no readable joining date: the person started on the day they were created, so 9 Oct (before it) is refused, naming that day", !r8a.ok && j(res(r8a)) === j([false, reqMsg(createdOnOf(r8)), "date"]) && createdOnOf(r8) > "2026-10-09", j(res(r8a)));
 fresh();
 const r9 = joiner("12 Oct 2026");
 S.updateUser(USER_ACTOR("admin", r9), r9, { role: "admin" });
@@ -194,7 +196,10 @@ section("U. Scope creep: everything else as before (the pre-10H store, side by s
 // timestamp the same, so the stored data must match byte for byte.
 function script(X) {
   fresh();
-  const a = joiner("12 Oct 2026"), b = joiner(undefined);
+  // F2b: b has no joining date, so they start on the day they were created: created on 1 Oct, the first day of the month the script
+  // reads, so nothing the script does lies before it and the old store and the new one see the same person
+  at(1); const b = joiner(undefined); at(14);
+  const a = joiner("12 Oct 2026");
   const log = [];
   const step = (r) => log.push(res(r));
   at(12, 9, 25); step(X.checkIn(a)); at(12, 18, 35); step(X.checkOut(a));

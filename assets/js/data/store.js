@@ -20,6 +20,7 @@ import { USERS, DEPARTMENTS, DESIGNATIONS, PROFILE_DETAILS, MANAGER_OF } from ".
 import { isValidDate } from "./holidays.js";
 import { ROLES, OVERRIDABLE, permissionsOf } from "../config/roles.js";
 import { ROUTES } from "../config/routes.js";
+import { recordCreated } from "./created-on.js";   // F2b
 
 // The four demo sign-in identities (Admin, HR, Finance, Employee). Deactivating
 // or deleting one would break signing in as that role, so it is refused.
@@ -584,7 +585,9 @@ export function addUser(actorUserId, fields = {}) {
   };
   box.records.push(record);
   box.nextIdNum += 1;   // only ever goes up, so a deleted id is never handed out again
-  return commit(USERS_KEY, box, record);
+  const saved = commit(USERS_KEY, box, record);
+  if (saved.ok) recordCreated(record.id);   // F2b: the day they were created, kept apart from the record
+  return saved;
 }
 
 export function updateUser(actorUserId, id, changes = {}) {

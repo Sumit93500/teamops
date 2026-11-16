@@ -63,7 +63,7 @@ const j = JSON.stringify;
 // X0 first, from the source, before any store is loaded: importing attendance-store.js into leave-store.js would be a
 // cycle that breaks loading (attendance-store.js imports leave-store.js and reads PAST_DAY_WINDOW at load time), so a
 // crash below would otherwise be all that shows.
-const LS_IMPORTS = [...fs.readFileSync(`${HERE}js/data/leave-store.js`, "utf8").matchAll(/^import .* from "([^"]+)";/gm)].map((m) => m[1]);
+const LS_IMPORTS = [...fs.readFileSync(`${HERE}js/data/leave-store.js`, "utf8").matchAll(/^import .* from "([^"]+)";/gm)].map((m) => m[1]).filter((f) => f !== "./employment-period.js");   // F2b: joinedOn (imports store, users, created-on, audit-trail: no attendance-store)
 check("X0", "no import of attendance-store.js (it imports leave-store.js): the imports are collection, core/storage, store, holidays, approval-chain",
   j(LS_IMPORTS) === j(["./collection.js", "../core/storage.js", "./store.js", "./holidays.js", "./approval-chain.js"]), j(LS_IMPORTS));
 

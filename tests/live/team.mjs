@@ -299,7 +299,7 @@ pickDept(""); await open("priya");
 click([...d.querySelectorAll("#team-pagination .pagination__btn")].find((b) => txt(b) === "2"));
 let csv = await exportCsv();
 // Round Data export part 2 (behaviour; was page 2's 2 rows, the employee ID in the name's cell: every page's 12 people now, the ID a column of its own)
-check("X1", "page 2 export: every page's 12 people (page 2's 2 last), week column as codes", csv.length === 13 && csv[0] === "Employee,Employee ID,Department,Check-in,Hours,This week,Status" && csv[11] === 'Yusuf Ali,EMP-1107,Sales,–,–,"A,NY,NY,NY,HOL",Overdue' && csv[12] === 'Zara Khan,EMP-1106,Sales,–,–,"A,NY,NY,NY,HOL",Overdue', j(csv));
+check("X1", "page 2 export: every page's 12 people (page 2's 2 last), week column as codes", csv.length === 13 && csv[0] === "Employee,Employee ID,Department,Check-in,Hours,This week,Status" && csv[11] === 'Yusuf Ali,EMP-1107,Sales,–,–,"NJ,NY,NY,NY,HOL",Overdue' && csv[12] === 'Zara Khan,EMP-1106,Sales,–,–,"NJ,NY,NY,NY,HOL",Overdue'   /* F2b: created in the script, with no joining date: not joined before the day they were created (was A) */, j(csv));
 await at(2026, 9, 29, 11, 0);
 pickDept("ENG"); click(pill("absent"));
 csv = await exportCsv();

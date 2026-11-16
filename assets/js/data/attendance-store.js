@@ -24,6 +24,7 @@ import { save, load, remove as removeKey } from "../core/storage.js";
 import { getUser, getAllUsers, joiningDate, leavingDate, awayOn } from "./store.js";
 import { dayNumber, isoFromDayNumber, isValidDate, isWeekend, getAllHolidays, dayOffChecker } from "./holidays.js";
 import { allRequests, managerFor, PAST_DAY_WINDOW } from "./leave-store.js";
+import { joinedOn } from "./employment-period.js";   // F2b
 import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
 
 // The General shift, the only one for now.
@@ -328,7 +329,7 @@ function requestOn(requests, userId, date) {
 
 function deriveDay(ctx, user, date) {
   const R = ATTENDANCE_RULES;
-  const joined = joiningDate(user.dateOfJoining);
+  const joined = joinedOn(user);
   const holiday = ctx.holidays.get(date) ?? null;
   // A working day away (round 11Y; a past period, round 12H) carries no record
   // (round 12K; round-12j-notes.md J12): it isn't counted whatever is on record,
@@ -644,7 +645,7 @@ function checkInPlan(userId, mode) {
   const chosen = mode ?? day.suggestedMode;
   if (!MODES.includes(chosen)) return fail("Choose Office or Work from home.", "mode");
   if (day.checkIn) return fail(`You already checked in today at ${day.checkIn}.`);
-  const joined = joiningDate(user.dateOfJoining);
+  const joined = joinedOn(user);
   if (joined && ctx.today < joined) return fail(`You can't check in before your joining date (${joined}).`);
   if (day.status === "holiday") return fail("Today is a holiday, so no attendance is needed.");
   if (day.status === "weekend") return fail("Today is a weekend, so no attendance is needed.");
@@ -785,7 +786,7 @@ export function requestRegularization(userId, fields = {}) {
   const age = dayNumber(ctx.today) - dayNumber(date);
   if (age < 0) return fail("You can't ask to correct a day that hasn't happened yet.", "date");
   if (age > ATTENDANCE_RULES.requestWindowDays) return fail(`Corrections must be asked for within ${ATTENDANCE_RULES.requestWindowDays} days of the date.`, "date");
-  const joined = joiningDate(user.dateOfJoining);
+  const joined = joinedOn(user);
   if (joined && date < joined) return fail(`You can't ask to correct a day before your joining date (${joined}).`, "date");
   if (!isValidTime(time)) return fail("Enter the correct time as HH:MM.", "time");
   if (!reason) return fail("Reason is required.", "reason");

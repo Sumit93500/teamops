@@ -10,7 +10,7 @@
 // saved by this file: saving the field on the profile replaces the sample.
 //
 //   employmentOf(userId) -> { userId, joiningDate "YYYY-MM-DD" | null, employmentType, kind "intern" | "employee",
-//                             from: { joiningDate: "profile" | "sample" | null, employmentType: "profile" | "sample" | "default" } }
+//                             from: { joiningDate: "profile" | "created" | "sample" | null, employmentType: "profile" | "sample" | "default" } }
 //                           null for an unknown person
 //   employmentKind(employmentType) -> "intern" | "employee"
 //
@@ -22,6 +22,7 @@
 //   interns       Ananya Iyer (5 Jan 2026), Divya Menon (8 Jan 2024; inactive)
 
 import { getUser, joiningDate } from "./store.js";
+import { joinedOn } from "./employment-period.js";   // F2b
 
 export const EMPLOYMENT_TYPES = ["Full-time", "Contract", "Intern"];
 export const EMPLOYMENT_SAMPLE = Object.freeze({
@@ -39,7 +40,8 @@ export function employmentOf(userId) {
   const user = userId ? getUser(userId) : null;
   if (!user) return null;
   const sample = EMPLOYMENT_SAMPLE[user.id] ?? null;
-  const own = joiningDate(user.dateOfJoining);
+  const stored = joiningDate(user.dateOfJoining);
+  const own = stored ?? joinedOn(user);   // F2b: a person created in the app with none starts the day they were created
   const ownType = typeof user.employmentType === "string" && user.employmentType.trim() ? user.employmentType.trim() : null;
   const employmentType = ownType ?? sample?.employmentType ?? "Full-time";
   return {
@@ -47,6 +49,6 @@ export function employmentOf(userId) {
     joiningDate: own ?? sample?.dateOfJoining ?? null,
     employmentType,
     kind: employmentKind(employmentType),
-    from: { joiningDate: own ? "profile" : sample ? "sample" : null, employmentType: ownType ? "profile" : sample ? "sample" : "default" },
+    from: { joiningDate: stored ? "profile" : own ? "created" : sample ? "sample" : null, employmentType: ownType ? "profile" : sample ? "sample" : "default" },
   };
 }

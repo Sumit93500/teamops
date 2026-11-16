@@ -231,7 +231,10 @@ if (ONLY.includes("F")) {
   console.log("\n--- F. User form ---");
   for (const [who, q] of [["admin", ""], ["hr", ""], ["admin", "?id=EMP-1105"], ["admin", "?id=EMP-1003"], ["admin", "?id=EMP-1001"], ["admin", "?id=EMP-1008"], ["hr", "?id=EMP-1105"], ["hr", "?id=EMP-1042"]]) {
     const x = await pair(who, `users/user-form.html${q}`);
-    same(`F1.${who}${q}`, `${who} ${q || "(add)"}: heading, crumbs, tab title`, await head(x.o.t), await head(x.n.t));
+    /* F2b: the Edit page no longer says "Create the account, ..." (its own sentence); the old page still does */
+    const oldHead = await head(x.o.t);
+    if (q && oldHead.sub?.startsWith("Create the account")) oldHead.sub = "Change this person's details, section by section. Saved changes apply straight away.";
+    same(`F1.${who}${q}`, `${who} ${q || "(add)"}: heading, crumbs, tab title`, oldHead, await head(x.n.t));
     same(`F2.${who}${q}`, `${who} ${q || "(add)"}: every field, access summary, effective permissions, overrides and their lock, Account, the submit button`, await readForm(x.o.t), await readForm(x.n.t));
     await x.close();
   }

@@ -12,6 +12,7 @@
 .auth-row { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-3); flex-wrap: wrap; font-size: var(--ds-text-sm); }
 .auth-card .ds-note:focus-visible { outline: none; }   /* the message is read out (role alert / status); a ring on text isn't needed */
 .auth-links { display: flex; align-items: center; justify-content: center; gap: var(--ds-space-4); flex-wrap: wrap; font-size: var(--ds-text-sm); }
+.auth-links--start { justify-content: flex-start; }
 /* F2: the demo's accounts, a quiet section of its own under the card */
 .auth-stack { width: min(100%, 440px); display: grid; gap: var(--ds-space-4); }
 .auth-stack > .auth-card { width: 100%; }

@@ -66,3 +66,9 @@ a.table__user-name:hover { text-decoration: underline; }
   .pf-edit-row { grid-template-columns: 1fr; }
   .outbox__head { flex-direction: column; }
 }
+
+/* F2b: the lock banner's Unlock button had no space from the sentence; the two sit apart and wrap on a phone */
+.profile-lock { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--ds-space-3); }
+
+/* F2b: a field with no help text beside one with two lines grew its input to the row's height (Branch next to Account holder's name); each field keeps its own height */
+.pf-edit__fields { align-items: start; }

@@ -14,6 +14,7 @@
 
 import { dayFor, monthFor, rangeFor, teamFor, recordsStart, ATTENDANCE_RULES } from "./attendance-store.js";
 import { getUser, joiningDate } from "./store.js";
+import { joinedOn } from "./employment-period.js";   // F2b
 import { allRequests } from "./leave-store.js";
 import { classifyDay, dayLossOfPay, officeNow, addDays, shiftShape, toMin, hhmm, dayNo, DAY } from "./shift-engine.js";
 import { assignmentReader } from "./shift-assignments.js";
@@ -121,7 +122,7 @@ export function shiftMonthLossOfPay(userId, year, month, now = officeNow()) {
   const m = shiftMonthFor(userId, year, month, now);
   const user = getUser(userId);
   if (!m || !user) return null;
-  const joined = joiningDate(user.dateOfJoining);
+  const joined = joinedOn(user);
   const pendingLeave = allRequests().filter((r) => r.userId === userId && r.status === "pending" && r.type !== "wfh");
   const out = { days: 0, absent: 0, halfDay: 0, shortLeave: 0, penaltyHalfDays: 0, open: [] };
   for (const d of m.days) {

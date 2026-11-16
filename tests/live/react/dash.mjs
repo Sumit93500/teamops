@@ -111,10 +111,11 @@ const read = (t) => t.evaluate(() => {
 const countCanon = (s) => s.replace(/^Showing (?:\d+–)?(\d+) of (\d+)(?: matching)? /, "#$1/$2 ").replace(/^(\d+) (?=[a-z])/, "#$1/$1 ");
 const canon = (v) => (typeof v === "string" ? countCanon(v) : Array.isArray(v) ? v.map(canon) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, canon(x)])) : v);
 const PLACEHOLDER = /\/pages\/(inventory|announcements|recruitment|system\/(reports|audit-log|backup)|access\/(delegation|approval-workflows)|account\/(notifications|sessions))/;
+const EMPTY_NOW = { "my-requests-list": "Nothing waiting for a decision.", updates: "Nothing new yet." };
 const pastOld = (a) => a && ({ ...a,
   buttons: a.buttons.filter((b) => b !== "Post job opening"),
   stats: a.stats.filter((s) => s[0] !== "positions" && s[4] !== "Sample, not built yet"),
-  cards: a.cards.map(([id, t]) => [id, typeof t === "string" ? t.replace(/ ?(Announcement|Interview scheduled): [^]*?Sample, not built yet/g, "").trim() : t]),
+  cards: a.cards.map(([id, t]) => [id, typeof t === "string" ? ((s) => (EMPTY_NOW[id] && !s ? EMPTY_NOW[id] : s))(t.replace(/ ?(Announcement|Interview scheduled): [^]*?Sample, not built yet/g, "").trim()) : t]),   /* F2b: an empty card now says so (EMPTY_NOW) */
   metas: a.metas.filter((m) => m !== "Sample, not built yet"),
   links: a.links.filter(([, p]) => !PLACEHOLDER.test(p)) });
 function compare(n, label, a0, b0, skip = []) {

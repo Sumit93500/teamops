@@ -10,6 +10,7 @@ import { load } from "../core/storage.js";
 import { getUser, getAllUsers, joiningDate, awayOn } from "./store.js";
 import { dayNumber, isoFromDayNumber, dayOffChecker, isWeekend, resetHolidays } from "./holidays.js";
 import { createChain, skippedEntry, CHAIN_STAGES } from "./approval-chain.js";
+import { joinedOn } from "./employment-period.js";   // F2b
 
 // allowance: days per period; null = no limit.
 export const LEAVE_POLICY = {
@@ -130,7 +131,7 @@ function checkedInDays(userId, from, to) {
 // they were reactivated). Attendance reads them as "not-joined" / "left" with
 // these same tests (it can't be imported here: see checkedInDays()).
 function notTheirDays(user, from, to) {
-  const joined = joiningDate(user.dateOfJoining);
+  const joined = joinedOn(user);
   const isOff = dayOffChecker();
   const dates = [];
   for (let n = dayNumber(from); n <= dayNumber(to); n++) {

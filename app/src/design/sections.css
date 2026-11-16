@@ -44,7 +44,7 @@
   .uf { grid-template-columns: minmax(0, 1fr); }
   .uf-aside { grid-column: auto; }
   .uf-steps { position: static; }
-  .uf-steps__list { display: flex; gap: var(--ds-space-1); overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
+  .uf-steps__list { display: flex; flex-wrap: wrap; gap: var(--ds-space-1); }   /* F2b: wraps to a second row; no label is clipped at the edge any more */
   .uf-steps__list > li { flex: none; }
   .uf-step { width: auto; grid-template-columns: 24px auto; padding: 6px 10px; white-space: nowrap; }
   .uf-step.is-current { box-shadow: inset 0 -3px 0 var(--ds-primary); }

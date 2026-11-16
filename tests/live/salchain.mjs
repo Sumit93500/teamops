@@ -349,7 +349,8 @@ check("Z1", "resetPayrollData() (Reset demo data) removes the proposals too", pr
 // =================================================================
 section("X. Scope");
 const walk = (dir, base = "") => fs.readdirSync(new URL(`${dir}/${base}`, import.meta.url), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(dir, `${base}${e.name}/`) : [`${base}${e.name}`])).sort();
-const srcAt = (dir, p) => fs.readFileSync(new URL(`${dir}/${p}`, import.meta.url), "utf8");
+const { unF2b } = await import("./unf2b.mjs");
+const srcAt = (dir, p) => { const t = fs.readFileSync(new URL(`${dir}/${p}`, import.meta.url), "utf8"); return dir === "./js" ? unF2b(t) : t; };
 // Round 12Y (layout, X1; was the live js): 12X's own change set (js-pre12Y = 3766ac0); the live js: salpage.mjs X1
 const jsNow = walk("./js-pre12Y"), jsPre = walk("./js-pre12X");
 const changedJs = jsNow.filter((p) => !jsPre.includes(p) || srcAt("./js-pre12Y", p) !== srcAt("./js-pre12X", p));

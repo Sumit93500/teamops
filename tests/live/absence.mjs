@@ -282,14 +282,17 @@ const withDoj = (doj) => { restore(RAVI_BASE); S.updateUser(USER_ACTOR("admin", 
 const r16 = withDoj("16 Oct 2026"), r22 = withDoj("22 Oct 2026"), rIso = withDoj("2026-10-19");
 check("D4", "the joining day is the first counted: joining 16 Oct counts 16, 19, 21 Oct (3); joining 22 Oct counts none; '2026-10-19' = '19 Oct 2026'",
   r16.lop.absenceDays === 3 && r22.lop.absenceDays === 0 && rIso.lop.absenceDays === 2, j([r16.lop.absenceDays, r22.lop.absenceDays, rIso.lop.absenceDays]));
+// F2b (behaviour; was: no readable date counted nothing): a person created in the app with no readable joining date starts on the day they were created
+const { createdOnOf } = await import("./js/data/created-on.js");
+const wantD5 = withDoj(createdOnOf(RAVI));
 const unreadable = ["", "sometime in Oct", "31 Feb 2026", "19 October 2026"].map((t) => withDoj(t));
 restore(RAVI_BASE); { const box = JSON.parse(localStorage.getItem("officeos:users")); delete box.records.find((u) => u.id === RAVI).dateOfJoining; localStorage.setItem("officeos:users", JSON.stringify(box)); }
 setNow("2026-11-30", 10, 0); unreadable.push(row(RAVI));
-check("D5", "no joining date, or one that can't be read: nothing is counted (lop 0, nothing open), and every no-check-in absent day is reported as uncounted",
+check("D5", "no joining date, or one that can't be read: the person starts on the day they were created in the app (F2b), exactly as if that day were typed as the joining date",
   // Round 8F (behaviour; was raviAbsent.length, which 8F's not-joined days make 2): with no readable date attendance
   // can't place the joining date either, so all 13 no-check-in days read absent and are reported uncounted, as in 8D
-  unreadable.every((x) => x.lop.absenceDays === 0 && x.lop.amount === 0 && open8(x).length === 0 && x.attendance.uncountedAbsences === 13),
-  j(unreadable.map((x) => [x.lop.absenceDays, x.attendance.uncountedAbsences])));
+  unreadable.every((x) => x.lop.absenceDays === wantD5.lop.absenceDays && x.lop.amount === wantD5.lop.amount && open8(x).length === open8(wantD5).length && x.attendance.uncountedAbsences === wantD5.attendance.uncountedAbsences),
+  j([wantD5.lop.absenceDays, wantD5.attendance.uncountedAbsences, unreadable.map((x) => [x.lop.absenceDays, x.attendance.uncountedAbsences])]));
 fresh(); setNow("2026-10-01", 9, 0); A.dayFor(ARJUN, "2026-10-01");
 const noDate = S.getAllUsers().filter((u) => u.status !== "inactive" && !P.joiningDate(u.dateOfJoining)).map((u) => u.id);
 check("D6", "the seed: Aarav, Priya, Kabir and Arjun have readable joining dates; Ananya, Meera, Sneha, Rohan and Vikram have none on file",
