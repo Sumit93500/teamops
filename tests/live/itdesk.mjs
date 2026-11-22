@@ -8,6 +8,7 @@
 //   F  offboarding: opened on deactivation, the checklist, the approval before disabling, assets blocking completion unless the Admin waives with a reason
 //   L  licences: seats never above the limit, one per person, leavers listed, costs only for it:licences-view-costs
 //   T  the Admin's review trail and the requesters' notices
+import { readFileSync } from "node:fs";
 let NOW = 0;
 const RealDate = Date;
 globalThis.Date = class extends RealDate { constructor(...a) { super(...(a.length ? a : [NOW])); } static now() { return NOW; } static UTC(...a) { return RealDate.UTC(...a); } };
@@ -52,7 +53,9 @@ function staff() {
   IT2 = S.addUser(ADMIN, { name: "Dev Malhotra", email: "dev.malhotra@northwind.com", department: "IT", designation: "IT Engineer", role: "it", dateOfJoining: "2 Nov 2026" }).record.id;
   ADMIN2 = S.addUser(ADMIN, { name: "Nisha Varma", email: "nisha.varma@northwind.com", department: "ENG", designation: "Administrator", role: "admin", dateOfJoining: "2 Nov 2026" }).record.id;
 }
-const fresh = () => { mem.clear(); clock("2026-11-22"); F.useFileBackend(F.memoryBackend()); staff(); };
+// AS2: the register, stock ledger and licences start from the AS1 sample (tests/live/as1-*.json: captured before AS2 replaced the seed with the old inventory)
+const FX = (n) => readFileSync(`./as1-${n}.json`, "utf8");
+const fresh = () => { mem.clear(); clock("2026-11-22"); mem.set("officeos:asset-register", FX("register")); mem.set("officeos:stock-ledger", FX("stock")); mem.set("officeos:it-licences", FX("licences")); F.useFileBackend(F.memoryBackend()); staff(); };
 const hire = (who, name, email) => S.addUser(who, { name, email, department: "ENG", designation: "Software Engineer", dateOfJoining: "2 Nov 2026" }).record.id;
 const req = (id) => D.getItRequest(ADMIN, id);
 const st = (id) => req(id).status;
@@ -217,9 +220,14 @@ check("O13", "an asset request: IT issues an asset through the register; the req
 const ret = mk(ARJUN, { type: "asset-return", title: "Returning the chair", payload: { assetTag: "AST-0008" } }).record.id;
 D.assignRequest(ADMIN, ret, IT2, NOW);
 check("O14", "an asset return: only the asset that person holds; taken back through the register", D.fulfilAssetReturn(IT2, ret, { condition: "fair" }, NOW).ok && AR.getAssetFor(ADMIN, "AST-0008").status === "in-store" && st(ret) === "done");
-const wrongRet = mk(ARJUN, { type: "asset-return", title: "Returning the laptop", payload: { assetTag: "AST-0001" } }).record.id;
-D.assignRequest(ADMIN, wrongRet, IT2, NOW);
-check("O15", "...a return of an asset someone else holds is refused", !D.fulfilAssetReturn(IT2, wrongRet, {}, NOW).ok && AR.getAssetFor(ADMIN, "AST-0001").holderId === SNEHA);
+const wrongRet = mk(ARJUN, { type: "asset-return", title: "Returning the laptop", payload: { assetTag: "AST-0001" } });
+check("O15", "...a return request for an asset someone else holds is refused when it is raised (AST-0001 is Sneha's), and nothing moves", !wrongRet.ok && /isn't issued/.test(wrongRet.error) && AR.getAssetFor(ADMIN, "AST-0001").holderId === SNEHA);
+const dup1 = mk(ANANYA, { type: "asset-request", title: "A laptop bag", payload: { category: "other" } });
+const dup2 = mk(ANANYA, { type: "asset-request", title: "A laptop bag again", payload: { category: "other" } });
+const dup3 = mk(ANANYA, { type: "asset-request", title: "A monitor", payload: { category: "monitor" } });
+check("O15b", "a second open request for the same kind of asset is refused (naming the first); another kind is fine; once the first is cancelled, it can be raised again", dup1.ok && !dup2.ok && dup2.error.includes(dup1.record.id) && dup3.ok && D.cancelRequest(ANANYA, dup1.record.id, "Not needed now", NOW).ok && mk(ANANYA, { type: "asset-request", title: "A laptop bag", payload: { category: "other" } }).ok);
+const dupRet = mk(SNEHA, { type: "asset-return", title: "Returning my laptop", payload: { assetTag: "AST-0001" } });
+check("O15c", "one open return request per asset: a second is refused; a manager can't ask for a return of an asset their report doesn't hold", dupRet.ok && !mk(SNEHA, { type: "asset-return", title: "Returning my laptop again", payload: { assetTag: "AST-0001" } }).ok && !mk(SNEHA, { type: "asset-return", subjectPersonId: ROHAN, title: "Rohan's chair", payload: { assetTag: "AST-0007" } }).ok);
 const sw = mk(ANANYA, { type: "software-request", title: "Office for my laptop", payload: { software: "Microsoft 365" } }).record.id;
 D.assignRequest(ADMIN, sw, IT1, NOW);
 check("O16", "a software request: a seat on the licence, then done", D.fulfilSoftwareRequest(IT1, sw, "LIC-1", NOW).ok && L.mySeats(ANANYA).some((s) => s.licenceId === "LIC-1") && st(sw) === "done");

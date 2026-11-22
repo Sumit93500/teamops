@@ -20,6 +20,7 @@ export const AUDIT_KINDS = [
   "it-request-created", "it-request-assigned", "it-request-submitted", "it-request-approved", "it-request-rejected", "it-request-cancelled",
   "it-request-executed", "it-override", "it-checklist-ticked", "it-reviewed", "it-sla-changed",
   "licence-added", "licence-changed", "seat-assigned", "seat-revoked",
+  "inventory-imported",   // AS2: data/inventory-migrate.js (counts only)
 ];
 export const AUDIT_LABEL = {
   "account-created": "Account created", "link-used": "Set-password link used", "password-set": "Password set",
@@ -41,7 +42,7 @@ export const AUDIT_LABEL = {
   "it-request-approved": "IT request approved", "it-request-rejected": "IT request rejected", "it-request-cancelled": "IT request cancelled",
   "it-request-executed": "IT request carried out", "it-override": "Admin override on an IT step", "it-checklist-ticked": "Offboarding item done",
   "it-reviewed": "IT activity reviewed", "it-sla-changed": "IT response times changed", "licence-added": "Licence added", "licence-changed": "Licence changed",
-  "seat-assigned": "Licence seat assigned", "seat-revoked": "Licence seat revoked",
+  "seat-assigned": "Licence seat assigned", "seat-revoked": "Licence seat revoked", "inventory-imported": "Old inventory imported",
 };
 
 const empty = () => ({ version: 1, nextNum: 1, events: [] });

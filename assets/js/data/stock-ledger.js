@@ -3,7 +3,7 @@
 //
 // Kept in "officeos:stock-ledger" { version: 1, nextItem, nextMove, items: [item], movements: [movement] }, read through places.js pureBox:
 // a read never writes, so until the first write the sample below is what everyone reads and nothing is stored.
-//   item      { id "SI-n", name (unique), category (inventory.js CATEGORIES), unit, reorderLevel, active, sample? }
+//   item      { id "ITM-n", name (unique), category (inventory.js CATEGORIES), unit, reorderLevel, active, sample? }
 //   movement  { id "SM-n", itemId, kind: in | out | return | remove, qty (more than 0, at most 2 decimals), date "YYYY-MM-DD", byPersonId,
 //               toPersonId (out: who received it, optional; return: who handed it back, required; else null), reason (3-200 characters),
 //               reference (a PO or invoice number, or ""), createdAt (ISO), reverses (the id it corrects, or null), sample? }
@@ -29,44 +29,29 @@ import { hasPermission } from "../config/roles.js";
 import { logEvent } from "./audit-trail.js";
 import { pureBox } from "./places.js";
 import { remove } from "../core/storage.js";
+import { buildImport, oldSource } from "./inventory-import.js";
 import { employmentState } from "./employment-period.js";
 import { STOCK_CATEGORIES, STOCK_KINDS, REVERSE_KIND, REASON_MIN, REASON_MAX, MAX_QTY, qtyHundredths, text, date as dateCheck } from "./asset-rules.js";
 
 const KEY = "stock-ledger";
 const AARAV = "EMP-1001";
-const at = (d) => `${d}T04:30:00.000Z`;   // 10:00 in India
-const item = (n, name, category, unit, reorderLevel) => ({ id: `SI-${n}`, name, category, unit, reorderLevel, active: true, sample: true });
-const move = (n, itemId, kind, qty, d, reason, extra = {}) => ({ id: `SM-${n}`, itemId, kind, qty, date: d, byPersonId: AARAV, toPersonId: null, reason, reference: "",
-  createdAt: at(d), reverses: null, sample: true, ...extra });
-// The sample (marked sample): six of the old site's kinds of item, an opening count on 1 Oct 2026 and a few movements since, so the
-// next round's screens show issues, a return, a write-off and three items at or under their reorder level.
-const SEED = () => ({
-  nextItem: 7, nextMove: 14,
-  items: [
-    item(1, "A4 paper ream", "stationery", "ream", 50),
-    item(2, "Whiteboard markers, pack of 4", "stationery", "pack", 30),
-    item(3, "Coffee beans", "pantry", "kg", 10),
-    item(4, "HDMI cable, 2 m", "it", "piece", 20),
-    item(5, "Logitech MX Keys keyboard", "it", "piece", 10),
-    item(6, "USB-C charger, 65 W", "it", "piece", 5),
-  ],
-  movements: [
-    move(1, "SI-1", "in", 120, "2026-10-01", "Opening count"),
-    move(2, "SI-2", "in", 60, "2026-10-01", "Opening count"),
-    move(3, "SI-3", "in", 12, "2026-10-01", "Opening count"),
-    move(4, "SI-4", "in", 25, "2026-10-01", "Opening count"),
-    move(5, "SI-5", "in", 8, "2026-10-01", "Opening count"),
-    move(6, "SI-6", "in", 6, "2026-10-01", "Opening count"),
-    move(7, "SI-1", "out", 10, "2026-10-06", "Month-end printing", { toPersonId: "EMP-1008" }),
-    move(8, "SI-5", "out", 2, "2026-10-08", "Keyboards for the new desk", { toPersonId: "EMP-1042" }),
-    move(9, "SI-3", "out", 6.5, "2026-10-20", "Pantry refill"),
-    move(10, "SI-5", "return", 1, "2026-10-22", "One keyboard not needed", { toPersonId: "EMP-1042" }),
-    move(11, "SI-4", "remove", 3, "2026-11-03", "Damaged in storage"),
-    move(12, "SI-6", "out", 2, "2026-11-10", "Charger for a second desk", { toPersonId: "EMP-1029" }),
-    move(13, "SI-1", "in", 50, "2026-11-12", "Delivery", { reference: "PO-2318" }),
-  ],
-});
-const store = pureBox(KEY, 1, SEED, (b) => Number.isInteger(b.nextItem) && Number.isInteger(b.nextMove) && Array.isArray(b.items) && Array.isArray(b.movements));
+// AS2: the seed is the old site's inventory, imported (data/inventory-import.js: its 12 items, ids ITM-n and SKUs kept, and its ledger: an
+// opening count carried over, then every movement of the counted items; a tagged item is one count, its units being in the asset register),
+// plus two sample issues to people (marked sample), which the old ledger (it issued to departments) lacks.
+function SEED() {
+  const imp = buildImport(oldSource());
+  const items = imp.stockItems, movements = imp.stockMovements;
+  const num = (id) => Number(String(id).replace(/^\D+-/, "")) || 0;
+  let sm = Math.max(0, ...movements.map((m) => num(m.id))) + 1;
+  const issue = (sku, qty, date, personId, reason) => {
+    const found = items.find((i) => i.sku === sku);
+    if (found) movements.push({ id: `SM-${sm++}`, itemId: found.id, kind: "out", qty, date, byPersonId: AARAV, toPersonId: personId, reason, reference: "", createdAt: `${date}T04:30:00.000Z`, reverses: null, sample: true });
+  };
+  issue("IT-1044", 1, "2026-10-08", "EMP-1042", "Keyboard for the new desk (sample)");
+  issue("STA-3015", 4, "2026-10-20", "EMP-1029", "Markers for the team (sample)");
+  return { nextItem: Math.max(0, ...items.map((i) => num(i.id))) + 1, nextMove: sm, items, movements };
+}
+const store = pureBox(KEY, 2, SEED, (b) => Number.isInteger(b.nextItem) && Number.isInteger(b.nextMove) && Array.isArray(b.items) && Array.isArray(b.movements));
 
 const copy = (v) => JSON.parse(JSON.stringify(v));
 const fail = (error, field) => (field ? { ok: false, error, field } : { ok: false, error });
@@ -130,7 +115,7 @@ export function onHand(viewerId, itemId, asOf = null) {
 // Active items at or under their reorder level, emptiest first (on hand against the reorder level).
 export function lowStock(viewerId) {
   const ratio = (i) => (i.reorderLevel > 0 ? i.onHand / i.reorderLevel : 1);
-  return stockItems(viewerId).filter((i) => i.active && i.onHand <= i.reorderLevel).sort((a, b) => ratio(a) - ratio(b) || a.name.localeCompare(b.name));
+  return stockItems(viewerId).filter((i) => i.active && i.reorderLevel > 0 && i.onHand <= i.reorderLevel).sort((a, b) => ratio(a) - ratio(b) || a.name.localeCompare(b.name));
 }
 // What a person holds, net (issued less returned), item by item; for the person themself or stock:view.
 export function issuedTo(viewerId, personId) {
@@ -186,7 +171,7 @@ export function addStockItem(actorId, fields = {}, now = Date.now()) {
   const box = store.read();
   const checked = itemFields(box, fields);
   if (!checked.ok) return checked;
-  const record = { id: `SI-${box.nextItem}`, active: true, ...checked.fields };
+  const record = { id: `ITM-${box.nextItem}`, active: true, ...checked.fields };
   box.items.push(record);
   box.nextItem += 1;
   if (!store.write(box)) return fail(SAVE_FAILED);
@@ -284,3 +269,4 @@ function addMovement(actor, fields, reverses, now) {
 
 // Throws away every change in this browser; the sample is read again.
 export function resetStockData() { remove(KEY); }
+export const stockBox = store;   // for data/inventory-migrate.js only (the import's merge); every other caller goes through the functions above

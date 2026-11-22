@@ -86,4 +86,4 @@ Round 14 added seven permissions for its data layer. L0 moved them into `PERMISS
 - Custom roles; editing a role.
 - Delegation: the page is a sample.
 - A backend check. Every check runs in the browser, so this is a demo, not security.
-- The old site's inventory pages still use their own permissions (`inventory:*`, `assets:assign`, `assets:view`, `vendors:view`); the AS1 ones are for the new data layer and its screens.
+- The old site's static inventory pages still use their own permissions (`inventory:*`, `assets:assign`, `assets:view`, `vendors:view`). The React pages (AS2, 2026-11-22) use the AS1 ones instead: My assets `assets:view-own`; Inventory, Asset assignment and Vendors `assets:view-all`; Stock movements `stock:view` (see [assets.md](assets.md)). So HR and Finance open four of them in the app where the old pages send them to 403, and an employee given only `inventory:view`, `assets:view` or `vendors:view` still does not open them. No permission was added or moved: 122 in 47 modules, as after IT1.

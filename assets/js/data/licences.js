@@ -26,10 +26,10 @@ const seat = (n, personId, assignedAt) => ({ id: `SEAT-${n}`, licenceId: "LIC-1"
 // The sample (marked sample): one licence, four seats; Divya Menon has left, so hers is listed for revocation.
 const SAMPLE = () => ({
   next: { lic: 2, seat: 5 },
-  licences: [{ id: "LIC-1", software: "Microsoft 365 Business Standard", vendorId: "VN-1", seats: 10, costPerYear: 129600, renewalDate: "2027-01-31", status: "active", sample: true }],
+  licences: [{ id: "LIC-1", software: "Microsoft 365 Business Standard", vendorId: "VEN-2", seats: 10, costPerYear: 129600, renewalDate: "2027-01-31", status: "active", sample: true }],
   seats: [seat(1, "EMP-1029", "2025-04-15"), seat(2, "EMP-1042", "2024-07-03"), seat(3, "EMP-1105", "2024-01-08"), seat(4, "EMP-1061", "2024-02-01")],
 });
-const store = pureBox(KEY, 1, SAMPLE, (b) => b.next && Number.isInteger(b.next.lic) && Number.isInteger(b.next.seat) && Array.isArray(b.licences) && Array.isArray(b.seats));
+const store = pureBox(KEY, 2, SAMPLE, (b) => b.next && Number.isInteger(b.next.lic) && Number.isInteger(b.next.seat) && Array.isArray(b.licences) && Array.isArray(b.seats));
 export function resetLicences() { remove(KEY); }
 
 const copy = (v) => JSON.parse(JSON.stringify(v));

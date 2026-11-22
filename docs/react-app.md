@@ -73,7 +73,7 @@ app/src/ui/               Frame, Toast, phone.jsx (phone cards), ApprovalCard (b
 - **E0:** the Add / Edit employee form by sections (Personal, Contact, Employment, Pay and tax, Role and access, Review),
   per-section checks, a leave guard, the profile's Edit links into a section. The same fields, rules and permissions; the
   fields a complete form still needs are listed in the workspace's notes/react-parking-lot.md (E1).
-- **Left:** inventory (rounds 21–22, after the data rounds 17–20).
+- **AS2 (2026-11-22):** the five inventory pages (Inventory with one asset's page, Asset assignment, Stock movements, Vendors, My assets), "Request an asset" and "Request return" through the IT desk, and the old inventory imported into the new register and ledger; see [assets.md](assets.md). Nothing is left to port.
 - **Bundle:** what loads first is one 1,090 kB file (L1; 1,013 kB at D2b); the charts' drawing (Recharts, 418 kB) and the map (179 kB) load on first use. Route-level code splitting is planned for round 27.
 
 ## Checks
@@ -125,4 +125,5 @@ My visits, Team visits and the Visit page (`visits/my-visits.html`, `visits/team
 - **Polish** (`app/src/design/polish.css`, `visits.css`): found by looking at every visit screen in 412, 768 and 1280, light and dark (the list and result are in the workspace's `notes/react-parking-lot.md`). Tick boxes and the toast's close button are 32 px on a phone, the calendar's key wraps, a visit day's calendar cell keeps three lines of its place, dialogs' descriptions sit clear of their first field.
 - **A visit day nobody checked in on:** the dashboards' flag, Team visits' tab and Complete day for it ([attendance.md](attendance.md)). Checks: `tests/live/react/cv1c.mjs` (A the flag, D Team visits, N the visit page, K keyboard, T the table at five widths, W, C contrast, X).
 - **fs1:** FS1's stored files (U the claim form's picker, R the rules in the page, V who sees the claim's file, P the photo, D document files, S sign-out and a change of person, I no IndexedDB, N no demo words, K keyboard, W widths, C contrast, X); see [files.md](files.md). fin, req and shell read past the "Entered as text" label and the receipt picker (marked FS1).
+- **as2:** AS2's asset and inventory screens (A who may open each of the five pages and what the sidebar lists, I Inventory and its columns by role, D one asset's page and its depreciation, X the buttons an asset's state and the person's permissions allow, S Stock movements, V Vendors, M My assets, Request an asset and Request return, P the profile's Assets card and Reset demo data, F the flows on one asset, K keyboard, W widths, C contrast, E errors); see [assets.md](assets.md). smoke, shell, req and f2 read past the one change AS2 makes to what they compare: the five pages are real, HR and Finance open four of them, My requests has the IT type.
 - **node_modules:** `tools/modules_guard.py` (see [../CLAUDE.md](../CLAUDE.md)); `tests/live/modguard.mjs`.

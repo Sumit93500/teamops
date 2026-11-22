@@ -155,7 +155,7 @@ if (ONLY.includes("O")) {
 // ---------- P ----------
 if (ONLY.includes("P")) {
   console.log("\n--- P. Rebuilt sections ---");
-  const PLACE = ["inventory/my-assets.html", "inventory/items.html", "inventory/stock-movements.html", "inventory/asset-assignment.html", "inventory/vendors.html", "announcements/announcements.html",
+  const PLACE = ["announcements/announcements.html",
     "recruitment/job-openings.html", "recruitment/candidates.html", "system/reports.html", "system/audit-log.html", "system/backup.html", "access/delegation.html", "access/approval-workflows.html",
     "account/notifications.html", "account/sessions.html"];
   const inNav = [];
@@ -312,7 +312,7 @@ if (ONLY.includes("C")) {
   for (const theme of ["light", "dark"]) {
     const low = [];
     for (const [who, page, sels, opt] of [[null, "auth/login.html", [".auth-brand__name", ".auth-brand__line", ".auth-brand__points strong", ".auth-brand__points li > span:last-child", ".auth-demo__title", ".auth-demo .ds-hint", ".auth-card__lead", ".app-footer--auth span"]],
-      ["hr", "users/user-profile.html?id=EMP-1105", [".pf-missing > summary", ".pf-missing__list > li > span", ".pf-missing__list .ds-btn", "#profile-lock"], { lock: true }], ["admin", "inventory/items.html", [".rebuilding__title", ".rebuilding__text"]]]) {
+      ["hr", "users/user-profile.html?id=EMP-1105", [".pf-missing > summary", ".pf-missing__list > li > span", ".pf-missing__list .ds-btn", "#profile-lock"], { lock: true }], ["admin", "system/reports.html", [".rebuilding__title", ".rebuilding__text"]]]) {
       const n = await open(who, page, { theme, ...(opt ?? {}) });
       await n.t.evaluate(() => document.querySelectorAll("details.pf-missing").forEach((d) => { d.open = true; }));
       for (const [s, f, b] of await pairs(n.t, sels)) if (!f || ratio(f, b) < 4.5) low.push([page.split("/")[1], s, f && ratio(f, b).toFixed(2)]);
@@ -325,7 +325,7 @@ if (ONLY.includes("C")) {
 // ---------- W ----------
 if (ONLY.includes("W")) {
   console.log("\n--- W. Widths and shots ---");
-  const PAGES = [[null, "auth/login.html"], [null, "auth/forgot-password.html"], [null, "auth/reset-password.html?token=nope"], ["admin", "company/offices.html"], ["admin", "inventory/items.html"], ["admin", "requests/approvals-inbox.html"],
+  const PAGES = [[null, "auth/login.html"], [null, "auth/forgot-password.html"], [null, "auth/reset-password.html?token=nope"], ["admin", "company/offices.html"], ["admin", "system/reports.html"], ["admin", "requests/approvals-inbox.html"],
     ["admin", "users/users-list.html"], ["hr", "users/user-profile.html?id=EMP-1105"], ["emp", "account/my-profile.html"], ["hr", "users/user-form.html?id=EMP-1105&section=pay"], ["joiner", "attendance/mark-attendance.html"],
     ["admin", "dashboard/admin.html"], ["hr", "dashboard/hr.html"], ["emp", "dashboard/employee.html"], ["admin", "system/settings.html"], ["emp", "requests/my-requests.html"]];
   for (const theme of ["light", "dark"]) for (const width of [412, 1280]) {

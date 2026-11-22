@@ -1,0 +1,49 @@
+/* The asset and inventory screens (AS2): the status chip's patterns, the lifecycle timeline, the asset page's two columns, small cell helpers.
+   Tokens only (tokens.css); nothing here is told apart by colour alone. */
+
+/* a table cell of two or three short lines: the name, then what it is */
+.as-cell { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.as-cell .ds-pill { justify-self: start; margin-top: 2px; }
+.as-nowrap { white-space: nowrap; }
+.as-tabs { min-width: 0; max-width: 100%; }
+@media (min-width: 561px) { .table.as-table :is(th, td) { padding-left: 8px; padding-right: 8px; } }
+.as-filters .ds-filterbar > .ds-field { min-width: 0; }
+.as-filters .ds-field select { min-width: 0; width: 100%; text-overflow: ellipsis; }
+.as-kpis { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.as-kpis .ds-kpi__value { font-size: var(--ds-text-xl); overflow-wrap: normal; white-space: nowrap; }
+@media (max-width: 560px) { .as-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 561px) { .as-asset { min-width: 140px; } .as-reason { min-width: 190px; } .as-vendor { min-width: 140px; } }
+.as-warranty { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2); }
+.as-subhead { margin: var(--ds-space-2) 0 0; font-size: var(--ds-text-md); font-weight: var(--ds-weight-semibold); color: var(--ds-text); }
+.as-subhead-row { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--ds-space-3); }
+.as-asks { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--ds-space-2); }
+.as-asks li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2); }
+#low-stock-note .icon, #details-missing-note .icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
+.as-why { display: block; flex-basis: 100%; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+
+/* status chips: a word, an icon and a pattern each */
+.ds-pill[data-status="assigned"] { box-shadow: inset 3px 0 0 currentColor; }
+.ds-pill[data-status="under-maintenance"] { border: 1px dashed currentColor; }
+.ds-pill[data-status="retired"] { color: var(--ds-text-2); border: 1px solid var(--ds-border-strong); background: repeating-linear-gradient(135deg, var(--ds-surface-2) 0 5px, var(--ds-surface-3) 5px 10px); }
+.ds-pill[data-status="disposed"] { color: var(--ds-text-2); border: 1px dotted var(--ds-text-2); background: transparent; }
+.ds-pill[data-stock="out"] { box-shadow: inset 3px 0 0 currentColor; }
+.ds-pill[data-stock="low"] { border: 1px dashed currentColor; }
+
+/* the lifecycle timeline */
+.as-timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--ds-space-4); }
+.as-timeline__item { position: relative; display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: var(--ds-space-3); }
+.as-timeline__item::before { content: ""; position: absolute; left: 7px; top: 20px; bottom: calc(-1 * var(--ds-space-4) + 2px); width: 2px; background: var(--ds-border-strong); }
+.as-timeline__item:last-child::before { display: none; }
+.as-timeline__dot { width: 16px; height: 16px; box-sizing: border-box; margin-top: 2px; border-radius: 50%; border: 2px solid var(--ds-primary); background: var(--ds-surface-1); }
+.as-timeline__item[data-kind="issued"] .as-timeline__dot { background: var(--ds-primary); }
+.as-timeline__item[data-kind="returned"] .as-timeline__dot { border-style: dotted; }
+.as-timeline__item[data-kind="maintenance-opened"] .as-timeline__dot, .as-timeline__item[data-kind="maintenance-closed"] .as-timeline__dot { border-style: dashed; }
+.as-timeline__item[data-kind="retired"] .as-timeline__dot, .as-timeline__item[data-kind="disposed"] .as-timeline__dot { border-color: var(--ds-text-2); background: var(--ds-surface-3); }
+.as-timeline__item strong { display: block; font-size: var(--ds-text-sm); color: var(--ds-text); }
+.as-timeline__when, .as-timeline__note { display: block; font-size: var(--ds-text-sm); color: var(--ds-text-2); overflow-wrap: anywhere; }
+
+/* one asset's page: details and history beside the lifecycle; one column on a phone */
+.as-detail { display: grid; gap: var(--ds-space-4); grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 1000px) { .as-detail { grid-template-columns: minmax(0, 1fr); } }
+.as-row-now td { background: var(--ds-surface-2); font-weight: var(--ds-weight-semibold); }
+#dep-chart { min-width: 0; }

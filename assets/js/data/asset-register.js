@@ -48,6 +48,7 @@ import { remove } from "../core/storage.js";
 import { getOffice } from "./offices-store.js";
 import { employmentState } from "./employment-period.js";
 import { depreciation, disposalFigures, toPaise, rupees } from "./depreciation.js";
+import { buildImport, oldSource } from "./inventory-import.js";   // AS2: the seed is the old inventory, imported
 import {
   ASSET_CATEGORIES, ASSET_STATES, METHODS, CONDITIONS, TAG_PATTERN, tagOf, tagNumber, moveRefusal,
   text, money, percent, lifeYears, date as dateCheck, EMAIL, phoneOk, GSTIN,
@@ -57,76 +58,57 @@ const KEY = "asset-register";
 const AARAV = "EMP-1001";
 const NOTES_MAX = 500;
 
-// ---------- the sample (marked sample) ----------
-// Twelve assets across laptops, phones, chairs, a monitor and a printer, in every state: issued to seeded people, one handed back, one under
-// maintenance, one retired, one disposed of (sold), and a monitor still with Divya Menon, who has left (the "not returned" list). Two vendors,
-// two maintenance records (the printer's is past its next service date). Values are rupees.
+// ---------- the seed ----------
+// AS2: the old site's inventory, imported (data/inventory-import.js: its 7 tagged assets with their history, and its 5 vendors; the same tags,
+// ids and names; no purchase price or date, which the old data hasn't: "details missing"), plus three sample assets (marked sample) for
+// the lifecycle states the old data lacks: a printer with full purchase details (so a depreciation shows) and past its service date, a
+// retired laptop and a phone sold for scrap. None is held by anyone, so each person's assets are exactly the old register's. Rupees.
 const SAMPLE_AT = (d) => `${d}T04:30:00.000Z`;   // 10:00 in India
 function sample() {
-  const assets = [], events = [];
-  let ev = 1;
-  const asset = (n, name, category, makeModel, serial, purchaseDate, purchasePrice, vendorId, invoiceRef, warrantyUntil, usefulLifeYears, salvageValue, method = "slm") => {
-    assets.push({ id: `FA-${n}`, tag: tagOf(n), tagEdited: false, name, category, makeModel, serial, purchaseDate, purchasePrice, vendorId, invoiceRef, warrantyUntil,
-      usefulLifeYears, salvageValue, depreciationMethod: method, wdvRatePercent: ASSET_CATEGORIES[category].defaults.wdvRatePercent, locationId: "OFF-1",
-      createdAt: SAMPLE_AT(purchaseDate), sample: true });
-    event(n, "added", purchaseDate, null, "in-store");
+  const imp = buildImport(oldSource());
+  const { assets, events, maintenance, vendors } = imp;
+  let fa = assets.length + 1, ev = events.length + 1, mr = maintenance.length + 1;
+  const technova = vendors.find((v) => v.name === "TechNova Distributors")?.id ?? null;
+  const taken = new Set(assets.map((a) => a.tag));
+  const event = (assetId, kind, d, from, to, extra = {}) => events.push({ id: `AE-${ev++}`, assetId, kind, date: d, at: SAMPLE_AT(d), byId: AARAV, from, to, personId: null, condition: null,
+    notes: "", maintenanceId: null, saleValue: null, sample: true, ...extra });
+  const asset = (tag, name, category, makeModel, serial, purchaseDate, purchasePrice, vendorId, invoiceRef, warrantyUntil, usefulLifeYears, salvageValue, method = "slm") => {
+    if (taken.has(tag)) return null;   // the old register already has this tag: it wins
+    taken.add(tag);
+    const id = `FA-${fa++}`;
+    assets.push({ id, tag, tagEdited: false, name, category, makeModel, serial, purchaseDate, purchasePrice, vendorId, invoiceRef, warrantyUntil, usefulLifeYears, salvageValue,
+      depreciationMethod: method, wdvRatePercent: ASSET_CATEGORIES[category].defaults.wdvRatePercent, locationId: "OFF-1", createdAt: SAMPLE_AT(purchaseDate), sample: true });
+    event(id, "added", purchaseDate, null, "in-store");
+    return id;
   };
-  function event(n, kind, d, from, to, extra = {}) {
-    events.push({ id: `AE-${ev++}`, assetId: `FA-${n}`, kind, date: d, at: SAMPLE_AT(d), byId: AARAV, from, to, personId: null, condition: null, notes: "",
-      maintenanceId: null, saleValue: null, sample: true, ...extra });
+  const issued = (id, d, personId, condition = "good") => id && event(id, "issued", d, "in-store", "assigned", { personId, condition });
+  const returned = (id, d, personId, condition, notes = "") => id && event(id, "returned", d, "assigned", "in-store", { personId, condition, notes });
+
+  const printer = asset("AST-0009", "HP LaserJet Pro printer", "printer", "HP LaserJet Pro M404dn", "PHBQK40412", "2023-06-12", 32500, technova, "TN/23-24/0301", "2024-06-11", 5, 1625);
+  if (printer) {
+    event(printer, "maintenance-opened", "2026-08-14", "in-store", "under-maintenance", { maintenanceId: `MR-${mr}` });
+    event(printer, "maintenance-closed", "2026-08-16", "under-maintenance", "in-store", { maintenanceId: `MR-${mr}` });
+    maintenance.push({ id: `MR-${mr++}`, assetId: printer, date: "2026-08-14", issue: "Paper jams; pick-up roller replaced", cost: 2400, vendorId: technova, nextServiceDue: "2026-11-14",
+      status: "done", notes: "", openedBy: AARAV, closedOn: "2026-08-16", closedBy: AARAV, sample: true });
   }
-  const issued = (n, d, personId, condition = "good") => event(n, "issued", d, "in-store", "assigned", { personId, condition });
-  const returned = (n, d, personId, condition, notes = "") => event(n, "returned", d, "assigned", "in-store", { personId, condition, notes });
+  const old = asset("AST-0010", "Dell Latitude 5410", "laptop", "Dell Latitude 5410", "DL5410-1AB220", "2021-02-01", 62000, technova, "TN/20-21/0870", "2024-01-31", 3, 3100);
+  issued(old, "2021-02-03", "EMP-1042");
+  returned(old, "2024-07-03", "EMP-1042", "fair", "Replaced by a newer laptop");
+  if (old) event(old, "retired", "2026-06-30", "in-store", "retired", { notes: "Past its useful life" });
+  const sold = asset("AST-0011", "Redmi Note 10", "phone", "Xiaomi Redmi Note 10", "RN10-88341", "2021-05-10", 14999, technova, "TN/21-22/0101", "2022-05-09", 3, 749.95, "wdv");
+  issued(sold, "2021-05-12", "EMP-1017");
+  returned(sold, "2025-08-04", "EMP-1017", "poor", "Screen cracked; replaced");
+  if (sold) {
+    event(sold, "retired", "2025-09-30", "in-store", "retired", { notes: "Screen cracked, not worth repairing" });
+    event(sold, "disposed", "2026-03-31", "retired", "disposed", { notes: "Sold for scrap", saleValue: 1500 });
+  }
 
-  asset(1, "Dell Latitude 5440", "laptop", "Dell Latitude 5440", "DL5440-7Q2K91", "2025-04-10", 78500, "VN-1", "TN/25-26/0412", "2028-04-09", 3, 3925);
-  issued(1, "2025-04-15", "EMP-1029");
-  asset(2, "MacBook Pro 14\"", "laptop", "Apple MacBook Pro 14 (M3)", "C02FX1MBP14", "2024-07-01", 189900, "VN-1", "TN/24-25/0188", "2025-06-30", 3, 9495, "wdv");
-  issued(2, "2024-07-03", "EMP-1042");
-  asset(3, "Dell Latitude 5440", "laptop", "Dell Latitude 5440", "DL5440-7Q2K92", "2025-04-10", 78500, "VN-1", "TN/25-26/0412", "2028-04-09", 3, 3925);
-  issued(3, "2025-04-20", "EMP-1061");
-  returned(3, "2026-09-14", "EMP-1061", "fair", "Handed back before leaving");
-  asset(4, "Dell Latitude 5420", "laptop", "Dell Latitude 5420", "DL5420-3MZ810", "2022-03-15", 68000, "VN-1", "TN/21-22/0950", "2025-03-14", 3, 3400);
-  issued(4, "2022-03-20", "EMP-1105");
-  returned(4, "2026-10-28", "EMP-1105", "poor", "Battery swelling");
-  event(4, "maintenance-opened", "2026-11-02", "in-store", "under-maintenance", { maintenanceId: "MR-2" });
-  asset(5, "Samsung Galaxy A55", "phone", "Samsung Galaxy A55 5G", "R5CX20A55K", "2025-08-01", 39999, "VN-1", "TN/25-26/0733", "2026-12-15", 3, 1999.95);
-  issued(5, "2025-08-04", "EMP-1017");
-  asset(6, "iPhone 15", "phone", "Apple iPhone 15 128 GB", "F2LXQ15PH", "2025-01-20", 79900, "VN-1", "TN/24-25/0611", "2027-01-19", 3, 3995);
-  issued(6, "2025-01-22", "EMP-1008");
-  asset(7, "Ergonomic office chair", "furniture", "FurniCraft ErgoPro", "", "2024-01-05", 12800, "VN-2", "FC/23-24/1102", "2027-01-04", 10, 640);
-  issued(7, "2024-01-08", "EMP-1105");
-  asset(8, "Ergonomic office chair", "furniture", "FurniCraft ErgoPro", "", "2024-01-05", 12800, "VN-2", "FC/23-24/1102", "2027-01-04", 10, 640);
-  asset(9, "HP LaserJet Pro printer", "printer", "HP LaserJet Pro M404dn", "PHBQK40412", "2023-06-12", 32500, "VN-1", "TN/23-24/0301", "2024-06-11", 5, 1625);
-  event(9, "maintenance-opened", "2026-08-14", "in-store", "under-maintenance", { maintenanceId: "MR-1" });
-  event(9, "maintenance-closed", "2026-08-16", "under-maintenance", "in-store", { maintenanceId: "MR-1" });
-  asset(10, "Dell Latitude 5410", "laptop", "Dell Latitude 5410", "DL5410-1AB220", "2021-02-01", 62000, "VN-1", "TN/20-21/0870", "2024-01-31", 3, 3100);
-  issued(10, "2021-02-03", "EMP-1042", "good");
-  returned(10, "2024-07-03", "EMP-1042", "fair", "Replaced by AST-0002");
-  event(10, "retired", "2026-06-30", "in-store", "retired", { notes: "Past its useful life" });
-  asset(11, "Redmi Note 10", "phone", "Xiaomi Redmi Note 10", "RN10-88341", "2021-05-10", 14999, "VN-1", "TN/21-22/0101", "2022-05-09", 3, 749.95, "wdv");
-  issued(11, "2021-05-12", "EMP-1017");
-  returned(11, "2025-08-04", "EMP-1017", "poor", "Screen cracked; replaced by AST-0005");
-  event(11, "retired", "2025-09-30", "in-store", "retired", { notes: "Screen cracked, not worth repairing" });
-  event(11, "disposed", "2026-03-31", "retired", "disposed", { notes: "Sold for scrap", saleValue: 1500 });
-  asset(12, "Dell 24\" monitor", "monitor", "Dell P2419H", "CN-0P2419H-77", "2023-02-01", 14500, "VN-1", "TN/22-23/0905", "2026-01-31", 3, 725);
-  issued(12, "2023-02-03", "EMP-1061");
-
-  const vendors = [
-    { id: "VN-1", name: "TechNova Distributors", contactPerson: "Meenal Kapoor", phone: "+91 98180 45521", email: "orders@technova.example",
-      gstin: "06AABCT4821M1Z7", address: "Plot 14, Udyog Vihar Phase IV, Gurugram, Haryana 122015", active: true, sample: true },
-    { id: "VN-2", name: "FurniCraft India", contactPerson: "Sanjay Bhatia", phone: "+91 99101 87650", email: "sales@furnicraft.example",
-      gstin: "07AAFCF2210K1Z3", address: "B-42, Okhla Industrial Area Phase II, New Delhi 110020", active: true, sample: true },
-  ];
-  const maintenance = [
-    { id: "MR-1", assetId: "FA-9", date: "2026-08-14", issue: "Paper jams; pick-up roller replaced", cost: 2400, vendorId: "VN-1", nextServiceDue: "2026-11-14",
-      status: "done", notes: "", openedBy: AARAV, closedOn: "2026-08-16", closedBy: AARAV, sample: true },
-    { id: "MR-2", assetId: "FA-4", date: "2026-11-02", issue: "Battery swelling; sent for a battery replacement", cost: 6500, vendorId: "VN-1", nextServiceDue: null,
-      status: "open", notes: "Quoted by the vendor", openedBy: AARAV, closedOn: null, closedBy: null, sample: true },
-  ];
-  return { next: { asset: 13, event: ev, maint: 3, vendor: 3 }, assets, events, maintenance, vendors, defaults: {} };
+  const vendorNum = Math.max(0, ...vendors.map((v) => Number(String(v.id).replace(/^\D+-/, "")) || 0));
+  return { next: { asset: fa, event: ev, maint: mr, vendor: vendorNum + 1 }, assets, events, maintenance, vendors, defaults: {} };
 }
-const store = pureBox(KEY, 1, sample, (b) => b.next && ["asset", "event", "maint", "vendor"].every((k) => Number.isInteger(b.next[k]))
+const store = pureBox(KEY, 2, sample, (b) => b.next && ["asset", "event", "maint", "vendor"].every((k) => Number.isInteger(b.next[k]))
   && ["assets", "events", "maintenance", "vendors"].every((k) => Array.isArray(b[k])) && b.defaults && typeof b.defaults === "object");
+export const registerBox = store;   // for data/inventory-migrate.js only (the import's merge); every other caller goes through the functions below
 
 // ---------- small helpers ----------
 const copy = (v) => JSON.parse(JSON.stringify(v));
@@ -172,7 +154,11 @@ function rowsOf(box, assetId) {
 }
 
 // ---------- what a viewer gets ----------
-const BASE = ["id", "tag", "name", "category", "makeModel", "serial", "purchaseDate", "vendorId", "invoiceRef", "warrantyUntil", "locationId"];
+const BASE = ["id", "tag", "name", "category", "makeModel", "serial", "purchaseDate", "vendorId", "invoiceRef", "warrantyUntil", "locationId", "storeRoom"];
+// AS2: the last condition anyone recorded on its lifecycle (issue, return, or the import of the old register); null when none
+const conditionOf = (box, assetId) => [...eventsOf(box, assetId)].reverse().find((e) => e.condition)?.condition ?? null;
+// AS2: an imported asset has no purchase date or price until someone adds them (the old register had none)
+const missingDetails = (a) => a.purchaseDate == null || a.purchasePrice == null;
 export const VALUE_FIELDS = ["purchasePrice", "salvageValue", "usefulLifeYears", "depreciationMethod", "wdvRatePercent"];
 const OWN = ["id", "tag", "name", "category", "makeModel", "serial", "warrantyUntil", "locationId"];
 const paramsOf = (a, disposalDate = null) => ({ cost: a.purchasePrice, salvage: a.salvageValue, purchaseDate: a.purchaseDate, method: a.depreciationMethod,
@@ -180,7 +166,7 @@ const paramsOf = (a, disposalDate = null) => ({ cost: a.purchasePrice, salvage: 
 
 function fullView(box, a, values) {
   const s = stateOf(box, a.id);
-  const out = { ...pick(a, BASE), status: s.status, holderId: s.holderId, since: s.since, sample: Boolean(a.sample) };
+  const out = { ...pick(a, BASE), status: s.status, holderId: s.holderId, since: s.since, condition: conditionOf(box, a.id), detailsMissing: missingDetails(a), imported: Boolean(a.imported), sample: Boolean(a.sample) };
   if (s.retired) Object.assign(out, { retiredOn: s.retired.date, retireReason: s.retired.notes });
   if (s.disposed) Object.assign(out, { disposedOn: s.disposed.date, disposalReason: s.disposed.notes });
   if (values) {
@@ -195,7 +181,7 @@ function fullView(box, a, values) {
 function ownView(box, a, viewerId) {
   const s = stateOf(box, a.id);
   const heldByYou = s.status === "assigned" && s.holderId === viewerId;
-  return { ...pick(a, OWN), heldByYou, since: heldByYou ? s.since : null, sample: Boolean(a.sample), assignments: rowsOf(box, a.id).filter((r) => r.personId === viewerId) };
+  return { ...pick(a, OWN), heldByYou, since: heldByYou ? s.since : null, condition: heldByYou ? conditionOf(box, a.id) : null, sample: Boolean(a.sample), assignments: rowsOf(box, a.id).filter((r) => r.personId === viewerId) };
 }
 const everHeld = (box, assetId, personId) => box.events.some((e) => e.assetId === assetId && e.kind === "issued" && e.personId === personId);
 // What this viewer gets for this asset, or null.
@@ -209,6 +195,7 @@ const maintView = (r, values) => {
   const out = pick(r, ["id", "assetId", "date", "issue", "vendorId", "nextServiceDue", "status", "notes", "openedBy", "closedOn", "closedBy"]);
   if (values) out.cost = r.cost;
   out.sample = Boolean(r.sample);
+  out.imported = Boolean(r.imported);
   return out;
 };
 
@@ -241,7 +228,7 @@ export function assignmentsOf(viewerId, personId) {
   if (!v || !(can(v, "assets:view-all") || (v.id === personId && can(v, "assets:view-own")))) return [];
   const box = store.read();
   return box.assets.flatMap((a) => rowsOf(box, a.id).filter((r) => r.personId === personId).map((r) => ({ ...r, tag: a.tag, name: a.name })))
-    .sort((a, b) => b.from.localeCompare(a.from) || b.tag.localeCompare(a.tag));
+    .sort((a, b) => (b.from ?? "").localeCompare(a.from ?? "") || b.tag.localeCompare(a.tag));   // AS2: an imported row may have no start date
 }
 // The asset's lifecycle, oldest first (assets:view-all); a sale value only for assets:view-values.
 export function assetEvents(viewerId, assetId) {
@@ -263,6 +250,7 @@ export function depreciationOf(viewerId, assetId, asOf, opts = {}) {
   const box = store.read();
   const a = findAsset(box, assetId);
   if (!a) return fail(`No asset ${assetId}.`);
+  if (missingDetails(a)) return { ok: false, error: `${a.tag} has no purchase date or price yet: add them to see its depreciation.`, code: "details-missing" };
   const s = stateOf(box, a.id);
   return depreciation(paramsOf(a, s.disposed?.date ?? null), asOf, opts);
 }
@@ -273,7 +261,23 @@ export function maintenanceOf(viewerId, assetId) {
   const box = store.read();
   const a = findAsset(box, assetId);
   const values = can(v, "assets:view-values");
-  return a ? box.maintenance.filter((r) => r.assetId === a.id).sort((x, y) => y.date.localeCompare(x.date) || num(y.id) - num(x.id)).map((r) => maintView(r, values)) : [];
+  return a ? box.maintenance.filter((r) => r.assetId === a.id).sort((x, y) => (y.date ?? "").localeCompare(x.date ?? "") || num(y.id) - num(x.id)).map((r) => maintView(r, values)) : [];
+}
+// AS2: every maintenance record (status: open or done), newest first, with its asset's tag and name; costs only with assets:view-values.
+export function maintenanceList(viewerId, { status = null } = {}) {
+  const v = active(viewerId);
+  if (!seesUpkeep(v)) return [];
+  const box = store.read();
+  const values = can(v, "assets:view-values");
+  return box.maintenance.filter((r) => !status || r.status === status).map((r) => ({ ...maintView(r, values), tag: box.assets.find((a) => a.id === r.assetId)?.tag ?? null, assetName: box.assets.find((a) => a.id === r.assetId)?.name ?? null }))
+    .sort((x, y) => (y.date ?? "").localeCompare(x.date ?? "") || num(y.id) - num(x.id));
+}
+// AS2: how many assets and maintenance records name this vendor (a vendor named on any can't be deleted, only deactivated).
+export function vendorUses(viewerId, vendorId) {
+  const v = active(viewerId);
+  if (!(can(v, "vendors:manage") || can(v, "assets:view-all"))) return 0;
+  const box = store.read();
+  return box.assets.filter((a) => a.vendorId === vendorId).length + box.maintenance.filter((r) => r.vendorId === vendorId).length;
 }
 // Assets whose latest maintenance record's next service date has passed (no newer record since). Not retired or disposed ones.
 export function overdueService(viewerId, now = Date.now()) {
@@ -286,7 +290,7 @@ export function overdueService(viewerId, now = Date.now()) {
   for (const a of box.assets) {
     const s = stateOf(box, a.id);
     if (s.status === "retired" || s.status === "disposed") continue;
-    const latest = box.maintenance.filter((r) => r.assetId === a.id).sort((x, y) => y.date.localeCompare(x.date) || num(y.id) - num(x.id))[0];
+    const latest = box.maintenance.filter((r) => r.assetId === a.id).sort((x, y) => (y.date ?? "").localeCompare(x.date ?? "") || num(y.id) - num(x.id))[0];
     if (latest?.nextServiceDue && latest.nextServiceDue < today) out.push({ asset: fullView(box, a, values), record: maintView(latest, values), due: latest.nextServiceDue });
   }
   return out.sort((x, y) => x.due.localeCompare(y.due) || x.asset.tag.localeCompare(y.asset.tag));
@@ -421,7 +425,7 @@ function depFields(fields, price, base) {
     if (r.error) return fail(r.error, "salvageValue");
     out.salvageValue = r.value;
   }
-  if (toPaise(out.salvageValue) > toPaise(price)) return fail("The salvage value can't be more than the purchase price.", "salvageValue");
+  if (price != null && out.salvageValue != null && toPaise(out.salvageValue) > toPaise(price)) return fail("The salvage value can't be more than the purchase price.", "salvageValue");
   return { ok: true, fields: out };
 }
 
@@ -478,8 +482,15 @@ export function editAsset(actorId, assetId, changes = {}, now = Date.now()) {
   const checked = assetFields(box, changes, today, a);
   if (!checked.ok) return checked;
   const f = checked.fields;
-  if ("purchaseDate" in f && f.purchaseDate !== a.purchaseDate && s.events.some((e) => e.kind !== "added")) return fail(`${a.tag}'s purchase date can't change now: it has been issued, maintained or retired since.`, "purchaseDate");
-  if ("purchasePrice" in f && toPaise(a.salvageValue) > toPaise(f.purchasePrice)) return fail("The price can't be below the salvage value: change the salvage value first.", "purchasePrice");
+  if ("purchaseDate" in f && f.purchaseDate !== a.purchaseDate) {
+    if (a.purchaseDate != null && s.events.some((e) => e.kind !== "added")) return fail(`${a.tag}'s purchase date can't change now: it has been issued, maintained or retired since.`, "purchaseDate");
+    // AS2: adding a missing purchase date (an imported asset): not after the first day anything was recorded on it
+    const firstDated = s.events.filter((e) => e.kind !== "added" && e.date).map((e) => e.date).sort()[0];
+    if (a.purchaseDate == null && firstDated && f.purchaseDate > firstDated) return fail(`The purchase date can't be after ${firstDated}, when ${a.tag} was first used.`, "purchaseDate");
+  }
+  if ("purchasePrice" in f && a.salvageValue != null && toPaise(a.salvageValue) > toPaise(f.purchasePrice)) return fail("The price can't be below the salvage value: change the salvage value first.", "purchasePrice");
+  // AS2: an asset with no salvage value yet (an imported one) takes its category's default percent of the price, as a new asset does
+  if ("purchasePrice" in f && a.salvageValue == null) f.salvageValue = rupees((toPaise(f.purchasePrice) * BigInt(Math.round(defaultsIn(box)[a.category].salvagePercent * 100)) * 2n + 10000n) / 20000n);
   if ("tag" in changes) {
     const tag = String(changes.tag ?? "").trim().toUpperCase();
     if (tag !== a.tag) {
@@ -702,7 +713,7 @@ export function disposeAsset(actorId, assetId, fields = {}, now = Date.now()) {
 }
 
 // ---------- writes: vendors ----------
-const VENDOR_FIELDS = ["name", "contactPerson", "phone", "email", "gstin", "address"];
+const VENDOR_FIELDS = ["name", "contactPerson", "phone", "email", "gstin", "address", "supplies", "terms"];   // AS2: supplies and terms came with the old register
 function vendorFields(box, fields, current = null) {
   const out = {};
   const has = (k) => !current || k in fields;
@@ -739,6 +750,12 @@ function vendorFields(box, fields, current = null) {
     if (r.error) return fail(r.error, "address");
     out.address = r.value;
   }
+  for (const [k, label] of [["supplies", "Supplies"], ["terms", "Payment terms"]]) {
+    if (!(k in fields)) continue;
+    const r = text(fields[k], label, { max: 120 });
+    if (r.error) return fail(r.error, k);
+    out[k] = r.value;
+  }
   return { ok: true, fields: out };
 }
 const vendorWriter = (actorId) => holding(actorId, "vendors:manage");
@@ -751,7 +768,7 @@ export function addVendor(actorId, fields = {}, now = Date.now()) {
   const box = store.read();
   const checked = vendorFields(box, fields);
   if (!checked.ok) return checked;
-  const record = { id: `VN-${box.next.vendor}`, ...checked.fields, active: true };
+  const record = { id: `VEN-${box.next.vendor}`, supplies: "", terms: "", ...checked.fields, active: true, onHold: false };
   box.vendors.push(record);
   box.next.vendor += 1;
   if (!save(box)) return fail(SAVE_FAILED);

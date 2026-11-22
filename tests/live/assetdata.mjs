@@ -9,6 +9,7 @@
 //   A  the audit trail: one event per write, the right kind and ids, never an amount; nothing for a refused write
 //   M  maintenance, warranty, vendors: open and close tied to the state, next service after the date, overdue, expiring, delete refused while named
 //   T  tags and serials: AST-0013, edited once, unique
+import { readFileSync } from "node:fs";
 let NOW = 0;
 const RealDate = Date;
 globalThis.Date = class extends RealDate { constructor(...a) { super(...(a.length ? a : [NOW])); } static now() { return NOW; } static UTC(...a) { return RealDate.UTC(...a); } };
@@ -40,7 +41,10 @@ const section = (t) => console.log(`\n--- ${t} ---`);
 const j = JSON.stringify;
 const ADMIN = "EMP-1001", PRIYA = "EMP-1003", KABIR = "EMP-1008", ANANYA = "EMP-1017", MEERA = "EMP-1023", SNEHA = "EMP-1029", ROHAN = "EMP-1042", DIVYA = "EMP-1061", VIKRAM = "EMP-1088", ARJUN = "EMP-1105";
 const EVERYONE = [ADMIN, PRIYA, KABIR, ANANYA, MEERA, SNEHA, ROHAN, DIVYA, VIKRAM, ARJUN];
-const fresh = () => { mem.clear(); clock("2026-11-22"); };
+// AS2: the register, stock ledger and licences start from the AS1 sample (tests/live/as1-*.json, captured before AS2 replaced the seed with the old inventory),
+// so everything below keeps testing exactly what it tested; X tests the new seed itself (assetimport.mjs tests the import)
+const FX = (n) => readFileSync(`./as1-${n}.json`, "utf8");
+const fresh = () => { mem.clear(); clock("2026-11-22"); mem.set("officeos:asset-register", FX("register")); mem.set("officeos:stock-ledger", FX("stock")); mem.set("officeos:it-licences", FX("licences")); };
 const p = (rupees) => Math.round(rupees * 100);   // compare money in paise
 const events = () => AU.allEvents().length;
 const lastEvent = () => AU.allEvents()[0];
@@ -60,12 +64,12 @@ const firstRead = j(readAllNew());
 check("X1", "reading every new list as every person stores nothing (no new key, nothing changed)", j([...mem.keys()].sort()) === keysBefore && j([...mem.entries()].sort()) === storedBefore, j([...mem.keys()]));
 check("X2", "the old inventory (items, ledger, assets, vendors), the people, the offices and the audit trail read exactly as before", oldReads() === before);
 check("X3", "reading twice gives the same answer (the sample is read, never re-made differently)", j(readAllNew()) === firstRead);
-check("X4", "every sample record is marked sample", SL.stockItems(ADMIN).every((i) => i.sample) && SL.stockMovements(ADMIN).every((m) => m.sample) && AR.listAssets(ADMIN).every((a) => a.sample) && AR.vendorsFor(ADMIN).every((v) => v.sample) && ["FA-4", "FA-9"].every((a) => AR.maintenanceOf(ADMIN, a).every((r) => r.sample)));
-check("X5", "the sample's size: 6 stock items, 13 movements, 12 assets, 2 vendors, 2 maintenance records", SL.stockItems(ADMIN).length === 6 && SL.stockMovements(ADMIN).length === 13 && AR.listAssets(ADMIN).length === 12 && AR.vendorsFor(ADMIN).length === 2 && AR.listAssets(ADMIN).flatMap((a) => AR.maintenanceOf(ADMIN, a.id)).length === 2);
-check("X6", "the sample's states: 6 assigned, 3 in store, 1 under maintenance, 1 retired, 1 disposed", j(["assigned", "in-store", "under-maintenance", "retired", "disposed"].map((s) => AR.listAssets(ADMIN, { status: s }).length)) === j([6, 3, 1, 1, 1]), j(["assigned", "in-store", "under-maintenance", "retired", "disposed"].map((s) => AR.listAssets(ADMIN, { status: s }).length)));
+check("X4", "every record the seed holds is marked imported (from the old inventory) or sample", SL.stockItems(ADMIN).every((i) => i.imported) && SL.stockMovements(ADMIN).every((m) => m.imported || m.sample) && AR.listAssets(ADMIN).every((a) => a.imported || a.sample) && AR.vendorsFor(ADMIN).every((v) => v.imported) && ["FA-1", "FA-8"].every((a) => AR.maintenanceOf(ADMIN, a).every((r) => r.imported || r.sample)));
+check("X5", "the seed's size: 12 stock items, 17 movements, 10 assets (7 imported, 3 sample), 5 vendors, 2 maintenance records", SL.stockItems(ADMIN).length === 12 && SL.stockMovements(ADMIN).length === 17 && AR.listAssets(ADMIN).length === 10 && AR.listAssets(ADMIN).filter((a) => a.imported).length === 7 && AR.vendorsFor(ADMIN).length === 5 && AR.listAssets(ADMIN).flatMap((a) => AR.maintenanceOf(ADMIN, a.id)).length === 2);
+check("X6", "the seed's states: 5 assigned, 2 in store, 1 under maintenance, 1 retired, 1 disposed", j(["assigned", "in-store", "under-maintenance", "retired", "disposed"].map((s) => AR.listAssets(ADMIN, { status: s }).length)) === j([5, 2, 1, 1, 1]), j(["assigned", "in-store", "under-maintenance", "retired", "disposed"].map((s) => AR.listAssets(ADMIN, { status: s }).length)));
 // a write to the new stores leaves the old ones alone
-SL.recordStockMovement(ADMIN, { itemId: "SI-1", kind: "out", qty: 5, toPersonId: ROHAN, reason: "Printing" }, NOW);
-AR.returnAsset(ADMIN, "AST-0001", { condition: "good" }, NOW);
+SL.recordStockMovement(ADMIN, { itemId: "ITM-5", kind: "out", qty: 5, toPersonId: ROHAN, reason: "Printing" }, NOW);
+AR.returnAsset(ADMIN, "AST-0217", { condition: "good" }, NOW);
 const oldAfter = JSON.parse(oldReads());
 const oldBefore = JSON.parse(before);
 check("X7", "after writes to the new ledger and register, the old site's items, ledger, assets and vendors are unchanged", j([oldAfter.items, oldAfter.moves, oldAfter.assets, oldAfter.vendors]) === j([oldBefore.items, oldBefore.moves, oldBefore.assets, oldBefore.vendors]));
@@ -119,10 +123,10 @@ check("S21", "a correction that would take stock below zero is refused like any 
 check("S22", "nothing edits or deletes a movement: the module has no such function, and a returned record is a copy", !Object.keys(SL).some((k) => /delete|remove|edit|update.*Movement/i.test(k) && !/resetStockData|updateStockItem/.test(k)) && (() => { const m = SL.stockMovements(ADMIN)[0]; m.qty = 999; return SL.stockMovements(ADMIN)[0].qty !== 999; })());
 // items
 const added = SL.addStockItem(ADMIN, { name: "Sticky notes", category: "stationery", unit: "pack", reorderLevel: 5 }, NOW);
-check("S23", "an item is added with no stock (SI-7, on hand 0, so it is low at once)", added.ok && added.record.id === "SI-7" && added.record.onHand === 0 && SL.lowStock(ADMIN).some((i) => i.id === "SI-7"));
+check("S23", "an item is added with no stock (ITM-7, on hand 0, so it is low at once)", added.ok && added.record.id === "ITM-7" && added.record.onHand === 0 && SL.lowStock(ADMIN).some((i) => i.id === "ITM-7"));
 check("S24", "item names are unique (any case), no HTML; the category is the old site's four", !SL.addStockItem(ADMIN, { name: "sticky NOTES", category: "stationery", unit: "pack" }, NOW).ok && SL.addStockItem(ADMIN, { name: "<i>x</i>", category: "stationery", unit: "pack" }, NOW).field === "name" && SL.addStockItem(ADMIN, { name: "Tea", category: "drinks", unit: "box" }, NOW).field === "category");
-const off = SL.updateStockItem(ADMIN, "SI-7", { active: false }, NOW);
-check("S25", "an item no longer in use takes no new stock or issue, and leaves the low-stock list; a write-off or return still can", off.ok && mv({ itemId: "SI-7", kind: "in", qty: 1 }).field === "itemId" && !SL.lowStock(ADMIN).some((i) => i.id === "SI-7"));
+const off = SL.updateStockItem(ADMIN, "ITM-7", { active: false }, NOW);
+check("S25", "an item no longer in use takes no new stock or issue, and leaves the low-stock list; a write-off or return still can", off.ok && mv({ itemId: "ITM-7", kind: "in", qty: 1 }).field === "itemId" && !SL.lowStock(ADMIN).some((i) => i.id === "ITM-7"));
 check("S26", "an item's change names only its own fields (an id, onHand or a sample flag is refused)", !SL.updateStockItem(ADMIN, "SI-1", { onHand: 999 }, NOW).ok && !SL.updateStockItem(ADMIN, "SI-1", { id: "SI-9" }, NOW).ok && item("SI-1").onHand === 160 - 3 + 3);
 check("S27", "on a date: paper on 30 Sep 0, on 1 Oct 120, on 6 Oct 110 (the end of each day)", SL.onHand(ADMIN, "SI-1", "2026-09-30") === 0 && SL.onHand(ADMIN, "SI-1", "2026-10-01") === 120 && SL.onHand(ADMIN, "SI-1", "2026-10-06") === 110);
 
@@ -294,8 +298,8 @@ const audited = (label, run, kind, has = [], who = ADMIN) => {
   return r.ok && events() === n + 1 && e.kind === kind && e.actorId === who && has.every((s) => e.detail.includes(s)) && AU.AUDIT_KINDS.includes(kind) && Boolean(AU.AUDIT_LABEL[kind]);
 };
 const writes = [
-  ["A1", "a stock item added", () => SL.addStockItem(ADMIN, { name: "Tape", category: "stationery", unit: "roll", reorderLevel: 2 }, NOW), "stock-item-added", ["SI-7"]],
-  ["A2", "a stock item changed (field names)", () => SL.updateStockItem(ADMIN, "SI-7", { reorderLevel: 3 }, NOW), "stock-item-changed", ["SI-7", "reorderLevel"]],
+  ["A1", "a stock item added", () => SL.addStockItem(ADMIN, { name: "Tape", category: "stationery", unit: "roll", reorderLevel: 2 }, NOW), "stock-item-added", ["ITM-7"]],
+  ["A2", "a stock item changed (field names)", () => SL.updateStockItem(ADMIN, "ITM-7", { reorderLevel: 3 }, NOW), "stock-item-changed", ["ITM-7", "reorderLevel"]],
   ["A3", "a movement", () => SL.recordStockMovement(ADMIN, { itemId: "SI-1", kind: "out", qty: 2, toPersonId: ROHAN, reason: "Printing" }, NOW), "stock-moved", ["SM-14", "SI-1", ROHAN]],
   ["A4", "a correction", () => SL.reverseStockMovement(ADMIN, "SM-14", { reason: "Wrong person" }, NOW), "stock-reversed", ["SM-15", "SM-14"]],
   ["A5", "an asset added", () => AR.addAsset(ADMIN, { name: "Standing desk", category: "furniture", purchaseDate: "2026-11-01", purchasePrice: 45000, locationId: "OFF-1" }, NOW), "asset-added", ["AST-0013", "FA-13"]],
@@ -306,10 +310,10 @@ const writes = [
   ["A10", "back from maintenance", () => AR.closeMaintenance(ADMIN, "MR-3", { cost: 1500 }, NOW), "asset-maintenance-closed", ["AST-0013", "MR-3"]],
   ["A11", "retired", () => AR.retireAsset(ADMIN, "AST-0013", { reason: "Motor failed" }, NOW), "asset-retired", ["AST-0013"]],
   ["A12", "disposed of", () => AR.disposeAsset(ADMIN, "AST-0013", { reason: "Sold", saleValue: 9000 }, NOW), "asset-disposed", ["AST-0013"]],
-  ["A13", "a vendor added", () => AR.addVendor(ADMIN, { name: "QuickFix Services", email: "help@quickfix.example" }, NOW), "vendor-added", ["VN-3"]],
-  ["A14", "a vendor changed", () => AR.updateVendor(ADMIN, "VN-3", { phone: "+91 98111 22233" }, NOW), "vendor-changed", ["VN-3", "phone"]],
-  ["A15", "a vendor deactivated", () => AR.setVendorActive(ADMIN, "VN-3", false, NOW), "vendor-changed", ["VN-3", "deactivated"]],
-  ["A16", "a vendor deleted", () => AR.deleteVendor(ADMIN, "VN-3", NOW), "vendor-removed", ["VN-3"]],
+  ["A13", "a vendor added", () => AR.addVendor(ADMIN, { name: "QuickFix Services", email: "help@quickfix.example" }, NOW), "vendor-added", ["VEN-3"]],
+  ["A14", "a vendor changed", () => AR.updateVendor(ADMIN, "VEN-3", { phone: "+91 98111 22233" }, NOW), "vendor-changed", ["VEN-3", "phone"]],
+  ["A15", "a vendor deactivated", () => AR.setVendorActive(ADMIN, "VEN-3", false, NOW), "vendor-changed", ["VEN-3", "deactivated"]],
+  ["A16", "a vendor deleted", () => AR.deleteVendor(ADMIN, "VEN-3", NOW), "vendor-removed", ["VEN-3"]],
   ["A17", "a category default changed (by Finance)", () => AR.setDepreciationDefault(KABIR, "laptop", { wdvRatePercent: 40 }, NOW), "depreciation-changed", ["laptop", "wdvRatePercent"], KABIR],
   ["A18", "an asset's depreciation changed", () => AR.setAssetDepreciation(ADMIN, "AST-0001", { depreciationMethod: "wdv" }, NOW), "depreciation-changed", ["AST-0001", "depreciationMethod"]],
 ];

@@ -139,6 +139,15 @@ export function createRequest(actorId, fields = {}, now = Date.now()) {
   const payload = payloadOf(type, fields.payload, subject);
   if (!payload.ok) return payload;
   const b = readItBox();
+  // AS2: one open request for the same thing, and a return only of an asset the person holds
+  if (type === "asset-request" || type === "asset-return") {
+    const same = b.requests.find((x) => x.type === type && x.subjectPersonId === subject.id && OPEN_STATUSES.includes(x.status) && JSON.stringify(x.payload) === JSON.stringify(payload.payload));
+    if (same) return fail(type === "asset-request" ? `There is already an open request for this kind of asset (${same.id}).` : `There is already an open request to return ${payload.payload.assetTag} (${same.id}).`, "payload");
+  }
+  if (type === "asset-return") {
+    const seen = listAssets(can(actor, "assets:view-all") ? actor.id : subject.id).find((a) => a.tag === payload.payload.assetTag);
+    if (!seen || !(seen.holderId === subject.id || seen.heldByYou)) return fail(`${payload.payload.assetTag} isn't issued to ${subject.name}.`, "payload");
+  }
   const r = addRequest(b, actor, { type, subject, title: title.value, details: details.value, priority, payload: payload.payload }, now);
   if (!save(b)) return fail(SAVE_FAILED);
   logEvent(audit(actor.id, "it-request-created", r), now);

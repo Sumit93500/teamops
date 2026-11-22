@@ -19,8 +19,8 @@ import { DEPARTMENTS } from "../../../assets/js/data/users.js";
 import { ROLES, overridesOf } from "../../../assets/js/config/roles.js";
 import { formatDay, plural, todayIso } from "../../../assets/js/ui/leave-view.js";
 import { leaveBalanceChart, valuesOf } from "../../../assets/js/data/chart-data.js";
-import { allItems, assetsFor } from "../../../assets/js/data/inventory-store.js";
-import { conditionBadge } from "../../../assets/js/ui/inventory-view.js";
+import { listAssets } from "../../../assets/js/data/asset-register.js";   // AS2: the new register, not the old inventory store
+import { CONDITIONS } from "../../../assets/js/data/asset-rules.js";
 import { officeOf } from "../../../assets/js/data/offices-store.js";
 import { homeOf, locationChangesFor } from "../../../assets/js/data/locations-store.js";
 import { devicesFor, resetDevices } from "../../../assets/js/data/devices-store.js";
@@ -73,11 +73,13 @@ function daysAway(person) {
   const day = (iso) => { const d = parseDate(iso); return Date.UTC(d.year, d.month, d.day) / 86400000; };
   return leavingPeriods(person).reduce((sum, p) => sum + Math.max(0, day(p.back) - day(p.lastDay) - 1), 0);
 }
-function heldText(userId) {
-  const held = assetsFor(userId).sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true }));
+// AS2: what a person holds now, from the new register (the viewer needs assets:view-all to see it: HR and the Admin do)
+const heldBy = (viewerId, personId) => listAssets(viewerId, { status: "assigned" }).filter((a) => a.holderId === personId).sort((a, b) => a.tag.localeCompare(b.tag, "en", { numeric: true }));
+const CONDITION_BADGE = { good: "badge badge--success badge--square", fair: "badge badge--warning badge--square", poor: "badge badge--danger badge--square" };
+function heldText(viewerId, personId) {
+  const held = heldBy(viewerId, personId);
   if (!held.length) return "";
-  const names = new Map(allItems().map((i) => [i.sku, i.name]));
-  return `They still hold ${held.map((a) => `${a.id} (${names.get(a.sku) ?? a.sku})`).join(", ")}. Take ${held.length === 1 ? "it" : "them"} back on Asset assignment.`;
+  return `They still hold ${held.map((a) => `${a.tag} (${a.name})`).join(", ")}. Take ${held.length === 1 ? "it" : "them"} back on Asset assignment.`;
 }
 
 function DeactivateDialog({ user, onClose, onDone }) {
@@ -85,7 +87,7 @@ function DeactivateDialog({ user, onClose, onDone }) {
   const toast = useToast();
   const [date, setDate] = useState(todayIso());
   const [error, setError] = useState(null);
-  const held = heldText(user.id);
+  const held = heldText(userId, user.id);
   const submit = (e) => {
     e.preventDefault();
     setError(null);
@@ -178,8 +180,7 @@ function Profile({ initial }) {
   const chart = leaveBalanceChart(user.id);
   const [allowance, left] = ["Allowance", "Left"].map((n) => valuesOf(chart, n));
   const leave = chart.labels.map((type, i) => ({ type, allowance: allowance[i], left: left[i] })).filter((r) => r.allowance !== null);
-  const assets = assetsFor(user.id).sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true }));
-  const names = new Map(allItems().map((i) => [i.sku, i.name]));
+  const assets = heldBy(userId, user.id);
   const deleteWhy = own ? "You can't delete your own account." : (deleteProblem(userId, user.id) ?? "");
   const statusWhy = own && !inactive ? "You can't deactivate your own account." : "";
 
@@ -196,7 +197,7 @@ function Profile({ initial }) {
     if (own) { toast("You can't delete your own account.", "danger"); return; }
     const problem = deleteProblem(userId, user.id);
     if (problem) { toast(problem, "danger"); return; }
-    const held = heldText(user.id);
+    const held = heldText(userId, user.id);
     if (!(await confirm({ message: `Delete ${user.name}? They'll be removed from the employee list. Only Reset demo data brings them back.${held ? `\n${held}` : ""}`, confirmLabel: "Delete", danger: true }))) return;
     const r = deleteUser(userId, user.id);
     if (!r.ok) { toast(r.error, "danger"); return; }
@@ -285,7 +286,7 @@ function Profile({ initial }) {
             {relation === "people" && (
               <Card id="profile-assets" title="Assets" meta={String(assets.length)}>
                 {!assets.length ? <p className="ds-hint">No assets assigned</p> : (
-                  <Kv rows={assets.map((a) => { const b = conditionBadge(a.condition); return [names.get(a.sku) ?? a.sku, <span>{a.id} since {formatDay(a.since, true)} <Badge {...badgeOf(b.className)}>{b.textContent}</Badge></span>]; })} />
+                  <Kv rows={assets.map((a) => [a.name, <span>{a.tag} since {formatDay(a.since, true)} {a.condition && <Badge {...badgeOf(CONDITION_BADGE[a.condition])}>{CONDITIONS[a.condition].label}</Badge>}</span>])} />
                 )}
               </Card>
             )}

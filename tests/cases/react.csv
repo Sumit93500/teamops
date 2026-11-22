@@ -26,6 +26,118 @@ react-access.D,react-access,fin: lands where the old site does,x3 (3 roles)
 react-access.P.roles-list,react-access,admin on access/roles-list.html at 412: the same cards,x1
 react-access.P.role-editor?role=hr,react-access,admin on access/role-editor.html?role=hr at 412: the same cards,x1
 react-access.X1,react-access,shots written,x1
+react-as2.A1,react-as2,"admin: opens 5 of the 5 pages, the others show the 403 page",x5 (5 roles)
+react-as2.A2,react-as2,"admin: the sidebar lists My assets, Inventory, Stock movements, Asset assignment, Vendors",x3 (3 roles)
+react-as2.A3,react-as2,"admin: no ""being rebuilt"" page for the five",x5 (5 roles)
+react-as2.A1.it,react-as2,"it: opens 5 of the 5 pages, the others show the 403 page",x1
+react-as2.A2.it,react-as2,"it: the sidebar lists My assets, Inventory, Stock movements, Asset assignment, Vendors",x1
+react-as2.A3.it,react-as2,"it: no ""being rebuilt"" page for the five",x1
+react-as2.A2#2,react-as2,emp: the sidebar lists My assets,x2 (2 roles)
+react-as2.A4,react-as2,"an employee granted the OLD permissions (inventory:view, assets:view, vendors:view) still gets the 403 page on all four: the pages follow the new permissions",x1
+react-as2.I1,react-as2,"admin: 10 assets, the columns include Purchase price and Book value, with an Actions column",x1
+react-as2.I2,react-as2,admin: the money is there,x2 (2 roles)
+react-as2.I3,react-as2,admin: the value columns carry numbers,x2 (2 roles)
+react-as2.I1#2,react-as2,"fin: 10 assets, the columns include Purchase price and Book value, without an Actions column",x1
+react-as2.I1#3,react-as2,"hr: 10 assets, the columns have no Purchase price or Book value, without an Actions column",x1
+react-as2.I2#2,react-as2,"hr: no ₹, no Purchase price or Book value, no money figure anywhere on the page",x1
+react-as2.I3#2,react-as2,"hr: no price or salvage value in the page's HTML at all (the DOM, not just the text)",x1
+react-as2.I1.it,react-as2,"it: 10 assets, the columns have no Purchase price or Book value, with an Actions column",x1
+react-as2.I2.it,react-as2,"it: no ₹, no Purchase price or Book value, no money figure anywhere on the page",x1
+react-as2.I3.it,react-as2,"it: no price or salvage value in the page's HTML at all (the DOM, not just the text)",x1
+react-as2.I4,react-as2,"the tags are the old register's seven plus the three samples, each a link to its page",x1
+react-as2.I5,react-as2,"the counter says '10 assets'; the KPI cards say 10, 5 assigned, 2 in store, 1 under maintenance",x1
+react-as2.I6,react-as2,the 'details missing' note: 7 assets (the imported ones) have no purchase date or price; each such row says so,x1
+react-as2.I7,react-as2,the Office filter lists EVERY active office (the head office here),x1
+react-as2.I8,react-as2,(the offices box is read from its seed: the head office only),x1
+react-as2.I9,react-as2,"Status = Assigned: 5 rows, the counter 'Showing 5 of 10 assets'",x1
+react-as2.I10,react-as2,"Holder = Arjun Kapoor: his three (AST-0188, AST-0302, AST-0455)",x1
+react-as2.I11,react-as2,Category = Monitor: AST-0302 only,x1
+react-as2.I12,react-as2,Warranty ends within 90 days: none today (22 Nov 2026) among these ten; the table says nothing matches,x1
+react-as2.I13,react-as2,"search 'latitude 5440': the three Dell 5440s (0217, 0218 and the others by name) match by name",x1
+react-as2.D1,react-as2,"AST-0009 (the sample printer, with its purchase details): details, lifecycle, history, maintenance, and the depreciation panel with figures, chart and schedule for the Admin",x1
+react-as2.D2,react-as2,"the figures follow the AS1 rules: straight line 5 years, cost 32,500, salvage 1,625; purchased 12 Jun 2023: book value ₹11,200.48 after 3.45 years (21,299.52 taken: three full years of 6,175 and 164 of 365 days of the fourth); this and next year's charge 6,175",x1
+react-as2.D3,react-as2,"the chart is the shared AreaChart with its accessible name, a readout and 'Show as table'",x1
+react-as2.D4,react-as2,"the lifecycle lists added, issued (none), maintenance out and back; the maintenance table has the open-and-closed record with its cost for the Admin",x1
+react-as2.D5,react-as2,"AST-0119 (imported, no purchase details): says so, no figures made up, and the Admin sees why there is no depreciation",x1
+react-as2.D6,react-as2,"AST-0217's history: Divya Menon (start not recorded) to 14 Sep 2026, then Sneha Rao from 18 Sep 2026, holding now",x1
+react-as2.D7,react-as2,"AST-0099 (in repair): an open maintenance record 'Sent to the vendor for repair' from 8 Sep 2026, its cost not made up",x1
+react-as2.D8,react-as2,an unknown tag: 'You can't see this asset.' (the same words as for one a person may not see),x1
+react-as2.D9,react-as2,"hr: AST-0009's page has details, lifecycle and maintenance but NO depreciation panel, no ₹, no cost, no price in the HTML",x1
+react-as2.D9.it,react-as2,"it: AST-0009's page has details, lifecycle and maintenance but NO depreciation panel, no ₹, no cost, no price in the HTML",x1
+react-as2.D10,react-as2,"Finance on AST-0011 (disposed, sold for 1,500): book value at disposal, the sale value and the loss are shown; no actions",x1
+react-as2.X1,react-as2,"admin: each status offers exactly the moves the state machine allows (in store: edit, issue, maintenance, retire; assigned: edit, return; under maintenance: edit, back; retired: edit, dispose; disposed: none)",x1
+react-as2.X1.it,react-as2,"it: each status offers exactly the moves the state machine allows (in store: edit, issue, maintenance, retire; assigned: edit, return; under maintenance: edit, back; retired: edit, dispose; disposed: none)",x1
+react-as2.X1#2,react-as2,fin: no action button on any asset (no custodian permission),x2 (2 roles)
+react-as2.X2,react-as2,"Asset assignment, Held tab: only 'return' buttons (an assigned asset can't be issued again, retired or disposed there)",x1
+react-as2.S1,react-as2,"12 items in all (10 on the first page, 2 on the second)",x1
+react-as2.S2,react-as2,"on hand is the old figure: paper 42, coffee 8, HDMI 0, chairs 14, laptop 5440: 6, cards 30",x1
+react-as2.S3,react-as2,"low-stock badges: 'Low' (paper, coffee, keyboards), 'Out of stock' (HDMI), 'No reorder level' (the Latitude 5410 and 5420 and the MacBook, reorder level 0), 'In stock' for the rest; the note counts 4 items",x1
+react-as2.S4,react-as2,"Record a movement opens a dialog with the ledger's rules in its description, the first field focused",x1
+react-as2.S5,react-as2,an issue of more than is on hand: the ledger's own words under the quantity ('below zero ... only 42'); nothing recorded; the dialog stays,x1
+react-as2.S6,react-as2,"5 reams out to Rohan: recorded (SM-18, 5 ream... unit), the dialog closes, on hand is 37",x1
+react-as2.S7,react-as2,"the Movements tab: newest first; the new issue is first, with the person, the quantity −5 and its reason",x1
+react-as2.S8,react-as2,"a correction is a new opposite movement (a return by Rohan) naming the original; the original stays, shows 'Corrected' and offers no second correction",x1
+react-as2.S9,react-as2,a date range with nothing in it says 'No data in this range.'; the counter says 'Showing 0 of ...',x1
+react-as2.S10,react-as2,an item name with HTML is refused at its field; one with a duplicate name too,x1
+react-as2.S11,react-as2,"HR reads the stock (items and ledger) but has no Add item, Record movement, Edit or Correct button",x1
+react-as2.V1,react-as2,"the 5 old vendors with their contacts, supplies and terms; QuickPrint is 'On hold'; no email or GSTIN is made up (Not recorded)",x1
+react-as2.V2,react-as2,"the rule is on the page: a named vendor can't be deleted, only deactivated",x1
+react-as2.V3,react-as2,"TechNova (named on the printer, the old laptop and the phone): Delete is disabled and the reason is beside it, 'Named on 4 records' (3 assets, 1 maintenance)",x1
+react-as2.V4,react-as2,Sharma (named on nothing): Delete is enabled,x1
+react-as2.V5,react-as2,a bad email is said at its field ('Enter a valid email address.') and nothing is saved,x1
+react-as2.V6,react-as2,a bad GSTIN is said at its field,x1
+react-as2.V7,react-as2,"added: 6 vendors, id VEN-6, active",x1
+react-as2.V8,react-as2,deactivating asks first; CoolAir then reads 'Inactive' and offers Reactivate,x1
+react-as2.V9,react-as2,deleting an unused vendor asks first and removes it (5 left),x1
+react-as2.V10,react-as2,"HR reads the vendors, with no Add, Edit, Deactivate or Delete",x1
+react-as2.M1,react-as2,"Arjun: his three assets now (AST-0188 fair, AST-0302, AST-0455), 'Issued 12 Jan 2023', no ₹ and no value anywhere, nothing of anyone else's",x1
+react-as2.M2,react-as2,"the page's HTML has no price, salvage, cost or another person's tag",x1
+react-as2.M3,react-as2,Rohan: AST-0119 now; past: AST-0010 (the retired laptop he handed back 3 Jul 2024),x1
+react-as2.M4,react-as2,Sneha (who manages Rohan and Arjun): only her own AST-0217 — none of the team's assets,x1
+react-as2.M5,react-as2,"Request an asset opens a dialog: the kinds of asset, how soon, what it is for; the first field focused",x1
+react-as2.M6,react-as2,"the request is an IT request (asset-request, monitor, open, ITR-1) from Arjun; the page lists it under 'Your open asset requests'",x1
+react-as2.M7,react-as2,asking for the same kind again is refused in the desk's words ('There is already an open request for this kind of asset (ITR-1)') and nothing is added,x1
+react-as2.M8,react-as2,Request return of AST-0188 makes an asset-return request naming the tag; its row then says 'Return requested' (no second button),x1
+react-as2.M9,react-as2,"My requests lists both IT requests, type 'IT', status 'Waiting for IT', newest first; Cancel is offered; the 'Request an asset' button is there again",x1
+react-as2.M10,react-as2,the same dialog opens from My requests,x1
+react-as2.M11,react-as2,the type filter 'IT' shows just those two,x1
+react-as2.P1,react-as2,"Arjun's profile Assets card (the new register): 3, each 'name / tag since date' with its condition (Dell Latitude 5420 AST-0188 since 12 Jan 2023 Fair)",x1
+react-as2.P2,react-as2,Kabir has none: 'No assets assigned',x1
+react-as2.P3,react-as2,"Reset demo data clears the NEW stores (register, ledger, licences, IT desk) ...",x1
+react-as2.P4,react-as2,"... and leaves the old inventory store's keys alone (the marker is still there, byte for byte)",x1
+react-as2.F1,react-as2,"AST-0218 starts in store; offered: edit, issue, maintenance, retire",x1
+react-as2.F2,react-as2,"the person picker lists active people only: Ananya Iyer yes, Divya Menon (has left) no",x1
+react-as2.F3,react-as2,"a date in the future is refused in the register's words, under the field; the asset didn't move",x1
+react-as2.F4,react-as2,issued to Ananya on 20 Nov 2026: Assigned; now only edit and return are offered; the lifecycle gained 'Issued to Ananya Iyer',x1
+react-as2.F5,react-as2,a return dated before the issue is refused (not before 2026-11-20),x1
+react-as2.F6,react-as2,"taken back: In store again, condition Fair",x1
+react-as2.F7,react-as2,sending for maintenance with no issue: 'Issue is required.' at its field,x1
+react-as2.F8,react-as2,a next service on the same day is refused: 'must be after',x1
+react-as2.F9,react-as2,under maintenance; offered: edit and 'back from maintenance' only; the record is open,x1
+react-as2.F10,react-as2,"back from maintenance: In store; the record is Done with its cost ₹1,800.50",x1
+react-as2.F11,react-as2,retiring asks 'Retire AST-0218?' first; a 2-character reason is then refused at its field,x1
+react-as2.F12,react-as2,retired; only edit and dispose are offered; the chip is hatched 'Retired',x1
+react-as2.F13,react-as2,a negative sale value is refused at its field,x1
+react-as2.F14,react-as2,disposed: no action is offered at all; the asset page says when and why,x1
+react-as2.F15,react-as2,"the history only grew: added, issued, returned, maintenance out, back, retired, disposed (7 events, in order)",x1
+react-as2.F16,react-as2,"every step is in the audit trail (issued, returned, maintenance opened and closed, retired, disposed) with no amount in its words",x1
+react-as2.F17,react-as2,"Add asset with nothing filled: the register's words at the fields (name required, category, purchase date, price, ...)",x1
+react-as2.F18,react-as2,the Office select lists the active offices,x1
+react-as2.F19,react-as2,"added: tag AST-0456 (after the old register's AST-0455), in store, price 65,432.10, salvage 5% = 3,271.61, category defaults",x1
+react-as2.F20,react-as2,completing an imported asset: a purchase date after it was first issued (3 Mar 2025) is refused in the register's words,x1
+react-as2.F21,react-as2,"with the date and price saved, the 'details missing' note goes and the depreciation panel appears with real figures",x1
+react-as2.F22,react-as2,"the salvage value took the category default (5% of 1,89,900 = 9,495)",x1
+react-as2.K1,react-as2,every button on Inventory has a name (text or aria-label),x1
+react-as2.K2,react-as2,every row action is named with its asset ('Issue AST-0218'),x1
+react-as2.K3,react-as2,"Enter on a row's Issue opens the dialog, focus on its first field (Person)",x1
+react-as2.K4,react-as2,Tab stays inside the dialog,x1
+react-as2.K5,react-as2,"Esc closes it (nothing was entered, so no 'discard' question); focus goes back to the Issue button",x1
+react-as2.K6,react-as2,"after typing something, Esc asks 'Discard what you've entered?' (the shared guard); Keep editing leaves the dialog open",x1
+react-as2.K7,react-as2,Keep editing: the dialog is still open with the person kept,x1
+react-as2.W1,react-as2,"no sideways scroll on the five pages at 412, 768 and 1280, light and dark",x1
+react-as2.C1.light,react-as2,"light: every status chip, badge and 'Details missing' pill's words reach 4.5:1 on their background (20 read)",x1
+react-as2.C1.dark,react-as2,"dark: every status chip, badge and 'Details missing' pill's words reach 4.5:1 on their background (20 read)",x1
+react-as2.E1,react-as2,no page or console errors in the whole run,x1
 react-att.X1,react-att,shots written,x1
 react-att3.M1,react-att3,employee: not checked in yet; Check-In From lists only the head office (with its radius); Use my location; the line says to press it; a new device (0 of 2); Check in off; the privacy line,x1
 react-att3.M2,react-att3,nothing was read or written by opening the page (no device token made),x1
@@ -556,7 +668,7 @@ react-f2.O1,react-f2,"nothing filtered: ""N people, 1 joining soon"", every pers
 react-f2.O2,react-f2,"the joiner listed ""joins on 1 Dec 2026""; People working counts only those already working",x1
 react-f2.O3,react-f2,"a search on: ""Showing 1 of N people""",x1
 react-f2.P1,react-f2,no placeholder page is linked anywhere on any role's landing page (navigation included),x1
-react-f2.P2,react-f2,each of the 15 placeholder URLs shows the neutral page with Back to dashboard (the role's landing),x1
+react-f2.P2,react-f2,each of the 10 placeholder URLs shows the neutral page with Back to dashboard (the role's landing),x1
 react-f2.P3,react-f2,no placeholder or round wording in app/src outside comments (Gallery aside),x1
 react-f2.U1,react-f2,"the Admin's inbox: ""Locked account: Arjun Kapoor"", 5 failed sign-ins, with Dismiss and Unlock now",x1
 react-f2.U2,react-f2,the bell counts it,x1
@@ -1186,7 +1298,7 @@ react-side.A2,react-side,"collapsed: the label shows as a chip on hover (""Atten
 react-side.A3,react-side,"collapsed: the active item is marked (aria-current, its own background)",x1
 react-side.A4,react-side,collapsed: no group headings; the brand is its mark only; the count is a small number on the icon; the person's avatar stays in the header,x1
 react-side.A5,react-side,expanded: every item shows its icon and label; the group headings; no section buttons; the brand's name; the avatar and name; the count; Dashboard current,x1
-react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (24), the same links as collapsed",x5 (5 roles)
+react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (29), the same links as collapsed",x5 (5 roles)
 react-side.K1.expanded,react-side,"expanded: Tab goes brand, the toggle, then the first item (Dashboard)",x1
 react-side.K2.expanded,react-side,"expanded: Enter toggles, Space toggles back, focus stays on the toggle",x1
 react-side.K1.collapsed,react-side,"collapsed: Tab goes brand, the toggle, then the first item (Dashboard)",x1

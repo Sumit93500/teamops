@@ -65,7 +65,9 @@ async function worker() {
     const [o, n] = [await open(O, who, p, false), await open(N, who, p, true)];
     // E1 (ruled): Finance and a manager open users/user-profile.html in the app (the old site sends them to 403)
     const e1 = p === "users/user-profile.html" && (who === "fin" || who === "mgr") && n.at === p;
-    const ok = (e1 || (n.at === o.at && n.shell === o.shell)) && !n.errs.length && n.main > 0; if (n.shell) shells++;
+    // AS2 (the brief): the four inventory pages follow the AS1 permissions (assets:view-all, stock:view): HR and Finance open them in the app, the old site sends them to 403
+    const as2 = (who === "hr" || who === "fin") && ["inventory/items.html", "inventory/asset-assignment.html", "inventory/stock-movements.html", "inventory/vendors.html"].includes(p) && o.at === "errors/403.html" && n.at === p;
+    const ok = (e1 || as2 || (n.at === o.at && n.shell === o.shell)) && !n.errs.length && n.main > 0; if (n.shell) shells++;
     const kind = n.at === "auth/login.html" && p !== n.at ? "to sign-in" : n.at === "errors/403.html" && p !== n.at ? "to 403" : n.at === p ? "opened" : "elsewhere";
     tally[`${who} ${kind}`] = (tally[`${who} ${kind}`] ?? 0) + 1;
     if (ok) passed++; else { failed++; fails.push(`FAIL  ${who.padEnd(5)} ${p}  old->${o.at}  new->${n.at}  main=${n.main}  shell old ${o.shell} new ${n.shell}  ${n.errs.join(" | ")}`); }

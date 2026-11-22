@@ -11,6 +11,7 @@ import { PUBLIC_PAGES, pageUrl } from "./routes.js";
 import { tabTitle, COMPANY } from "./data/company.js";
 import { can } from "../../assets/js/core/rbac.js";
 import { isManager } from "../../assets/js/data/reporting.js";
+import { isAssetPage, mayOpenAssetPage } from "./shell/assetAccess.js";   // AS2
 
 // E1: pages the app also opens to people the old guard doesn't (the old site keeps its own rule): the employee profile for
 // a manager (their direct reports' team fields) and for Finance (team and pay fields). What each sees is the page's to
@@ -34,6 +35,8 @@ export default function RequireRoute({ page, children }) {
 
   if (isPublic) return children;
   if (!session || !user) return <Navigate to={pageUrl("auth/login.html")} replace />;
-  if (!canOpenPage(page) && !APP_ALSO[page]?.(user)) return <Navigate to={pageUrl("errors/403.html")} replace />;
+  // AS2: the inventory pages follow the AS1 / IT1 permissions (shell/assetAccess.js), not config/routes.js's old Admin-only ones
+  const allowed = isAssetPage(page) ? mayOpenAssetPage(page) : canOpenPage(page) || APP_ALSO[page]?.(user);
+  if (!allowed) return <Navigate to={pageUrl("errors/403.html")} replace />;
   return children;
 }

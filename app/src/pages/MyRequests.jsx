@@ -12,6 +12,9 @@ import { regularizationsFor, cancelRegularization } from "../../../assets/js/dat
 import { expensesFor, cancelExpense, waitingOn } from "../../../assets/js/data/expenses-store.js";
 import { assetRequestsFor, cancelAssetRequest, waitingOn as assetWaitingOn } from "../../../assets/js/data/asset-requests-store.js";
 import { ownRequests } from "../../../assets/js/data/own-requests.js";
+import { requestsFor as itRequestsFor, cancelRequest as cancelItRequest } from "../../../assets/js/data/it-desk.js";   // AS2: IT requests (asset requests and returns)
+import { TYPES as IT_TYPES } from "../../../assets/js/data/it-rules.js";
+import { RequestAssetDialog, IT_STATUS } from "../ui/assetRequests.jsx";
 import { categoryLabel, stageBadge, expenseSteps } from "../../../assets/js/ui/expense-view.js";
 import { requestTitle as assetTitle, statusBadgeOf, endNote, assetRequestSteps } from "../../../assets/js/ui/asset-request-view.js";
 import { formatDay, requestDates, requestTitle, typeLabel, rejectionNote, newestPending, pendingSteps, nameOf } from "../../../assets/js/ui/leave-view.js";
@@ -29,8 +32,10 @@ import { pageUrl } from "../routes.js";
 
 const PAGE = "requests/my-requests.html";
 const TABS = [["all", "All"], ["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]];
-const TYPES = [["", "All types"], ["leave", "Leave"], ["asset", "Asset"], ["attendance", "Attendance"], ["expense", "Expense"]];
-const BADGE_TEXT = { leave: "Leave", attendance: "Attendance", expense: "Expense", asset: "Asset" };
+const TYPES = [["", "All types"], ["leave", "Leave"], ["asset", "Asset"], ["it", "IT"], ["attendance", "Attendance"], ["expense", "Expense"]];
+const BADGE_TEXT = { leave: "Leave", attendance: "Attendance", expense: "Expense", asset: "Asset", it: "IT" };
+// AS2: an IT request's tab: open, in progress, awaiting approval and approved are pending; done is approved (carried out)
+const IT_TAB = { done: "approved", rejected: "rejected", cancelled: "cancelled" };
 const names = (ids) => ids.map(nameOf).join(", ");
 const correctionTitle = (r) => `Regularization, ${formatDay(r.date)}`;
 const expenseTitle = (c) => `${categoryLabel(c.category)}, ${rupees(c.amount)}`;
@@ -65,9 +70,11 @@ export default function MyRequests() {
   const confirm = useConfirm();
   const [tab, setTab] = useState(0);
   const [type, setType] = useState("");
+  const [asking, setAsking] = useState(false);
   const d = useData(() => {
     if (!getUser(userId)) return null;
-    const rows = ownRequests(userId).map(({ kind, request, status }) => ({ kind, r: request, status, id: request.id, sent: request.appliedOn }))
+    const it = itRequestsFor(userId, { mine: true }).map((request) => ({ kind: "it", r: request, status: IT_TAB[request.status] ?? "pending", id: request.id, sent: request.createdAt.slice(0, 10) }));
+    const rows = [...ownRequests(userId).map(({ kind, request, status }) => ({ kind, r: request, status, id: request.id, sent: request.appliedOn })), ...it]
       .sort((a, b) => b.sent.localeCompare(a.sent) || b.id.localeCompare(a.id));
     const pending = newestPending([...requestsFor(userId), ...regularizationsFor(userId), ...expensesFor(userId), ...assetRequestsFor(userId)]);
     return { rows, pending };
@@ -80,11 +87,13 @@ export default function MyRequests() {
       attendance: () => [`Cancel your correction request for ${formatDay(r.date)}?`, "Cancel request"],
       expense: () => [`Cancel your expense claim for ${expenseTitle(r)}?`, "Cancel claim"],
       asset: () => [`Cancel your asset request (${assetTitle(r)})?`, "Cancel request"],
+      it: () => [`Cancel your IT request (${r.title})?`, "Cancel request"],
     }[kind]();
     if (!(await confirm({ message: ask[0], confirmLabel: ask[1], cancelLabel: "Keep it", danger: true }))) return;
     if (kind === "leave") { const res = cancelLeave(r.id, userId); showToast(res.ok ? "Leave request cancelled." : res.error, res.ok ? "success" : "danger"); }
     if (kind === "attendance") { const res = cancelRegularization(r.id, userId); showToast(res.ok ? "Correction request cancelled." : "Couldn't cancel the request. It may already have been decided.", res.ok ? "success" : "danger"); }
     if (kind === "expense") { const res = cancelExpense(r.id, userId); showToast(res.ok ? "Expense claim cancelled." : "Couldn't cancel the claim. It may already have been decided.", res.ok ? "success" : "danger"); }
+    if (kind === "it") { const res = cancelItRequest(userId, r.id, "Cancelled by the person who asked"); showToast(res.ok ? "IT request cancelled." : res.error, res.ok ? "success" : "danger"); }
     if (kind === "asset") { const res = cancelAssetRequest(r.id, userId); showToast(res.ok ? "Asset request cancelled." : "Couldn't cancel the request. An asset may already have been handed over.", res.ok ? "success" : "danger"); }
     bump();
   };
@@ -92,20 +101,20 @@ export default function MyRequests() {
   const counts = { all: d.rows.length };
   ["pending", "approved", "rejected"].forEach((s) => { counts[s] = d.rows.filter((x) => x.status === s).length; });
   const shown = d.rows.filter((x) => (which === "all" || x.status === which) && (!type || x.kind === type));
-  const title = (x) => ({ leave: requestTitle, attendance: correctionTitle, expense: expenseTitle, asset: assetTitle }[x.kind](x.r));
-  const status = (x) => (x.kind === "asset" ? <FromNode node={statusBadgeOf(x.r)} /> : x.kind === "expense" && x.r.status === "paid" ? <FromNode node={stageBadge(x.r)} /> : <StatusBadge status={x.r.status} />);
+  const title = (x) => (x.kind === "it" ? x.r.title : { leave: requestTitle, attendance: correctionTitle, expense: expenseTitle, asset: assetTitle }[x.kind](x.r));
+  const status = (x) => (x.kind === "it" ? <Badge tone={IT_STATUS[x.r.status]?.[1] ?? ""} dot>{IT_STATUS[x.r.status]?.[0] ?? x.r.status}</Badge> : x.kind === "asset" ? <FromNode node={statusBadgeOf(x.r)} /> : x.kind === "expense" && x.r.status === "paid" ? <FromNode node={stageBadge(x.r)} /> : <StatusBadge status={x.r.status} />);
   const actions = (x) => {
     const r = x.r;
-    const cancellable = x.kind === "asset" ? ["pending", "approved"].includes(r.status) : r.status === "pending";
+    const cancellable = x.kind === "it" ? ["open", "in-progress", "awaiting-approval", "approved", "rejected"].includes(r.status) : x.kind === "asset" ? ["pending", "approved"].includes(r.status) : r.status === "pending";
     if (cancellable) return <button className="btn btn--sm btn--danger" type="button" data-permission="requests:cancel" hidden={!canCancel || undefined} onClick={() => cancel(x.kind, r)}>Cancel</button>;
-    const note = x.kind === "asset" ? endNote(r) : r.status === "rejected" ? rejectionNote(r) : "";
+    const note = x.kind === "it" ? (r.status === "done" && r.closedNote ? `Asset ${r.closedNote}` : "") : x.kind === "asset" ? endNote(r) : r.status === "rejected" ? rejectionNote(r) : "";
     return note ? <span className="text-sm text-muted">{note}</span> : null;
   };
   const columns = [
     { key: "title", label: "Request", render: (x) => <span className="table__user-name">{title(x)}</span> },
     { key: "type", label: "Type", render: (x) => <Badge square>{BADGE_TEXT[x.kind]}</Badge> },
-    { key: "sent", label: "Sent", render: (x) => formatDay(x.r.appliedOn) },
-    { key: "with", label: "With", render: (x) => withText(x.kind, x.r) },
+    { key: "sent", label: "Sent", render: (x) => formatDay(x.sent) },
+    { key: "with", label: "With", render: (x) => (x.kind === "it" ? (x.r.assignedTo ? names([x.r.assignedTo]) : "IT desk") : withText(x.kind, x.r)) },
     { key: "status", label: "Status", render: status },
     { key: "actions", label: "Actions", actions: true, render: actions },
   ];
@@ -125,6 +134,7 @@ export default function MyRequests() {
         <div className="page-header__actions">
           <Link className="btn" to={pageUrl("leave/apply-leave.html")} data-permission="leave:create" hidden={!canLeave || undefined}>Apply for leave</Link>
           <Link className="btn" to={pageUrl("requests/claim-expense.html")} data-permission="expenses:create" hidden={!canClaim || undefined}>Claim an expense</Link>
+          <button className="btn" type="button" id="request-asset" data-permission="assets:request" hidden={!canAsset || undefined} onClick={() => setAsking(true)}>Request an asset</button>
         </div>
       </div>
       <div className="grid grid-main-aside">
@@ -136,7 +146,7 @@ export default function MyRequests() {
             </select>
           </div>
           <Table bare pager={false} tableClass="table table--fit" columns={columns} rows={shown} rowKey={(x) => `${x.kind}-${x.id}`}
-            rowProps={(x) => (x.kind === "expense" ? { "data-claim-id": x.id } : x.kind === "asset" ? { "data-request-id": x.id } : {})} empty="No requests match these filters." />
+            rowProps={(x) => (x.kind === "expense" ? { "data-claim-id": x.id } : x.kind === "asset" || x.kind === "it" ? { "data-request-id": x.id } : {})} empty="No requests match these filters." />
           <div className="card__footer"><span className="card__meta">{countText(shown.length, d.rows.length, "request", { filtered: shown.length !== d.rows.length })}</span></div>
         </section>
         <aside className="stack">
@@ -150,6 +160,7 @@ export default function MyRequests() {
           <div className="alert alert--info">You can cancel a request while it is still pending. Once it is approved or rejected, it can't be changed.</div>
         </aside>
       </div>
+      {asking && <RequestAssetDialog onClose={() => setAsking(false)} />}
     </Frame>
   );
 }

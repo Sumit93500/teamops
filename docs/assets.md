@@ -1,15 +1,16 @@
 # Assets and inventory
 
-Two layers live side by side:
+Three things live side by side:
 
-- **The data layer (AS1, 2026-11-22):** a stock ledger, a fixed-asset register, depreciation, maintenance and vendors. Data and rules only; the screens come in the next round. It has its own storage keys and never writes the old site's.
-- **The old site's inventory** (rounds 6 to 13): its five pages, their store and asset requests, unchanged. The React profile still reads its `assetsFor`, and Reset demo data resets it.
+- **The data layer (AS1, 2026-11-22):** a stock ledger, a fixed-asset register, depreciation, maintenance and vendors. Data and rules, with their own storage keys; they never write the old site's.
+- **The screens (AS2, 2026-11-22):** the five inventory pages in the React app (Inventory with one asset's page, Asset assignment, Stock movements, Vendors, My assets), plus "Request an asset" and "Request return" through the IT desk. They read and write the AS1 stores only.
+- **The old site's inventory** (rounds 6 to 13): its store and asset requests. Its five static pages are replaced by the screens above. Its store is read once, by the import below, and never written; Reset demo data still resets the old asset-request chain.
 
 ## The data layer (AS1)
 
 **Files:** `assets/js/data/asset-rules.js` (lists and checks, pure), `data/depreciation.js` (the maths, pure), `data/stock-ledger.js` (stock items and movements), `data/asset-register.js` (assets, their history, maintenance, vendors, depreciation defaults). Tests: `tests/live/assetdata.mjs` (3 zones).
 
-**Storage:** `officeos:stock-ledger` and `officeos:asset-register`, read through `pureBox`. A read never writes: until the first write, everyone reads the sample and nothing is stored. `resetStockData()` and `resetAssetRegister()` clear them (not yet on the Reset demo data button: that is for the screens round).
+**Storage:** `officeos:stock-ledger` and `officeos:asset-register`, read through `pureBox`. A read never writes: until the first write, everyone reads the sample and nothing is stored. `resetStockData()` and `resetAssetRegister()` clear them (AS2: both are on the Reset demo data button: that is for the screens round).
 
 ### Stock (consumables and other counted items)
 
@@ -139,17 +140,57 @@ Every read takes the viewer and returns only what they may see. Every write chec
 
 Each event records who, the ids, and what happened (field names, never an amount). An issue or a return names the person. A refused write logs nothing.
 
-### The sample (marked `sample`)
+### What a fresh browser reads (AS2)
 
-- **Stock:** 6 items (paper, markers, coffee, HDMI cables, keyboards, chargers), an opening count on 1 Oct 2026 and 7 movements since, with three items at or under their reorder level.
-- **Assets:** 12 of them.
-  - Assigned: laptops with Sneha Rao and Rohan Gupta, phones with Ananya Iyer and Kabir Shah, a chair with Arjun Kapoor, and a monitor with Divya Menon, who has left (not returned).
-  - Also a laptop handed back, a laptop under maintenance, a spare chair, a printer past its next service, a retired laptop, and a phone sold for scrap.
-- **Vendors:** 2. **Maintenance records:** 2.
+The seed of both stores is the old site's inventory (see "The old inventory, imported") plus a few records marked `sample`:
 
-None of it changes an existing record: the dumps of every attendance, leave, pay, expense, employee-record and old-inventory read are byte-identical before and after (3 zones).
+- **Stock:** 12 items and 17 movements: the old inventory's 12 items with 15 imported movements, and 2 sample issues (a keyboard to Rohan Gupta on 8 Oct 2026, markers to Sneha Rao on 20 Oct 2026). On hand: paper 42, coffee 8, HDMI cables 0, chairs 14, keyboards 2, markers 56, laptops 6, monitors 4, cards 30. Four items are at or under their reorder level: HDMI cables, keyboards, coffee and paper.
+- **Assets:** 10: the 7 imported tagged assets and 3 samples (a printer past its next service, a retired laptop, a phone sold for scrap). 5 assigned, 2 in store, 1 under maintenance, 1 retired, 1 disposed. Nobody's profile changed: the samples are held by nobody.
+- **Vendors:** the old 5 (CoolAir, FurniCraft, QuickPrint on hold, Sharma, TechNova). **Maintenance records:** 2.
 
-## The old site's inventory (unchanged)
+AS1's own sample (the 12 assets, 6 items and 2 vendors) is kept as test fixtures (`tests/live/as1-register.json`, `as1-stock.json`, `as1-licences.json`) so the AS1 and IT1 suites still test it. Both stores are at box version 2; an older stored box is replaced by the seed.
+
+None of it changes an existing record: the dumps of every attendance, leave, pay, expense and employee-record read are byte-identical before and after (3 zones). The register, stock and asset reads are the ones AS2 changes on purpose.
+
+## The screens (AS2)
+
+**Files:** `app/src/pages/Inventory.jsx` (the list and, with `?tag=`, one asset), `AssetAssignment.jsx`, `StockMovements.jsx`, `Vendors.jsx`, `MyAssets.jsx`; `app/src/ui/assets.jsx` (status chips, the action buttons, the dialogs), `ui/assetDetail.jsx`, `ui/assetRequests.jsx`; `app/src/shell/assetAccess.js` (who opens which page); `app/src/design/assets.css`. Tests: `tests/live/react/as2.mjs` (Edge).
+
+**Who opens what** (the pages follow the AS1 permissions, not the old Admin-only route permissions):
+
+| Page | Needs | Who |
+|---|---|---|
+| My assets | `assets:view-own` | everyone |
+| Inventory, Asset assignment, Vendors | `assets:view-all` | HR, Finance, IT, Admin |
+| Stock movements | `stock:view` | HR, Finance, IT, Admin |
+
+Anyone else who types the address gets the 403 page. The sidebar shows only what a person may open.
+
+**Inventory.** KPIs, the filters (status, category, every active office, holder, warranty ending soon) and a search over tag, name, holder and serial. Purchase price and book value are columns for Finance and the Admin only: nobody else has them in the page at all (they are not hidden, they are not sent). One asset's page shows its details, lifecycle, assignment history and maintenance; the depreciation panel (KPIs, a book-value chart, the year-by-year schedule) is for `assets:view-values`. An asset a person may not see reads "You can't see this asset."
+
+**Buttons are the state machine.** An asset offers only the moves `asset-rules.js` allows from its state, and only to someone holding the permission for that move: Issue and Return (`assets:issue`), Send for maintenance and Back from maintenance (`assets:maintain`), Retire and Dispose of (`assets:manage`), Edit (`assets:manage`). Each opens a dialog that says what the data layer refused, under the field it concerns. Retire and dispose ask first. Nobody who has left can be chosen for an issue.
+
+**Asset assignment** has four tabs: Held, In store, Maintenance (open records, service overdue, warranty ending) and Not returned (assets still with someone who has left; empty in the seed). **Stock movements** has Items (with low and out-of-stock badges) and Movements (the shared date range, the correction button; a corrected row shows "Corrected"). **Vendors** says the rule in a note: a vendor named on an asset or a maintenance record can't be deleted, only deactivated. **My assets** lists what is issued to the signed-in person, what they held before, and their open asset requests; no value is ever shown there.
+
+**Requests go through IT** (IT1's `asset-request` and `asset-return`). "Request an asset" and "Request return" raise IT requests; the Admin approves and IT hands over. A second open request for the same kind of asset, or for the same tag, is refused and names the first. A return can only be asked for an asset the person holds. My requests lists these as type IT, with Cancel while they are open.
+
+**Reset demo data** now resets the register, the stock ledger, the licences and the IT desk, and leaves the old inventory store's keys exactly as they were.
+
+## The old inventory, imported (AS2)
+
+**Files:** `assets/js/data/inventory-import.js` (pure: `buildImport`, `oldSource`, `oldDefaults`), `data/inventory-migrate.js` (`importOldInventory(actorId, now)`). Tests: `tests/live/assetimport.mjs` (3 zones).
+
+The old store's 7 tagged assets, 12 items, their 15 movements and 5 vendors are the new stores' seed. `oldSource()` reads the old store's saved records (version 1 boxes) or, where nothing is saved, copies of its defaults; it never seeds the old store.
+
+- **Vendors** keep their ids (`VEN-n`) and contacts, supplies and payment terms; "on hold" becomes inactive and on hold. An email, GSTIN and address the old register never had are left empty ("Not recorded"), not made up.
+- **Stock items** keep their ids (`ITM-n`), SKU, name, category and reorder level. The unit is "unit". Tagged items (laptops, monitors, cards) carry one count over; their units are the assets. The old unit price is not carried.
+- **Stock movements:** an item with no tag gets an opening count dated the day before its first movement, then every movement (stock in and return become `in`, an issue becomes `out`, an adjustment becomes `in` or `remove`). A PO-like reference becomes the movement's `reference`.
+- **Assets** keep their tags. The name comes from the item; laptop and monitor keep their category, an access card becomes "other equipment"; all are at the head office, the store room is kept as text. No purchase date or price is made up: they stay empty and the asset page says **"Details missing"** until someone adds them with Edit (a purchase date can't be after the asset was first used; the salvage value defaults to the category's percent when the price is first set). Until then depreciation says so instead of working out a number. The category's company default (life, method, rate) is applied.
+- **History** becomes events: assigned becomes issued, returned, sent to repair becomes maintenance opened, repaired becomes maintenance closed. A date the old register didn't keep is empty, not today's; an issue the old history never recorded gets a placeholder issue before its return. The old `since` dates the hand-over in force now, and the old condition goes on the last event. Problem reports ("reported", "report closed") are not part of the lifecycle and are skipped.
+
+`importOldInventory` is for a browser whose old store was changed after the new stores were written: it needs `assets:manage`, `vendors:manage` and `stock:move` (IT and the Admin), adds only what the new stores lack (assets by tag, vendors by id or name, stock items by id, SKU or name, each new item with its movements), edits nothing that is there, and is idempotent: a second run adds nothing, writes nothing and logs nothing. A run that adds something is audited as "Old inventory imported" (counts only).
+
+## The old site's inventory (its store; the pages are replaced)
 
 **Files:** `assets/js/data/inventory.js` (categories, asset types, locations, conditions, movement kinds: pure functions), `data/inventory-store.js` (items, the stock ledger, the asset register, vendors), `data/asset-requests-store.js` (requests).
 
@@ -172,8 +213,9 @@ None of it changes an existing record: the dumps of every attendance, leave, pay
 
 ## Not built yet
 
-- **The screens** (the next round): the inventory pages, the asset register and asset detail, on the AS1 data layer.
-- **Moving the old site's records into the new register:** its 7 tagged assets, 12 items and 5 vendors. A ruling item: until then the React profile's "assets held" reads the old store.
-- **Wiring** `resetStockData` and `resetAssetRegister` into Reset demo data.
+- **Dashboard cards** for assets (low stock, overdue service): the data is there (`lowStock`, `overdueService`), no card shows it yet.
+- **Unit prices** are not carried over from the old inventory; the new item has no price field.
+- **`tagEdited`** (change a tag once) is in the data layer; the edit dialog doesn't offer it.
+- **The old asset-requests chain** (manager, Admin, fulfilment) is left as it is; the new requests go through the IT desk. Merging the two is a ruling item.
 - **Income-Tax Act block rates** (the Finance round).
 - **Lost and transfer** in the lifecycle, and "the approver can't also hand over".

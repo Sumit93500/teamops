@@ -48,7 +48,7 @@ const OFFICES_ITEM = ["Offices", "/pages/company/offices.html", false, null, nul
 const withOffices = (sections) => sections?.map((s) => (s.title === "Attendance" ? { ...s, items: [...s.items, OFFICES_ITEM] } : s));
 // F2 (the brief, item 5): the placeholder pages are out of the sidebar and the search (app/src/shell/placeholders.js; their URLs
 // show "This section is being rebuilt.", f2.mjs P): the old side's links to them are read past, and a section left empty with them.
-const F2_PLACE = /^\/pages\/(inventory\/(my-assets|items|stock-movements|asset-assignment|vendors)|announcements\/announcements|recruitment\/(job-openings|candidates)|system\/(reports|audit-log|backup)|access\/(delegation|approval-workflows)|account\/(notifications|sessions))\.html/;
+const F2_PLACE = /^\/pages\/(announcements\/announcements|recruitment\/(job-openings|candidates)|system\/(reports|audit-log|backup)|access\/(delegation|approval-workflows)|account\/(notifications|sessions))\.html/;
 const withoutPlaceholders = (sections) => sections?.map((s) => { const items = s.items.filter((it) => !F2_PLACE.test(it[1] ?? ""));
   // a group F2 left with one item is drawn as a single link by the app's own rule (the Admin's System: Settings): read past on both sides
   return items.length === 1 && s.items.length > 1 ? { title: s.title, f2: true } : { ...s, items }; }).filter((s) => s.f2 || s.items.length);
@@ -56,6 +56,9 @@ const f2Singles = (old, nw) => { const titles = (old.sections ?? []).filter((s) 
   return { ...nw, sections: nw.sections?.map((s) => (titles.includes(s.title) ? { title: s.title, f2: true } : s)) }; };
 const ruledShell = (s) => ({ ...s, brand: s.brand === "O OfficeOS" ? `N${COMPANY}` : s.brand, crumbs: s.crumbs?.replace(/^Workspace\//, `${COMPANY}/`), sections: withoutPlaceholders(withOffices(s.sections)) });
 // CV1: My visits and Team visits are the app's own sidebar items (the old site has none): read past on the app's side; cv1.mjs S checks who sees them
+// AS2: the inventory pages are real in the app. HR and Finance open four of them there (assets:view-all, stock:view) where the old site sends them to 403, so those links are read past on the app's side for them
+const AS2_PAGES = /^\/pages\/inventory\/(items|stock-movements|asset-assignment|vendors)\.html/;
+const withoutAs2 = (s, who, od) => (who === "hr" || who === "fin" ? { ...s, sections: s.sections?.map((x) => { if (!x.items) return x; const kept = x.items.filter((it) => !AS2_PAGES.test(it[1] ?? "")); if (kept.length === x.items.length) return x; /* the group left with My assets alone is drawn by the app's one-item rule, which is not the old site's group: the old section stands for it */ const o = od.sections?.find((y) => y.title === x.title); return o && JSON.stringify(o.items.map((it) => it[1])) === JSON.stringify(kept.map((it) => it[1])) ? o : { ...x, items: kept }; }) } : s);
 const CV1_VISITS = /^\/pages\/visits\/(my|team)-visits\.html/;
 const withoutVisits = (s) => ({ ...s, sections: s.sections?.map((x) => (x.items ? { ...x, items: x.items.filter((it) => !CV1_VISITS.test(it[1] ?? "")) } : x)) });
 const ruledPhone = (s) => (s.toggle?.[0] ? { ...s, shown: [s.shown[0], `About ${COMPANY}`, ...s.shown.slice(1)] } : s);
@@ -118,7 +121,7 @@ if (ONLY.includes("D")) {
   for (const who of Object.keys(PAGES)) for (const page of PAGES[who]) {
     const o = await open(O, who, page), n = await open(N, who, page);
     const od = ruledShell(await readShell(o.t));
-    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, od, f2Singles(od, withoutVisits(await readShell(n.t))));
+    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, od, f2Singles(od, withoutAs2(withoutVisits(await readShell(n.t)), who, od)));
     if (o.errs.length || n.errs.length) check(`D.${who}.err`, "no page errors", false, j([o.errs, n.errs]));
     await o.ctx.close(); await n.ctx.close();
   }

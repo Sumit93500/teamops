@@ -13,7 +13,10 @@ import { resetLeaveData } from "../../../assets/js/data/leave-store.js";
 import { resetAttendanceData } from "../../../assets/js/data/attendance-store.js";
 import { resetPayrollData } from "../../../assets/js/data/payroll-store.js";
 import { resetExpenseData } from "../../../assets/js/data/expenses-store.js";
-import { resetInventoryData } from "../../../assets/js/data/inventory-store.js";
+import { resetAssetRegister } from "../../../assets/js/data/asset-register.js";   // AS2: the new register, ledger, licences and IT desk
+import { resetStockData } from "../../../assets/js/data/stock-ledger.js";
+import { resetLicences } from "../../../assets/js/data/licences.js";
+import { resetItDesk } from "../../../assets/js/data/it-store.js";
 import { resetAssetRequestData } from "../../../assets/js/data/asset-requests-store.js";
 import { resetLocationData } from "../../../assets/js/data/locations-store.js";
 import { resetShiftData } from "../../../assets/js/data/overtime-store.js";   // SH1
@@ -75,7 +78,7 @@ function Content() {
     ...filtered.map((u) => [u.id, u.name, u.email, u.designation, departmentName(u.department), roleLabel(u.role), statusLabel(u.status)])], "users");
   const resetAll = async () => {
     if (!(await confirm({ message: RESET_CONFIRM, confirmLabel: "Reset demo data", danger: true }))) return;
-    resetDemoData(); resetLeaveData(); resetAttendanceData(); resetPayrollData(); resetExpenseData(); resetInventoryData(); resetAssetRequestData(); resetLocationData(); resetShiftData(); resetPayRules(); resetPayStructures(); resetPaySettings(); resetLeavePolicy();
+    resetDemoData(); resetLeaveData(); resetAttendanceData(); resetPayrollData(); resetExpenseData(); resetAssetRegister(); resetStockData(); resetLicences(); resetItDesk(); resetAssetRequestData();   // AS2: the new register, ledger and IT desk (the old inventory store is the old site's: not touched) resetLocationData(); resetShiftData(); resetPayRules(); resetPayStructures(); resetPaySettings(); resetLeavePolicy();
     resetCredentials(); resetUnlockRequests(); resetMailOutbox(); resetAuditTrail(); resetEmployeeRecords();   // E1: sign-in accounts, the outbox, the audit trail, the extra record fields
     window.location.reload();
   };

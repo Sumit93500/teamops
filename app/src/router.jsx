@@ -54,6 +54,11 @@ import MyVisits from "./pages/MyVisits.jsx";   // CV1
 import TeamVisits from "./pages/TeamVisits.jsx";
 import VisitDetail from "./pages/VisitDetail.jsx";
 import Rebuilding from "./pages/Rebuilding.jsx";   // F2
+import MyAssets from "./pages/MyAssets.jsx";   // AS2: the five inventory pages, restored
+import Inventory from "./pages/Inventory.jsx";
+import AssetAssignment from "./pages/AssetAssignment.jsx";
+import StockMovements from "./pages/StockMovements.jsx";
+import Vendors from "./pages/Vendors.jsx";
 import { isPlaceholder } from "./shell/placeholders.js";
 import { Login, ForgotPassword, ResetPassword, SetPassword, SET_PASSWORD } from "./pages/AuthPages.jsx";
 import MailOutbox, { MAIL_OUTBOX } from "./pages/MailOutbox.jsx";
@@ -96,6 +101,12 @@ const PORTED = {
   "users/user-form.html": UserForm,
   "users/user-profile.html": UserProfile,
   "users/departments.html": Departments,
+  // AS2: the inventory pages, on the AS1 register and stock ledger
+  "inventory/my-assets.html": MyAssets,
+  "inventory/items.html": Inventory,
+  "inventory/asset-assignment.html": AssetAssignment,
+  "inventory/stock-movements.html": StockMovements,
+  "inventory/vendors.html": Vendors,
 };
 
 function Home() {

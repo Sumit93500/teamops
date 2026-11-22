@@ -82,7 +82,7 @@ function where(x, y) {
   return `at ${i}: old …${x.slice(Math.max(0, i - 80), i + 220)}… new …${y.slice(Math.max(0, i - 80), i + 220)}…`;
 }
 // F2 (the brief, items 4 and 5): the old inbox's sample requests (types Access, Purchase, System; nothing behind them) aren't shown
-// any more, nor the links to placeholder pages (Approval rules, Request an asset): read past on the old side. The inbox's free text
+// any more, nor the links to placeholder pages (Approval rules): read past on the old side; AS2 restored Request an asset and added the IT type, so those compare as they are, the IT type option read past on the app side. The inbox's free text
 // is left out on both sides (its tab counts include the samples); its rows, controls and the other pages' text still compare.
 // A counter with nothing filtered reads by the one rule ("Showing 0 of 0 pending requests" is "0 pending requests").
 const SAMPLE_TYPES = /^(Access|Purchase|System)$/;
@@ -100,11 +100,15 @@ const f2Req = (x, old) => {
   const o = { ...x };
   if (typeof o.text === "string") {
     if (/^Approvals Everything waiting/.test(o.text)) delete o.text;
-    else o.text = (old ? o.text.replace("Claim an expense Request an asset ", "Claim an expense ") : o.text).replace(/Showing (\d+) of \1 /g, "$1 ").replace(/\b1 requests\b/g, "1 request");
+    else o.text = (old ? o.text : o.text.replace(" Asset IT Attendance ", " Asset Attendance ")).replace(/Showing (\d+) of \1 /g, "$1 ").replace(/\b1 requests\b/g, "1 request");
   }
   // the inbox's tab counts include the old samples: read as "Pending #" on both sides (the rows themselves still compare)
   if (Array.isArray(o.controls)) o.controls = o.controls.map((c) => (c[0] === "BUTTON" && /^(Pending|Approved|Rejected) \d+$/.test(c[1]) ? [c[0], c[1].replace(/\d+$/, "#"), ...c.slice(2)] : c));
-  if (old && Array.isArray(o.controls)) o.controls = o.controls.filter((c) => !/Approval rules|Request an asset/.test(j(c)));
+  // AS2: "Request an asset" is a link to the old page and a button here (it opens the dialog): the same control, the same words
+  if (Array.isArray(o.controls)) o.controls = o.controls.map((c) => (c[1] === "Request an asset" ? ["A", c[1], null, null] : c));
+  // AS2: the type filter has the IT type (IT requests are listed here); its option is read past on the app side
+  if (!old && Array.isArray(o.controls)) o.controls = o.controls.map((c) => (c[0] === "SELECT" ? [c[0], String(c[1]).replace("AssetITAttendance", "AssetAttendance"), ...c.slice(2)] : c));
+  if (old && Array.isArray(o.controls)) o.controls = o.controls.filter((c) => !/Approval rules/.test(j(c)));
   if (Array.isArray(o.tables)) o.tables = o.tables.map((rows) => (old ? rows.filter((row) => !row.some((c) => SAMPLE_TYPES.test(c))) : rows)).map((rows) => (emptyRows(rows) ? [["(empty)"]] : rows));
   return o;
 };
