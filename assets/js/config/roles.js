@@ -28,6 +28,10 @@ const SELF_SERVICE = [
   "visits:request", "visits:approve", "visits:assign",
 ];
 
+// FS1 (2026-11-22): the stored-file permissions the Admin role does NOT hold by default: seeing other people's expense files and employee
+// documents is HR's and Finance's. Held back until Sumit rules on it (the Admin still sees and changes profile photos through users:edit).
+export const ADMIN_HELD_BACK = ["files:view-expense", "files:view-documents", "files:manage-documents"];
+
 export const ROLES = {
   admin: {
     key: "admin",
@@ -35,7 +39,7 @@ export const ROLES = {
     landing: "dashboard/admin.html",   // page opened after sign-in, relative to the pages folder
     dataScope: "all",                  // whose records this role can reach
     scopeLabel: "All records",         // the Data scope pages show: only what is enforced (Manager scoping part 2)
-    permissions: ALL_PERMISSIONS,      // the admin can do everything
+    permissions: ALL_PERMISSIONS.filter((p) => !ADMIN_HELD_BACK.includes(p)),   // the admin can do everything, except see other people's stored files (FS1)
   },
 
   hr: {
@@ -61,6 +65,7 @@ export const ROLES = {
       "reports:view", "reports:export",
       "audit:view",
       "accounts:reset",   // E1: a reset link or a new temporary password for someone (not an Admin)
+      "files:view-expense", "files:view-documents", "files:manage-documents",   // FS1: expense files, every document file, add them for anyone
     ],
   },
 
@@ -82,6 +87,7 @@ export const ROLES = {
       "tax:view", "tax:manage",
       "declarations:manage",   // P5: edit, verify and lock anyone's declaration; the cutoff
       "reports:view", "reports:export", "reports:create",
+      "files:view-expense", "files:view-documents",   // FS1: expense files; bank and tax proof among document files (data/files.js)
     ],
   },
 

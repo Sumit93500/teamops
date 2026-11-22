@@ -19,6 +19,7 @@ import { useToast } from "../ui/Toast.jsx";
 import { useConfirm } from "../components/Confirm.jsx";
 import { useDecision, EXPENSE_FLOW, DecisionButtons } from "../components/Decision.jsx";
 import { StatStrip, StatCard, Badge, badgeOf, PersonCell, Tabs, Reason } from "../components/Basics.jsx";
+import { Attachment } from "../ui/files.jsx";   // FS1
 import { BarRows } from "../components/Charts.jsx";
 import { rupees } from "../ui/payroll.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
@@ -50,9 +51,9 @@ function StageBadge({ claim }) {
   return <Badge {...badgeOf(look?.[1] ?? "badge")}>{look?.[0] ?? claim.status}</Badge>;
 }
 function Receipt({ claim }) {
-  if (claim.receipt) return <span className="text-sm" title="The claimant's name for the receipt. No file is stored in this demo.">{claim.receipt}</span>;
-  if (needsReceipt(claim.amount)) return <span className="receipt receipt--missing">No receipt</span>;
-  return <span className="text-sm text-muted">Not needed</span>;
+  // FS1: the claim's file through the checked path; claims from before files keep their text, labelled "Entered as text"
+  const none = needsReceipt(claim.amount) ? <span className="receipt receipt--missing">No receipt</span> : <span className="text-sm text-muted">Not needed</span>;
+  return <Attachment linkTo={{ type: "expense", id: claim.id }} oldText={claim.receipt} empty={none} />;
 }
 function Actions({ claim, decidable, me, decision }) {
   if (claim.status === "pending") {
@@ -138,7 +139,7 @@ export default function Expenses() {
     { key: "category", label: "Category", render: (c) => <><div>{categoryLabel(c.category)}</div><div className="text-sm text-muted">{c.reason}</div></> },
     { key: "date", label: "Date", render: (c) => formatDay(c.date), cellProps: (c) => ({ "data-csv": c.date }) },
     { key: "amount", label: "Amount", num: true, render: (c) => <span className="expense-amount">{rupees(c.amount)}</span>, cellProps: (c) => ({ "data-csv": String(c.amount) }) },
-    { key: "receipt", label: "Receipt", render: (c) => <Receipt claim={c} /> },
+    { key: "receipt", label: "Receipt", render: (c) => <Receipt claim={c} />, cellProps: (c) => ({ "data-csv": c.receipt || (needsReceipt(c.amount) ? "No receipt" : "Not needed") }) },   // FS1: the CSV as before
     { key: "stage", label: "Stage", render: (c) => <StageBadge claim={c} /> },
     { key: "actions", label: "Actions", actions: true, render: (c) => <Actions claim={c} decidable={d.decidable} me={me} decision={decision} /> },
   ];

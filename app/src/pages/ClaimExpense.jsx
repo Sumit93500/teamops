@@ -1,12 +1,14 @@
 // Claim expense (pages/requests/claim-expense.html + assets/js/pages/claim-expense.js), ported (round 13a), for expenses:create:
-// the claim form (category, whole-rupee amount, date, receipt name, reason) with the receipt hint and the approval chain for
+// the claim form (category, whole-rupee amount, date, the receipt as a file (FS1: ui/files.jsx FilePicker; kept through data/files.js), reason) with the receipt hint and the approval chain for
 // the amount entered (previewRoute()), and Send claim through submitExpense(): its errors under their fields, the
 // advisories and the old toasts, then My requests. The chain is the round 4 Stepper.
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getUser } from "../../../assets/js/data/store.js";
 import { EXPENSE_POLICY, CATEGORY_KEYS, needsReceipt } from "../../../assets/js/data/expenses.js";
-import { submitExpense, previewRoute } from "../../../assets/js/data/expenses-store.js";
+import { submitExpense, previewRoute, cancelExpense } from "../../../assets/js/data/expenses-store.js";
+import { putFile } from "../../../assets/js/data/files.js";   // FS1
+import { FilePicker, pickerHint } from "../ui/files.jsx";
 import { STAGE_NAME, categoryLabel } from "../../../assets/js/ui/expense-view.js";
 import { nameOf } from "../../../assets/js/ui/leave-view.js";
 import Frame from "../ui/Frame.jsx";
@@ -25,16 +27,18 @@ export default function ClaimExpense() {
   const canCreate = useCan("expenses:create");
   const showToast = useToast();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ category: "", amount: "", date: "", receipt: "", reason: "" });
+  const [form, setForm] = useState({ category: "", amount: "", date: "", reason: "" });
+  const [receipt, setReceipt] = useState(null);   // FS1: the chosen file, checked
   const [error, setError] = useState(null);
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
   const d = useData(() => ({ user: getUser(userId) }), [userId]);
   const user = d.user;
   if (!user) return <Frame page={PAGE}><div /></Frame>;
 
   const text = form.amount.trim();
   const amount = /^\d+$/.test(text) && Number(text) > 0 ? Number(text) : null;
-  const missing = amount !== null && needsReceipt(amount) && !form.receipt.trim();
+  const missing = amount !== null && needsReceipt(amount) && !receipt;
   // the chain for the amount entered (any amount up to the Admin limit until one is)
   const steps = [{ state: "current", title: "You send the claim", detail: user.name }];
   let subtitle;
@@ -55,14 +59,25 @@ export default function ClaimExpense() {
       : "Nobody can approve a claim from you at the moment. Ask an Admin.";
   }
   const set = (name) => (e) => { setForm({ ...form, [name]: e.target.value }); if (error?.field === name) setError(null); };
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
+    if (sending) return;
     setError(null);
-    const result = submitExpense(user.id, { category: form.category, amount: form.amount, date: form.date, reason: form.reason, receipt: form.receipt });
+    const result = submitExpense(user.id, { category: form.category, amount: form.amount, date: form.date, reason: form.reason, receipt: receipt?.name ?? "" });
     if (!result.ok) {
       if (FIELD_ID[result.field]) { setError({ field: result.field, message: result.error }); setTimeout(() => document.getElementById(FIELD_ID[result.field])?.focus()); }
       else showToast(result.error, "danger");
       return;
+    }
+    if (receipt) {   // FS1: the file goes with the claim it belongs to; if it can't be kept, the claim is taken back
+      setSending(true);
+      const put = await putFile(user.id, { type: "expense", id: result.record.id }, receipt, { kind: "expense-payslip" });
+      setSending(false);
+      if (!put.ok) {
+        cancelExpense(result.record.id, user.id); bump();
+        setError({ field: "receipt", message: `Your claim wasn't sent: ${put.error}` });
+        return;
+      }
     }
     setSent(true);
     if (result.advisories.length) showToast(result.advisories.map((a) => a.message).join(" "), "warning", 8000);
@@ -113,12 +128,13 @@ export default function ClaimExpense() {
                 <span className="form-hint">Claims must be sent within 30 days of the spending.</span>
                 {err("date")}
               </div>
-              <div className="form-field">
-                <label className="form-label" htmlFor="expense-receipt">Receipt</label>
-                <input className="input" id="expense-receipt" name="receipt" type="text" placeholder="bill.pdf" autoComplete="off" value={form.receipt} onChange={set("receipt")} />
-                <span className="form-hint" id="expense-receipt-hint" data-missing={String(missing)}>{missing
-                  ? `Claims above ${rupees(EXPENSE_POLICY.receiptAbove)} need a receipt. You can still send it, but it may be rejected without one.`
-                  : `Needed above ${rupees(EXPENSE_POLICY.receiptAbove)}. Only the name is kept: no file is uploaded in this demo.`}</span>
+              <div className="form-field form-field--full">
+                <FilePicker id="expense-receipt" kind="expense-payslip" label="Receipt" value={receipt} disabled={sent || sending}
+                  onChange={(v) => { setReceipt(v); if (error?.field === "receipt") setError(null); }} error={error?.field === "receipt" ? error.message : undefined}
+                  hint={missing
+                    ? `Claims above ${rupees(EXPENSE_POLICY.receiptAbove)} need a receipt. You can still send it, but it may be rejected without one. ${pickerHint("expense-payslip")}`
+                    : `Needed above ${rupees(EXPENSE_POLICY.receiptAbove)}. ${pickerHint("expense-payslip")} Seen by you, your manager, HR and Finance; it can't be changed once the claim is sent.`} />
+                <span className="visually-hidden" id="expense-receipt-hint" data-missing={String(missing)}>{missing ? "A receipt is expected for this amount." : ""}</span>
               </div>
               <div className="form-field form-field--full">
                 <label className="form-label form-label--required" htmlFor="expense-reason">Reason</label>
@@ -131,7 +147,7 @@ export default function ClaimExpense() {
             <span className="card__meta">Fields marked * are required.</span>
             <div className="btn-group">
               <Link className="btn" to={pageUrl("requests/my-requests.html")}>Cancel</Link>
-              <button className="btn btn--primary" type="submit" data-permission="expenses:create" hidden={!canCreate || undefined} disabled={sent || undefined}>Send claim</button>
+              <button className="btn btn--primary" type="submit" data-permission="expenses:create" hidden={!canCreate || undefined} disabled={sent || sending || undefined} aria-busy={sending || undefined}>{sending ? "Sending…" : "Send claim"}</button>
             </div>
           </div>
         </form>

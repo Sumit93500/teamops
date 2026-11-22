@@ -36,6 +36,7 @@ import { getVisit } from "../../../assets/js/data/visits-store.js";   // CV1
 import { pendingVisitItems } from "../../../assets/js/data/visits.js";
 import { correctionContext } from "../../../assets/js/data/night-fix.js";
 import { rupees } from "./payroll.jsx";
+import { Attachment } from "./files.jsx";   // FS1
 import { useData } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
 
@@ -58,7 +59,7 @@ const SINCE = { leave: (r) => r.history[0].at, corrections: (r) => r.history[0].
 const ROWS = {
   leave: (r) => [["Dates", requestDates(r)], ["Days", formatDays(r.days)], ["Applied", formatDay(r.appliedOn)]],
   corrections: (r) => [["Date", formatDay(r.date)], ["Issue", ISSUE_LABEL[r.issue] ?? r.issue], ["Recorded", r.recordedTime], ["Corrected to", `${r.time}${correctionContext(r.userId, r.date, r.time)?.nextDay ? " (next day)" : ""}`], ["Applied", formatDay(r.appliedOn)]],   // CV1: a night shift's morning
-  expenses: (c) => [["Amount", rupees(c.amount)], ["Category", categoryLabel(c.category)], ["Spent on", c.date ? formatDay(c.date) : ""], ["Receipt", c.receipt], ["Applied", formatDay(c.appliedOn)]],
+  expenses: (c) => [["Amount", rupees(c.amount)], ["Category", categoryLabel(c.category)], ["Spent on", c.date ? formatDay(c.date) : ""], ["Receipt", <Attachment key="r" linkTo={{ type: "expense", id: c.id }} oldText={c.receipt} empty="None" />], ["Applied", formatDay(c.appliedOn)]],   // FS1: the file, checked
   assets: (r) => [["Asset", assetTypeLabel(r.assetType)], ["Replaces", r.replacesTag], ["Applied", formatDay(r.appliedOn)]],
   salary: (p) => {
     const now = salaryFor(p.userId, Number(p.effectiveFrom.slice(0, 4)), Number(p.effectiveFrom.slice(5, 7)));

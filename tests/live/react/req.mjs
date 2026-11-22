@@ -67,8 +67,9 @@ const read = (t) => t.evaluate(() => {
     // L4 (the brief): HR's inbox gains a read-only "Location changes" tab (checked in locs.mjs V); read without it too.
     // SH1 (the brief): the type filter gains "Overtime" and Who approves what gains "Overtime: Manager; HR or an Admin for people
     // without one" (the eighth kind, checked in sh1.mjs O); read without them too.
-    text: tx(m.innerText).replace(" Asset Salary Location Profile Overtime ", " Asset Salary ").replace(" Overtime Manager; HR or an Admin for people without one", "").replace(" Asset Salary Location Profile ", " Asset Salary ").replace(" Asset Salary Location ", " Asset Salary ").replace(" Home location changes An Admin", "").replace(" Visits Manager; HR or an Admin for people without one", "").replace(/ Sign-in Visit /, " Sign-in ").replace(/(Rejected \d+) Location changes/, "$1"),
-    controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).filter((c) => !(c.tagName === "BUTTON" && c.getAttribute("role") === "tab" && tx(c.textContent) === "Location changes")).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.tagName === "SELECT" ? c.textContent.replace(/SalaryLocation(Profile)?(Overtime)?(Sign-in)?(Visit)?$/, "Salary") : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
+    // FS1 (the brief, item 4): Claim expense's Receipt is a file picker now (checked in fs1.mjs U, R, K); read without that field on both sides
+    text: tx(m.innerText).replace(tx(document.getElementById("expense-receipt")?.closest(".form-field")?.innerText ?? "\u0000"), "").replace(" Asset Salary Location Profile Overtime ", " Asset Salary ").replace(" Overtime Manager; HR or an Admin for people without one", "").replace(" Asset Salary Location Profile ", " Asset Salary ").replace(" Asset Salary Location ", " Asset Salary ").replace(" Home location changes An Admin", "").replace(" Visits Manager; HR or an Admin for people without one", "").replace(/ Sign-in Visit /, " Sign-in ").replace(/(Rejected \d+) Location changes/, "$1"),
+    controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).filter((c) => !c.closest(".form-field")?.querySelector("#expense-receipt")).filter((c) => !(c.tagName === "BUTTON" && c.getAttribute("role") === "tab" && tx(c.textContent) === "Location changes")).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.tagName === "SELECT" ? c.textContent.replace(/SalaryLocation(Profile)?(Overtime)?(Sign-in)?(Visit)?$/, "Salary") : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
     tables: [...m.querySelectorAll("table")].map((tb) => [...tb.querySelectorAll("tbody tr")].filter(vis).map((r) => [...r.cells].map((c) => tx(c.innerText)))),
     hiddenIds: [...m.querySelectorAll("[id]")].filter((e) => e.hidden).map((e) => (/^reason-\d+$|^_r_\w*_$/.test(e.id) ? "reason" : e.id)).sort(),
     cal: [...m.querySelectorAll(".calendar__day")].map((c) => c.className.replace("calendar__day ", "")).join("|"),
@@ -147,7 +148,9 @@ async function pages(letter, page, rolesFn) {
 //   C  claim expense, as each role: as opened; an amount over the receipt limit (hint, chain); empty sent (the first error
 //      under its field); a whole claim sent: the toasts, the button, where it lands
 const settle = (t, ms = 250) => t.waitForTimeout(ms);
-const same = (n, label, a0, b0) => { const a = f2Req(a0, true), b = f2Req(b0, false); const bad = a.map((v, i) => j(v) === j(b[i])).indexOf(false); check(n, label, bad === -1 && a.length === b.length, bad === -1 ? `${a.length} steps` : `step ${bad}: ${where(j(a[bad]), j(b[bad]))}`); };
+// FS1 (the brief, item 4): an old claim's receipt text is labelled "Entered as text" on the card (fs1.mjs V6); read without the label
+const fs1Req = (v) => JSON.parse(j(v ?? null).replace(/ ?Entered as text/g, ""));
+const same = (n, label, a0, b0) => { const a = f2Req(a0, true), b = f2Req(fs1Req(b0), false); const bad = a.map((v, i) => j(v) === j(b[i])).indexOf(false); check(n, label, bad === -1 && a.length === b.length, bad === -1 ? `${a.length} steps` : `step ${bad}: ${where(j(a[bad]), j(b[bad]))}`); };
 const modalState = (t) => t.evaluate(() => { const m = document.querySelector(".modal.is-open"); return m ? [m.querySelector(".modal__title")?.textContent, m.querySelector(".modal__desc")?.textContent, document.activeElement.id, [...m.querySelectorAll(".form-error")].map((e) => [e.id, e.textContent])] : null; });
 // The card as the old one drew it: round 13b's Reject / Approve (the footer's .btn-group) left out; K checks them.
 const cardState = (t) => t.evaluate(() => {
@@ -293,7 +296,8 @@ if (ONLY.includes("C")) {
       await t.fill("#expense-amount", ""); await t.click('#expense-form button[type="submit"]'); await settle(t, 250);
       out.push(await t.evaluate(() => [document.activeElement.id, [...document.querySelectorAll("#expense-form .form-error")].map((e) => [e.id, e.textContent])]), await toasts(t));
       await t.selectOption("#expense-category", "travel"); await t.fill("#expense-amount", "1850"); await t.fill("#expense-date", "2026-09-25");
-      await t.fill("#expense-receipt", "cab.pdf"); await t.fill("#expense-reason", "Cab to the client office"); await settle(t, 150);
+      if (await t.locator("input#expense-receipt").count()) await t.fill("#expense-receipt", "cab.pdf");   // the old page: the name only
+      else await t.locator("#expense-receipt [data-file-input]").setInputFiles({ name: "cab.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n", "latin1") });   // FS1: the file await t.fill("#expense-reason", "Cab to the client office"); await settle(t, 150);
       out.push(await read(t));
       await t.click('#expense-form button[type="submit"]'); await settle(t, 300);
       out.push(await toasts(t), await t.evaluate(() => document.querySelector('#expense-form button[type="submit"]').disabled));

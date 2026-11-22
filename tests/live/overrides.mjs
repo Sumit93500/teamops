@@ -118,13 +118,13 @@ const EXCLUDED = {
   adminOnly: ["users:delete", "roles:manage", "settings:edit", "backup:manage", "backup:create", "backup:download", "backup:restore", "audit:export",
     "offices:manage", "company:edit", "locations:review", "devices:reset", "payroll-rules:verify", "leave-policy:edit", "declarations:manage", "attendance:any-office", "accounts:unlock", "accounts:disable"],   // E1b: disable   // L0 (behaviour): the four Admin-only location permissions; P4: the two rules ones; F1: any-office
   selfService: SELF_SERVICE.filter((p) => !LANDING.includes(p)),
-  access: ["users:view", "users:create", "users:edit", "users:reset-password", "users:deactivate", "pii:view", "designations:manage", "designations:create", "designations:edit", "accounts:reset"],   // E1: accounts:reset
+  access: ["users:view", "users:create", "users:edit", "users:reset-password", "users:deactivate", "pii:view", "designations:manage", "designations:create", "designations:edit", "accounts:reset", "files:view-expense", "files:view-documents", "files:manage-documents"],   // E1: accounts:reset   // FS1: the files permissions (who sees people's stored files)
   reserved: ["shifts:manage", "shifts:assign", "salary:edit", "visits:view-all"],   // CV1: visits:view-all (HR, Admin), kept for the Team visits page;   // SH1: shifts:assign, the Shifts page's and the profile's (HR, Admin)
 };
 const allExcluded = Object.values(EXCLUDED).flat();
 // Round Manager scoping part 1 (behaviour; was 3 landing permissions and 53 + 25 = 78: dashboard:finance is Finance's landing permission now)
 check("A2", "R0's six exclusions and the 25 split all 102 permissions with no overlap (SH1: was 94; E1b: was 93; E1: was 91; F1: was 90; L0: was 79): the landing permissions (dashboard:view, dashboard:finance, attendance:view-all, leave:approve, read from routes.js), the 12 stage ones, 18 Admin-only or Finance's (E1b: was 17; E1: was 16; F1: was 15; P5: was 14; P4: was 12; L0: was 8), 26 everyone's own (SH1: was 23; L0: was 19), 10 access administration (E1: was 9), 2 reserved",
-  j(LANDING) === j(["attendance:view-all", "dashboard:finance", "dashboard:view", "leave:approve"]) && EXCLUDED.selfService.length === 29 && allExcluded.length === 77 && new Set(allExcluded).size === 77   // CV1 (behaviour; was 26 / 73: visits:request, approve and assign are everyone's, view-all reserved)
+  j(LANDING) === j(["attendance:view-all", "dashboard:finance", "dashboard:view", "leave:approve"]) && EXCLUDED.selfService.length === 29 && allExcluded.length === 80 && new Set(allExcluded).size === 80   /* FS1 (behaviour; was 77: the three files ones) */   // CV1 (behaviour; was 26 / 73: visits:request, approve and assign are everyone's, view-all reserved)
   && !OVERRIDABLE.some((p) => allExcluded.includes(p)) && j([...allExcluded, ...OVERRIDABLE].sort()) === j([...ALL_PERMISSIONS].sort()), j(Object.fromEntries(Object.entries(EXCLUDED).map(([k, v]) => [k, v.length]))));
 const offer = Object.fromEntries(Object.keys(ROLES).map((k) => [k, [OVERRIDABLE.filter((p) => !ROLES[k].permissions.includes(p)).length, OVERRIDABLE.filter((p) => ROLES[k].permissions.includes(p))]]));
 check("A3", "what each role can be granted / denied: Employee 25 / none; HR 15 / 10 (departments x2, holidays, recruitment x3, announcements:create, reports:view / export, audit:view); Finance 15 / 10 (payroll:view / export, payslips:view, salary:view, expenses:view, tax x2, reports x3)",
@@ -322,7 +322,7 @@ const e2b = { count: txt(d.getElementById("effective-count")), chips: chips(), g
 submit();
 const e2c = ov(PRIYA);
 check("E2", "an Admin editing Priya (HR): 15 to grant, HR's 10 to deny; ticking inventory:view and denying audit:view redraws Effective permissions at once (54, SH1: was 50; E1: was 49; P5: was 48; L0: was 45: + inventory:view, marked 'Granted to this person'; - audit:view); saving stores both lists",
-  e2.grants.length === 15 && j(e2.denies) === j(offer.hr[1]) && e2b.count === "58" && j(e2b.chips) === j(permissionsOf({ role: "hr", grantPermissions: ["inventory:view"], denyPermissions: ["audit:view"] }))
+  e2.grants.length === 15 && j(e2.denies) === j(offer.hr[1]) && e2b.count === "61" /* FS1 (behaviour; was 58) */ && j(e2b.chips) === j(permissionsOf({ role: "hr", grantPermissions: ["inventory:view"], denyPermissions: ["audit:view"] }))
   && j(e2b.granted) === j([["inventory:view", "Granted to this person"]]) && j(e2c) === j([["inventory:view"], ["audit:view"]]), j({ e2b: { ...e2b, chips: e2b.chips.length }, e2c }));
 fresh(); setSession(...SESS.admin); S.updateUser(AARAV, ARJUN, { grantPermissions: ["reports:view"] });
 await open("users/user-form", { query: `?id=${ARJUN}` });
@@ -349,7 +349,7 @@ await open("users/user-form", { query: `?id=${VIKRAM}` });
 const e5b = [reason(), txt(d.getElementById("grant-options")), txt(d.getElementById("deny-options")), txt(d.getElementById("effective-permissions"))];
 // Round Manager scoping part 1 (behaviour; was 78: dashboard:finance is a 79th permission)
 check("E5", "an Admin on their own record: 'You can't change your own permission overrides.'; on another Admin: 'An Admin holds every permission, so there's nothing to grant or deny.', both lists 'None', Every permission (102; CV1: was 98; SH1: was 94; E1b: was 93; E1: was 91; F1: was 90; P5: was 88; L0: was 79)",
-  j(e5a) === j(["You can't change your own permission overrides.", "None", "None"]) && j(e5b) === j(["An Admin holds every permission, so there's nothing to grant or deny.", "None", "None", "Every permission (102)"]), j([e5a, e5b]));
+  j(e5a) === j(["You can't change your own permission overrides.", "None", "None"]) && j(e5b) === j(["An Admin holds every permission, so there's nothing to grant or deny.", "None", "None", ROLES.admin.permissions.join("")]), j([e5a, e5b]));   // FS1 (behaviour; was "Every permission (102)": the Admin holds 102 of 105, listed)
 fresh(); setSession(...SESS.admin); S.updateUser(AARAV, ARJUN, { grantPermissions: ["departments:create", "reports:view"] });
 await open("users/user-form", { query: `?id=${ARJUN}` });
 pick("HR Manager");

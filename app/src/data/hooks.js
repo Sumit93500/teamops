@@ -8,6 +8,7 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { subscribe, getVersion, bump } from "./bus.js";
 import { getSession, getCurrentUser, getCurrentRole, getCurrentUserId, signIn, signOut } from "../../../assets/js/core/auth.js";
 import { can } from "../../../assets/js/core/rbac.js";
+import { revokeAllFileUrls } from "./fileUrls.js";   // FS1
 
 const useVersion = () => useSyncExternalStore(subscribe, getVersion);
 
@@ -41,6 +42,7 @@ export function signInAs(roleKey, userLabel, employeeId) {
   bump();
 }
 export function signOutNow() {
+  revokeAllFileUrls();   // FS1: nothing made for this person stays reachable
   signOut();
   bump();
 }

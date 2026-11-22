@@ -37,6 +37,7 @@ import { bankFromIfsc } from "../../../assets/js/config/ifsc-banks.js";   // F2
 import { profileView, saveFields } from "../../../assets/js/data/employee-record.js";   // F2
 import { createAccount } from "../../../assets/js/data/credentials.js";
 import { ShareDetails } from "../ui/profile.jsx";
+import { Avatar, PhotoEditor } from "../ui/files.jsx";   // FS1: Upload photo (was NotBuilt since F2)
 
 const PAGE = "users/user-form.html";
 const LIST = pageUrl("users/users-list.html");
@@ -86,6 +87,7 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 function Form({ editing, editId, startAt }) {
   const { role, userId } = useSession();
   const byRole = role?.key;
+  const [photoOpen, setPhotoOpen] = useState(false);   // FS1
   const toast = useToast();
   const confirm = useConfirm();
   const navigate = useNavigate();
@@ -297,10 +299,11 @@ function Form({ editing, editId, startAt }) {
       <form className="ds-form uf-main" onSubmit={save} id="user-form" noValidate>
         {sectionCard("personal", <>
           <div className="ds-person">
-            <span className="ds-avatar ds-avatar--xl" aria-hidden="true">{initialsOf(editing?.name ?? `${f.first} ${f.last}`.trim())}</span>
+            {editing ? <Avatar userId={editing.id} name={editing.name} cls="ds-avatar ds-avatar--xl" /> : <span className="ds-avatar ds-avatar--xl" aria-hidden="true">{initialsOf(`${f.first} ${f.last}`.trim())}</span>}
             <div className="ds-stack" style={{ gap: 6 }}>
-              <NotBuilt what="Upload photo" className="ds-btn ds-btn--sm">Upload photo</NotBuilt>
-              <p className="ds-hint">JPG or PNG, up to 2 MB.</p>
+              {editing ? <button type="button" className="ds-btn ds-btn--sm" id="upload-photo-btn" onClick={() => setPhotoOpen(true)}>Upload photo</button> : null}
+              <p className="ds-hint">{editing ? "JPG or PNG, up to 2 MB." : "Add the photo once the employee is created (JPG or PNG, up to 2 MB)."}</p>
+              {editing ? <PhotoEditor userId={editing.id} open={photoOpen} onClose={() => setPhotoOpen(false)} /> : null}
             </div>
           </div>
           <div className="ds-form-grid">

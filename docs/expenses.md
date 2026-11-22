@@ -15,7 +15,7 @@
 ## A claim
 
 - **Fields:** `{ id, userId, category, amount, date, reason, receipt, status, stage, managerId, appliedOn, history }`.
-  - `receipt` is only the file's name; no file is stored.
+  - `receipt` is the receipt's name. Since FS1 the file itself is kept through `data/files.js` (kind `expense-payslip`, linked to the claim; see [files.md](files.md)); claims from before keep only their text, shown as "Entered as text".
 - **Status:** pending → approved → paid; or rejected, or cancelled.
 - **Stages:** manager → Finance → Admin (above ₹50,000) → payment.
   - Each stage is decided by someone different.
@@ -26,4 +26,4 @@ The approvals inbox, the bell and the approval card list a claim at the stage it
 
 ## Not built yet
 
-Receipt uploads and real payments.
+Real payments. Returning a claim to the claimant (so its file can be changed) isn't a step yet.

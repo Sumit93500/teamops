@@ -22,6 +22,7 @@ import Frame from "../ui/Frame.jsx";
 import { ProfileRecord, ChangeRequests } from "../ui/profile.jsx";
 import { ShiftCard } from "../ui/shifts.jsx";   // SH1: your shift and its history
 import { Badge, badgeOf, NotBuilt } from "../components/Basics.jsx";
+import { Avatar } from "../ui/avatar.jsx";   // FS1
 import { useToast } from "../ui/Toast.jsx";
 import { useData, useSession } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
@@ -183,7 +184,7 @@ export default function MyProfile() {
       </nav>
       <div className="stack">
         <section className="card profile">
-          <div className="avatar avatar--xl">{p.initials}</div>
+          <Avatar userId={userId} cls="avatar avatar--xl" initials={p.initials} />
           <div className="profile__info">
             <h2 className="profile__name">{p.name}</h2>
             <p className="profile__meta">{p.meta}</p>

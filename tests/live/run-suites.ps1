@@ -199,6 +199,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   # CV1c: an approved visit day nobody checked in on; the node_modules guard
   if (Test-Path "visitnone.mjs") { Run "visitnone-$t" @("visitnone.mjs") }
   if (Test-Path "modguard.mjs") { Run "modguard-$t" @("modguard.mjs") }
+  # FS1: stored files (data/file-rules.js, data/files.js)
+  if (Test-Path "files.mjs") { Run "files-$t" @("files.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

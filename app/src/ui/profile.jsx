@@ -20,6 +20,7 @@ import { useToast } from "./Toast.jsx";
 import { useConfirm } from "../components/Confirm.jsx";
 import { Card, Pill } from "../components/Layout.jsx";
 import { Field, Input, TextArea, initialsOf } from "../components/Form.jsx";
+import { Avatar, PhotoEditor, DocFile } from "./files.jsx";   // FS1
 import Modal from "../components/Modal.jsx";
 import { openApprovalCard } from "./ApprovalCard.jsx";
 import "../design/profile.css";
@@ -58,8 +59,8 @@ function Rows({ userId, field }) {
     <div className="pf-rows">
       <div className="pf-table-wrap">
         <table className="pf-table" data-list={field.key}>
-          <thead><tr>{field.columns.map((c) => <th key={c.key} scope="col">{c.label}</th>)}</tr></thead>
-          <tbody>{rows.map((r, i) => <tr key={i}>{field.columns.map((c) => <td key={c.key}>{c.kind === "yesno" ? (r[c.key] === "yes" ? "Yes" : "") : r[c.key] || ""}</td>)}</tr>)}</tbody>
+          <thead><tr>{field.columns.map((c) => <th key={c.key} scope="col">{c.label}</th>)}{field.key === "documents" && <th scope="col">File</th>}</tr></thead>
+          <tbody>{rows.map((r, i) => <tr key={i}>{field.columns.map((c) => <td key={c.key}>{c.kind === "yesno" ? (r[c.key] === "yes" ? "Yes" : "") : r[c.key] || ""}</td>)}{field.key === "documents" && <td><DocFile userId={userId} slot={i} docType={r.type} /></td>}</tr>)}</tbody>
         </table>
       </div>
       {field.masked && field.canReveal && <button type="button" className="ds-btn ds-btn--ghost ds-btn--sm" onClick={() => (full ? setFull(null) : show())}>{full ? "Hide numbers" : "Show numbers"}</button>}
@@ -67,10 +68,26 @@ function Rows({ userId, field }) {
   );
 }
 
+// FS1: the photo, and Add / Change photo for the person and for users:edit (HR, Admin)
+function PhotoValue({ userId }) {
+  const { userId: me } = useSession();
+  const canEdit = useCan("users:edit");
+  const [open, setOpen] = useState(false);
+  const mine = me === userId;
+  return (
+    <span className="pf-photo">
+      <Avatar userId={userId} cls="ds-avatar ds-avatar--lg" />
+      <span className="pf-photo__actions">
+        {(mine || canEdit) && <button type="button" className="ds-btn ds-btn--sm" id="photo-edit-btn" onClick={() => setOpen(true)}>Add or change photo</button>}
+        <span className="ds-hint">JPG or PNG, up to 2 MB. Seen by whoever can open this profile; initials show without one.</span>
+      </span>
+      <PhotoEditor userId={userId} open={open} onClose={() => setOpen(false)} />
+    </span>
+  );
+}
+
 function Value({ userId, field }) {
-  if (field.kind === "photo") {
-    return <span className="pf-photo"><span className="ds-avatar" aria-hidden="true">{initialsOf(nameOf(userId))}</span><span className="ds-hint">{field.hint}</span></span>;
-  }
+  if (field.kind === "photo") return <PhotoValue userId={userId} />;
   if (field.kind === "list") return <Rows userId={userId} field={field} />;
   if (empty(field.value)) return <span className="is-muted">Not given</span>;
   if (field.masked) return <Masked userId={userId} field={field} />;
@@ -83,7 +100,7 @@ function RowsEditor({ field, rows, onChange, error }) {
   return (
     <fieldset className="pf-edit-rows" aria-describedby={error ? `pf-${field.key}-error` : undefined}>
       <legend className="ds-field__label">{field.label}</legend>
-      {field.hint && <p className="ds-hint">{field.hint}</p>}
+      {field.hint && <p className="ds-hint">{field.key === "documents" ? "The details here; add each document's file (PDF, JPG or PNG, up to 5 MB) from its row once saved." : field.hint}</p>}
       {rows.map((r, i) => (
         <div className="pf-edit-row" key={i} role="group" aria-label={`${field.label}, row ${i + 1}`}>
           {field.columns.map((c) => {
@@ -182,8 +199,8 @@ function Section({ userId, section, relation }) {
   const direct = section.fields.filter((f) => f.edit === "direct" && f.kind !== "photo");
   const request = section.fields.filter((f) => f.edit === "request");
   // F2: filled fields first; the empty ones under "Not added (N)", collapsed, each with Add for whoever may fill it
-  const filled = section.fields.filter((f) => !empty(f.value));
-  const missing = section.fields.filter((f) => empty(f.value));
+  const filled = section.fields.filter((f) => !empty(f.value) || f.kind === "photo");   // FS1: the photo (or initials) always shows, with its button
+  const missing = section.fields.filter((f) => empty(f.value) && f.kind !== "photo");
   const open = (m, key) => { setFocus(key); setMode(m); };
   const add = (f) => {
     const label = `Add ${f.label.toLowerCase()}`;

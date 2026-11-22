@@ -611,6 +611,77 @@ react-fin.P.salary-structure,react-fin,admin on payroll/salary-structure.html at
 react-fin.P.expenses,react-fin,fin on finance/expenses.html at 412: the same cards,x1
 react-fin.P.tax-deductions,react-fin,fin on finance/tax-deductions.html at 412: the same cards,x1
 react-fin.X1,react-fin,shots written,x1
+react-fs1.U1,react-fs1,"the Receipt is a file picker: Choose a file, the types and limit, and no 'demo' words",x1
+react-fs1.U2,react-fs1,"on a desktop it offers dropping a file, not a camera",x1
+react-fs1.U3,react-fs1,"chosen: the name, 'PDF', the size, Open, Replace and Remove",x1
+react-fs1.U4,react-fs1,Remove takes it back to Choose a file,x1
+react-fs1.U5,react-fs1,an image shows its thumbnail,x1
+react-fs1.U6,react-fs1,"sent: the claim names the file, and the file is kept: a record (expense-payslip, PNG, its sha256, by Arjun) and the bytes in IndexedDB",x1
+react-fs1.U7,react-fs1,the record keeps no bytes (they are only in IndexedDB),x1
+react-fs1.R1,react-fs1,"an SVG named .png is refused under the picker, in words, announced (role alert)",x1
+react-fs1.R2,react-fs1,a web page named .pdf is refused,x1
+react-fs1.R3,react-fs1,5 MB + 1 byte is refused with the limit said,x1
+react-fs1.R4,react-fs1,exactly 5 MB is accepted,x1
+react-fs1.R5,react-fs1,a zero-byte file is refused as empty,x1
+react-fs1.R6,react-fs1,a double extension is refused,x1
+react-fs1.R7,react-fs1,the picker points at its error (aria-describedby),x1
+react-fs1.V1,react-fs1,the manager's approval card shows the file with View,x1
+react-fs1.V2,react-fs1,View opens the image in a dialog through the checked path (a blob URL),x1
+react-fs1.V3,react-fs1,"the audit trail has the view: Sneha viewed Arjun's file, by id",x1
+react-fs1.V4,react-fs1,fin: Expenses shows the file with View,x1
+react-fs1.V5,react-fs1,"the Admin sees 'You don't have access to this file.' (a ruling item), never a link",x1
+react-fs1.V6,react-fs1,an old claim's receipt text shows labelled 'Entered as text',x1
+react-fs1.P1,react-fs1,My profile's Photo has 'Add or change photo' and no 'later round' words,x1
+react-fs1.P2,react-fs1,the dialog shows the square crop with Zoom and two position sliders,x1
+react-fs1.P3,react-fs1,saved as Arjun's profile photo: a JPEG made from the crop,x1
+react-fs1.P4,react-fs1,"the header's avatar is the photo (an img), and so is the profile's",x1
+react-fs1.P5,react-fs1,HR sees it on Arjun's profile,x1
+react-fs1.P6,react-fs1,"the employee form's Upload photo is back (a real button, not a 'not available' one)",x1
+react-fs1.D1,react-fs1,HR: the document rows have a File column with Add file,x1
+react-fs1.D2,react-fs1,"saved: the row shows passport.pdf with View, Replace, Remove",x1
+react-fs1.D3,react-fs1,Arjun sees his document's file,x1
+react-fs1.D4,react-fs1,Finance's view of Arjun has no documents list (Finance doesn't see personal fields),x1
+react-fs1.S1,react-fs1,the header's photo is a blob URL made after the check,x1
+react-fs1.S2,react-fs1,signing out revoked the photo's object URL,x1
+react-fs1.S3,react-fs1,"after the change of person Arjun's old URL can't be read in this tab, and Rohan's header shows no photo of Arjun's",x1
+react-fs1.I1,react-fs1,a plain message says why ('private browsing or blocked site storage') and the claim wasn't sent,x1
+react-fs1.I2,react-fs1,"the claim it made is cancelled, not left waiting with no file",x1
+react-fs1.N-claim,react-fs1,"claim: no 'demo', 'not available' or 'a later round' words",x1
+react-fs1.N-expenses,react-fs1,"expenses: no 'demo', 'not available' or 'a later round' words",x1
+react-fs1.N-my-profile,react-fs1,"my-profile: no 'demo', 'not available' or 'a later round' words",x1
+react-fs1.N-profile,react-fs1,"profile: no 'demo', 'not available' or 'a later round' words",x1
+react-fs1.N-form,react-fs1,"form: no 'demo', 'not available' or 'a later round' words",x1
+react-fs1.N-inbox,react-fs1,"inbox: no 'demo', 'not available' or 'a later round' words",x1
+react-fs1.K1,react-fs1,Tab reaches 'Choose a file'; its name says Receipt and the hint is tied to it,x1
+react-fs1.K2,react-fs1,the hidden file inputs are out of the Tab order,x1
+react-fs1.K3,react-fs1,on a phone the picker also has 'Take a photo' (camera capture),x1
+react-fs1.W-claim-412l,react-fs1,claim at 412 light: no sideways scroll,x1
+react-fs1.W-claim-412d,react-fs1,claim at 412 dark: no sideways scroll,x1
+react-fs1.W-claim-1280l,react-fs1,claim at 1280 light: no sideways scroll,x1
+react-fs1.W-claim-1280d,react-fs1,claim at 1280 dark: no sideways scroll,x1
+react-fs1.W-expenses-412l,react-fs1,expenses at 412 light: no sideways scroll,x1
+react-fs1.W-expenses-412d,react-fs1,expenses at 412 dark: no sideways scroll,x1
+react-fs1.W-expenses-1280l,react-fs1,expenses at 1280 light: no sideways scroll,x1
+react-fs1.W-expenses-1280d,react-fs1,expenses at 1280 dark: no sideways scroll,x1
+react-fs1.W-my-profile-412l,react-fs1,my-profile at 412 light: no sideways scroll,x1
+react-fs1.W-my-profile-412d,react-fs1,my-profile at 412 dark: no sideways scroll,x1
+react-fs1.W-my-profile-1280l,react-fs1,my-profile at 1280 light: no sideways scroll,x1
+react-fs1.W-my-profile-1280d,react-fs1,my-profile at 1280 dark: no sideways scroll,x1
+react-fs1.W-profile-412l,react-fs1,profile at 412 light: no sideways scroll,x1
+react-fs1.W-profile-412d,react-fs1,profile at 412 dark: no sideways scroll,x1
+react-fs1.W-profile-1280l,react-fs1,profile at 1280 light: no sideways scroll,x1
+react-fs1.W-profile-1280d,react-fs1,profile at 1280 dark: no sideways scroll,x1
+react-fs1.W-form-412l,react-fs1,form at 412 light: no sideways scroll,x1
+react-fs1.W-form-412d,react-fs1,form at 412 dark: no sideways scroll,x1
+react-fs1.W-form-1280l,react-fs1,form at 1280 light: no sideways scroll,x1
+react-fs1.W-form-1280d,react-fs1,form at 1280 dark: no sideways scroll,x1
+react-fs1.W-inbox-412l,react-fs1,inbox at 412 light: no sideways scroll,x1
+react-fs1.W-inbox-412d,react-fs1,inbox at 412 dark: no sideways scroll,x1
+react-fs1.W-inbox-1280l,react-fs1,inbox at 1280 light: no sideways scroll,x1
+react-fs1.W-inbox-1280d,react-fs1,inbox at 1280 dark: no sideways scroll,x1
+react-fs1.C-light,react-fs1,"light: the file words, the tag and the buttons are 4.5:1 or more",x1
+react-fs1.C-dark,react-fs1,"dark: the file words, the tag and the buttons are 4.5:1 or more",x1
+react-fs1.X1,react-fs1,no page or console errors,x1
 react-gallery.G.1280.light,react-gallery,everything drawn at 1280 light,x1
 react-gallery.K.1280.light,react-gallery,"the readout: hint, click, focus; a pattern on every colour-only bar",x1
 react-gallery.T.1280.light,react-gallery,"sort both ways, search, no matches, export",x1

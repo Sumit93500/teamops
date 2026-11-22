@@ -10,7 +10,7 @@ Built in E1 (2026-11-14), in the React app.
 
 | section | fields |
 |---|---|
-| Personal details | full name, photo (initials until file storage), date of birth, Aadhaar, dependants and nominee, documents (details only: type, number masked, expiry) |
+| Personal details | full name, photo (FS1: a stored photo, else initials), date of birth, Aadhaar, dependants and nominee, documents (type, number masked, expiry; FS1: an optional file per row, see [files.md](files.md)) |
 | Contact details | work email, phone, personal email, current and permanent address, emergency contacts (several) |
 | Employment | designation, department, reporting manager, date of joining, employment type, work location, previous employment, education, skills |
 | Pay and tax | bank account, IFSC, bank name, account holder, PAN, UAN, ESI number, salary |

@@ -69,7 +69,8 @@ const read0 = (t) => t.evaluate(() => {
   const m = document.querySelector("main#main");
   if (!m) return null;
   const vis = (e) => e.getClientRects().length > 0;
-  const tx = (s) => s.replace(/\s+/g, " ").trim();
+  // FS1 (the brief, item 4): an old claim's receipt text is labelled "Entered as text" (checked in fs1.mjs V6); read without the label
+  const tx = (s) => s.replace(/\s+/g, " ").replace(/ ?Entered as text/g, "").trim();
   return {
     text: tx(m.innerText),
     controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),

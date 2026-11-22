@@ -61,6 +61,11 @@ export const PERMISSIONS = {
   // direct reports', HR and Admin those of people without a manager); assign: put a visit on people (everyone holds it: a manager for direct reports,
   // HR and Admin for anyone); view-all: every visit (HR, Admin). Not overridable. 98 -> 102 in 43 modules.
   visits:        ["request", "approve", "assign", "view-all"],
+  // FS1 (2026-11-22): stored files (data/files.js). view-expense: see the file on anyone's expense claim (HR, Finance; the claimant and their
+  // manager see it by who they are, not by a permission); view-documents: see employee document files (HR every one, Finance bank and tax proof);
+  // manage-documents: add or remove a file on anyone's document rows (HR). The Admin role holds none of the three by default (roles.js
+  // ADMIN_HELD_BACK: a ruling item). Not overridable. 102 -> 105 in 44 modules; Admin 102, HR 61, Finance 50, Employee 30.
+  files:         ["view-expense", "view-documents", "manage-documents"],
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.

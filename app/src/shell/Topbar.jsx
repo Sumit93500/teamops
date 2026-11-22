@@ -18,6 +18,7 @@ import { CompanyMark } from "./Brand.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { SearchBox, SearchOpener } from "./Search.jsx";
 import { initialsFrom } from "./media.js";
+import { SelfAvatar } from "../ui/avatar.jsx";   // FS1: the photo, else the initials
 import { SIGN_OUT_ICON } from "./Sidebar.jsx";
 import { toggleBellPanel, useBellOpen } from "../ui/ApprovalCard.jsx";
 
@@ -121,7 +122,7 @@ export default function Topbar({ title, back, drawerOpen, toggleDrawer, toggleRe
         <Bell />
         <div className={`dropdown${menu === "account" ? " is-open" : ""}`}>
           <button type="button" aria-label="Account menu" aria-expanded={String(menu === "account")} ref={triggers.account} onClick={toggle("account")}>
-            <span className="avatar" title={label ?? ""}>{initialsFrom(label)}</span>
+            <SelfAvatar cls="avatar" label={label ?? ""} initials={initialsFrom(label)} />
           </button>
           <div className="dropdown__menu">
             <Link className="dropdown__item" to={pageUrl("account/my-profile.html")}>

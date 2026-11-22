@@ -6,16 +6,16 @@
 
 | key | label | permissions | landing page | Data scope (as the pages word it) |
 |---|---|---|---|---|
-| admin | Admin | all 102 | dashboard/admin.html | All records |
-| hr | HR Manager | 58 | dashboard/hr.html | All records |
-| fin | Finance Manager | 48 | dashboard/finance.html | All finance records |
+| admin | Admin | 102 of 105 (not the three `files` ones: FS1, a ruling item) | dashboard/admin.html | All records |
+| hr | HR Manager | 61 | dashboard/hr.html | All records |
+| fin | Finance Manager | 50 | dashboard/finance.html | All finance records |
 | emp | Employee | 30 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
 
 Roles come from the configuration: they can't be created, edited or deleted in the app (the roles pages say so).
 
 ## Permissions
 
-- `module:action` strings, 43 modules, 102 in all (98 before CV1, 94 before SH1, 93 before E1b, 91 before E1, 90 before F1, 88 before P5, 86 before P4, 79 before L0). F1 (2026-11-14) added `attendance:any-office`: check in from any active office, not only your own (the Admin only, through every permission; not overridable), so Admin 91 and the others unchanged. P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
+- `module:action` strings, 44 modules, 105 in all (102 before FS1, 98 before CV1, 94 before SH1, 93 before E1b, 91 before E1, 90 before F1, 88 before P5, 86 before P4, 79 before L0). F1 (2026-11-14) added `attendance:any-office`: check in from any active office, not only your own (the Admin only, through every permission; not overridable), so Admin 91 and the others unchanged. P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
 - Examples: `payroll:create` (prepare a run), `payroll:approve`, `salary:view`, `dashboard:finance`, `users:delete` (Admin only), `pii:view` (bank account and PAN).
 - A page needs one permission (`config/routes.js`). A control on a page needs its own, through `data-permission="..."` on the static pages and `perm()` / `useCan()` in the React app.
 
@@ -34,6 +34,10 @@ SH1 (2026-11-15) added `shifts:view`, `shifts:assign` and `shifts:swap-team` to 
 ## Visits (CV1)
 
 CV1 (2026-11-16) added the module `visits`: `visits:request` (ask for a visit; everyone), `visits:approve` (decide a visit; everyone holds it, and it acts on direct reports only: HR and the Admin decide for people without a manager, as overtime does), `visits:assign` (put a visit on people; everyone holds it: a manager for direct reports, HR and the Admin for anyone) and `visits:view-all` (every visit; HR and the Admin). None is overridable. 98 -> 102 in 43 modules; Admin 102, HR 58, Finance 48, Employee 30. See [attendance.md](attendance.md).
+
+## Stored files (FS1)
+
+FS1 (2026-11-22) added the module `files`: `files:view-expense` (HR, Finance), `files:view-documents` (HR, Finance: bank and tax proof only) and `files:manage-documents` (HR). The Admin role does **not** hold the three (`ADMIN_HELD_BACK`, a ruling item), so the Admin is no longer "every permission": 102 of 105. None is overridable. 102 -> 105 in 44 modules; Admin 102, HR 61, Finance 50, Employee 30. See [files.md](files.md).
 
 ## Offices and locations (round 14, in the main list since L0)
 

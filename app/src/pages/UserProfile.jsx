@@ -35,6 +35,7 @@ import { useToast } from "../ui/Toast.jsx";
 import { EmptyState, Badge, badgeOf, Reason } from "../components/Basics.jsx";
 import { PageHeader, Card, Pill } from "../components/Layout.jsx";
 import { Field, Input, Kv, initialsOf } from "../components/Form.jsx";
+import { Avatar } from "../ui/avatar.jsx";   // FS1
 import { STATUS } from "./UsersList.jsx";
 import { leavePolicyOn, bandText } from "../ui/leaveband.jsx";
 import { relationOf } from "../../../assets/js/data/employee-record.js";
@@ -230,7 +231,7 @@ function Profile({ initial }) {
         <section className="ds-card profile-head" aria-labelledby="profile-name">
           <div className="ds-card__body ds-form-actions">
             <div className="ds-person">
-              <span className="ds-avatar ds-avatar--xl" aria-hidden="true">{initialsOf(user.name)}</span>
+              <Avatar userId={user.id} name={user.name} cls="ds-avatar ds-avatar--xl" />
               <div>
                 <h2 className="ds-card__title" id="profile-name">{user.name}</h2>
                 <p className="ds-hint" id="profile-meta">{[user.designation, departmentName(user.department)].filter(Boolean).join(", ")}</p>

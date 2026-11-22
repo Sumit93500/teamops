@@ -288,7 +288,8 @@ if (ONLY.includes("B")) {
       return out;
     };
     const [a, b] = [await steps(o.t), await steps(n.t)];
-    check(`B.${who}.${width}`, `${who} at ${width}: bell, list, card, Esc, See all`, j(a) === j(b), j(a) === j(b) ? j(b[1]).slice(0, 300) : `old ${j(a)} new ${j(b)}`);
+    const fs1 = (v) => j(v).replace(/ ?Entered as text/g, "");   // FS1 (the brief, item 4): an old claim's receipt text is labelled "Entered as text" on the card (fs1.mjs V6)
+    check(`B.${who}.${width}`, `${who} at ${width}: bell, list, card, Esc, See all`, fs1(a) === fs1(b), j(a) === j(b) ? j(b[1]).slice(0, 300) : `old ${j(a)} new ${j(b)}`);
     if (o.errs.length || n.errs.length) check(`B.${who}.err`, "no page errors", false, j([o.errs, n.errs]));
     if (width === 412 || who === "hr") { await n.t.goBack(); await n.t.waitForTimeout(300); await n.t.click(".topbar__icon-btn--dot"); await n.t.waitForTimeout(400); await n.t.screenshot({ path: path.join(SHOTS, `bell-${who}-${width}-new.png`) }); }
     await o.ctx.close(); await n.ctx.close();

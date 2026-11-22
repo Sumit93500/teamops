@@ -11,6 +11,7 @@ export const AUDIT_KINDS = [
   "temp-issued", "signin-failed", "locked", "unlocked", "disabled", "enabled", "signin",
   "field-changed", "field-revealed", "change-requested", "change-approved", "change-rejected",
   "visit-requested", "visit-assigned", "visit-approved", "visit-rejected", "visit-cancelled", "visit-started", "visit-completed", "visit-location-ok", "visit-location-rejected", "visit-day-completed",
+  "file-added", "file-viewed", "file-replaced", "file-removed", "file-purged",   // FS1: data/files.js (the file id and name, never the contents)
 ];
 export const AUDIT_LABEL = {
   "account-created": "Account created", "link-used": "Set-password link used", "password-set": "Password set",
@@ -22,6 +23,7 @@ export const AUDIT_LABEL = {
   "visit-requested": "Visit requested", "visit-assigned": "Visit assigned", "visit-approved": "Visit approved", "visit-rejected": "Visit rejected",
   "visit-cancelled": "Visit cancelled", "visit-started": "Visit started", "visit-completed": "Visit completed", "visit-location-ok": "Visit location accepted",
   "visit-location-rejected": "Visit location rejected", "visit-day-completed": "Visit day completed",
+  "file-added": "File added", "file-viewed": "File viewed", "file-replaced": "File replaced", "file-removed": "File removed", "file-purged": "File deleted",
 };
 
 const empty = () => ({ version: 1, nextNum: 1, events: [] });
