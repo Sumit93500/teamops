@@ -21,8 +21,8 @@ export const PERMISSIONS = {
   expenses:      ["view", "approve", "pay", "create"],   // create: send your own claim (every role, SELF_SERVICE)
   tax:           ["view", "manage"],
   inventory:     ["view", "create", "edit"],
-  assets:        ["view-own", "assign", "approve", "report", "request", "view"],   // view: see who holds what (asset-assignment.html); Admin only for now
-  vendors:       ["create", "edit", "view"],   // view: the vendor list (vendors.html); Admin only for now
+  assets:        ["view-own", "assign", "approve", "report", "request", "view", "view-all", "view-values", "manage", "issue", "maintain"],   // view: see who holds what (asset-assignment.html); Admin only for now. AS1: the fixed-asset register's (data/asset-register.js), below
+  vendors:       ["create", "edit", "view", "manage"],   // view: the vendor list (vendors.html); Admin only for now. AS1: manage: the register's vendors
   recruitment:   ["view", "create", "edit"],
   announcements: ["view", "create"],
   requests:      ["view-own", "cancel"],
@@ -66,6 +66,14 @@ export const PERMISSIONS = {
   // manage-documents: add or remove a file on anyone's document rows (HR). The Admin role holds none of the three by default (roles.js
   // ADMIN_HELD_BACK: a ruling item). Not overridable. 102 -> 105 in 44 modules; Admin 102, HR 61, Finance 50, Employee 30.
   files:         ["view-expense", "view-documents", "manage-documents"],
+  // AS1 (2026-11-22): the stock ledger and the fixed-asset register (data/stock-ledger.js, data/asset-register.js; data only). assets:view-all
+  // (HR, Finance, Admin) every asset; assets:view-values (Finance, Admin) prices, depreciation and disposal values, which no one else's reads
+  // carry; assets:manage (add, edit, retire, dispose), assets:issue (issue, take back), assets:maintain, vendors:manage and stock:move are the
+  // custodian's: the Admin's only until the IT round's role (a parking-lot item); stock:view (HR, Finance, Admin) the ledger; depreciation:
+  // configure (Finance, Admin) the category defaults and an asset's own method and rate. assets:view-own (above, everyone) also opens the
+  // register's own rows. Not overridable. 105 -> 114 in 46 modules; Admin 111, HR 63, Finance 54, Employee 30.
+  stock:         ["view", "move"],
+  depreciation:  ["configure"],
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.

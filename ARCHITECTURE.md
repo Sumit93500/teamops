@@ -19,7 +19,7 @@ Nothing in `config/`, `core/`, `data/` or `ui/` touches `window`, `document` or 
 - **Reads return deep copies**, so a caller can't change a record by accident.
 - **Writes validate, save and return a result**: `{ ok, record }` or `{ ok: false, error, field }`. A page shows `error` under `field`.
 - **Derived figures are never stored.** Leave balances, attendance status, a stock level and a month's pay are worked out from the records on each read, so they can't drift. Approved payroll runs are the exception: they fix their figures.
-- **Rules are plain functions with no storage and no clock:** `payroll.js` (earnings, PF, professional tax, TDS), `expenses.js` (categories, approval stages), `inventory.js`, `holidays.js` (date maths in UTC on whole days).
+- **Rules are plain functions with no storage and no clock:** `payroll.js` (earnings, PF, professional tax, TDS), `expenses.js` (categories, approval stages), `inventory.js`, `holidays.js` (date maths in UTC on whole days), `asset-rules.js` and `depreciation.js` (AS1: the asset lifecycle, stock and depreciation in exact paise; see [docs/assets.md](docs/assets.md)).
 - **No store has a change event.** The React app adds one (below).
 
 Area notes: [docs/attendance.md](docs/attendance.md), [docs/shifts.md](docs/shifts.md), [docs/leave.md](docs/leave.md), [docs/payroll.md](docs/payroll.md), [docs/expenses.md](docs/expenses.md), [docs/assets.md](docs/assets.md), [docs/charts.md](docs/charts.md).
@@ -38,7 +38,7 @@ Pages import the stores directly (`../../../assets/js/data/...`). Vite bundles t
 ## RBAC
 
 - **Four roles** (`config/roles.js`): Admin, HR Manager, Finance Manager and Employee.
-- **105 permissions** in 44 modules (`config/permissions.js`), each a `module:action` string. Admin holds 102 (all but the three `files` ones, held back for a ruling: FS1), HR 61, Finance 50 and Employee 30 (FS1 added the `files` module, CV1 added the four `visits` ones, F1 added `attendance:any-office`, E1 `accounts:reset` and `accounts:unlock`, SH1 the shift and overtime ones).
+- **114 permissions** in 46 modules (`config/permissions.js`), each a `module:action` string. Admin holds 111 (all but the three `files` ones, held back for a ruling: FS1), HR 63, Finance 54 and Employee 30 (AS1 added nine for the assets and inventory data layer, with the modules `stock` and `depreciation`; FS1 added the `files` module, CV1 added the four `visits` ones, F1 added `attendance:any-office`, E1 `accounts:reset` and `accounts:unlock`, SH1 the shift and overtime ones).
 - **`can(permission)`** (`core/rbac.js`) checks the signed-in person's permissions on record: their role's, plus any per-person overrides. It is the only check pages use.
 - **Each page needs one permission** (`config/routes.js`, 48 signed-in pages). `core/guard.js` sends a person without it to 403. The React app's `RequireRoute` does the same.
 - **Being a manager is a relationship, not a role.** Someone is a manager when a request from a direct report would reach them (`data/reporting.js`, `managerFor()` in `leave-store.js`). Managers see their direct reports' attendance and leave, and decide the manager stage of their requests. Direct reports only.

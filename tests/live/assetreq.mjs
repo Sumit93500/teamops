@@ -607,7 +607,7 @@ check("J4", "Reset demo data also resets asset requests (and says so)", /expense
 // =====================================================================
 section("K. Access");
 check("K1", "no new permission: assets:request / view-own / report for every role (SELF_SERVICE), assets:approve Admin only",
-  j(PERMISSIONS.assets) === j(["view-own", "assign", "approve", "report", "request", "view"]) && (await import("./js-pre6F/config/permissions.js")).ALL_PERMISSIONS.length === 76
+  j(PERMISSIONS.assets.slice(0, 6)) === j(["view-own", "assign", "approve", "report", "request", "view"]) /* AS1 (layout; the register's five appended after view) */ && (await import("./js-pre6F/config/permissions.js")).ALL_PERMISSIONS.length === 76
   && ["hr", "fin", "emp"].every((r) => ["assets:request", "assets:view-own", "assets:report"].every((p) => ROLES[r].permissions.includes(p)) && !ROLES[r].permissions.includes("assets:approve")));
 check("K2", "routes and nav unchanged: my-assets on assets:view-own, the inbox personal (null)", ROUTES["inventory/my-assets.html"] === "assets:view-own" && ROUTES["requests/approvals-inbox.html"] === null
   && ROUTES["requests/my-requests.html"] === "requests:view-own");

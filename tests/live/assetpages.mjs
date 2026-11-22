@@ -360,7 +360,7 @@ fresh();
 
 // =====================================================================
 section("I. Access: the new assets:view");
-check("I1", "permissions.js: assets = view-own, assign, approve, report, request, view (one new action, appended)", j(PERMISSIONS.assets) === j(["view-own", "assign", "approve", "report", "request", "view"]));
+check("I1", "permissions.js: assets = view-own, assign, approve, report, request, view (one new action, appended)", j(PERMISSIONS.assets.slice(0, 6)) === j(["view-own", "assign", "approve", "report", "request", "view"]));   // AS1 (layout; the register's five are appended after view: assetdata.mjs P1)
 // I2 / I4 / L3: what 6D changed in config, read from 6D's result frozen (js-pre6F; Round 6F added vendors:view).
 const prePerms = (await import("./js-pre6D/config/permissions.js")).ALL_PERMISSIONS;
 const perms6D = (await import("./js-pre6F/config/permissions.js")).ALL_PERMISSIONS;

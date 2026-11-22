@@ -42,12 +42,12 @@ const T = (c) => c.repeat(32);
 
 section("P. attendance:any-office");
 check("P1", "in the master list, once", P.ALL_PERMISSIONS.filter((p) => p === ANY).length === 1, P.ALL_PERMISSIONS.length);
-check("P2", "102 permissions in all (90 before F1, 91 before E1, 93 before E1b, 94 before SH1)", P.ALL_PERMISSIONS.length === 105, P.ALL_PERMISSIONS.length);   // FS1 (behaviour; was 102)
+check("P2", "102 permissions in all (90 before F1, 91 before E1, 93 before E1b, 94 before SH1)", P.ALL_PERMISSIONS.length === 114, P.ALL_PERMISSIONS.length);   // AS1 (behaviour; was 105)   // FS1 (behaviour; was 102)
 check("P3", "the Admin holds it", R.hasPermission(S.getUser(AARAV), ANY));
 check("P4", "HR, Finance, an employee and a manager don't", [PRIYA, KABIR, ARJUN, SNEHA].every((id) => !R.hasPermission(S.getUser(id), ANY)));
 check("P5", "not overridable: a stored grant gives it to nobody", !R.OVERRIDABLE.includes(ANY) && !R.hasPermission({ ...S.getUser(PRIYA), grantPermissions: [ANY] }, ANY));
 const counts = Object.fromEntries(Object.entries(R.ROLES).map(([k, r]) => [k, r.permissions.length]));
-check("P6", "role counts: Admin 102, HR 58, Finance 48, Employee 30 (E1, E1b: accounts; SH1: shifts, overtime)", j(counts) === j({ admin: 102, hr: 61, fin: 50, emp: 30 }), j(counts));   // FS1 (behaviour; HR was 58, Finance 48)
+check("P6", "role counts: Admin 102, HR 58, Finance 48, Employee 30 (E1, E1b: accounts; SH1: shifts, overtime)", j(counts) === j({ admin: 111, hr: 63, fin: 54, emp: 30 }), j(counts));   // AS1 (behaviour; were 102, 61, 50)   // FS1 (behaviour; HR was 58, Finance 48)
 check("P7", "a denied grant can't take it from the Admin either (no overrides for an Admin)", R.hasPermission({ ...S.getUser(AARAV), denyPermissions: [ANY] }, ANY));
 
 section("L. placesFor");

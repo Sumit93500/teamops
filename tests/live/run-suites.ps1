@@ -201,6 +201,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "modguard.mjs") { Run "modguard-$t" @("modguard.mjs") }
   # FS1: stored files (data/file-rules.js, data/files.js)
   if (Test-Path "files.mjs") { Run "files-$t" @("files.mjs") }
+  # AS1: the assets and inventory data layer (data/stock-ledger.js, data/asset-register.js, data/depreciation.js, data/asset-rules.js)
+  if (Test-Path "assetdata.mjs") { Run "assetdata-$t" @("assetdata.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

@@ -66,6 +66,7 @@ export const ROLES = {
       "audit:view",
       "accounts:reset",   // E1: a reset link or a new temporary password for someone (not an Admin)
       "files:view-expense", "files:view-documents", "files:manage-documents",   // FS1: expense files, every document file, add them for anyone
+      "assets:view-all", "stock:view",   // AS1: every asset in the register (no values) and the stock ledger
     ],
   },
 
@@ -88,6 +89,7 @@ export const ROLES = {
       "declarations:manage",   // P5: edit, verify and lock anyone's declaration; the cutoff
       "reports:view", "reports:export", "reports:create",
       "files:view-expense", "files:view-documents",   // FS1: expense files; bank and tax proof among document files (data/files.js)
+      "assets:view-all", "assets:view-values", "stock:view", "depreciation:configure",   // AS1: every asset with its values; the stock ledger; depreciation settings
     ],
   },
 

@@ -12,6 +12,10 @@ export const AUDIT_KINDS = [
   "field-changed", "field-revealed", "change-requested", "change-approved", "change-rejected",
   "visit-requested", "visit-assigned", "visit-approved", "visit-rejected", "visit-cancelled", "visit-started", "visit-completed", "visit-location-ok", "visit-location-rejected", "visit-day-completed",
   "file-added", "file-viewed", "file-replaced", "file-removed", "file-purged",   // FS1: data/files.js (the file id and name, never the contents)
+  // AS1: data/stock-ledger.js and data/asset-register.js (the ids, the kind of change and the field names, never an amount)
+  "stock-item-added", "stock-item-changed", "stock-moved", "stock-reversed",
+  "asset-added", "asset-changed", "asset-issued", "asset-returned", "asset-maintenance-opened", "asset-maintenance-closed", "asset-retired", "asset-disposed",
+  "vendor-added", "vendor-changed", "vendor-removed", "depreciation-changed",
 ];
 export const AUDIT_LABEL = {
   "account-created": "Account created", "link-used": "Set-password link used", "password-set": "Password set",
@@ -24,6 +28,11 @@ export const AUDIT_LABEL = {
   "visit-cancelled": "Visit cancelled", "visit-started": "Visit started", "visit-completed": "Visit completed", "visit-location-ok": "Visit location accepted",
   "visit-location-rejected": "Visit location rejected", "visit-day-completed": "Visit day completed",
   "file-added": "File added", "file-viewed": "File viewed", "file-replaced": "File replaced", "file-removed": "File removed", "file-purged": "File deleted",
+  "stock-item-added": "Stock item added", "stock-item-changed": "Stock item changed", "stock-moved": "Stock movement recorded", "stock-reversed": "Stock movement corrected",
+  "asset-added": "Asset added", "asset-changed": "Asset changed", "asset-issued": "Asset issued", "asset-returned": "Asset returned",
+  "asset-maintenance-opened": "Asset sent for maintenance", "asset-maintenance-closed": "Asset back from maintenance", "asset-retired": "Asset retired",
+  "asset-disposed": "Asset disposed of", "vendor-added": "Vendor added", "vendor-changed": "Vendor changed", "vendor-removed": "Vendor deleted",
+  "depreciation-changed": "Depreciation settings changed",
 };
 
 const empty = () => ({ version: 1, nextNum: 1, events: [] });

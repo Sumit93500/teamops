@@ -48,9 +48,9 @@ const tokenOf = (link) => decodeURIComponent(link.split("token=")[1]);
 const events = (id) => AU.eventsFor(id).map((e) => e.kind);
 
 section("P. Permissions");
-check("P1", "accounts:reset, accounts:unlock and accounts:disable (E1b) are in the list; 105 in all (SH1: was 94; FS1: was 102, the files module)", j(P.PERMISSIONS.accounts) === j(["reset", "unlock", "disable"]) && P.ALL_PERMISSIONS.length === 105, P.ALL_PERMISSIONS.length);
+check("P1", "accounts:reset, accounts:unlock and accounts:disable (E1b) are in the list; 105 in all (SH1: was 94; FS1: was 102, the files module)", j(P.PERMISSIONS.accounts) === j(["reset", "unlock", "disable"]) && P.ALL_PERMISSIONS.length === 114 /* AS1 (behaviour; was 105: the assets, stock and depreciation ones) */, P.ALL_PERMISSIONS.length);
 const counts = Object.fromEntries(Object.entries(R.ROLES).map(([k, r]) => [k, r.permissions.length]));
-check("P2", "roles: Admin 102 (all three), HR 58 (reset only), Finance 48, Employee 30 (SH1: were 94, 50, 42, 24)", j(counts) === j({ admin: 102, hr: 61, fin: 50, emp: 30 })   // FS1 (behaviour; HR was 58, Finance 48: the files permissions)
+check("P2", "roles: Admin 102 (all three), HR 58 (reset only), Finance 48, Employee 30 (SH1: were 94, 50, 42, 24)", j(counts) === j({ admin: 111, hr: 63, fin: 54, emp: 30 }) /* AS1 (behaviour; were 102, 61, 50) */   // FS1 (behaviour; HR was 58, Finance 48: the files permissions)
   && R.ROLES.hr.permissions.includes("accounts:reset") && !R.ROLES.hr.permissions.includes("accounts:unlock") && !R.ROLES.fin.permissions.includes("accounts:reset"), j(counts));
 check("P3", "neither is overridable: a stored grant gives an employee nothing", !R.OVERRIDABLE.some((p) => p.startsWith("accounts:")) && !["accounts:reset", "accounts:unlock", "accounts:disable"].some((p) => R.hasPermission({ ...S.getUser(ARJUN), grantPermissions: [p] }, p)));
 check("P4", "only the Admin holds accounts:disable (E1b): HR, Finance, an employee and a manager don't", R.hasPermission(S.getUser(AARAV), "accounts:disable") && [PRIYA, KABIR, ARJUN, SNEHA].every((id) => !R.hasPermission(S.getUser(id), "accounts:disable")));

@@ -6,16 +6,16 @@
 
 | key | label | permissions | landing page | Data scope (as the pages word it) |
 |---|---|---|---|---|
-| admin | Admin | 102 of 105 (not the three `files` ones: FS1, a ruling item) | dashboard/admin.html | All records |
-| hr | HR Manager | 61 | dashboard/hr.html | All records |
-| fin | Finance Manager | 50 | dashboard/finance.html | All finance records |
+| admin | Admin | 111 of 114 (not the three `files` ones: FS1, a ruling item) | dashboard/admin.html | All records |
+| hr | HR Manager | 63 | dashboard/hr.html | All records |
+| fin | Finance Manager | 54 | dashboard/finance.html | All finance records |
 | emp | Employee | 30 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
 
 Roles come from the configuration: they can't be created, edited or deleted in the app (the roles pages say so).
 
 ## Permissions
 
-- `module:action` strings, 44 modules, 105 in all (102 before FS1, 98 before CV1, 94 before SH1, 93 before E1b, 91 before E1, 90 before F1, 88 before P5, 86 before P4, 79 before L0). F1 (2026-11-14) added `attendance:any-office`: check in from any active office, not only your own (the Admin only, through every permission; not overridable), so Admin 91 and the others unchanged. P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
+- `module:action` strings, 46 modules, 114 in all (105 before AS1, 102 before FS1, 98 before CV1, 94 before SH1, 93 before E1b, 91 before E1, 90 before F1, 88 before P5, 86 before P4, 79 before L0). F1 (2026-11-14) added `attendance:any-office`: check in from any active office, not only your own (the Admin only, through every permission; not overridable), so Admin 91 and the others unchanged. P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
 - Examples: `payroll:create` (prepare a run), `payroll:approve`, `salary:view`, `dashboard:finance`, `users:delete` (Admin only), `pii:view` (bank account and PAN).
 - A page needs one permission (`config/routes.js`). A control on a page needs its own, through `data-permission="..."` on the static pages and `perm()` / `useCan()` in the React app.
 
@@ -38,6 +38,10 @@ CV1 (2026-11-16) added the module `visits`: `visits:request` (ask for a visit; e
 ## Stored files (FS1)
 
 FS1 (2026-11-22) added the module `files`: `files:view-expense` (HR, Finance), `files:view-documents` (HR, Finance: bank and tax proof only) and `files:manage-documents` (HR). The Admin role does **not** hold the three (`ADMIN_HELD_BACK`, a ruling item), so the Admin is no longer "every permission": 102 of 105. None is overridable. 102 -> 105 in 44 modules; Admin 102, HR 61, Finance 50, Employee 30. See [files.md](files.md).
+
+## Assets and stock (AS1)
+
+AS1 (2026-11-22) added nine permissions for the assets and inventory data layer (see [assets.md](assets.md)): `assets:view-all` (HR, Finance), `assets:view-values` (Finance), `assets:manage`, `assets:issue`, `assets:maintain`, `vendors:manage` and the new module `stock` with `stock:view` (HR, Finance) and `stock:move`, and the new module `depreciation` with `depreciation:configure` (Finance). The Admin holds all nine. `assets:manage`, `assets:issue`, `assets:maintain`, `vendors:manage` and `stock:move` are the custodian's: the Admin's only until the IT round's role. `assets:view-own` (everyone, already there) also opens the register's own rows. None is overridable. A manager gets no asset access to the team. 105 -> 114 in 46 modules; Admin 111, HR 63, Finance 54, Employee 30. The role editors list `stock` and `depreciation` under "Other".
 
 ## Offices and locations (round 14, in the main list since L0)
 
@@ -77,4 +81,4 @@ Round 14 added seven permissions for its data layer. L0 moved them into `PERMISS
 - Custom roles; editing a role.
 - Delegation: the page is a sample.
 - A backend check. Every check runs in the browser, so this is a demo, not security.
-- The B-4 inventory permissions (round 20).
+- The old site's inventory pages still use their own permissions (`inventory:*`, `assets:assign`, `assets:view`, `vendors:view`); the AS1 ones are for the new data layer and its screens.

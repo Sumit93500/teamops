@@ -244,7 +244,7 @@ section("G. Access: the new vendors:view");
 const prePerms = (await import("./js-pre6F/config/permissions.js")).ALL_PERMISSIONS;
 // Round 11N (layout; was the live ALL_PERMISSIONS, in G2: 6F's own addition, read as 11N found it (js-pre11N = HEAD fcdc960); users:delete was added since (roadnotes.mjs U1))
 const ALL11N = (await import("./js-pre11N/config/permissions.js")).ALL_PERMISSIONS;
-check("G1", "permissions.js: vendors = create, edit, view (one new action, appended)", j(PERMISSIONS.vendors) === j(["create", "edit", "view"]));
+check("G1", "permissions.js: vendors = create, edit, view (one new action, appended)", j(PERMISSIONS.vendors.slice(0, 3)) === j(["create", "edit", "view"]));   // AS1 (layout; vendors:manage appended after view: assetdata.mjs P1)
 check("G2", "ALL_PERMISSIONS = before + vendors:view right after vendors:edit; 77 in all", ALL11N.length === 77 && prePerms.length === 76
   && j(ALL11N.filter((p) => p !== "vendors:view")) === j(prePerms) && ALL11N.indexOf("vendors:view") === ALL11N.indexOf("vendors:edit") + 1);
 const preRoles = (await import("./js-pre6F/config/roles.js")).ROLES;

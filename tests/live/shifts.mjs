@@ -60,9 +60,9 @@ const NEEL = neel.record?.id ?? neel.user?.id ?? S.getAllUsers().find((u) => u.n
 // ---------- P ----------
 section("P. Permissions");
 const role = (k) => R.ROLES[k].permissions;
-check("P1", "102 permissions in 43 modules (98 / 42 before CV1)", P.ALL_PERMISSIONS.length === 105 && Object.keys(P.PERMISSIONS).length === 44 /* FS1 (behaviour; was 102 / 43) */, `${P.ALL_PERMISSIONS.length} / ${Object.keys(P.PERMISSIONS).length}`);
+check("P1", "102 permissions in 43 modules (98 / 42 before CV1)", P.ALL_PERMISSIONS.length === 114 && Object.keys(P.PERMISSIONS).length === 46 /* AS1 (behaviour; was 105 / 44) */ /* FS1 (behaviour; was 102 / 43) */, `${P.ALL_PERMISSIONS.length} / ${Object.keys(P.PERMISSIONS).length}`);
 check("P2", "the shifts module: manage, view, assign, swap-team; overtime: approve", j(P.PERMISSIONS.shifts) === j(["manage", "view", "assign", "swap-team"]) && j(P.PERMISSIONS.overtime) === j(["approve"]));
-check("P3", "role counts: Admin 102, HR 58, Finance 48, Employee 30", j(Object.values(R.ROLES).map((r) => r.permissions.length)) === j([102, 61, 50, 30]) /* FS1 (behaviour) */, j(Object.values(R.ROLES).map((r) => r.permissions.length)));
+check("P3", "role counts: Admin 102, HR 58, Finance 48, Employee 30", j(Object.values(R.ROLES).map((r) => r.permissions.length)) === j([111, 63, 54, 30]) /* AS1 (behaviour; were 102, 61, 50) */ /* FS1 (behaviour) */, j(Object.values(R.ROLES).map((r) => r.permissions.length)));
 check("P4", "everyone holds shifts:view, shifts:swap-team and overtime:approve (they act only on direct reports)", ["hr", "fin", "emp"].every((k) => ["shifts:view", "shifts:swap-team", "overtime:approve"].every((p) => role(k).includes(p))));
 check("P5", "shifts:assign and shifts:manage: Admin and HR only", role("hr").includes("shifts:assign") && role("hr").includes("shifts:manage") && !role("fin").includes("shifts:assign") && !role("emp").includes("shifts:assign") && !role("emp").includes("shifts:manage"));
 check("P6", "none of the new ones is overridable", ["shifts:view", "shifts:assign", "shifts:swap-team", "overtime:approve"].every((p) => !R.OVERRIDABLE.includes(p)));
