@@ -18,6 +18,7 @@
 //   requestVisit(personId, fields, now?)        assignVisit(assignerId, personIds, fields, now?)
 //   decideVisit(deciderId, visitId, decision, note, now?)   cancelVisit(actorId, visitId, note?, now?)
 //   completeVisitDay(actorId, visitId, date, { outTime, outcome, reason }, now?)   rejectVisitLocation(deciderId, visitId, date, side, note, now?)
+//   visitDaysNoCheckIn(viewerId, now?)   (CV1c: the approved visit days that ended with no check-in and wait for HR / an Admin to complete them)
 //   visitCheckIn(personId, reading, opts?, now?)   visitCheckOut(personId, reading, opts?, now?)   okVisitLocation(deciderId, visitId, date, side, note, now?)
 //   mayDecideVisit(deciderId, personId)   mayAssignFor(assignerId, personId)   mayCancelVisit(actorId, visit)   mayViewVisit(viewerId, visit)
 //   pendingVisitItems(deciderId)   visitsVisibleTo(viewerId)   onSiteToday(viewerId, now?)   phaseOf(visit, today)   mapsUrl(punch)   visitTrail(visit)
@@ -189,7 +190,7 @@ export function decideVisit(deciderId, visitId, decision, noteText = "", now = o
   return { ok: true, record: copy(row) };
 }
 
-const punched = (row) => Object.values(row.days).some((d) => d.in || d.out);
+const punched = (row) => Object.values(row.days).some((d) => d.in || d.out || d.decision);   // CV1c: a day HR completed counts as started
 export function cancelVisit(actorId, visitId, noteText = "", now = officeNow()) {
   const box = readBox();
   const row = box.visits.find((v) => v.id === visitId);
@@ -286,6 +287,8 @@ export function okVisitLocation(deciderId, visitId, date, side, noteText, now = 
 // HR or an Admin (attendance:approve and attendance:view-all; never for their own visit): a visit day with a check-in that was left without a
 // check-out is completed by setting the check-out time, or by marking the day full or half, with a reason. fields: { outTime "HH:MM", outcome "full" | "half", reason }.
 // Until then the day is flagged Incomplete (not absent, no loss of pay); only a day marked half costs half a day.
+// CV1c: a day nobody checked in on (an approved visit, the day over) is completed the same way, by marking it full or half with a reason (there is no
+// check-out time to add): until then it is an absence in the current rules and "Visit not started" under the shift rules.
 export function completeVisitDay(actorId, visitId, date, fields = {}, now = officeNow()) {
   const actor = active(actorId);
   if (!actor || !hasPermission(actor, "attendance:approve") || !hasPermission(actor, "attendance:view-all")) return fail("Only HR or an Admin can complete a visit day.");
@@ -296,11 +299,14 @@ export function completeVisitDay(actorId, visitId, date, fields = {}, now = offi
   if (!COUNTING.includes(row.status) || !row.dates.includes(date)) return fail("That isn't a day of this visit.", "date");
   if (date > now.date) return fail("That day hasn't happened yet.", "date");
   const day = row.days[date];
-  if (!day?.in || (day.in.needsOk && !day.in.okBy)) return fail("There is no check-in that day to complete.", "date");
-  if (day.decision) return fail("This day has already been completed.");
+  const nobody = !day?.in && !day?.out;   // CV1c: nothing punched that day
+  if (!nobody && (!day?.in || (day.in.needsOk && !day.in.okBy))) return fail("There is no check-in that day to complete.", "date");
+  if (day?.decision) return fail("This day has already been completed.");
+  if (nobody && date >= now.date) return fail("That day isn't over yet.", "date");
   const outTime = text(fields.outTime), outcome = text(fields.outcome);
   if (outcome && outcome !== "full" && outcome !== "half") return fail("Choose a full or a half day.", "outcome");
-  if (!outTime && !outcome) return fail("Give the check-out time, or mark the day full or half.", "outcome");
+  if (!outTime && !outcome) return fail(nobody ? "Mark the day full or half." : "Give the check-out time, or mark the day full or half.", "outcome");
+  if (nobody && outTime) return fail("Nobody checked in that day, so there is no check-out time to add: mark the day full or half.", "outTime");
   if (outTime) {
     if (day.out) return fail(`A check-out at ${day.out.time} is already recorded.`, "outTime");
     if (toMin(outTime) === null) return fail("Enter the check-out as HH:MM.", "outTime");
@@ -309,11 +315,12 @@ export function completeVisitDay(actorId, visitId, date, fields = {}, now = offi
   const why = text(fields.reason);
   if (why.length < NOTE_MIN || why.length > NOTE_MAX) return fail(`Give a reason of ${NOTE_MIN} to ${NOTE_MAX} characters.`, "reason");
   if (outTime) day.out = { time: outTime, lat: null, lng: null, accuracy: null, source: "hr", lowAccuracy: false, reason: "", needsOk: false, okBy: actor.id, okAt: stamp(), okNote: why };
-  day.decision = { outcome: outcome || "full", by: actor.id, at: stamp(), reason: why };
+  const target = nobody ? (row.days[date] = { in: null, out: null }) : day;
+  target.decision = { outcome: outcome || "full", by: actor.id, at: stamp(), reason: why };
   if (row.dates[row.dates.length - 1] === date) row.status = "completed";
-  note(row, actor.id, "day-completed", `${date}: ${outTime ? `check-out ${outTime}` : `marked ${day.decision.outcome}`}: ${why}`);
+  note(row, actor.id, "day-completed", `${date}: ${outTime ? `check-out ${outTime}` : `${nobody ? "no check-in, " : ""}marked ${target.decision.outcome}`}: ${why}`);
   if (!writeBox(box)) return fail(SAVE_FAILED);
-  logEvent({ actorId: actor.id, userId: row.personId, kind: "visit-day-completed", detail: `${row.id}: ${date} ${outTime ? `check-out ${outTime}` : `marked ${day.decision.outcome}`}` });
+  logEvent({ actorId: actor.id, userId: row.personId, kind: "visit-day-completed", detail: `${row.id}: ${date} ${outTime ? `check-out ${outTime}` : `${nobody ? "no check-in, " : ""}marked ${target.decision.outcome}`}` });
   return { ok: true, record: copy(row) };
 }
 
@@ -353,6 +360,23 @@ export function pendingVisitItems(deciderId) {
     if (v.status === "pending" || (v.status === "in-progress" && v.approvalPending)) out.push({ id: v.id, kind: "visit", visitId: v.id, personId: v.personId, userId: v.personId, reason: v.purpose, name, siteName: v.siteName, date: v.fromDate, toDate: v.toDate, sameDay: v.sameDay, requestedAt: v.createdAt });
     if (COUNTING.includes(v.status)) for (const [date, day] of Object.entries(v.days)) for (const side of ["in", "out"]) {
       if (day[side]?.needsOk && !day[side].okBy) out.push({ id: `${v.id}:${date}:${side}`, kind: "location", visitId: v.id, personId: v.personId, userId: v.personId, name, siteName: v.siteName, date, side, reason: day[side].reason, requestedAt: v.createdAt });
+    }
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
+}
+
+// CV1c: the approved visit days that ended with nothing punched and that nobody has completed yet, for someone who may complete them (HR, an Admin:
+// attendance:approve and attendance:view-all; never their own visit). Nobody else gets a list. -> [{ visitId, personId, name, siteName, date }], oldest first.
+export function visitDaysNoCheckIn(viewerId, now = officeNow()) {
+  const v = active(viewerId);
+  if (!v || !hasPermission(v, "attendance:approve") || !hasPermission(v, "attendance:view-all")) return [];
+  const out = [];
+  for (const x of readBox().visits) {
+    if (!COUNTING.includes(x.status) || x.personId === v.id) continue;
+    for (const date of x.dates) {
+      const d = x.days?.[date];
+      if (date >= now.date || d?.in || d?.out || d?.decision) continue;
+      out.push({ visitId: x.id, personId: x.personId, name: getUser(x.personId)?.name ?? x.personId, siteName: x.siteName, date });
     }
   }
   return out.sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));

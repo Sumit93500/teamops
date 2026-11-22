@@ -1,11 +1,13 @@
 // Team visits (CV1, 2026-11-16): for the people who decide and assign visits: a manager (their direct reports), HR and an Admin (everyone,
 // visits:view-all). "Waiting for you" first: visits to approve or reject (a rejection needs a reason) and punches made as "location
 // unavailable" that need an explicit OK; then every visit with status, a status filter and the shared date range. "Assign a visit" puts
-// a visit on one or more people, approved from the start. "On site today" lists who is checked in on a visit. The app's own page.
+// a visit on one or more people, approved from the start. "On site today" lists who is checked in on a visit. CV1c: for HR and an Admin, a flag and a
+// "No check-in" tab list the approved visit days that ended with nobody checked in, each with Complete day (full or half, with a reason). The app's own page.
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { getUser } from "../../../assets/js/data/store.js";
-import { visitsVisibleTo, pendingVisitItems, onSiteToday, phaseOf, mayDecideVisit } from "../../../assets/js/data/visits.js";
+import { visitsVisibleTo, pendingVisitItems, onSiteToday, phaseOf, mayDecideVisit, visitDaysNoCheckIn } from "../../../assets/js/data/visits.js";
+import { getVisit } from "../../../assets/js/data/visits-store.js";
 import { officeNow } from "../../../assets/js/data/shift-engine.js";
 import { formatDay, nameOf } from "../../../assets/js/ui/leave-view.js";
 import OwnPage from "../ui/OwnPage.jsx";
@@ -14,7 +16,7 @@ import { PageHeader, Card } from "../components/Layout.jsx";
 import { EmptyState, NO_DATA, Tabs } from "../components/Basics.jsx";
 import { DateRange, FilterBar, FilterSelect, FilterSearch } from "../components/Controls.jsx";
 import { useDecision, VISIT_FLOW, VISIT_LOCATION_FLOW, DecisionButtons } from "../components/Decision.jsx";
-import { VisitStatus, AssignVisitModal, assignable, kindLabel, visitDates, visitDays, PIN } from "../ui/visits.jsx";
+import { VisitStatus, AssignVisitModal, CompleteVisitDayModal, assignable, kindLabel, visitDates, visitDays, PIN } from "../ui/visits.jsx";
 import { STATUS_OPTIONS } from "./MyVisits.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { countText } from "../data/counts.js";
@@ -29,7 +31,9 @@ function Content() {
   const canView = useCan("visits:view-all");
   const flow = useDecision(VISIT_FLOW);
   const locFlow = useDecision(VISIT_LOCATION_FLOW);   // CV1b: the same Accept / Reject as the inbox and the card
-  const [tab, setTab] = useState(0);
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState(params.get("tab") === "no-check-in" ? 2 : 0);
+  const [completing, setCompleting] = useState(null);
   const [status, setStatus] = useState("");
   const [q, setQ] = useState("");
   const [range, setRange] = useState(NONE);
@@ -40,6 +44,7 @@ function Content() {
     waiting: pendingVisitItems(userId),
     onSite: onSiteToday(userId),
     canAssign: assignable(userId).length > 0,
+    none: visitDaysNoCheckIn(userId),
   }), [userId]);
   const filtered = Boolean(status || q.trim() || range.preset);
   const shown = d.all.filter((v) => (!status || phaseOf(v, today) === status) && (!q.trim() || nameOf(v.personId).toLowerCase().includes(q.trim().toLowerCase()) || v.siteName.toLowerCase().includes(q.trim().toLowerCase()))
@@ -62,20 +67,37 @@ function Content() {
     { key: "source", label: "Set up by", render: (v) => (v.source === "assigned" ? `Assigned by ${getUser(v.assignedBy)?.name ?? "someone"}` : "Asked by them") },
     { key: "status", label: "Status", render: (v) => <VisitStatus visit={v} /> },
   ];
-  const tabs = [{ label: "Waiting for you", count: String(d.waiting.length) }, { label: "All visits", count: String(d.all.length) }];
+  const noneColumns = [
+    { key: "who", label: "Person", render: (x) => person(x.personId) },
+    { key: "visit", label: "Visit", render: (x) => <div className="visit-site">{link(x.visitId, x.siteName)}<span className="visit-site__sub">{x.visitId}</span></div> },
+    { key: "day", label: "Day", render: (x) => formatDay(x.date, true) },
+    { key: "actions", label: "Actions", actions: true, render: (x) => <button className="ds-btn ds-btn--sm" type="button" onClick={() => setCompleting({ visit: getVisit(x.visitId), date: x.date })}>Complete day</button> },
+  ];
+  const tabs = [{ label: "Waiting for you", count: String(d.waiting.length) }, { label: "All visits", count: String(d.all.length) }, ...(d.none.length ? [{ label: "No check-in", count: String(d.none.length) }] : [])];
+  const shownTab = tabs[tab] ? tab : 0;
 
   return (
     <>
       <PageHeader title="Team visits" subtitle={canView ? "Everyone's client and official visits" : "Your team's client and official visits"}
         actions={d.canAssign ? <button className="ds-btn ds-btn--primary" type="button" id="assign-visit-btn" onClick={() => setAssigning(true)}>Assign a visit</button> : null} />
       <div className="ds-stack">
+        {d.none.length > 0 && (
+          <p className="ds-note ds-note--warning visit-flag" id="no-checkin-flag" role="status">
+            <span><strong>{countText(d.none.length, d.none.length, "approved visit day")}</strong> with no check-in. Until HR decides each day, it is an absence (before the shift rules) or "Visit not started" (after).</span>
+            <button className="ds-btn ds-btn--sm ds-btn--primary" type="button" onClick={() => setTab(2)}>Complete them</button>
+          </p>
+        )}
         <Card id="on-site-today" title="On site today" meta={d.onSite.length ? countText(d.onSite.length, d.onSite.length, "person") : undefined}>
           {d.onSite.length
             ? <ul className="visit-onsite" aria-label="People on site today">{d.onSite.map((x) => <li className="visit-onsite__item" key={x.visitId}><strong>{x.name}</strong><small>{x.siteName}, in {x.checkIn}{x.checkOut ? `, out ${x.checkOut}` : ""}</small></li>)}</ul>
             : <p className="text-muted">Nobody on your team is checked in on a visit right now.</p>}
         </Card>
-        <Tabs pill active={tab} onChange={setTab} tabs={tabs} />
-        {tab === 0
+        <Tabs pill active={shownTab} onChange={setTab} tabs={tabs} />
+        {shownTab === 2
+          ? <Card id="visits-no-checkin" title="Approved visit, no check-in" meta={countText(d.none.length, d.none.length, "day")}>
+              <Table bare pager={false} tableId="no-checkin-table" tableClass="table table--fit" columns={noneColumns} rows={d.none} rowKey={(x) => `${x.visitId}-${x.date}`} rowProps={(x) => ({ "data-visit": x.visitId })} empty="Nothing to complete." />
+            </Card>
+          : shownTab === 0
           ? <Card id="visits-waiting" title="Waiting for you" meta={countText(d.waiting.length, d.waiting.length, "item")}>
               {d.waiting.length
                 ? <Table bare pager={false} tableId="waiting-table" tableClass="table table--fit" columns={waitingColumns} rows={d.waiting} rowKey={(x) => x.id} rowProps={(x) => ({ "data-visit": x.visitId })} empty="Nothing is waiting for you." />
@@ -95,6 +117,7 @@ function Content() {
             </>}
       </div>
       <AssignVisitModal open={assigning} onClose={() => setAssigning(false)} />
+      {completing?.visit && <CompleteVisitDayModal visit={completing.visit} date={completing.date} onClose={() => setCompleting(null)} />}
       <span style={{ display: "contents" }}>{flow.modal}{locFlow.modal}</span>
     </>
   );

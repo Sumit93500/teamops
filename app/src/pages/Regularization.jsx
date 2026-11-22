@@ -111,7 +111,7 @@ export default function Regularization() {
           <button className="btn" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export>Export</button>
         </div>
       </div>
-      <div className="grid grid-main-aside">
+      <div className="grid grid-main-aside grid-main-aside--wide">
         <section className="card">
           <div className="table__toolbar">
             <div className="tabs tabs--pill" role="tablist">
@@ -128,7 +128,7 @@ export default function Regularization() {
             </div>
           </div>
           <div className="table-wrap">
-            <table className="table" data-export-name="regularization-requests">
+            <table className="table table--tight" data-export-name="regularization-requests">
               <thead><tr><th>Employee</th><th>Date</th><th>Issue</th><th>Recorded, requested</th><th>Reason</th><th>Status</th><th className="table__actions" hidden={tab !== "pending" || undefined}>Actions</th></tr></thead>
               <Nodes as="tbody" deps={[d, tab, search, current, canDecide]} build={() => {
                 if (pageRows.length) return pageRows.map((r) => row(r, tab, d.mineIds, on, canDecide));

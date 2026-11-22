@@ -129,7 +129,7 @@ function Content() {
         <FilterSearch label="Search" value={query} onChange={setQuery} placeholder="Search the rows" />
       </FilterBar>
       <Card id="rate-rows" title="Dated rows" meta={countText(shown.length, rows.length, "row", { filtered: shown.length !== rows.length })}>
-        <Table bare pageSize={15} columns={columns} rows={shown} rowKey={(r) => r.id} rowProps={(r) => ({ "data-rule": r.id })} empty="No rows match these filters." />
+        <Table bare tableClass="table table--tight table--fit" pageSize={15} columns={columns} rows={shown} rowKey={(r) => r.id} rowProps={(r) => ({ "data-rule": r.id })} empty="No rows match these filters." />
       </Card>
       <AddRow open={adding} onClose={() => setAdding(false)} />
     </>

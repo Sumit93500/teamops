@@ -92,7 +92,7 @@ function shiftStatusOf(ps, user) {
   const day = ps.day;
   if (ps.action === "check-out") return { pill: day.minutesLate ? ["warning", `Checked in at ${day.checkIn}, late by ${day.minutesLate} min`] : ["success", `Checked in at ${day.checkIn}`], canOut: true, why: day.crossesMidnight ? `Your ${day.shiftName} shift ends at ${day.shiftEnd} (next morning).` : "" };
   if (ps.action === "check-in") return { pill: ["warning", "Not checked in yet"], canIn: true, why: "" };
-  if (ps.action === "done") return { pill: ["", `Checked out at ${day.checkOut}`], why: "You're done for this shift." };
+  if (ps.action === "done") return { pill: ["", day.checkOut ? `Checked out at ${day.checkOut}` : "Done for this shift"], why: "You're done for this shift." };
   if (day.status === "weekly-off") return { pill: ["", "Weekly off"], why: ps.message };
   if (day.status === "on-leave") return { pill: ["info", "On leave today"], why: `You're on approved ${day.leave ? typeLabel(day.leave.type).toLowerCase() : "leave"} today, so there's nothing to check in for.` };
   if (day.status === "holiday") return { pill: ["", `Holiday: ${day.holiday?.name ?? ""}`], why: "No attendance is needed on holidays." };

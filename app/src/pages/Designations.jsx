@@ -57,7 +57,7 @@ export default function Designations() {
         </div>
       </div>
       <div className="alert alert--info mb-4">The job titles, their default roles and who holds them are the app's own; they're set up with the company and can't be edited here.</div>
-      <div className="grid grid-main-aside">
+      <div className="grid grid-main-aside grid-main-aside--wide">
         <section className="card">
           <div className="table__toolbar">
             <h3 className="card__title">All designations</h3>

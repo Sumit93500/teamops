@@ -196,6 +196,9 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "bank.mjs") { Run "bank-$t" @("bank.mjs") }
   # CV1: client / official visits, and the night shift's next-morning fix
   if (Test-Path "visits.mjs") { Run "visits-$t" @("visits.mjs") }
+  # CV1c: an approved visit day nobody checked in on; the node_modules guard
+  if (Test-Path "visitnone.mjs") { Run "visitnone-$t" @("visitnone.mjs") }
+  if (Test-Path "modguard.mjs") { Run "modguard-$t" @("modguard.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

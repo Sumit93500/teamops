@@ -83,7 +83,7 @@ export default function RolesList() {
               <input className="input input--sm input--search" type="search" placeholder="Search roles" aria-label="Search roles" value={query} onChange={(e) => setQuery(e.target.value)} />
             </div>
           </div>
-          <Table bare pager={false} columns={columns} rows={shown} rowKey={(r) => r.key} rowProps={(r) => ({ "data-role": r.key })} empty={null} />
+          <Table bare tableClass="table table--tight table--fit" pager={false} columns={columns} rows={shown} rowKey={(r) => r.key} rowProps={(r) => ({ "data-role": r.key })} empty={null} />
         </section>
       </div>
     </Frame>

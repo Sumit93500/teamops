@@ -286,7 +286,7 @@ function Run({ asked }) {
           </div>
           <div className="card__body"><Stepper id="run-steps" vertical={false} steps={steps} /></div>
         </section>
-        <div className="grid grid-main-aside">
+        <div className="grid grid-main-aside grid-main-aside--wide">
           <section className="card">
             <div className="table__toolbar">
               <h3 className="card__title">Employees in this run</h3>
@@ -300,7 +300,7 @@ function Run({ asked }) {
                 </select>
               </div>
             </div>
-            <Table bare pager={false} tbodyId="run-rows" columns={columns} rows={shown} rowKey={(r) => r.userId} rowProps={(r) => ({ "data-user-id": r.userId })} empty="No employees match these filters." />
+            <Table bare tableClass="table table--tight" pager={false} tbodyId="run-rows" columns={columns} rows={shown} rowKey={(r) => r.userId} rowProps={(r) => ({ "data-user-id": r.userId })} empty="No employees match these filters." />
             <div className="card__footer"><span className="card__meta" id="run-rows-meta">{countText(shown.length, run.rows.length, "employee", { filtered: shown.length !== run.rows.length })}</span></div>
           </section>
           <aside className="stack">

@@ -194,7 +194,7 @@ export default function SalaryStructure() {
         </div>
       </div>
       <div className="stack">
-        <div className="grid grid-main-aside">
+        <div className="grid grid-main-aside grid-main-aside--wide">
           <TemplateEditor />
           <aside className="stack">
             <section className="card">
@@ -240,7 +240,7 @@ export default function SalaryStructure() {
               </select>
             </div>
           </div>
-          <Table bare pager={false} oldExport exportName="employee-salaries" tbodyId="salary-rows" columns={salaryColumns} rows={shown} rowKey={(r) => r.user.id} rowProps={(r) => ({ "data-user-id": r.user.id })} empty="No employees match these filters." />
+          <Table bare tableClass="table table--tight" pager={false} oldExport exportName="employee-salaries" tbodyId="salary-rows" columns={salaryColumns} rows={shown} rowKey={(r) => r.user.id} rowProps={(r) => ({ "data-user-id": r.user.id })} empty="No employees match these filters." />
           <div className="card__footer"><span className="card__meta" id="salary-rows-meta">{countText(shown.length, d.rows.length, "employee", { filtered: shown.length !== d.rows.length })}</span></div>
         </section>
       </div>

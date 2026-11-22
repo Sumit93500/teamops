@@ -113,7 +113,7 @@ function Content() {
             <FilterSelect label="Role" value={roleKey} onChange={reset(setRoleKey)} allLabel="All roles" options={Object.values(ROLES).map((r) => ({ value: r.key, label: r.label }))} />
             <FilterSelect label="Sign-in" value={signIn} onChange={reset(setSignIn)} allLabel="Any sign-in" options={[{ value: "locked", label: `Locked (${users.filter((u) => u.locked).length})` }]} />
           </FilterBar>
-          <Table bare columns={columns} rows={filtered} page={page} onPageChange={setPage} empty="No employees match these filters." tableId="users-table" />
+          <Table bare tableClass="table table--tight" columns={columns} rows={filtered} page={page} onPageChange={setPage} empty="No employees match these filters." tableId="users-table" />
         </div>
       </Card>
     </>

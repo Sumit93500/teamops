@@ -36,7 +36,7 @@ import { resolvePageLink } from "../../../assets/js/core/paths.js";
 import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
-import { VisitsToday } from "../ui/visits.jsx";   // CV1
+import { VisitsToday, VisitsNoCheckIn } from "../ui/visits.jsx";   // CV1, CV1c
 import { ColumnChart } from "../components/Charts.jsx";
 import { BarChart } from "../components/charts/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
@@ -231,6 +231,7 @@ export default function AdminDashboard() {
               value={d.alerts ? String(d.alerts.length) : "—"} note={d.alerts ? stockNote : ""} noteTone={d.alerts?.length ? "down" : ""} />
           </StatStrip>
           <VisitsToday />
+        <VisitsNoCheckIn />
 
           <div className="grid grid-main-aside">
             <section className="card">
@@ -288,7 +289,7 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="table-wrap">
-              <table className="table" data-export-name="admin-dashboard-attendance">
+              <table className="table table--tight" data-export-name="admin-dashboard-attendance">
                 <thead>
                   <tr><th>Employee</th><th>ID</th><th>Department</th><th>Shift</th><th>Status</th><th>Check-in</th><th className="table__num">Hours</th></tr>
                 </thead>

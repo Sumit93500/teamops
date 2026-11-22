@@ -1,0 +1,24 @@
+/* CV1c: wide tables. Tokens only; the old site's css is untouched (the old pages keep what they had).
+   1. Any table that scrolls sideways inside its card shows it: a soft shadow on the edge that has more behind it (ui/scrollHints.js sets the classes; a table that fits gets none).
+   2. Team attendance (.table--team, 9 columns, SH1's Shift / Overtime / Place on top of the older six) fits its card at 1280, 1024 and 768 instead of
+      scrolling with the Status column cut off: tighter cell padding, the Status column kept wide enough for its chip, and the columns that matter least
+      leave as the card narrows (This week, then Overtime, then Department). They stay in the page's CSV export, which reads the rows, not the screen.
+      Under 561 px the page is cards, not a table, and none of this applies. */
+
+.table-wrap.more-right { background: radial-gradient(farthest-side at 100% 50%, color-mix(in srgb, var(--ds-text) 22%, transparent), transparent) right center / 12px 100% no-repeat; }
+.table-wrap.more-left { background: radial-gradient(farthest-side at 0 50%, color-mix(in srgb, var(--ds-text) 22%, transparent), transparent) left center / 12px 100% no-repeat; }
+.table-wrap.more-left.more-right { background: radial-gradient(farthest-side at 0 50%, color-mix(in srgb, var(--ds-text) 22%, transparent), transparent) left center / 12px 100% no-repeat, radial-gradient(farthest-side at 100% 50%, color-mix(in srgb, var(--ds-text) 22%, transparent), transparent) right center / 12px 100% no-repeat; }
+
+.table--tight :is(th, td) { padding-left: 10px; padding-right: 10px; }   /* the wide tables that only just overflow: payroll run, rates and rules, users, expenses, salary structure */
+.table--team :is(th, td) { padding-left: 10px; padding-right: 10px; }
+.table--team :is(th, td):first-child { padding-left: 16px; }
+.table--team :is(th, td):last-child { padding-right: 16px; }
+.table--team td:nth-child(n + 3):nth-child(-n + 7) { white-space: nowrap; }   /* shift, check-in, place, hours, overtime */
+.table--team td:nth-child(9) { min-width: 11.5rem; }
+.table--team .visit-chip, .table--team .badge { white-space: nowrap; }
+.table-wrap:has(.table--team) { container: team-table / inline-size; }
+@media (min-width: 561px) {
+  @container team-table (max-width: 979px) { .table--team :is(th, td):nth-child(8) { display: none; } }
+  @container team-table (max-width: 939px) { .table--team :is(th, td):nth-child(7) { display: none; } }
+  @container team-table (max-width: 819px) { .table--team :is(th, td):nth-child(2) { display: none; } }
+}

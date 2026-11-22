@@ -29,7 +29,7 @@ import { cardOpener } from "../ui/ApprovalCard.jsx";
 import Frame from "../ui/Frame.jsx";
 import Nodes from "../ui/Nodes.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
-import { VisitsToday } from "../ui/visits.jsx";   // CV1
+import { VisitsToday, VisitsNoCheckIn } from "../ui/visits.jsx";   // CV1, CV1c
 import { BarChart, monthSpan } from "../components/charts/Charts.jsx";
 import { useDecision, DecisionButtons, LEAVE_FLOW, CORRECTION_FLOW } from "../components/Decision.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
@@ -163,6 +163,7 @@ export default function HrDashboard() {
           <StatCard id="joiners" icon={ICONS.joiners} tone={4} label={`New joiners, ${monthShort(`${d.month}-01`)}`} value={String(joiners.length)} note={joinNotes.join("; ")} />
         </StatStrip>
         <VisitsToday />
+        <VisitsNoCheckIn />
 
         <div className="grid grid-main-aside">
           <section className="card">

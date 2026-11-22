@@ -22,11 +22,13 @@ import { useData, useSession } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
 import { pageUrl, MY_VISITS, TEAM_VISITS, VISIT_PAGE } from "../routes.js";
 
+// a note that names a day as 2026-12-22 says 22 Dec 2026
+const inWords = (s) => String(s).replace(/\b(\d{4}-\d{2}-\d{2})\b/g, (d) => formatDay(d, true));
 const ACTION_WORDS = { requested: "Asked for", "started-same-day": "Started today", assigned: "Assigned", approved: "Approved", rejected: "Rejected", cancelled: "Cancelled", started: "Started", "check-in": "Checked in", "check-out": "Checked out", completed: "Completed", "location-ok": "Location accepted", "location-rejected": "Location rejected", "day-completed": "Day completed" };
 
 // One punch on its own line: label, time, where, flags, map.
-function PunchRow({ label, p, maps }) {
-  if (!p) return <li className="visit-punch-row visit-punch-row--empty"><span className="visit-punch-row__label">{label}</span><span className="visit-punch-row__time">Not yet</span></li>;
+function PunchRow({ label, p, maps, past = false }) {
+  if (!p) return <li className="visit-punch-row visit-punch-row--empty"><span className="visit-punch-row__label">{label}</span><span className="visit-punch-row__time">{past ? "Not recorded" : "Not yet"}</span></li>;
   return (
     <li className="visit-punch-row" data-punch={label.toLowerCase()}>
       <span className="visit-punch-row__label">{label}</span>
@@ -91,22 +93,25 @@ function Content({ id }) {
           </Card>
           <Card id="visit-history" title="History">
             <ol className="visit-history">
-              {v.history.map((h, i) => <li className="visit-history__item" key={i}><strong>{ACTION_WORDS[h.action] ?? h.action}</strong><span>{`${nameOf(h.by)}, ${formatDay(localDateOf(h.at), true)}`}</span>{h.note && <span>{h.note}</span>}</li>)}
+              {v.history.map((h, i) => <li className="visit-history__item" key={i}><strong>{ACTION_WORDS[h.action] ?? h.action}</strong><span>{`${nameOf(h.by)}, ${formatDay(localDateOf(h.at), true)}`}</span>{h.note && <span>{inWords(h.note)}</span>}</li>)}
             </ol>
           </Card>
         </div>
-        <Card id="visit-trail" title="Check-in trail" meta={started ? `${trail.filter((t) => t.in).length} of ${trail.length} days started` : "Nothing punched yet"}>
+        <Card id="visit-trail" title="Check-in trail" meta={started ? `${trail.filter((t) => t.in).length} of ${trail.length} ${trail.length === 1 ? "day" : "days"} started` : "Nothing punched yet"}>
           <ul className="visit-trail">
             {trail.map((t) => {
               const done = v.days[t.date]?.decision ?? null;
-              const canComplete = d.complete && validIn(t) && !done && t.date <= today;
+              const none = !t.in && !t.out;   // CV1c: nothing punched that day
+              const noShow = none && !done && t.date < today;
+              const canComplete = d.complete && !done && ((validIn(t) && t.date <= today) || noShow);
               return (
                 <li className="visit-trail__day" key={t.date} data-date={t.date}>
                   <span className="visit-trail__date"><svg className="icon" viewBox="0 0 24 24" aria-hidden="true" width="14" height="14"><path d={PIN} /></svg>{` ${formatDay(t.date, true)}`}
                     {done && <Pill tone={done.outcome === "half" ? "warning" : "success"}>{`Completed by ${nameOf(done.by)}: ${done.outcome === "half" ? "half day" : "full day"}`}</Pill>}
                     {!done && validIn(t) && !t.out && t.date < today && <Pill tone="warning">Incomplete</Pill>}
+                    {noShow && <Pill tone="warning">Approved visit, no check-in</Pill>}
                   </span>
-                  <ul className="visit-punches"><PunchRow label="Check-in" p={t.in} maps={t.inMaps} /><PunchRow label="Check-out" p={t.out} maps={t.outMaps} /></ul>
+                  <ul className="visit-punches"><PunchRow label="Check-in" p={t.in} maps={t.inMaps} past={t.date < today} /><PunchRow label="Check-out" p={t.out} maps={t.outMaps} past={t.date < today} /></ul>
                   {done && <p className="visit-trail__note">{done.reason}</p>}
                   <div className="visit-trail__actions">
                     {["in", "out"].map((side) => { const p = t[side]; return p && p.needsOk && !p.okBy && d.decide ? (

@@ -14,3 +14,4 @@ tests/.suites/
 tests/.out/
 docs/graph/raw/
 dist-demo-off/
+__pycache__/

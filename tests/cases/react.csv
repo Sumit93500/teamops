@@ -221,6 +221,66 @@ react-cv1.W.412.dark,react-cv1,412 dark: no sideways scroll on the 12 new or cha
 react-cv1.W.768.dark,react-cv1,768 dark: no sideways scroll on the 12 new or changed pages,x1
 react-cv1.W.1280.dark,react-cv1,1280 dark: no sideways scroll on the 12 new or changed pages,x1
 react-cv1.X1,react-cv1,no page or console errors,x1
+react-cv1c.A1,react-cv1c,"HR's dashboard has the card 'Approved visit, no check-in' with the count (3 days: Arjun twice, the Admin once), the names and the places",x1
+react-cv1c.A2,react-cv1c,its 'Complete them' link opens Team visits on the No check-in tab,x1
+react-cv1c.A3,react-cv1c,"the Admin's dashboard has it too, without the Admin's own day (2 days: Arjun's)",x1
+react-cv1c.A4,react-cv1c,"Finance, an employee and a manager don't see it",x1
+react-cv1c.A5,react-cv1c,with no such day the card is not drawn at all,x1
+react-cv1c.D1,react-cv1c,"the flag says 3 approved visit days have no check-in, with the rules in a line and a 'Complete them' button",x1
+react-cv1c.D2,react-cv1c,there is a third tab 'No check-in 3',x1
+react-cv1c.D3,react-cv1c,"'Complete them' opens that tab: one row per day, oldest first (then by name), person, place, day and a Complete day button",x1
+react-cv1c.D4,react-cv1c,the link ?tab=no-check-in opens on that tab,x1
+react-cv1c.D5,react-cv1c,"the dialog says nobody checked in and what the day is until HR decides; there is no check-out time choice, only full or half",x1
+react-cv1c.D6,react-cv1c,sending it with no reason is refused under the Reason field,x1
+react-cv1c.D7,react-cv1c,"saved: a half day by Priya with her reason, no punches; a toast says it is complete",x1
+react-cv1c.D8,react-cv1c,the count falls to 2 and the row is gone,x1
+react-cv1c.D9,react-cv1c,the dashboard's card says 2 days,x1
+react-cv1c.D10,react-cv1c,"Team attendance for 16 Dec reads that day as On-site, half day, with no check-in time and no Incomplete flag",x1
+react-cv1c.D11,react-cv1c,"a manager (Sneha, Arjun's manager) has no flag and no No check-in tab",x1
+react-cv1c.N1,react-cv1c,"HR: the day is marked 'Approved visit, no check-in', both punch lines say Not recorded, and Complete day is there",x1
+react-cv1c.N2,react-cv1c,17 Dec (also over) is flagged and has its own Complete day,x1
+react-cv1c.N3,react-cv1c,"completed: 'Completed by Priya Nair: full day', her reason under it, no flag and no button on that day",x1
+react-cv1c.N4,react-cv1c,the history has 'Day completed' naming the day and that nobody checked in,x1
+react-cv1c.N5,react-cv1c,a manager sees the flag on the day but no Complete day button,x1
+react-cv1c.N6,react-cv1c,the Admin's own visit day has no Complete day for the Admin (HR does it),x1
+react-cv1c.K1,react-cv1c,Enter on Complete day opens the dialog with focus inside it,x1
+react-cv1c.K2,react-cv1c,Esc closes it and nothing was saved,x1
+react-cv1c.T768l,react-cv1c,"768 light: no sideways scroll, the Status column whole (6 columns shown)",x1
+react-cv1c.T768lc,react-cv1c,768 light: no status chip wraps onto a second line,x1
+react-cv1c.T768d,react-cv1c,"768 dark: no sideways scroll, the Status column whole (6 columns shown)",x1
+react-cv1c.T768dc,react-cv1c,768 dark: no status chip wraps onto a second line,x1
+react-cv1c.T1024l,react-cv1c,"1024 light: no sideways scroll, the Status column whole (7 columns shown)",x1
+react-cv1c.T1024lc,react-cv1c,1024 light: no status chip wraps onto a second line,x1
+react-cv1c.T1024d,react-cv1c,"1024 dark: no sideways scroll, the Status column whole (7 columns shown)",x1
+react-cv1c.T1024dc,react-cv1c,1024 dark: no status chip wraps onto a second line,x1
+react-cv1c.T1280l,react-cv1c,"1280 light: no sideways scroll, the Status column whole (9 columns shown)",x1
+react-cv1c.T1280lc,react-cv1c,1280 light: no status chip wraps onto a second line,x1
+react-cv1c.T1280d,react-cv1c,"1280 dark: no sideways scroll, the Status column whole (9 columns shown)",x1
+react-cv1c.T1280dc,react-cv1c,1280 dark: no status chip wraps onto a second line,x1
+react-cv1c.T1440l,react-cv1c,"1440 light: no sideways scroll, the Status column whole (9 columns shown)",x1
+react-cv1c.T1440lc,react-cv1c,1440 light: no status chip wraps onto a second line,x1
+react-cv1c.T1440d,react-cv1c,"1440 dark: no sideways scroll, the Status column whole (9 columns shown)",x1
+react-cv1c.T1440dc,react-cv1c,1440 dark: no status chip wraps onto a second line,x1
+react-cv1c.T9,react-cv1c,"at 1280 the order of the columns that stay is the table's own, and the export still has every column (it reads the rows)",x1
+react-cv1c.W-hr-dashboard-412l,react-cv1c,hr-dashboard at 412 light: the page does not scroll sideways,x1
+react-cv1c.W-hr-dashboard-412d,react-cv1c,hr-dashboard at 412 dark: the page does not scroll sideways,x1
+react-cv1c.W-hr-dashboard-1280l,react-cv1c,hr-dashboard at 1280 light: the page does not scroll sideways,x1
+react-cv1c.W-hr-dashboard-1280d,react-cv1c,hr-dashboard at 1280 dark: the page does not scroll sideways,x1
+react-cv1c.W-admin-dashboard-412l,react-cv1c,admin-dashboard at 412 light: the page does not scroll sideways,x1
+react-cv1c.W-admin-dashboard-412d,react-cv1c,admin-dashboard at 412 dark: the page does not scroll sideways,x1
+react-cv1c.W-admin-dashboard-1280l,react-cv1c,admin-dashboard at 1280 light: the page does not scroll sideways,x1
+react-cv1c.W-admin-dashboard-1280d,react-cv1c,admin-dashboard at 1280 dark: the page does not scroll sideways,x1
+react-cv1c.W-team-visits-none-412l,react-cv1c,team-visits-none at 412 light: the page does not scroll sideways,x1
+react-cv1c.W-team-visits-none-412d,react-cv1c,team-visits-none at 412 dark: the page does not scroll sideways,x1
+react-cv1c.W-team-visits-none-1280l,react-cv1c,team-visits-none at 1280 light: the page does not scroll sideways,x1
+react-cv1c.W-team-visits-none-1280d,react-cv1c,team-visits-none at 1280 dark: the page does not scroll sideways,x1
+react-cv1c.W-visit-none-412l,react-cv1c,visit-none at 412 light: the page does not scroll sideways,x1
+react-cv1c.W-visit-none-412d,react-cv1c,visit-none at 412 dark: the page does not scroll sideways,x1
+react-cv1c.W-visit-none-1280l,react-cv1c,visit-none at 1280 light: the page does not scroll sideways,x1
+react-cv1c.W-visit-none-1280d,react-cv1c,visit-none at 1280 dark: the page does not scroll sideways,x1
+react-cv1c.C-light,react-cv1c,"light: the flag, its button and the pills are 4.5:1 or more",x1
+react-cv1c.C-dark,react-cv1c,"dark: the flag, its button and the pills are 4.5:1 or more",x1
+react-cv1c.X1,react-cv1c,no page or console errors,x1
 react-dash.A1,react-dash,admin: the page as it opens,x2 (2 roles)
 react-dash.A2,react-dash,"admin: search, department, Next",x2 (2 roles)
 react-dash.A3,react-dash,"Export: the same two files, byte for byte",x1

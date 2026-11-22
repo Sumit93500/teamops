@@ -296,7 +296,7 @@ export default function TeamAttendance() {
               </div>
             </div>
             <div className="table-wrap">
-              <table className="table" data-export-name="team-attendance">
+              <table className="table table--team" data-export-name="team-attendance">
                 <thead>
                   <tr>
                     <th className="is-sortable" aria-sort={ascending ? "ascending" : "descending"}>{phone && <span className="table__sort-label" aria-hidden="true">Sort by</span>}<button className="sort-btn" id="team-sort" type="button" onClick={() => setAscending(!ascending)}>Employee <span aria-hidden="true">{ascending ? "▲" : "▼"}</span></button></th>

@@ -161,7 +161,7 @@ export default function Expenses() {
         <StatStrip label="Key numbers">
           {stats.map(([key, l, value, note, tone]) => <StatCard key={key} id={key} icon={ICONS[key][1]} tone={ICONS[key][0]} label={l} value={value} note={note} noteTone={tone} />)}
         </StatStrip>
-        <div className="grid grid-main-aside">
+        <div className="grid grid-main-aside grid-main-aside--wide">
           <section className="card">
             <div className="table__toolbar">
               <Tabs pill active={tab} onChange={(i) => { setTab(i); setPage(1); }} tabs={TABS.map(([key, label]) => ({ label, count: String(tabClaims(d.claims, key).length) }))} />
@@ -176,7 +176,7 @@ export default function Expenses() {
                 </select>
               </div>
             </div>
-            <Table bare oldExport exportName="expense-claims" tbodyId="expense-rows" columns={columns} rows={rows} page={page} onPageChange={setPage} rowProps={(c) => ({ "data-claim-id": c.id })}
+            <Table bare tableClass="table table--tight" oldExport exportName="expense-claims" tbodyId="expense-rows" columns={columns} rows={rows} page={page} onPageChange={setPage} rowProps={(c) => ({ "data-claim-id": c.id })}
               empty={search || category ? "No claims match these filters." : EMPTY[which]} />
           </section>
           <aside className="stack">

@@ -4,15 +4,17 @@
 #   1. builds the run folder tests/.suites (git-ignored): the archive tests/archive/old-suites.tar.gz unpacked (the frozen baselines
 #      the suites compare against; repeats are hard links), the live suites copied over it (__REPO__ in them becomes this checkout's
 #      path), and assets/js copied to .suites/js (the suites read the code under test from there, as in the round folders);
-#   2. installs tests/node_modules once (npm ci in tests/: jsdom for the suites, playwright-core for the React harnesses);
+#   2. makes sure tests/node_modules is complete (jsdom for the suites, playwright-core for the React harnesses) through tools/modules_guard.py:
+#      a complete folder is left alone, a missing or half-written one is installed in a temporary folder and moved in (CV1c);
 #   3. takes the jobs from tests/live/run-suites.ps1, the runner the rounds used (a suite name, its arguments, and the time zones:
 #      the suites in its time-zone loop run in Asia/Kolkata, UTC and America/Los_Angeles); only the live suites' jobs run;
 #   4. runs them N at a time (default 9, the rounds' 3 shards x 3 zones), longest first, each output to tests/.out/<job>.txt;
-#   5. with --react (or REACT=1): builds app/ and runs the React harnesses in tests/live/react against it, the repo root being the
+#   5. with --react (or REACT=1): makes sure app/node_modules is complete the same way, builds app/ and runs the React harnesses in tests/live/react against it, the repo root being the
 #      old site they compare with (needs Microsoft Edge; one harness at a time: they share ports 9983/9984);
 #   6. prints passed / failed (total) per area (tests/suites.csv) and writes tests/.out/summary.csv; exits 1 on any failure.
 # usage: python tools/run-tests.py [--zones Asia/Kolkata,UTC,America/Los_Angeles] [--workers 9] [--react | --react-only] [--only s1,s2]
 import argparse, concurrent.futures as cf, csv, json, os, re, shutil, subprocess, sys, tarfile, time
+import modules_guard   # CV1c: never `npm ci` in place (it deletes node_modules first; a stopped run left app/node_modules empty)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TESTS = os.path.join(ROOT, "tests")
@@ -21,7 +23,7 @@ ZONES = ["Asia/Kolkata", "UTC", "America/Los_Angeles"]
 COUNT = re.compile(r"(\d+) passed, (\d+) failed")
 REACT = [  # harness, ONLY letters (the harness's own default when empty)
     ("smoke.mjs", ""), ("gallery.mjs", ""), ("shell.mjs", "DRQTNFPBAS"), ("dash.mjs", "AEZHFYMS"), ("att.mjs", "X"), ("leave.mjs", ""),
-    ("pay.mjs", "SQPX"), ("pay4.mjs", ""), ("leave4.mjs", ""), ("p5.mjs", ""), ("fin.mjs", ""), ("req.mjs", "IKMCPX"), ("access.mjs", ""), ("rest.mjs", ""), ("design.mjs", ""), ("charts.mjs", ""), ("users.mjs", ""), ("locs.mjs", ""), ("att3.mjs", ""), ("side.mjs", ""), ("prefs.mjs", ""), ("f1.mjs", ""), ("e1.mjs", ""), ("sh1.mjs", ""), ("f2.mjs", ""), ("cv1.mjs", ""),
+    ("pay.mjs", "SQPX"), ("pay4.mjs", ""), ("leave4.mjs", ""), ("p5.mjs", ""), ("fin.mjs", ""), ("req.mjs", "IKMCPX"), ("access.mjs", ""), ("rest.mjs", ""), ("design.mjs", ""), ("charts.mjs", ""), ("users.mjs", ""), ("locs.mjs", ""), ("att3.mjs", ""), ("side.mjs", ""), ("prefs.mjs", ""), ("f1.mjs", ""), ("e1.mjs", ""), ("sh1.mjs", ""), ("f2.mjs", ""), ("cv1.mjs", ""), ("cv1c.mjs", ""),
 ]
 # Left out on purpose: att Y (my attendance's earlier months) and pay R, V (payroll run, payslip view). Rounds 9b, 11 and 13c gave
 # those months "No data in this range.", which the old site doesn't have, so they match only a reference tree with the new wording
@@ -54,6 +56,13 @@ def jobs_from_runner(live):
             out.append((m[1], args, None))
     return [j for j in out if j[1][0] in live]
 
+def need_modules(folder):
+    try:
+        modules_guard.ensure(folder)
+    except RuntimeError as e:
+        print(f"ERROR: {e}", flush=True)
+        sys.exit(1)
+
 def prepare(fresh):
     stamp = os.path.join(RUN, ".archive-stamp")
     arch = os.path.join(TESTS, "archive", "old-suites.tar.gz")
@@ -74,8 +83,7 @@ def prepare(fresh):
     open(os.path.join(RUN, "package.json"), "w").write('{"type":"module"}')
     shutil.rmtree(os.path.join(RUN, "js"), ignore_errors=True)
     shutil.copytree(os.path.join(ROOT, "assets", "js"), os.path.join(RUN, "js"))
-    if not os.path.isdir(os.path.join(TESTS, "node_modules", "jsdom")):
-        subprocess.run("npm ci --no-audit --no-fund", cwd=TESTS, shell=True, check=True)
+    need_modules(TESTS)
 
 def run_job(job):
     name, args, tz = job
@@ -97,7 +105,11 @@ def run_job(job):
 def run_react():
     """The React harnesses, one at a time, against app/dist and the repo root."""
     shutil.rmtree(os.path.join(ROOT, "app", "dist"), ignore_errors=True)
-    subprocess.run("npm ci --no-audit --no-fund && npm run build", cwd=os.path.join(ROOT, "app"), shell=True, check=True, capture_output=True)
+    need_modules(os.path.join(ROOT, "app"))
+    subprocess.run("npm run build", cwd=os.path.join(ROOT, "app"), shell=True, check=True, capture_output=True)
+    if not modules_guard.complete(os.path.join(ROOT, "app")):
+        print("ERROR: app/node_modules is not complete after the build", flush=True)
+        sys.exit(1)
     dist, results = os.path.join(ROOT, "app", "dist"), []
     for h, only in REACT:
         env = dict(os.environ)

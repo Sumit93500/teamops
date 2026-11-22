@@ -139,7 +139,7 @@ export default function Payslips() {
         <StatStrip label="Key numbers">
           {Object.entries(stats).map(([key, [l, value, note]]) => <StatCard key={key} id={key} icon={ICONS[key][1]} tone={ICONS[key][0]} label={l} value={value} note={note} />)}
         </StatStrip>
-        <div className="grid grid-main-aside">
+        <div className="grid grid-main-aside grid-main-aside--wide">
           <section className="card">
             <div className="card__header">
               <h3 className="card__title">Payslip history</h3>

@@ -248,7 +248,7 @@ export default function MyAttendance() {
                   return (
                     <div key={day.date} className={`calendar__day calendar__day--${kind}${day.date === today ? " calendar__day--today" : ""}`} data-date={day.date}>
                       <span className="calendar__date">{String(Number(day.date.slice(8)))}</span>
-                      {tag && <span className="calendar__tag">{tag}</span>}
+                      {tag && <span className={`calendar__tag${day.status === "on-site" ? " calendar__tag--clamp" : ""}`} title={tag}>{tag}</span>}
                     </div>
                   );
                 })}
@@ -278,7 +278,7 @@ export default function MyAttendance() {
             <label className="ds-check" htmlFor="log-flagged"><input type="checkbox" id="log-flagged" checked={flaggedOnly} onChange={(e) => { setFlaggedOnly(e.target.checked); setPage(1); }} />{`Flagged only (${flaggedCount})`}</label>
           </div>
           <div className="table-wrap">
-            <table className="table">
+            <table className="table table--tight">
               <thead><tr><th>Date</th><th>Check-in</th><th>Place</th><th>Check-out</th><th className="table__num">Hours</th><th>Shift</th><th className="table__num">Overtime</th><th>Status</th><th className="table__actions">Actions</th></tr></thead>
               <Nodes as="tbody" deps={[d, year, month, current, canFix, flaggedOnly]} build={() => {
                 if (pageDays.length) return pageDays.map((x) => logRow(x, today, on, canFix, stampOf(x)));

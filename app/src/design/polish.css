@@ -1,0 +1,17 @@
+/* CV1c: polish found by looking at every visit screen in 412, 768 and 1280, light and dark. Tokens only; the old site's css is untouched. */
+
+/* a toast's close button is a real target */
+.toast__close { min-width: 32px; min-height: 32px; }
+
+/* a dialog's description sits clear of the first field */
+.modal__desc { margin: 0 0 var(--ds-space-3); }
+
+/* a visit day's calendar cell keeps the place but never grows its row: three lines, the whole text on hover (title) */
+.calendar__tag--clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; overflow-wrap: anywhere; }
+
+@media (max-width: 560px) {
+  /* a tick box and its words are a 32 px target on a phone */
+  .ds-check { min-height: 32px; }
+  /* the calendar's key wraps instead of hiding On-site, Weekly off and No record behind a hidden sideways scroll */
+  .calendar__legend { flex-wrap: wrap; overflow-x: visible; white-space: normal; }
+}

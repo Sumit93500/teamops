@@ -5,6 +5,7 @@ Read [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) first. The de
 ## Standing rules
 
 - **Never run `python -`** in any form, in either shell. Write the script to a file, or use `python -c` with a one-liner.
+- **`npm ci` deletes `node_modules` first.** Never run it in place from a script in `app/` or `tests/`: `tools/modules_guard.py ensure <folder>` leaves a complete folder alone and installs a missing or half-written one in a temporary folder, moving it in only when complete (`tools/run-tests.py` uses it; a stopped `npm ci` once left `app/node_modules` empty).
 - **Processes:** never stop a process this session didn't start. Record the id of what you start, and never match on a generic name or flag.
 - **New js files:** CRLF line endings, no final newline. The repo is LF in git and CRLF on disk, so compare with `git cat-file --filters`.
 - **Commits:**

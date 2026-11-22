@@ -14,6 +14,8 @@
 // oldDayWithVisit(day, today, now): the same reading for the current (pre-shift) rules, where data/attendance-store.js deriveDay hands every
 // day to it: a day with an approved visit and a valid check-in reads present (half-day when HR marked it half); every other day is returned
 // as it was (the same object), so every existing month is byte for byte what it was.
+// CV1c: a visit day nobody checked in on is an absence in the current rules and "Visit not started" under the shift rules until HR or an Admin completes it
+// (data/visits.js completeVisitDay: marked full or half, with a reason); after that it reads as a visit day with no punches: present / on-site, or half.
 // Added fields: onSite true, visit { id, kind, siteName, address, purpose, status, sameDay, approvalPending, lowAccuracy,
 // awaitingOk, source }.
 //
@@ -37,6 +39,9 @@ export function overlayVisit(day, rules, now) {
     lowAccuracy: Boolean((pin && pin.lowAccuracy) || (pout && pout.lowAccuracy)), awaitingOk: Boolean((pin && !valid(pin)) || (pout && !valid(pout))) };
   const dec = v.day.decision ?? null;
   const base = { ...day, onSite: true, visit: { ...info, decision: dec ? { outcome: dec.outcome, by: dec.by, reason: dec.reason } : null }, minutesLate: 0, overtimeMinutes: 0, overdue: false, regularization: day.regularization };
+  if (!valid(pin) && dec && !pin) {   // CV1c: HR completed a day nobody checked in on
+    return { ...base, status: dec.outcome === "half" ? "half-day" : "on-site", expected: true, checkIn: null, checkOut: null, minutesWorked: null, hours: null, inProgress: false, incomplete: false };
+  }
   if (!valid(pin)) {
     return { ...base, status: "visit-planned", expected: true, checkIn: null, checkOut: null, minutesWorked: null, hours: null, inProgress: false, incomplete: ended };
   }
@@ -57,8 +62,14 @@ export function oldDayWithVisit(day, today, nowMinutes) {
   const v = visitOnDate(day.userId, day.date);
   if (!v) return day;
   const { in: pin, out: pout } = v.day;
-  if (!valid(pin)) return day;
   const dec = v.day.decision ?? null;
+  if (!pin && dec) {   // CV1c: HR completed a day nobody checked in on: present (or half), no punches
+    const info = { id: v.id, kind: v.kind, siteName: v.siteName, address: v.address, purpose: v.purpose, status: v.status, sameDay: v.sameDay, approvalPending: v.approvalPending, source: v.source,
+      lowAccuracy: false, awaitingOk: false, decision: { outcome: dec.outcome, by: dec.by, reason: dec.reason } };
+    return { ...day, status: dec.outcome === "half" ? "half-day" : "present", expected: true, checkIn: null, checkOut: null, mode: "office", minutesLate: 0, minutesWorked: null,
+      hours: null, inProgress: false, overdue: false, incomplete: false, conflict: false, onSite: true, visit: info };
+  }
+  if (!valid(pin)) return day;
   const inAt = toMin(pin.time), closed = valid(pout);
   const open = !closed && day.date === today;
   const worked = closed ? Math.max(0, toMin(pout.time) - inAt) : open ? Math.max(0, nowMinutes - inAt) : null;
