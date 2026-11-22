@@ -74,6 +74,13 @@ export const PERMISSIONS = {
   // register's own rows. Not overridable. 105 -> 114 in 46 modules; Admin 111, HR 63, Finance 54, Employee 30.
   stock:         ["view", "move"],
   depreciation:  ["configure"],
+  // IT1 (2026-11-22): the IT desk (data/it-desk.js, data/licences.js). requests-handle: see and work every IT request (IT);
+  // requests-create: raise IT tickets and requests for yourself (everyone, self-service); approve: approve sensitive IT requests
+  // (the Admin only; IT never); activity-review: the Admin's review trail; licences-manage: licences and seats (IT); licences-view-
+  // costs: licence costs, which no one else's reads carry (Finance, Admin); account-prepare: prepare new-account requests, never an
+  // Admin account (IT); offboard: work offboarding checklists (IT). Not overridable. 114 -> 122 in 47 modules; Admin 119, HR 64,
+  // Finance 56, Employee 31, IT 42.
+  it:            ["requests-handle", "requests-create", "approve", "activity-review", "licences-manage", "licences-view-costs", "account-prepare", "offboard"],
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.

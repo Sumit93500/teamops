@@ -101,7 +101,7 @@ for (const key of Object.keys(ROLES)) {
     j([txt(kv("Key")), txt(kv("Landing page after sign-in")), kv("Landing page after sign-in")?.querySelector("a")?.getAttribute("href"), txt(kv("Data scope"))]));
   check(`A5${key}`, `${key}: 'Users with this role' = the store's ${people.length} (count, names, profile links, designation)`,
     txt($("role-user-count")) === String(people.length)
-    && j(holders()) === j(people.map((u) => [u.name, `../users/user-profile.html?id=${u.id}`, u.status === "inactive" ? `${u.designation}, inactive` : u.designation])), j(holders()).slice(0, 200));
+    && (people.length === 0 ? txt($("role-users")) === "Nobody holds this role." /* IT1 (behaviour): the IT role, nobody in the seed */ : j(holders()) === j(people.map((u) => [u.name, `../users/user-profile.html?id=${u.id}`, u.status === "inactive" ? `${u.designation}, inactive` : u.designation]))), j(holders()).slice(0, 200));
   // E1 (ruled): the frozen page has no name for the new 'accounts' module, so it is drawn under 'Other', last (its rule for an unnamed module)
   check(`A6${key}`, `${key}: the groups in order, 'Other' last holding only E1's accounts module; group rows span both columns; nothing drawn through innerHTML`,
     j(groups()) === j([...GROUP_ORDER, "Other"]) && rowOf("accounts") !== null && [...d.querySelectorAll("#matrix-rows tr.matrix__group td")].every((td) => td.colSpan === 2)
@@ -111,20 +111,20 @@ fresh(); await open(EDITOR, "aarav", "?role=hr");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 45 of 78: dashboard:finance is a 79th permission)
 check("A7", "HR today: 58 of 102 (SH1: was 50 of 94; E1b: was 50 of 93; E1: was 49 of 91; F1: was 49 of 90; L0: was 45 of 79), Priya Nair alone ('held by 1 person'); no Anil Verma, no 'Custom role', no 'hr-manager' anywhere",
-  txt($("permission-count")) === "63 of 114" /* AS1 (behaviour; was 61 of 105) */ /* FS1 (behaviour; was 58 of 102) */ && j(holders().map((h) => h[0])) === j(["Priya Nair"]) && txt($("role-subtitle")) === "System role, held by 1 person"
+  txt($("permission-count")) === "64 of 122" /* IT1 (behaviour; was 63 of 114) */ /* AS1 (behaviour; was 61 of 105) */ /* FS1 (behaviour; was 58 of 102) */ && j(holders().map((h) => h[0])) === j(["Priya Nair"]) && txt($("role-subtitle")) === "System role, held by 1 person"
   && !/Anil Verma|Custom role|hr-manager|Leave approvals|two-factor/i.test(main().outerHTML));
 const hrNot = ALL_PERMISSIONS.filter((p) => !ROLES.hr.permissions.includes(p));
 // Round 11N (behaviour; was 32: HR doesn't hold users:delete (round 11N, Admin only))
 // Round Manager scoping part 1 (behaviour; was 33: HR doesn't hold dashboard:finance)
-check("A8", "HR: none of the 44 permissions HR lacks is ticked (E1b: was 43; E1: was 42; F1: was 41; P5: was 40; P4: was 38; L0: was 34) (e.g. payroll:view, roles:manage, assets:view, users:delete, dashboard:finance)", hrNot.length === 51 /* AS1 (behaviour; was 44: HR lacks 7 of the register's nine) */ && hrNot.includes("dashboard:finance") && hrNot.every((p) => !heldKeys().includes(p)) && ["payroll:view", "roles:manage", "assets:view", "users:delete"].every((p) => hrNot.includes(p)));
+check("A8", "HR: none of the 44 permissions HR lacks is ticked (E1b: was 43; E1: was 42; F1: was 41; P5: was 40; P4: was 38; L0: was 34) (e.g. payroll:view, roles:manage, assets:view, users:delete, dashboard:finance)", hrNot.length === 58 /* IT1 (behaviour; was 51: HR lacks 7 of the it module's eight) */ /* AS1 (behaviour; was 44: HR lacks 7 of the register's nine) */ && hrNot.includes("dashboard:finance") && hrNot.every((p) => !heldKeys().includes(p)) && ["payroll:view", "roles:manage", "assets:view", "users:delete"].every((p) => hrNot.includes(p)));
 await open(EDITOR, "aarav", "?role=emp");
 check("A9", "Employee: the 27 self-service permissions (SH1: was 24; P5: was 23; L0: was 20), spread over their modules (Attendance ticks view-own / mark / regularize, not view-all / approve / any-office, F1's)",
-  heldKeys().length === 30 &&   // CV1 (behaviour; was 27)
+  heldKeys().length === 31 &&   // IT1 (behaviour; was 30: it:requests-create)   // CV1 (behaviour; was 27)
      j([...rowOf("attendance").querySelectorAll(".perm-tick")].map((t) => `${txt(t)}${t.querySelector(".matrix__yes") ? "+" : ""}`)) === j(["view-all", "view-own+", "mark+", "regularize+", "approve", "any-office"]));
 await open(EDITOR, "aarav", "?role=admin");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 78: dashboard:finance)
-check("A10", "Admin: all 102 ticked (SH1: was 94; E1b: was 93), nothing unticked (E1: was 91; F1: was 90; L0: was 79)", heldKeys().length === 111 /* AS1 (behaviour; was 102) */ && d.querySelectorAll("#matrix-rows .matrix__no").length === 3);   // FS1 (behaviour; was nothing unticked: the three files ones are held back, a ruling item)
+check("A10", "Admin: all 102 ticked (SH1: was 94; E1b: was 93), nothing unticked (E1: was 91; F1: was 90; L0: was 79)", heldKeys().length === 119 /* IT1 (behaviour; was 111) */ /* AS1 (behaviour; was 102) */ && d.querySelectorAll("#matrix-rows .matrix__no").length === 3);   // FS1 (behaviour; was nothing unticked: the three files ones are held back, a ruling item)
 
 // =====================================================================
 section("B. Default and unknown roles");
@@ -160,13 +160,13 @@ check("D2", "a module with no name in the page's map appears under 'Other', name
   groups().at(-1) === "Other" && txt(rowOf("newmodule")?.querySelector(".matrix__module-name")) === "newmodule" && heldKeys().includes("newmodule:run") && !heldKeys().includes("newmodule:view")
   // Round 11N (behaviour; was 80: 78 since round 11N, plus the three added here)
   // Round Manager scoping part 1 (behaviour; was 46 of 81: 79 since Manager scoping part 1, plus the three added here)
-  && sameSet(drawnKeys(), ALL_PERMISSIONS) && txt($("permission-count")) === `64 of 117` /* AS1 (behaviour; was 62 of 108) */   /* FS1 (behaviour; was 59 of 105) */   // CV1 (behaviour; was 55 of 101)   // SH1 (behaviour; was 51 of 97)   // E1 (behaviour; was 50 of 94: 93 since E1, plus the three added here); F1 (was 50 of 94)
+  && sameSet(drawnKeys(), ALL_PERMISSIONS) && txt($("permission-count")) === `65 of 125` /* IT1 (behaviour; was 64 of 117) */ /* AS1 (behaviour; was 62 of 108) */   /* FS1 (behaviour; was 59 of 105) */   // CV1 (behaviour; was 55 of 101)   // SH1 (behaviour; was 51 of 97)   // E1 (behaviour; was 50 of 94: 93 since E1, plus the three added here); F1 (was 50 of 94)
   , `${groups().at(-1)} ${txt($("permission-count"))}`);
 PERMISSIONS.users.pop(); delete PERMISSIONS.newmodule; ROLES.hr.permissions.pop(); ALL_PERMISSIONS.splice(-3, 3);
 fresh(); await open(EDITOR, "aarav", "?role=hr");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 78: dashboard:finance)
-check("D3", "(restored: 98 again (SH1: was 94; E1b: was 93), F1: was 90; E1: 93)", drawnKeys().length === 114 /* AS1 (behaviour; was 105) */ && !rowOf("newmodule"));   // FS1 (behaviour; was 102)
+check("D3", "(restored: 98 again (SH1: was 94; E1b: was 93), F1: was 90; E1: 93)", drawnKeys().length === 122 /* IT1 (behaviour; was 114) */ /* AS1 (behaviour; was 105) */ && !rowOf("newmodule"));   // FS1 (behaviour; was 102)
 
 // =====================================================================
 section("E. Holders follow the store");
@@ -187,10 +187,10 @@ check("E3", "a role nobody holds: '0', 'Nobody holds this role.', 'held by 0 peo
 section("F. roles-list.html");
 fresh(); await open(LIST, "aarav");
 const buttons = [...d.querySelectorAll(".table tbody tr[data-role]")].map((tr) => [tr.dataset.role, txt(tr.querySelector(".table__actions a")), tr.querySelector(".table__actions a").getAttribute("href")]);
-check("F1", "each role's row has one 'View' button opening role-editor.html?role=<its key>", j(buttons) === j(Object.keys(ROLES).map((k) => [k, "View", `role-editor.html?role=${k}`])), j(buttons));
+check("F1", "each role's row has one 'View' button opening role-editor.html?role=<its key>", j(buttons) === j(Object.keys(ROLES).slice(0, 4) /* IT1 (layout; the frozen page's four rows) */.map((k) => [k, "View", `role-editor.html?role=${k}`])), j(buttons));
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 45 / 78: dashboard:finance)
-check("F2", "roles-list still fills its counts (unchanged script)", txt(d.querySelector('tr[data-role="hr"] [data-cell="permissions"]')) === "63 / 114" /* AS1 (behaviour; was 61 / 105) */ &&   // FS1 (behaviour; was 58 / 102)
+check("F2", "roles-list still fills its counts (unchanged script)", txt(d.querySelector('tr[data-role="hr"] [data-cell="permissions"]')) === "64 / 122" /* IT1 (behaviour; was 63 / 114) */ /* AS1 (behaviour; was 61 / 105) */ &&   // FS1 (behaviour; was 58 / 102)
      // E1 (behaviour; was 49 / 91); F1 (was 49 / 90); L0 (was 45 / 79)
    jsErrors.length === 0);
 
@@ -220,7 +220,7 @@ const after = (h) => h.replace(/\r\n/g, "\n").split("</main>")[1];
 check("L4", "role-editor.html: before <main> only the <title> changed ('Edit role' -> 'Role'); after </main> unchanged (app.js, then role-editor.js)",
   keep(src("html-pre14A", EDITOR)) /* Round 14A (layout; was the live page): 9c7423e's, frozen; the live pages: pagefreeze.mjs */ === keep(src("html-pre6H", EDITOR)).replace("<title>Edit role | OfficeOS</title>", "<title>Role | OfficeOS</title>") && after(src("html-pre14A", EDITOR)) === after(src("html-pre6H", EDITOR)));
 const lineDelta = (a, b) => { const x = a.replace(/\r\n/g, "\n").split("\n"), y = b.replace(/\r\n/g, "\n").split("\n"); return x.length === y.length ? x.map((l, i) => (l === y[i] ? null : [l, y[i]])).filter(Boolean) : "length differs"; };
-check("L5", "roles-list.html: exactly the four button lines changed", j(lineDelta(src("html-pre6H", LIST), src("html-pre14A", LIST)).map(([, b]) => b.trim())) === j(Object.keys(ROLES).map((k) => `<td class="table__actions"><a class="btn btn--sm" href="role-editor.html?role=${k}">View</a></td>`)));
+check("L5", "roles-list.html: exactly the four button lines changed", j(lineDelta(src("html-pre6H", LIST), src("html-pre14A", LIST)).map(([, b]) => b.trim())) === j(Object.keys(ROLES).slice(0, 4) /* IT1 (layout) */.map((k) => `<td class="table__actions"><a class="btn btn--sm" href="role-editor.html?role=${k}">View</a></td>`)));
 check("L6", "role-editor.js: imports only config, the store, paths and leave-view helpers; no innerHTML / insertAdjacentHTML; reads ?role= with Object.hasOwn",
   !/innerHTML|insertAdjacentHTML|outerHTML/.test(src("js", "pages/role-editor.js")) && /Object\.hasOwn\(ROLES,/.test(src("js", "pages/role-editor.js"))
   && j([...src("js", "pages/role-editor.js").matchAll(/from "([^"]+)"/g)].map((m) => m[1])) === j(["../config/roles.js", "../config/permissions.js", "../data/store.js", "../core/paths.js", "../ui/leave-view.js"]));

@@ -23,6 +23,7 @@ export const DESIGNATIONS = [
   { title: "Finance Manager",            department: "FIN", defaultRole: "fin" },
   { title: "Store Keeper",               department: "OPS", defaultRole: "emp" },
   { title: "Administrator",              department: "ENG", defaultRole: "admin" },
+  { title: "IT Engineer",                department: "IT",  defaultRole: "it" },   // IT1: the IT role (config/roles.js); nobody holds it in the seed. The IT department (data/store.js IT_DEPARTMENT) isn't in DEPARTMENTS: it joins the stored list with its first person
 ];
 
 // id doubles as the employee ID shown on-screen (EMP-1042, etc.)

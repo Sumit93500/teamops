@@ -14,6 +14,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useBlocker, useNavigate, useSearchParams } from "react-router-dom";
 import { getUser, getAllUsers, addUser, updateUser, peekNextId, getAllDepartments } from "../../../assets/js/data/store.js";
+import { newSignIn } from "../../../assets/js/data/it-desk.js";   // IT1: an Admin makes sign-in details directly; HR's go to IT as a request
 import { DESIGNATIONS } from "../../../assets/js/data/users.js";
 import { ROLES, OVERRIDABLE, overridesOf, permissionsOf } from "../../../assets/js/config/roles.js";
 import { ALL_PERMISSIONS } from "../../../assets/js/config/permissions.js";
@@ -35,7 +36,6 @@ import { leavePolicyOn, bandText } from "../ui/leaveband.jsx";
 import { SECTIONS, RULES as FIELD_RULES } from "../../../assets/js/config/employee-fields.js";
 import { bankFromIfsc } from "../../../assets/js/config/ifsc-banks.js";   // F2
 import { profileView, saveFields } from "../../../assets/js/data/employee-record.js";   // F2
-import { createAccount } from "../../../assets/js/data/credentials.js";
 import { ShareDetails } from "../ui/profile.jsx";
 import { Avatar, PhotoEditor } from "../ui/files.jsx";   // FS1: Upload photo (was NotBuilt since F2)
 
@@ -231,11 +231,14 @@ function Form({ editing, editId, startAt }) {
     bump();
     setSaving(true);
     toast("Employee saved.", "success");
-    // E1: someone new gets sign-in details (a temporary password and a set-password link), shown once, then the list
+    // E1: someone new gets sign-in details (a temporary password and a set-password link), shown once, then the list.
+    // IT1: only when an Admin adds them (the direct flow, flagged on the IT review trail); HR's addition opens a new-account request:
+    // IT prepares it, the Admin approves, IT hands the details over.
     if (!editing) {
-      createAccount(userId, id).then((r) => {
+      newSignIn(userId, id).then((r) => {
         if (!r.ok) { toast(r.error, "danger"); setTimeout(() => navigate(LIST), 1200); return; }
         bump();
+        if (r.requested) { toast("IT will make the sign-in details once an Admin approves them.", "info"); setTimeout(() => navigate(LIST), 1200); return; }
         setShare({ name: result.record.name, details: r });
       });
       return;

@@ -4,7 +4,7 @@
 //   L  Sign in: the page (labels, Show / Hide, Forgot, demo buttons; no "part of this demo"); a wrong password and an unknown
 //      email get the same words, focused; the demo password signs a seeded person in; the role buttons still work; 5 wrong
 //      tries lock (the right password then refused too)
-//   N  a new employee: HR creates one in the form; "Share these sign-in details" once (a 14-character temporary password, the
+//   N  a new employee: an Admin creates one in the form (IT1: HR's goes to IT as a request); "Share these sign-in details" once (a 14-character temporary password, the
 //      48-hour link, copy buttons, "Email delivery arrives with the backend"); nothing secret in storage; invited on the
 //      profile; their first sign-in goes to Set password and every other URL sends them back; the rules and the meter;
 //      afterwards their landing page, active; the invite link then says it was used
@@ -143,7 +143,9 @@ if (ONLY.includes("L")) {
 let invite = null;
 if (ONLY.includes("N")) {
   console.log("\n--- N. A new employee ---");
-  const n = await open("hr", "users/user-form.html");
+  // IT1 (behaviour; was HR): HR's new employee opens a new-account request for IT (no details shown; tests/live/itdesk.mjs A), so the
+  // direct flow, "Share these sign-in details", is the Admin's (flagged as an override on the IT review trail)
+  const n = await open("admin", "users/user-form.html");
   const t = n.t;
   await t.fill("#first-name", "Meghna"); await t.fill("#last-name", "Rao");
   await t.click('[data-step="contact"]'); await t.fill("#work-email", "meghna.rao@northwind.com");

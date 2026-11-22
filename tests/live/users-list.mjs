@@ -69,7 +69,7 @@ check("1b", "row cells: name, email, id, designation, dept name, role label, sta
 check("1c", "subtitle uses real counts", d.querySelector(".page-header__subtitle").textContent === "10 employees across 6 departments", d.querySelector(".page-header__subtitle").textContent);
 check("1d", "Department & Role selects filled from real data",
   [...d.querySelector('select[aria-label="Filter by department"]').options].map((o) => o.textContent).join("|") === "All departments|Engineering|Sales|Operations|Customer Support|Finance|Human Resources"
-  && [...d.querySelector('select[aria-label="Filter by role"]').options].map((o) => `${o.value}=${o.textContent}`).join("|") === "=All roles|admin=Admin|hr=HR Manager|fin=Finance Manager|emp=Employee",
+  && [...d.querySelector('select[aria-label="Filter by role"]').options].map((o) => `${o.value}=${o.textContent}`).join("|") === "=All roles|admin=Admin|hr=HR Manager|fin=Finance Manager|emp=Employee|it=IT",   // IT1 (behaviour; the IT role; departments unchanged)
   "depts: " + [...d.querySelector('select[aria-label="Filter by department"]').options].map((o) => o.textContent).join(", "));
 
 const exp = { All: all.length, Active: all.filter((u) => u.status === "active").length, "On leave": all.filter((u) => u.status === "on-leave").length, Inactive: all.filter((u) => u.status === "inactive").length };

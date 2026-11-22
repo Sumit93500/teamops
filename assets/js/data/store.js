@@ -149,6 +149,29 @@ function loadDepartments() {
   return isValidBox(box) ? box : seedDepartments();
 }
 
+// IT1: the IT department. Not in users.js DEPARTMENTS (the stored list, the department pages and the headcount charts stay as they are
+// for everyone on record): a department code a user write may use is one on the stored list, or this one, which joins the stored list
+// only when someone is put in it (addItDepartment, in the same write).
+export const IT_DEPARTMENT = { code: "IT", name: "IT", head: "" };
+const knownDepartment = (code) => loadDepartments().records.some((d) => d.code === code) || code === IT_DEPARTMENT.code;
+function addItDepartment(code) {
+  if (code !== IT_DEPARTMENT.code) return;
+  const box = loadDepartments();
+  if (box.records.some((d) => d.code === code)) return;
+  box.records.push({ ...copy(IT_DEPARTMENT), active: true });
+  save(DEPARTMENTS_KEY, box);
+}
+
+// IT1: the departments a form offers: the stored list, and the IT department while nobody is in it yet.
+export function departmentChoices() {
+  const records = copy(loadDepartments().records);
+  return records.some((d) => d.code === IT_DEPARTMENT.code) ? records : [...records, { ...copy(IT_DEPARTMENT), active: true }];
+}
+
+// IT1: called after a person stops working here (deactivateUser), e.g. to open their offboarding (data/it-desk.js registers one).
+const leavingHooks = [];
+export function onDeactivated(fn) { if (typeof fn === "function" && !leavingHooks.includes(fn)) leavingHooks.push(fn); }
+
 function commit(key, box, record) {
   return save(key, box)
     ? { ok: true, record: copy(record) }
@@ -567,11 +590,12 @@ export function addUser(actorUserId, fields = {}) {
   if (!String(rest.name ?? "").trim()) return fail("Name is required.");
   if (!String(rest.email ?? "").trim()) return fail("Work email is required.");
   if (emailTaken(box.records, rest.email, null)) return fail(`${rest.email} is already used by another employee.`, "email");
-  if (rest.department && !loadDepartments().records.some((d) => d.code === rest.department)) {
+  if (rest.department && !knownDepartment(rest.department)) {
     return fail(`Unknown department "${rest.department}".`);
   }
   const manager = managerFields(box.records, null, rest) ?? { reportingManagerId: null };
   if (manager.error) return fail(manager.error, "manager");
+  addItDepartment(rest.department);   // IT1: the IT department joins the list with its first person
 
   const record = {
     role: "emp",
@@ -712,11 +736,12 @@ function changeUser(actor, id, changes = {}) {
   if ("email" in changes && emailTaken(box.records, changes.email, id)) {
     return fail(`${changes.email} is already used by another employee.`, "email");
   }
-  if (changes.department && !loadDepartments().records.some((d) => d.code === changes.department)) {
+  if (changes.department && !knownDepartment(changes.department)) {
     return fail(`Unknown department "${changes.department}".`);
   }
   const manager = managerFields(box.records, id, changes);
   if (manager?.error) return fail(manager.error, "manager");
+  addItDepartment(changes.department);   // IT1
 
   const { id: _ignored, extraRoles: _dropped, leavingPeriods: _kept, ...rest } = changes;   // past periods away: below only
   if (deactivating) rest.dateOfLeaving = showDate(joiningDate(changes.dateOfLeaving));   // kept like the joining date
@@ -729,7 +754,10 @@ function changeUser(actor, id, changes = {}) {
   delete record.extraRoles;   // additional roles were dropped (round 11R): a stored list goes on the next save
   Object.assign(record, copy(withoutUnchanged(record, rest)), manager ?? {});
   if (record.status !== "inactive") delete record.dateOfLeaving;   // reactivated: no longer a leaver (round 11Y)
-  return commit(USERS_KEY, box, record);
+  const saved = commit(USERS_KEY, box, record);
+  // IT1: after a deactivation (it records the last working day), the registered hooks run (data/it-desk.js opens the offboarding)
+  if (saved.ok && deactivating) for (const fn of leavingHooks) { try { fn(actor.id, id); } catch (err) { console.error("store: a deactivation hook failed", err); } }
+  return saved;
 }
 
 // lastDay: their last working day ("YYYY-MM-DD"), required (round 11Y).

@@ -160,7 +160,7 @@ check("H9", "monthStart: the first day, two digits", j([T.monthStart(2026, 9), T
 
 section("J. Verify, add a row, the switch: Admin only");
 check("J0", "nothing was saved by all the reads above", !mem.has("officeos:pay-rules"));
-check("J1", "the permission: payroll-rules:verify, held by the Admin role only", j(R.PAY_RULE_PERMISSIONS) === j(["payroll-rules:verify"]) && j(R.PAY_RULE_GRANTS) === j({ admin: ["payroll-rules:verify"], hr: [], fin: [], emp: [] }));
+check("J1", "the permission: payroll-rules:verify, held by the Admin role only", j(R.PAY_RULE_PERMISSIONS) === j(["payroll-rules:verify"]) && j(R.PAY_RULE_GRANTS) === j({ admin: ["payroll-rules:verify"], hr: [], fin: [], emp: [], it: [] }) /* IT1 (behaviour; the IT role holds none) */);
 const holds = Object.fromEntries(Object.entries(PEOPLE).map(([k, id]) => [k, R.holdsPayRulePermission(S.getUser(id), "payroll-rules:verify")]));
 check("J2", "who holds it: Admin yes; HR, Finance, an employee and a manager no", j(holds) === j({ admin: true, hr: false, fin: false, emp: false, manager: false }), j(holds));
 check("J3", "a stored grant doesn't give it (not overridable); nobody, or an unknown permission: no", !R.holdsPayRulePermission({ ...S.getUser(PEOPLE.hr), grantPermissions: ["payroll-rules:verify"] }, "payroll-rules:verify") && !R.holdsPayRulePermission(null, "payroll-rules:verify") && !R.holdsPayRulePermission(S.getUser(PEOPLE.admin), "payroll-rules:edit"));

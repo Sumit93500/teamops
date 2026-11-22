@@ -365,7 +365,7 @@ const [ps, psPre, st, stPre] = [srcAt("./js-pre13D", "data/payroll-store.js"), s
 check("X3", "both CRLF with no final newline; no import changed", crlf(ps) && crlf(st) && imports(ps) === imports(psPre) && imports(st) === imports(stPre));
 const fn = (s, name) => { const a = s.search(new RegExp(`\\n(export )?(async )?function ${name}\\(`)); return a < 0 ? "" : s.slice(a, s.indexOf("\r\n}", a) + 3); };
 const SAME_PS = ["salaryFor", "salaryHistory", "payrollRunFor", "payrollRun", "canApprove", "approversFor", "payslipsFor", "storedRun", "prepareProblem", "prepareRun", "approveProblem", "approveRun", "checkSalary"];
-const SAME_ST = ["lastApproverProblem", "decidesStage", "updateUser", "deactivateUser", "reactivateUser", "addUser", "approvedMonthCovering"];
+const SAME_ST = ["lastApproverProblem", "decidesStage", "updateUser", "deactivateUser", "reactivateUser", "approvedMonthCovering"];   // IT1 (layout; was also addUser: it takes the IT department on first use, itdesk.mjs R8)
 check("X4", `the rest the same: ${SAME_PS.length} payroll-store.js and ${SAME_ST.length} store.js functions byte for byte (setSalary(), runProblems(), resetPayrollData(), strandedProblem() and deleteUser() changed)`,
   SAME_PS.every((f) => fn(ps, f) === fn(psPre, f) && fn(ps, f).length > 40) && SAME_ST.every((f) => fn(st, f) === fn(stPre, f) && fn(st, f).length > 40),
   j([...SAME_PS.filter((f) => fn(ps, f) !== fn(psPre, f)), ...SAME_ST.filter((f) => fn(st, f) !== fn(stPre, f))]));

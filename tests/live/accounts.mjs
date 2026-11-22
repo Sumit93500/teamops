@@ -48,9 +48,9 @@ const tokenOf = (link) => decodeURIComponent(link.split("token=")[1]);
 const events = (id) => AU.eventsFor(id).map((e) => e.kind);
 
 section("P. Permissions");
-check("P1", "accounts:reset, accounts:unlock and accounts:disable (E1b) are in the list; 105 in all (SH1: was 94; FS1: was 102, the files module)", j(P.PERMISSIONS.accounts) === j(["reset", "unlock", "disable"]) && P.ALL_PERMISSIONS.length === 114 /* AS1 (behaviour; was 105: the assets, stock and depreciation ones) */, P.ALL_PERMISSIONS.length);
+check("P1", "accounts:reset, accounts:unlock and accounts:disable (E1b) are in the list; 105 in all (SH1: was 94; FS1: was 102, the files module)", j(P.PERMISSIONS.accounts) === j(["reset", "unlock", "disable"]) && P.ALL_PERMISSIONS.length === 122 /* IT1 (behaviour; was 114: the it module) */ /* AS1 (behaviour; was 105: the assets, stock and depreciation ones) */, P.ALL_PERMISSIONS.length);
 const counts = Object.fromEntries(Object.entries(R.ROLES).map(([k, r]) => [k, r.permissions.length]));
-check("P2", "roles: Admin 102 (all three), HR 58 (reset only), Finance 48, Employee 30 (SH1: were 94, 50, 42, 24)", j(counts) === j({ admin: 111, hr: 63, fin: 54, emp: 30 }) /* AS1 (behaviour; were 102, 61, 50) */   // FS1 (behaviour; HR was 58, Finance 48: the files permissions)
+check("P2", "roles: Admin 102 (all three), HR 58 (reset only), Finance 48, Employee 30 (SH1: were 94, 50, 42, 24)", j(counts) === j({ admin: 119, hr: 64, fin: 56, emp: 31, it: 42 }) /* IT1 (behaviour; were 111, 63, 54, 30: the it module and the IT role) */ /* AS1 (behaviour; were 102, 61, 50) */   // FS1 (behaviour; HR was 58, Finance 48: the files permissions)
   && R.ROLES.hr.permissions.includes("accounts:reset") && !R.ROLES.hr.permissions.includes("accounts:unlock") && !R.ROLES.fin.permissions.includes("accounts:reset"), j(counts));
 check("P3", "neither is overridable: a stored grant gives an employee nothing", !R.OVERRIDABLE.some((p) => p.startsWith("accounts:")) && !["accounts:reset", "accounts:unlock", "accounts:disable"].some((p) => R.hasPermission({ ...S.getUser(ARJUN), grantPermissions: [p] }, p)));
 check("P4", "only the Admin holds accounts:disable (E1b): HR, Finance, an employee and a manager don't", R.hasPermission(S.getUser(AARAV), "accounts:disable") && [PRIYA, KABIR, ARJUN, SNEHA].every((id) => !R.hasPermission(S.getUser(id), "accounts:disable")));
@@ -78,14 +78,15 @@ const MEGHNA = add.record.id;
 check("N1", "before an account: status none, and no password signs them in (the demo one neither)", C.accountOf(MEGHNA, T0).status === "none" && (await C.signInWithPassword("meghna.rao@northwind.com", DEMO_PW, T0)).code === "invalid");
 const deny = await C.createAccount(KABIR, MEGHNA, T0);
 check("N2", "Finance can't make sign-in details (no users:create or accounts:reset)", !deny.ok && deny.code === "not-allowed");
-const made = await C.createAccount(PRIYA, MEGHNA, T0);
+const hrMade = await C.createAccount(PRIYA, MEGHNA, T0);   // IT1 (behaviour): HR is refused (needs-it): its new-account requests go to IT (itdesk.mjs A)
+const made = await C.createAccount(AARAV, MEGHNA, T0);   // IT1 (behaviour; was PRIYA): an Admin's direct flow
 secrets.push(made.tempPassword, tokenOf(made.link));
-check("N3", "HR makes them: a 14-character temporary password with no look-alike characters, and a set-password link", made.ok && made.tempPassword.length === 14 && !/[0O1lI]/.test(made.tempPassword) && /[A-Z]/.test(made.tempPassword) && /[a-z]/.test(made.tempPassword) && /\d/.test(made.tempPassword)
+check("N3", "HR can't make them any more (IT1: code needs-it); an Admin makes them: a 14-character temporary password with no look-alike characters, and a set-password link", hrMade.code === "needs-it" && !hrMade.tempPassword && made.ok && made.tempPassword.length === 14 && !/[0O1lI]/.test(made.tempPassword) && /[A-Z]/.test(made.tempPassword) && /[a-z]/.test(made.tempPassword) && /\d/.test(made.tempPassword)
   && /^\/pages\/auth\/set-password\.html\?token=[A-Za-z0-9_-]{43}$/.test(made.link), made.link.length);
 const acc = C.accountOf(MEGHNA, T0);
 check("N4", "invited, must change, the link 48 hours", acc.status === "invited" && acc.mustChange && acc.linkKind === "invite" && acc.linkExpires === T0 + 48 * 60 * min(1), j(acc));
 check("N5", "only hashes stored: the token as SHA-256 hex, the password as PBKDF2", /^[0-9a-f]{64}$/.test(box().accounts[MEGHNA].tokenHash) && !JSON.stringify(box()).includes(made.tempPassword) && !JSON.stringify(box()).includes(tokenOf(made.link)));
-check("N6", "making them twice is refused (they have an account)", (await C.createAccount(PRIYA, MEGHNA, T0)).code === "exists" && (await C.createAccount(PRIYA, ARJUN, T0)).code === "exists");
+check("N6", "making them twice is refused (they have an account)", (await C.createAccount(AARAV, MEGHNA, T0)).code === "exists" && (await C.createAccount(AARAV, ARJUN, T0)).code === "exists" /* IT1 (behaviour; was HR: HR is refused before that) */);
 const mail = M.allMail()[0];
 check("N7", "the Mail outbox has the invitation, to their work email, with no secret in it; this tab holds the link", mail.kind === "invite" && mail.to === "meghna.rao@northwind.com" && !JSON.stringify(mail).includes(made.tempPassword) && !JSON.stringify(mail).includes(tokenOf(made.link)) && M.linkOf(mail.id) === made.link);
 const first = await C.signInWithPassword("meghna.rao@northwind.com", made.tempPassword, T0 + min(5));

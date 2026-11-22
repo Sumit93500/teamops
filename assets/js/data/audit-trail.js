@@ -16,6 +16,10 @@ export const AUDIT_KINDS = [
   "stock-item-added", "stock-item-changed", "stock-moved", "stock-reversed",
   "asset-added", "asset-changed", "asset-issued", "asset-returned", "asset-maintenance-opened", "asset-maintenance-closed", "asset-retired", "asset-disposed",
   "vendor-added", "vendor-changed", "vendor-removed", "depreciation-changed",
+  // IT1: data/it-desk.js and data/licences.js (the request id and type, the step; never a secret or a cost)
+  "it-request-created", "it-request-assigned", "it-request-submitted", "it-request-approved", "it-request-rejected", "it-request-cancelled",
+  "it-request-executed", "it-override", "it-checklist-ticked", "it-reviewed", "it-sla-changed",
+  "licence-added", "licence-changed", "seat-assigned", "seat-revoked",
 ];
 export const AUDIT_LABEL = {
   "account-created": "Account created", "link-used": "Set-password link used", "password-set": "Password set",
@@ -33,6 +37,11 @@ export const AUDIT_LABEL = {
   "asset-maintenance-opened": "Asset sent for maintenance", "asset-maintenance-closed": "Asset back from maintenance", "asset-retired": "Asset retired",
   "asset-disposed": "Asset disposed of", "vendor-added": "Vendor added", "vendor-changed": "Vendor changed", "vendor-removed": "Vendor deleted",
   "depreciation-changed": "Depreciation settings changed",
+  "it-request-created": "IT request raised", "it-request-assigned": "IT request assigned", "it-request-submitted": "IT request sent for approval",
+  "it-request-approved": "IT request approved", "it-request-rejected": "IT request rejected", "it-request-cancelled": "IT request cancelled",
+  "it-request-executed": "IT request carried out", "it-override": "Admin override on an IT step", "it-checklist-ticked": "Offboarding item done",
+  "it-reviewed": "IT activity reviewed", "it-sla-changed": "IT response times changed", "licence-added": "Licence added", "licence-changed": "Licence changed",
+  "seat-assigned": "Licence seat assigned", "seat-revoked": "Licence seat revoked",
 };
 
 const empty = () => ({ version: 1, nextNum: 1, events: [] });

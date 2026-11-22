@@ -9,7 +9,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { profileView, revealField, saveFields, requestChange, profileChangesFor, changeText, historyFor, completeness } from "../../../assets/js/data/employee-record.js";
 import { bankFromIfsc } from "../../../assets/js/config/ifsc-banks.js";   // F2
-import { accountOf, createAccount, issueReset, unlockAccount, setSignInEnabled } from "../../../assets/js/data/credentials.js";
+import { accountOf, issueReset, unlockAccount, setSignInEnabled } from "../../../assets/js/data/credentials.js";
+import { newSignIn } from "../../../assets/js/data/it-desk.js";   // IT1
 import { eventsFor, AUDIT_LABEL } from "../../../assets/js/data/audit-trail.js";
 import { nameOf } from "../../../assets/js/ui/leave-view.js";
 import { rupees } from "../../../assets/js/ui/money.js";
@@ -340,7 +341,8 @@ export function AccountCard({ user }) {
   const own = me === user.id;
   const [label, tone] = STATUS[account.status] ?? [account.status, ""];
   const run = async (fn, done) => { const r = await fn(); if (!r.ok) { toast(r.error, "danger"); return; } bump(); done(r); };
-  const make = () => run(() => createAccount(me, user.id), (r) => setShare(r));
+  // IT1: an Admin makes them directly (flagged on the IT review trail); HR's "Make sign-in details" asks IT (a new-account request)
+  const make = () => run(() => newSignIn(me, user.id), (r) => (r.requested ? toast("Sent to IT: they make the sign-in details once an Admin approves them.", "info") : setShare(r)));
   const resetLink = async () => { if (await confirm({ message: `Send ${user.name} a reset link?\nAny earlier link stops working. It works once, for 60 minutes.`, confirmLabel: "Send link" })) run(() => issueReset(me, user.id, "link"), (r) => setShare(r)); };
   const resetTemp = async () => { if (await confirm({ message: `Give ${user.name} a new temporary password?\nTheir current password stops working; they choose a new one at their next sign-in.`, confirmLabel: "New temporary password", danger: true })) run(() => issueReset(me, user.id, "temp"), (r) => setShare(r)); };
   const unlock = () => run(() => unlockAccount(me, user.id), () => toast(`${user.name}'s account is unlocked.`, "success"));

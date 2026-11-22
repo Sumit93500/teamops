@@ -1045,7 +1045,7 @@ salchain.Z1,salchain,resetPayrollData() (Reset demo data) removes the proposals 
 salchain.X1,salchain,"exactly two js files changed, none added or removed: data/payroll-store.js and data/store.js",x3 (3 zones)
 salchain.X2,salchain,no page and no css changed,x3 (3 zones)
 salchain.X3,salchain,both CRLF with no final newline; no import changed,x3 (3 zones)
-salchain.X4,salchain,"the rest the same: 13 payroll-store.js and 7 store.js functions byte for byte (setSalary(), runProblems(), resetPayrollData(), strandedProblem() and deleteUser() changed)",x3 (3 zones)
+salchain.X4,salchain,"the rest the same: 13 payroll-store.js and 6 store.js functions byte for byte (setSalary(), runProblems(), resetPayrollData(), strandedProblem() and deleteUser() changed)",x3 (3 zones)
 salchain.X5,salchain,"setSalary()'s checks live in salaryProblem(), which both setSalary() and proposeSalary() call; decideSalaryProposal() writes through setSalary(); no salary record is ever updated or removed",x3 (3 zones)
 saledit.G1,saledit,"the code before: Rohan's Edit only toasted ""Edit isn't available in this demo.""; no form, nothing stored; Kabir's own row offered Edit too",x3 (3 zones)
 saledit.D1,saledit,"Rohan's Edit (Aarav, Admin; 12Y): no toast; a dialog ""Change Rohan Gupta's salary"", the line under it, ""Monthly gross (₹)"" holding ₹92,000 and ""Takes effect from"" holding this month; Cancel and ""Save salary""",x3 (3 zones)

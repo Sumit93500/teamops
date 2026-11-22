@@ -18,7 +18,8 @@
 //   never tell who has an account. A good sign-in resets the count.
 // - Every event goes to the audit trail (data/audit-trail.js), never the secret. Clock: every function takes now (ms).
 import { load, save, remove } from "../core/storage.js";
-import { getUser, getAllUsers } from "./store.js";
+import { getUser, getAllUsers, leavingDate } from "./store.js";
+import { executionGrant, recordAdminOverride } from "./it-store.js";   // IT1: request-driven credential steps, and the Admin's override on the trail
 import { USERS } from "./users.js";
 import { DEMO } from "../config/demo.js";
 import { openUnlockRequest } from "./unlock-requests.js";   // F2: a lock opens an unlock request for the Admin
@@ -181,11 +182,30 @@ function newLink(account, kind, now) {
 const linkFor = (kind, token) => `/pages/auth/${kind === "invite" ? "set-password" : "reset-password"}.html?token=${encodeURIComponent(token)}`;
 const fail = (error, code) => ({ ok: false, error, code });
 
-// Sign-in details for someone new (users:create or accounts:reset): a temporary password and a 48-hour set-password link,
-// returned once (and never stored); status invited, mustChange. Refused for someone who already has an active account.
+// Sign-in details for someone new: a temporary password and a 48-hour set-password link, returned once (and never stored); status
+// invited, mustChange. Refused for someone who already has an active account.
+// IT1: only an Admin makes them directly (users:create or accounts:reset, and the Admin role): the documented override, flagged on
+// the IT review trail (data/it-store.js). Anyone else (HR) is refused with code "needs-it": the employee form opens a new-account
+// request instead (data/it-desk.js newSignIn), which IT prepares, the Admin approves and IT hands over (createAccountForRequest).
 export async function createAccount(actorId, userId, now = Date.now()) {
   const actor = getUser(actorId);
   if (!actor || actor.status === "inactive" || !(hasPermission(actor, "users:create") || hasPermission(actor, "accounts:reset"))) return fail("You can't make sign-in details.", "not-allowed");
+  if (actor.role !== "admin") return fail("Sign-in details for a new employee are made by IT and approved by an Admin: ask IT.", "needs-it");
+  const made = await makeAccount(actorId, userId, now);
+  if (made.ok) recordAdminOverride(actorId, userId, "credential-issued", `An Admin made ${nameOfId(userId)}'s sign-in details directly (admin override); the secret was shown once to the Admin.`, now);
+  return made;
+}
+
+// IT1: the new-account request's hand-over: only the IT person who prepared it, only once the Admin approved it (it-store.js
+// executionGrant). Returns the temporary password and the link once, to that IT person; nothing secret is kept.
+export async function createAccountForRequest(actorId, requestId, now = Date.now()) {
+  const grant = executionGrant(requestId, actorId, ["new-account"], { preparerOnly: true });
+  if (!grant.ok) return fail(grant.error, "not-allowed");
+  if (!grant.subject) return fail("That employee doesn't exist.", "no-employee");
+  return makeAccount(actorId, grant.subject.id, now);
+}
+
+async function makeAccount(actorId, userId, now) {
   const user = getUser(userId);
   if (!user) return fail(`No employee with id ${userId}.`, "no-employee");
   const box = read();
@@ -363,8 +383,24 @@ export async function issueReset(actorId, userId, mode = "link", now = Date.now(
   const actor = getUser(actorId), user = getUser(userId);
   const why = mayHelp(actor, user, "accounts:reset");
   if (why) return fail(why, "not-allowed");
+  return resetCore(actorId, user, mode, now);
+}
+
+// IT1: a reset for a password-reset request, by its IT assignee (approved first when the account holds Admin, HR or Finance), or by
+// an Admin through the override. Never for oneself.
+export async function resetForRequest(actorId, requestId, mode = "link", now = Date.now(), { override = null } = {}) {
+  const grant = executionGrant(requestId, actorId, ["password-reset"], { override });
+  if (!grant.ok) return fail(grant.error, "not-allowed");
+  if (!grant.subject || grant.subject.id === actorId) return fail("Use your own sign-in page for your own account.", "not-allowed");
+  return resetCore(actorId, grant.subject, mode, now);
+}
+
+async function resetCore(actorId, user, mode, now) {
+  const userId = user.id;
   const box = read();
-  const account = box.accounts[userId] ?? (seeded(userId) ? { ...blank("seed", now), legacy: true } : blank(actorId, now));
+  // IT1: someone with no sign-in yet gets one only through IT's approved new-account request, never through a reset
+  if (!box.accounts[userId] && !seeded(userId)) return fail(`${user.name} has no sign-in yet: IT makes it through a new-account request.`, "none");
+  const account = box.accounts[userId] ?? { ...blank("seed", now), legacy: true };
   if (account.status === "disabled") return fail(`${user.name}'s sign-in is disabled. Enable it first.`, "disabled");
   if (account.tokenHash) box.used.push(account.tokenHash);
   account.tokenHash = null; account.tokenExpiry = null; account.tokenKind = null;
@@ -393,6 +429,19 @@ export function unlockAccount(actorId, userId, now = Date.now()) {
   const actor = getUser(actorId), user = getUser(userId);
   const why = mayHelp(actor, user, "accounts:unlock");
   if (why) return fail(why, "not-allowed");
+  return unlockCore(actorId, user, now);
+}
+
+// IT1: an unlock for an account-unlock request, as resetForRequest.
+export function unlockForRequest(actorId, requestId, now = Date.now(), { override = null } = {}) {
+  const grant = executionGrant(requestId, actorId, ["account-unlock"], { override });
+  if (!grant.ok) return fail(grant.error, "not-allowed");
+  if (!grant.subject || grant.subject.id === actorId) return fail("Use your own sign-in page for your own account.", "not-allowed");
+  return unlockCore(actorId, grant.subject, now);
+}
+
+function unlockCore(actorId, user, now) {
+  const userId = user.id;
   const box = read();
   const account = box.accounts[userId];
   if (!account || !account.lockedUntil || account.lockedUntil <= now) return fail(`${user.name}'s account isn't locked.`, "not-locked");
@@ -409,6 +458,23 @@ export function setSignInEnabled(actorId, userId, enabled, now = Date.now()) {
   const actor = getUser(actorId), user = getUser(userId);
   const why = mayHelp(actor, user, "accounts:disable");
   if (why) return fail(why, "not-allowed");
+  return enableCore(actorId, user, enabled, now);
+}
+
+// IT1: offboarding's "disable sign-in": only once the Admin approved the offboarding, by its IT assignee (or an Admin through the
+// override), on or after the person's last working day. Nothing is deleted: the account is disabled, its history stays.
+export function disableForRequest(actorId, requestId, now = Date.now(), { override = null } = {}) {
+  const grant = executionGrant(requestId, actorId, ["offboarding"], { override });
+  if (!grant.ok) return fail(grant.error, "not-allowed");
+  const user = grant.subject;
+  if (!user || user.id === actorId) return fail("You can't disable your own sign-in.", "not-allowed");
+  const lastDay = leavingDate(user);
+  if (user.status !== "inactive" || (lastDay && officeNow(now).date < lastDay)) return fail(`${user.name}'s sign-in is disabled on their last working day${lastDay ? `, ${lastDay}` : ""}, not before.`, "too-early");
+  return enableCore(actorId, user, false, now);
+}
+
+function enableCore(actorId, user, enabled, now) {
+  const userId = user.id;
   const box = read();
   const account = box.accounts[userId] ?? (seeded(userId) ? { ...blank("seed", now), legacy: true } : null);
   if (!account) return fail(`${user.name} has no sign-in yet.`, "none");

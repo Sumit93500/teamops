@@ -114,15 +114,15 @@ Every read takes the viewer and returns only what they may see. Every write chec
 | `assets:view-own` | everyone | the assets issued to them now or before, and only their own assignment rows. No status, other holder, vendor, invoice or values |
 | `assets:view-all` | HR, Finance, Admin | every asset, its history and maintenance, the overdue, warranty and not-returned lists, the vendors |
 | `assets:view-values` | Finance, Admin | price, salvage, life, method, rate, depreciation, maintenance costs, sale values, book value at disposal, gain or loss |
-| `assets:manage` | Admin * | add, edit, retire, dispose |
-| `assets:issue` | Admin * | issue and take back |
-| `assets:maintain` | Admin * | open and close maintenance |
-| `vendors:manage` | Admin * | add, edit, deactivate, delete vendors |
+| `assets:manage` | IT, Admin * | add, edit, retire, dispose |
+| `assets:issue` | IT, Admin * | issue and take back |
+| `assets:maintain` | IT, Admin * | open and close maintenance |
+| `vendors:manage` | IT, Admin * | add, edit, deactivate, delete vendors |
 | `stock:view` | HR, Finance, Admin | stock items, the ledger, low stock |
-| `stock:move` | Admin * | add and edit items; record and reverse movements |
+| `stock:move` | IT, Admin * | add and edit items; record and reverse movements |
 | `depreciation:configure` | Finance, Admin | category defaults; an asset's own method, life, rate and salvage |
 
-\* The custodian's permissions. No IT or inventory role exists yet, so only the Admin holds them. **Grant them to the IT role in the IT round** (parking lot).
+\* The custodian's permissions: the IT role's since IT1 (see [it-desk.md](it-desk.md)); the Admin keeps them as the documented override. IT also holds `assets:view-all` and `stock:view`, never `assets:view-values`.
 
 - **Values are left out, not blanked:** nobody without `assets:view-values` receives those fields from any read, including a write's own answer. Changing a price needs `assets:view-values` too.
 - **A person** reads what they were issued (`issuedTo`) without `stock:view`.
@@ -175,6 +175,5 @@ None of it changes an existing record: the dumps of every attendance, leave, pay
 - **The screens** (the next round): the inventory pages, the asset register and asset detail, on the AS1 data layer.
 - **Moving the old site's records into the new register:** its 7 tagged assets, 12 items and 5 vendors. A ruling item: until then the React profile's "assets held" reads the old store.
 - **Wiring** `resetStockData` and `resetAssetRegister` into Reset demo data.
-- **The IT role** and the custodian permissions moving to it.
 - **Income-Tax Act block rates** (the Finance round).
 - **Lost and transfer** in the lifecycle, and "the approver can't also hand over".

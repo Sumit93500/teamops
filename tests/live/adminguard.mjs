@@ -80,12 +80,12 @@ section("F. user-form.html: the Administrator designation is offered only to an 
 fresh();
 await open("priya", UF, "user-form");
 check("F1", "HR opens the form (new employee): no redirect, and every designation but Administrator, in order",
-  navigations.length === 0 && j(options()) === j(NOT_ADMIN_TITLES) && NOT_ADMIN_TITLES.length === 9 && !options().includes("Administrator"), j(options()));
+  navigations.length === 0 && j(options()) === j(NOT_ADMIN_TITLES) && NOT_ADMIN_TITLES.length === 10 /* IT1 (behaviour; was 9: IT Engineer, the IT role's designation) */ && !options().includes("Administrator"), j(options()));
 await open("priya", UF, "user-form", `?id=${ARJUN}`);
 check("F2", "HR editing an employee (Arjun): Administrator isn't offered either", j(options()) === j(NOT_ADMIN_TITLES), j(options()));
 await open("aarav", UF, "user-form");
 check("F3", "an Admin opens the form: all ten, Administrator included, which still previews as Admin with every permission",
-  j(options()) === j(ALL_TITLES) && (pick("Administrator"), $("default-role").value === "Admin" && txt($("effective-count")) === "111") /* AS1 (behaviour; was 102) */ /* FS1 (behaviour; was "Every permission": the Admin holds 102 of 105, the files ones held back) */, j(options()));
+  j(options()) === j(ALL_TITLES) && (pick("Administrator"), $("default-role").value === "Admin" && txt($("effective-count")) === "119") /* IT1 (behaviour; was 111) */ /* AS1 (behaviour; was 102) */ /* FS1 (behaviour; was "Every permission": the Admin holds 102 of 105, the files ones held back) */, j(options()));
 await open("priya", UF, "user-form", `?id=${AARAV}`);
 check("F4", "HR editing the Admin (Aarav): his own designation is still shown, reading Admin (Default role), not blank",
   $("designation").value === "Administrator" && $("default-role").value === "Admin" && options().filter((t) => t === "Administrator").length === 1, j([$("designation").value, $("default-role").value]));

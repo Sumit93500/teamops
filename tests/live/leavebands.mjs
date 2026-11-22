@@ -141,7 +141,7 @@ check("G6", "every change and close is in the audit: who, what", j(audit.map((a)
 const users = JSON.parse(mem.get("officeos:users"));
 users.records.find((x) => x.id === PEOPLE.admin).status = "inactive";
 mem.set("officeos:users", j(users));
-check("G7", "an inactive Admin can't; a stored grant doesn't give the permission", !bad("intern", "casual", { amount: 2 }).ok && !LP.holdsLeavePolicyPermission({ ...S.getUser(PEOPLE.hr), grantPermissions: ["leave-policy:edit"] }, "leave-policy:edit") && j(LP.LEAVE_POLICY_GRANTS) === j({ admin: ["leave-policy:edit"], hr: [], fin: [], emp: [] }));
+check("G7", "an inactive Admin can't; a stored grant doesn't give the permission", !bad("intern", "casual", { amount: 2 }).ok && !LP.holdsLeavePolicyPermission({ ...S.getUser(PEOPLE.hr), grantPermissions: ["leave-policy:edit"] }, "leave-policy:edit") && j(LP.LEAVE_POLICY_GRANTS) === j({ admin: ["leave-policy:edit"], hr: [], fin: [], emp: [], it: [] }) /* IT1 (behaviour; the IT role holds none) */);
 users.records.find((x) => x.id === PEOPLE.admin).status = "active";
 mem.set("officeos:users", j(users));
 LP.resetLeavePolicy();

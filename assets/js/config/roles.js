@@ -26,6 +26,8 @@ const SELF_SERVICE = [
   "shifts:view", "shifts:swap-team", "overtime:approve",
   // CV1: ask for a client / official visit; decide and assign them for direct reports (a relationship, as overtime)
   "visits:request", "visits:approve", "visits:assign",
+  // IT1: raise IT tickets and requests for yourself
+  "it:requests-create",
 ];
 
 // FS1 (2026-11-22): the stored-file permissions the Admin role does NOT hold by default: seeing other people's expense files and employee
@@ -90,6 +92,7 @@ export const ROLES = {
       "reports:view", "reports:export", "reports:create",
       "files:view-expense", "files:view-documents",   // FS1: expense files; bank and tax proof among document files (data/files.js)
       "assets:view-all", "assets:view-values", "stock:view", "depreciation:configure",   // AS1: every asset with its values; the stock ledger; depreciation settings
+      "it:licences-view-costs",   // IT1: licence costs
     ],
   },
 
@@ -101,9 +104,27 @@ export const ROLES = {
     scopeLabel: "Own records, plus your direct reports if you manage people",
     permissions: [...SELF_SERVICE],
   },
+
+  // IT1 (2026-11-22): the IT desk. Works IT requests, prepares accounts (never an Admin's) and offboarding, keeps licences, and is
+  // the asset custodian: AS1's assets:manage, assets:issue, assets:maintain, vendors:manage and stock:move (the Admin keeps them
+  // too, through every permission: the documented override). No pay, bank, tax, leave-approval, attendance-edit, people (users:*,
+  // pii:view) or stored-file permission, and never it:approve: an Admin approves what IT prepares. Nobody is seeded with it.
+  it: {
+    key: "it",
+    label: "IT",
+    landing: "dashboard/employee.html",
+    dataScope: "own",
+    scopeLabel: "Own records, plus IT requests, licences and the asset register",
+    permissions: [
+      ...SELF_SERVICE,
+      "it:requests-handle", "it:licences-manage", "it:account-prepare", "it:offboard",
+      "assets:manage", "assets:issue", "assets:maintain", "vendors:manage", "stock:move",
+      "assets:view-all", "stock:view",   // to see what it issues and keeps (no values: not assets:view-values)
+    ],
+  },
 };
 
-export const ROLE_KEYS = Object.keys(ROLES);   // ["admin", "hr", "fin", "emp"]
+export const ROLE_KEYS = Object.keys(ROLES);   // ["admin", "hr", "fin", "emp", "it"]
 
 // ---------- permission overrides (round 11R) ----------
 // An Admin may grant someone a permission their role lacks, or deny one it

@@ -222,7 +222,7 @@ check("E1", "role-editor.html: no 'Expense approval limit' field (no per-role li
   !/Expense approval limit|id="limit"/.test(editor) && !/Expense approval limit/.test(d.documentElement.outerHTML) && j(hrExpenses) === j(["expenses:create"]));
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 45 of 78: dashboard:finance is a 79th permission)
-check("E2", "...and the page counts what HR holds: '58 of 102' (SH1: was 50 of 94; E1b: was 50 of 93; E1: was 49 of 91; F1: was 49 of 90; L0: was 45 of 79)", txt(d.querySelector(".matrix")?.closest(".card")?.querySelector(".card__meta")) === "63 of 114" /* AS1 (behaviour; was 61 of 105) */ && jsErrors.length === 0);   // FS1 (behaviour; was 58 of 102)
+check("E2", "...and the page counts what HR holds: '58 of 102' (SH1: was 50 of 94; E1b: was 50 of 93; E1: was 49 of 91; F1: was 49 of 90; L0: was 45 of 79)", txt(d.querySelector(".matrix")?.closest(".card")?.querySelector(".card__meta")) === "64 of 122" /* IT1 (behaviour; was 63 of 114) */ /* AS1 (behaviour; was 61 of 105) */ && jsErrors.length === 0);   // FS1 (behaviour; was 58 of 102)
 const flows = read(FLOWS);
 check("F1", "approval-workflows.html: the expense condition says the Admin stage is added above ₹50,000 and stages nobody else holds are skipped", flows.includes("<td>Admin added above ₹50,000. A stage nobody else can decide is skipped</td>") && !flows.includes("Admin only above ₹50,000"));
 check("F2", "...and the ₹62,000 example says who the manager is (the person they report to)", flows.includes("The person they report to confirms the trip happened"));
@@ -250,16 +250,17 @@ check("H3", "drawn by expenses.js as before: tab counts from the store, rows, sp
 section("I. access/roles-list.html");
 const rl = read(ROLES_LIST);
 check("I1", "the four roles of roles.js only, by key; no Super Admin, HR Staff, Team Lead or Inventory Manager",
-  j([...rl.matchAll(/<tr data-role="(\w+)">/g)].map((m) => m[1])) === j(Object.keys(ROLES)) && !/Super Admin|HR Staff|Team Lead|Inventory Manager|\/ 44|179/.test(rl));
+  j([...rl.matchAll(/<tr data-role="(\w+)">/g)].map((m) => m[1])) === j(Object.keys(ROLES).slice(0, 4)) /* IT1 (layout; the frozen page keeps its four rows: the React roles page lists the IT role) */ && !/Super Admin|HR Staff|Team Lead|Inventory Manager|\/ 44|179/.test(rl));
 fresh();
 await open(ROLES_LIST, "aarav");
 const rlRows = [...d.querySelectorAll(".table tbody tr")].map((tr) => [tr.dataset.role, txt(tr.querySelector(".table__user-name")), txt(tr.querySelector('[data-cell="users"]')), txt(tr.querySelector('[data-cell="permissions"]')), tr.querySelector(".meter__fill").style.getPropertyValue("--w")]);
-const expectRows = Object.values(ROLES).map((r) => [r.key, r.label, String(S.getAllUsers().filter((u) => u.role === r.key).length), `${r.permissions.length} / ${ALL_PERMISSIONS.length}`, `${Math.round((r.permissions.length / ALL_PERMISSIONS.length) * 100)}%`]);
+const expectRows = Object.values(ROLES).slice(0, 4).map(   // IT1 (layout; the frozen page's four rows)
+  (r) => [r.key, r.label, String(S.getAllUsers().filter((u) => u.role === r.key).length), `${r.permissions.length} / ${ALL_PERMISSIONS.length}`, `${Math.round((r.permissions.length / ALL_PERMISSIONS.length) * 100)}%`]);
 check("I2", "each row: the role's label, how many people hold it, 'n / 75' and the meter, from roles.js and the store", j(rlRows) === j(expectRows) && jsErrors.length === 0, j(rlRows));
 // Round 6D added assets:view and Round 6F vendors:view (both Admin only): 77 permissions, Admin 77, the other roles unchanged.
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 78 / 45 / 36 / 20 of 78: dashboard:finance, held by Admin and Finance)
-check("I3", "today that's Admin 1, HR Manager 1, Finance Manager 1, Employee 7 (Divya, inactive, still holds Employee); 102 / 58 / 48 / 30 of 102 (CV1: was 98 / 54 / 45 / 27 of 98; SH1: was 94 / 50 / 42 / 24 of 94; E1b: was 93 / 50 / 42 / 24 of 93; E1: was 91 / 49 / 42 / 24 of 91; F1: was 90 / 49 / 42 / 24 of 90; L0: was 79 / 45 / 37 / 20 of 79; Round 7C: Finance has no pii:view; Manager scoping part 1: dashboard:finance)", j(rlRows.map((r) => [r[2], r[3]])) === j([["1", "111 / 114"], ["1", "63 / 114"], ["1", "54 / 114"], ["7", "30 / 114"]]) /* AS1 (behaviour; was 102 / 61 / 50 / 30 of 105) */   /* FS1 (behaviour; was 102 / 58 / 48 / 30 of 102) */, j(rlRows.map((r) => [r[2], r[3]])));
+check("I3", "today that's Admin 1, HR Manager 1, Finance Manager 1, Employee 7 (Divya, inactive, still holds Employee); 102 / 58 / 48 / 30 of 102 (CV1: was 98 / 54 / 45 / 27 of 98; SH1: was 94 / 50 / 42 / 24 of 94; E1b: was 93 / 50 / 42 / 24 of 93; E1: was 91 / 49 / 42 / 24 of 91; F1: was 90 / 49 / 42 / 24 of 90; L0: was 79 / 45 / 37 / 20 of 79; Round 7C: Finance has no pii:view; Manager scoping part 1: dashboard:finance)", j(rlRows.map((r) => [r[2], r[3]])) === j([["1", "119 / 122"], ["1", "64 / 122"], ["1", "56 / 122"], ["7", "31 / 122"]]) /* IT1 (behaviour; was 111 / 63 / 54 / 30 of 114) */ /* AS1 (behaviour; was 102 / 61 / 50 / 30 of 105) */   /* FS1 (behaviour; was 102 / 58 / 48 / 30 of 102) */, j(rlRows.map((r) => [r[2], r[3]])));
 S.addUser?.(USER_ACTOR("admin", null), { name: "Test Person", email: "t@x.com", department: "FIN", designation: "Accountant", role: "fin", status: "active" });
 await open(ROLES_LIST, "aarav");
 check("I4", "a new Finance Manager added through the store: the count follows on the next load", txt(d.querySelector('tr[data-role="fin"] [data-cell="users"]')) === "2");
@@ -275,11 +276,11 @@ check("J1", "new employee, no designation chosen: Employee's permissions, as sav
   j(chips()) === j(ROLES.emp.permissions) && txt($("effective-count")) === String(ROLES.emp.permissions.length) && jsErrors.length === 0, `${txt($("effective-count"))}: ${chips().slice(0, 3)}`);
 pickDesignation("Finance Manager");
 // Round Manager scoping part 1 (behaviour; was 36: Finance also holds dashboard:finance)
-check("J2", "choosing 'Finance Manager': the chips switch to Finance Manager's 48 (CV1: was 45; SH1: was 42; P5: was 40; L0: was 37; Round 7C: no pii:view; Manager scoping part 1: dashboard:finance)", j(chips()) === j(ROLES.fin.permissions) && txt($("effective-count")) === "54");   // AS1 (behaviour; was 50)   // FS1 (behaviour; was 48)
+check("J2", "choosing 'Finance Manager': the chips switch to Finance Manager's 48 (CV1: was 45; SH1: was 42; P5: was 40; L0: was 37; Round 7C: no pii:view; Manager scoping part 1: dashboard:finance)", j(chips()) === j(ROLES.fin.permissions) && txt($("effective-count")) === "56");   // IT1 (behaviour; was 54)   // AS1 (behaviour; was 50)   // FS1 (behaviour; was 48)
 pickDesignation("Administrator");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 78: dashboard:finance is a 79th permission)
-check("J3", "'Administrator': one line, 'Every permission (102)', not 102 chips (SH1: was 94; E1b: was 93; E1: was 91; F1: was 90; L0: was 79; Round 6D: assets:view; 6F: vendors:view; 11N: users:delete; Manager scoping part 1: dashboard:finance)", j(chips()) === j(ROLES.admin.permissions) && txt($("effective-count")) === "111");   // AS1 (behaviour; was 102)   // FS1 (behaviour; was the one line "Every permission (102)": the Admin holds 102 of 105, so the page lists them)
+check("J3", "'Administrator': one line, 'Every permission (102)', not 102 chips (SH1: was 94; E1b: was 93; E1: was 91; F1: was 90; L0: was 79; Round 6D: assets:view; 6F: vendors:view; 11N: users:delete; Manager scoping part 1: dashboard:finance)", j(chips()) === j(ROLES.admin.permissions) && txt($("effective-count")) === "119");   // IT1 (behaviour; was 111)   // AS1 (behaviour; was 102)   // FS1 (behaviour; was the one line "Every permission (102)": the Admin holds 102 of 105, so the page lists them)
 check("J4", "no permission that doesn't exist is ever shown (attendance:view, attendance:create, leave:view)", !/attendance:view<|attendance:create|leave:view</.test(read(USER_FORM)));
 await open(USER_FORM, "aarav", `?id=${KABIR}`);
 check("J5", "editing Kabir (designation Finance Manager): his role's permissions", j(chips()) === j(ROLES.fin.permissions));

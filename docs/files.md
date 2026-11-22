@@ -61,7 +61,7 @@ The app talks only to `data/files.js`, so the backend stage can replace the stor
 
 ## Permissions
 
-`files:view-expense` (HR, Finance), `files:view-documents` (HR, Finance), `files:manage-documents` (HR). The Admin role holds none of them (`ADMIN_HELD_BACK` in `config/roles.js`, a ruling item). None is overridable. FS1 took the list from 102 to 105 (Admin 102, HR 61, Finance 50, Employee 30); since AS1 there are 114 permissions in 46 modules (Admin 111, HR 63, Finance 54, Employee 30; see [rbac.md](rbac.md)).
+`files:view-expense` (HR, Finance), `files:view-documents` (HR, Finance), `files:manage-documents` (HR). The Admin role holds none of them (`ADMIN_HELD_BACK` in `config/roles.js`, a ruling item). None is overridable. FS1 took the list from 102 to 105 (Admin 102, HR 61, Finance 50, Employee 30); since IT1 there are 122 permissions in 47 modules (Admin 119, HR 64, Finance 56, Employee 31, IT 42; see [rbac.md](rbac.md)).
 
 ## The screens
 
