@@ -29,15 +29,15 @@ import { hasPermission, permissionsOf, overridesOf, ROLES, ROLE_KEYS, OVERRIDABL
 import { logEvent } from "./audit-trail.js";
 import { readItBox, writeItBox, pushTimeline, pushActivity, pushNotice, executionGrant } from "./it-store.js";
 import {
-  TYPES, isSensitive, canMove, STATUSES, OPEN_STATUSES, PRIORITIES, SLA_DEFAULTS, SLA_MAX, dueAtFor, CHECKLIST, CHECKLIST_KEYS,
-  approvalRefusal, executionRefusal, titleCheck, detailsCheck, noteCheck,
+  TYPES, TYPE_KEYS, isSensitive, canMove, STATUSES, OPEN_STATUSES, PRIORITIES, SLA_DEFAULTS, SLA_MAX, dueAtFor, CHECKLIST, CHECKLIST_KEYS,
+  approvalRefusal, approvalPath, executionRefusal, titleCheck, detailsCheck, noteCheck, BREAK_GLASS_MIN, NOTE_MAX,
 } from "./it-rules.js";
 import { accountOf, createAccount, createAccountForRequest, resetForRequest, unlockForRequest, disableForRequest } from "./credentials.js";
 import { issueAsset, returnAsset, getAssetFor, listAssets } from "./asset-register.js";
 import { issuedTo } from "./stock-ledger.js";
 import { assignSeat, seatsHeldBy } from "./licences.js";
 import { managerOf } from "./reporting.js";
-import { ASSET_CATEGORIES, EMAIL, text, date as dateCheck } from "./asset-rules.js";
+import { ASSET_CATEGORIES, EMAIL, text, date as dateCheck, isStockOnlyCategory, STOCK_ONLY_MESSAGE } from "./asset-rules.js";
 
 export const IT_WAITING_KIND = "itApprovals";   // the waiting kind the inbox, bell, sidebar and Admin dashboard will count (screens round)
 
@@ -55,6 +55,8 @@ const subjectOf = (r) => (r.subjectPersonId ? getUser(r.subjectPersonId) : null)
 const sensitiveNow = (r) => isSensitive(r.type, subjectOf(r)?.role);
 const worked = (r, id) => { r.workedBy = [...new Set([...(r.workedBy ?? []), id])]; };
 const nameOf = (id) => getUser(id)?.name ?? id;
+// IT2 (break-glass): the active Admins. Exactly one means that Admin may approve what is about or raised by themself, with a written reason.
+const adminCount = () => getAllUsers().filter((u) => u.role === "admin" && u.status !== "inactive").length;
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const showDate = (iso) => `${Number(iso.slice(8))} ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
 
@@ -89,6 +91,7 @@ function payloadOf(type, payload, subject) {
     return fail("Say which permission or role is needed.", "payload");
   }
   if (type === "asset-request") {
+    if (isStockOnlyCategory(p.category)) return fail(STOCK_ONLY_MESSAGE, "payload");   // IT2: access cards are stock items
     if (!Object.hasOwn(ASSET_CATEGORIES, String(p.category ?? ""))) return fail("Choose the kind of asset.", "payload");
     return { ok: true, payload: { category: p.category } };
   }
@@ -268,13 +271,23 @@ export function submitForApproval(actorId, requestId, note = "", now = Date.now(
 // The Admin approves (it:approve; never their own, about themself, or one they worked on). A new-account request's prepared details
 // are applied to the record (as the Admin); an access request's permission or role is applied through the override mechanism (as the
 // Admin) and the request is done; an offboarding's access overrides are removed. No credential is made here.
-export function approveRequest(actorId, requestId, note = "", now = Date.now()) {
+//
+// IT2 (break-glass): when the request is about or raised by the only Admin there is, that Admin may approve it with `breakGlass`, a
+// written reason of at least 20 characters. It is flagged "break-glass" on the review trail and stays on the Admin dashboard until
+// someone else reviews it. With a second Admin, or for anyone else, the option does not exist.
+export function approveRequest(actorId, requestId, note = "", now = Date.now(), { breakGlass = null } = {}) {
   const actor = active(actorId);
   const b = readItBox();
   const r = findReq(b, requestId);
   if (!r) return fail(`No request ${requestId}.`);
-  const why = approvalRefusal(r, actor, permissionsOf);
-  if (why) return fail(why);
+  const path = approvalPath(r, actor, permissionsOf, adminCount());
+  if (path.error) return fail(path.error);
+  let glass = null;
+  if (path.breakGlass) {
+    const g = text(breakGlass, "The reason", { min: BREAK_GLASS_MIN, max: NOTE_MAX, required: true });
+    if (g.error) return fail(`You are the only Admin and this is about or raised by you, so approving it takes a written reason of at least ${BREAK_GLASS_MIN} characters (break-glass). ${g.error}`, "breakGlass");
+    glass = g.value;
+  }
   const n = String(note ?? "").trim() ? noteCheck(note) : { value: "" };
   if (n.error) return fail(n.error, "note");
   const subject = subjectOf(r);
@@ -308,8 +321,8 @@ export function approveRequest(actorId, requestId, note = "", now = Date.now()) 
   }
   move(b, r, "approved", actor.id, n.value, now);
   r.approvedBy = actor.id;
-  pushTimeline(b, r.id, actor.id, "approved", n.value || (applied ? `Applied: ${applied}` : ""), now);
-  pushActivity(b, { actorId: actor.id, kind: "approved", requestId: r.id, personId: r.subjectPersonId, summary: `Approved ${TYPES[r.type].label.toLowerCase()} ${r.id}${applied ? ` (applied: ${applied})` : ""}` }, now);
+  pushTimeline(b, r.id, actor.id, "approved", glass ? `Break-glass: ${glass}${n.value ? `. ${n.value}` : ""}` : (n.value || (applied ? `Applied: ${applied}` : "")), now);
+  pushActivity(b, { actorId: actor.id, kind: "approved", requestId: r.id, personId: r.subjectPersonId, breakGlass: Boolean(glass), summary: `Approved ${TYPES[r.type].label.toLowerCase()} ${r.id}${applied ? ` (applied: ${applied})` : ""}${glass ? " (break-glass: the only Admin approved a request about or raised by themself)" : ""}` }, now);
   pushNotice(b, r.requesterId, r.id, "approved", now);
   if (r.type === "access-request") {
     pushTimeline(b, r.id, actor.id, "executed", `Applied through the permission overrides: ${applied}`, now);
@@ -318,8 +331,8 @@ export function approveRequest(actorId, requestId, note = "", now = Date.now()) 
     if (r.subjectPersonId !== r.requesterId) pushNotice(b, r.subjectPersonId, r.id, "done", now);
   }
   if (!save(b)) return fail(SAVE_FAILED);
-  logEvent(audit(actor.id, "it-request-approved", r, applied ? `applied ${applied}` : ""), now);
-  return { ok: true, record: copy(r) };
+  logEvent(audit(actor.id, "it-request-approved", r, `${applied ? `applied ${applied}` : ""}${glass ? `${applied ? "; " : ""}break-glass` : ""}`), now);
+  return { ok: true, record: copy(r), breakGlass: Boolean(glass) };
 }
 
 // The Admin rejects with a reason; the request goes back to IT (resumeRequest) or is cancelled.
@@ -588,7 +601,8 @@ export function getItRequest(viewerId, requestId) {
 export function pendingItApprovals(viewerId) {
   const v = active(viewerId);
   if (!isApprover(v)) return [];
-  return copy(readItBox().requests.filter((r) => r.status === "awaiting-approval" && !approvalRefusal(r, v, permissionsOf))).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const admins = adminCount();
+  return copy(readItBox().requests.filter((r) => r.status === "awaiting-approval" && !approvalPath(r, v, permissionsOf, admins).error)).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 // IT's queue: every unfinished request, the soonest due first.
 export function itQueue(viewerId) {
@@ -609,11 +623,12 @@ export function exitsWithoutOffboarding(viewerId) {
     .map((u) => ({ personId: u.id, name: u.name, lastDay: leavingDate(u) }));
 }
 // The Admin's review trail (it:activity-review), newest first. Filters: kind, actorId, personId, override (true / false), reviewed (true / false).
-export function itActivity(viewerId, { kind = null, actorId = null, personId = null, override = null, reviewed = null } = {}) {
+export function itActivity(viewerId, { kind = null, actorId = null, personId = null, override = null, reviewed = null, breakGlass = null } = {}) {
   const v = active(viewerId);
   if (!can(v, "it:activity-review")) return [];
   return copy(readItBox().activity.filter((a) => (!kind || a.kind === kind) && (!actorId || a.actorId === actorId) && (!personId || a.personId === personId)
-    && (override === null || a.override === override) && (reviewed === null || Boolean(a.reviewedBy) === reviewed))).reverse();
+    && (override === null || a.override === override) && (reviewed === null || Boolean(a.reviewedBy) === reviewed)
+    && (breakGlass === null || Boolean(a.breakGlass) === breakGlass))).reverse();
 }
 export const unreviewedCount = (viewerId) => itActivity(viewerId, { reviewed: false }).length;
 export function markReviewed(actorId, activityId, now = Date.now()) {
@@ -623,7 +638,7 @@ export function markReviewed(actorId, activityId, now = Date.now()) {
   const a = b.activity.find((x) => x.id === activityId);
   if (!a) return fail(`No activity ${activityId}.`);
   if (a.reviewedBy) return fail("Already reviewed.");
-  if (a.actorId === actor.id && a.override) return fail("Someone else reviews your own override.");
+  if (a.actorId === actor.id && (a.override || a.breakGlass)) return fail(a.breakGlass ? "Someone else reviews your own break-glass approval." : "Someone else reviews your own override.");
   a.reviewedBy = actor.id;
   a.reviewedAt = new Date(now).toISOString();
   if (a.requestId) pushTimeline(b, a.requestId, actor.id, "reviewed", a.id, now);
@@ -647,6 +662,105 @@ export function markNoticeRead(viewerId, noticeId, now = Date.now()) {
 }
 
 // ---------- SLA ----------
+// ---------- IT2: what the screens ask the data layer ----------
+// The requests this Admin approved or rejected, newest first: { request, decision "approved" | "rejected", at, note } (the inbox's decided tabs).
+export function itDecidedBy(viewerId) {
+  const v = active(viewerId);
+  if (!isApprover(v)) return [];
+  const b = readItBox();
+  return b.timeline.filter((t) => (t.kind === "approved" || t.kind === "rejected") && t.actorId === v.id).map((t) => ({ request: findReq(b, t.requestId), decision: t.kind, at: t.at, note: t.note }))
+    .filter((x) => x.request).map((x) => ({ ...x, request: copy(x.request) })).reverse();
+}
+// The only Admin, or not (break-glass is possible only then); the Admin dashboard's banner recommends a second one.
+export const soleAdmin = () => adminCount() === 1;
+// Break-glass approvals nobody has reviewed yet (the Admin dashboard lists them until someone else marks them reviewed).
+export const breakGlassOpen = (viewerId) => itActivity(viewerId, { breakGlass: true, reviewed: false });
+// Would approving this request be a break-glass one for this viewer (the dialog asks for the written reason)?
+export function needsBreakGlass(viewerId, requestId) {
+  const v = active(viewerId);
+  const r = v ? findReq(readItBox(), requestId) : null;
+  return Boolean(r) && Boolean(approvalPath(r, v, permissionsOf, adminCount()).breakGlass);
+}
+
+// The IT dashboard's numbers (it:requests-handle, or the Admin): requests by status (all) and by type (unfinished ones), the overdue
+// (past due, not waiting for the Admin), the viewer's own, the unassigned and those awaiting approval. null for anyone else.
+export function itSummary(viewerId, now = Date.now()) {
+  const v = active(viewerId);
+  if (!(isIT(v) || isApprover(v))) return null;
+  const all = copy(readItBox().requests);
+  const open = all.filter((r) => OPEN_STATUSES.includes(r.status));
+  const at = new Date(now).toISOString();
+  return {
+    total: all.length, open: open.length,
+    byStatus: Object.fromEntries(Object.keys(STATUSES).map((s) => [s, all.filter((r) => r.status === s).length])),
+    byType: Object.fromEntries(TYPE_KEYS.map((t) => [t, open.filter((r) => r.type === t).length])),
+    byPriority: Object.fromEntries(PRIORITIES.map((p) => [p, open.filter((r) => r.priority === p).length])),
+    overdue: open.filter((r) => r.dueAt < at && r.status !== "awaiting-approval").length,
+    mine: open.filter((r) => r.assignedTo === v.id).length,
+    unassigned: open.filter((r) => !r.assignedTo && r.status === "open").length,
+    awaiting: open.filter((r) => r.status === "awaiting-approval").length,
+  };
+}
+
+// The step each type's execution is, as the request page names it.
+export const EXEC_ACTION = { "new-account": "hand-over", "password-reset": "reset", "account-unlock": "unlock", "asset-request": "fulfil-asset", "asset-return": "fulfil-return",
+  "software-request": "fulfil-software", "it-issue": "resolve", offboarding: "complete" };
+
+// What this person may do with this request right now: the single list the request page draws its buttons from, so nothing is
+// decided in the page. -> { actions: [...], override: [...] } (override: the Admin's flagged way to carry a step out, which asks a reason).
+//   comment, assign, prepare, submit, approve, reject, resume, cancel, the type's execute step (EXEC_ACTION), and for offboarding
+//   tick, disable and waive.
+export function availableActions(viewerId, requestId) {
+  const v = active(viewerId);
+  const r = v ? findReq(readItBox(), requestId) : null;
+  const out = { actions: [], override: [] };
+  if (!r || !sees(v, r)) return out;
+  const add = (k) => out.actions.push(k);
+  add("comment");
+  const sens = sensitiveNow(r);
+  const mineAssigned = isIT(v) && r.assignedTo === v.id;
+  if ((isIT(v) || isApprover(v)) && ["open", "in-progress", "rejected", "approved"].includes(r.status)) add("assign");
+  if (r.type === "new-account" && mineAssigned && r.status === "in-progress" && can(v, "it:account-prepare")) add("prepare");
+  if (mineAssigned && sens && r.status === "in-progress" && (r.type !== "new-account" || r.prepared)) add("submit");
+  if (mineAssigned && r.status === "rejected") add("resume");
+  if (!approvalPath(r, v, permissionsOf, adminCount()).error) { add("approve"); if (!approvalRefusal(r, v, permissionsOf)) add("reject"); }
+  if ((r.requesterId === v.id || isIT(v)) && canMove(r.status, "cancelled")) add("cancel");
+  const exec = EXEC_ACTION[r.type];
+  const stepFor = (override) => {
+    const base = executionRefusal(r, v, permissionsOf, { override, sensitive: sens });
+    if (r.type === "new-account") return !override && !base && r.preparedBy === v.id;
+    if (r.type === "offboarding") return !base;
+    return !base;
+  };
+  if (r.type === "offboarding") {
+    const open = (r.checklist ?? []).filter((c) => !c.done && !c.waived);
+    const worked = { ...r, status: r.status === "approved" ? "in-progress" : r.status };
+    if (!executionRefusal(worked, v, permissionsOf, { override: null }) && can(v, "it:offboard") && open.some((c) => c.key !== "disable-signin")) add("tick");
+    if (stepFor(null) && open.some((c) => c.key === "disable-signin")) add("disable");
+    if (stepFor(null) && open.length === 0) add("complete");
+    if (isApprover(v) && OPEN_STATUSES.includes(r.status) && open.some((c) => c.key === "return-assets")) add("waive");
+    if (isApprover(v)) {
+      if (!executionRefusal(worked, v, permissionsOf, { override: "reason" }) && open.some((c) => c.key !== "disable-signin")) out.override.push("tick");
+      if (stepFor("reason") && open.some((c) => c.key === "disable-signin")) out.override.push("disable");
+      if (stepFor("reason") && open.length === 0) out.override.push("complete");
+    }
+  } else if (exec) {
+    if (stepFor(null) && isIT(v)) add(exec);
+    if (isApprover(v) && r.type !== "new-account" && stepFor("reason")) out.override.push(exec);
+  }
+  return out;
+}
+
+// HR (or a manager, or IT) asks IT to reset someone's password: a password-reset request (HR no longer resets directly; IT2 ruling B1).
+// One open reset per person.
+export function openPasswordReset(actorId, personId, now = Date.now()) {
+  const person = getUser(String(personId ?? ""));
+  if (!person) return fail("That employee doesn't exist.", "subjectPersonId");
+  const open = readItBox().requests.find((r) => r.type === "password-reset" && r.subjectPersonId === person.id && OPEN_STATUSES.includes(r.status));
+  if (open) return fail(`There is already an open password reset for ${person.name} (${open.id}).`, "subjectPersonId");
+  return createRequest(actorId, { type: "password-reset", subjectPersonId: person.id, title: `Reset password for ${person.name}`, priority: "normal" }, now);
+}
+
 export const slaHours = () => ({ ...SLA_DEFAULTS, ...(readItBox().sla ?? {}) });
 // The Admin (it:approve) sets the hours per priority (whole hours, 1 to 720). New requests take them; due dates already set stay.
 export function setSlaHours(actorId, changes = {}, now = Date.now()) {

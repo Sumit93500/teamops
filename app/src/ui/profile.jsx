@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { profileView, revealField, saveFields, requestChange, profileChangesFor, changeText, historyFor, completeness } from "../../../assets/js/data/employee-record.js";
 import { bankFromIfsc } from "../../../assets/js/config/ifsc-banks.js";   // F2
 import { accountOf, issueReset, unlockAccount, setSignInEnabled } from "../../../assets/js/data/credentials.js";
+import { openPasswordReset } from "../../../assets/js/data/it-desk.js";   // IT2
 import { newSignIn } from "../../../assets/js/data/it-desk.js";   // IT1
 import { eventsFor, AUDIT_LABEL } from "../../../assets/js/data/audit-trail.js";
 import { nameOf } from "../../../assets/js/ui/leave-view.js";
@@ -334,7 +335,7 @@ export function AccountCard({ user }) {
   const { userId: me } = useSession();
   const toast = useToast();
   const confirm = useConfirm();
-  const can = { create: useCan("users:create"), reset: useCan("accounts:reset"), unlock: useCan("accounts:unlock"), disable: useCan("accounts:disable") };
+  const can = { create: useCan("users:create"), edit: useCan("users:edit"), reset: useCan("accounts:reset"), unlock: useCan("accounts:unlock"), disable: useCan("accounts:disable") };
   const account = useData(() => accountOf(user.id), [user.id]);
   const events = useData(() => (can.unlock ? eventsFor(user.id).filter((e) => !["field-changed", "field-revealed"].includes(e.kind)).slice(0, 8) : null), [user.id, can.unlock]);
   const [share, setShare] = useState(null);
@@ -345,6 +346,8 @@ export function AccountCard({ user }) {
   const make = () => run(() => newSignIn(me, user.id), (r) => (r.requested ? toast("Sent to IT: they make the sign-in details once an Admin approves them.", "info") : setShare(r)));
   const resetLink = async () => { if (await confirm({ message: `Send ${user.name} a reset link?\nAny earlier link stops working. It works once, for 60 minutes.`, confirmLabel: "Send link" })) run(() => issueReset(me, user.id, "link"), (r) => setShare(r)); };
   const resetTemp = async () => { if (await confirm({ message: `Give ${user.name} a new temporary password?\nTheir current password stops working; they choose a new one at their next sign-in.`, confirmLabel: "New temporary password", danger: true })) run(() => issueReset(me, user.id, "temp"), (r) => setShare(r)); };
+  // IT2: HR no longer resets directly (accounts:reset is the Admin's): "reset password" asks IT, which an Admin approves for an Admin, HR or Finance account
+  const askIt = () => { const r = openPasswordReset(me, user.id); if (!r.ok) { toast(r.error, "danger"); return; } bump(); toast(`Sent to IT (${r.record.id}). Follow it in My IT requests.`, "success"); };
   const unlock = () => run(() => unlockAccount(me, user.id), () => toast(`${user.name}'s account is unlocked.`, "success"));
   const toggle = async () => {
     const off = account.status !== "disabled";
@@ -354,7 +357,8 @@ export function AccountCard({ user }) {
   // HR can't change an Admin's sign-in (data/credentials.js says the same), so an Admin's card offers HR nothing
   const { role: myRole } = useSession();
   const helpable = !own && (user.role !== "admin" || myRole?.key === "admin");
-  const any = helpable && (can.reset || can.unlock || can.disable || (can.create && account.status === "none"));
+  const canAsk = !own && !can.reset && can.edit && account.status !== "none" && account.status !== "disabled";
+  const any = canAsk || (helpable && (can.reset || can.unlock || can.disable || (can.create && account.status === "none")));
   return (
     <Card id="profile-account" title="Sign-in account" meta={<Pill tone={tone} id="account-status">{label}</Pill>}>
       <div className="ds-stack">
@@ -364,6 +368,7 @@ export function AccountCard({ user }) {
             {account.status === "none" && (can.create || can.reset) && <button type="button" className="ds-btn ds-btn--sm ds-btn--primary" onClick={make}>Make sign-in details</button>}
             {account.status !== "none" && account.status !== "disabled" && can.reset && <button type="button" className="ds-btn ds-btn--sm" onClick={resetLink}>Send reset link</button>}
             {account.status !== "none" && account.status !== "disabled" && can.reset && <button type="button" className="ds-btn ds-btn--sm" onClick={resetTemp}>New temporary password</button>}
+            {canAsk && <button type="button" className="ds-btn ds-btn--sm" id="ask-it-reset" onClick={askIt}>Ask IT to reset the password</button>}
             {account.status === "locked" && can.unlock && <button type="button" className="ds-btn ds-btn--sm" onClick={unlock}>Unlock</button>}
             {account.status !== "none" && can.disable && <button type="button" className={`ds-btn ds-btn--sm${account.status === "disabled" ? "" : " ds-btn--danger"}`} onClick={toggle}>{account.status === "disabled" ? "Enable sign-in" : "Disable sign-in"}</button>}
           </div>

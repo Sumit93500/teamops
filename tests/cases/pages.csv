@@ -605,7 +605,7 @@ itdesk.X2,itdesk,"people, departments, headcount by department, every account's 
 itdesk.X3,itdesk,the stored department list has no IT department (nobody is in it); the form's choices offer it,x3 (3 zones)
 itdesk.X4,itdesk,"no seeded person holds the IT role, and DEPARTMENTS (the seed) is unchanged",x3 (3 zones)
 itdesk.R1,itdesk,"eight it:* permissions; 122 in all, in 47 modules (114 / 46 before IT1)",x3 (3 zones)
-itdesk.R2,itdesk,"five roles: Admin 119, HR 64, Finance 56, Employee 31, IT 42; the IT role is labelled IT",x3 (3 zones)
+itdesk.R2,itdesk,"five roles: Admin 119, HR 63 (IT2: was 64), Finance 56, Employee 31, IT 42; the IT role is labelled IT",x3 (3 zones)
 itdesk.R3,itdesk,who holds each: handle / prepare / offboard / licences IT and Admin; create everyone; approve and activity-review the Admin only; costs Finance and Admin,x3 (3 zones)
 itdesk.R4,itdesk,"IT holds the custodian's five asset permissions (and the Admin still does, through every permission)",x3 (3 zones)
 itdesk.R5,itdesk,"IT holds no pay, bank, tax, leave-approval, attendance-edit, people, file, account or approval permission",x3 (3 zones)

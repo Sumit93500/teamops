@@ -50,8 +50,8 @@ const events = (id) => AU.eventsFor(id).map((e) => e.kind);
 section("P. Permissions");
 check("P1", "accounts:reset, accounts:unlock and accounts:disable (E1b) are in the list; 105 in all (SH1: was 94; FS1: was 102, the files module)", j(P.PERMISSIONS.accounts) === j(["reset", "unlock", "disable"]) && P.ALL_PERMISSIONS.length === 122 /* IT1 (behaviour; was 114: the it module) */ /* AS1 (behaviour; was 105: the assets, stock and depreciation ones) */, P.ALL_PERMISSIONS.length);
 const counts = Object.fromEntries(Object.entries(R.ROLES).map(([k, r]) => [k, r.permissions.length]));
-check("P2", "roles: Admin 102 (all three), HR 58 (reset only), Finance 48, Employee 30 (SH1: were 94, 50, 42, 24)", j(counts) === j({ admin: 119, hr: 64, fin: 56, emp: 31, it: 42 }) /* IT1 (behaviour; were 111, 63, 54, 30: the it module and the IT role) */ /* AS1 (behaviour; were 102, 61, 50) */   // FS1 (behaviour; HR was 58, Finance 48: the files permissions)
-  && R.ROLES.hr.permissions.includes("accounts:reset") && !R.ROLES.hr.permissions.includes("accounts:unlock") && !R.ROLES.fin.permissions.includes("accounts:reset"), j(counts));
+check("P2", "roles: Admin 102 (all three), HR 58 (reset only), Finance 48, Employee 30 (SH1: were 94, 50, 42, 24)", j(counts) === j({ admin: 119, hr: 63, fin: 56, emp: 31, it: 42 }) /* IT2 (behaviour; was 64: HR no longer holds accounts:reset) */ /* IT1 (behaviour; were 111, 63, 54, 30: the it module and the IT role) */ /* AS1 (behaviour; were 102, 61, 50) */   // FS1 (behaviour; HR was 58, Finance 48: the files permissions)
+  && !R.ROLES.hr.permissions.includes("accounts:reset") /* IT2 (behaviour; HR held it) */ && !R.ROLES.hr.permissions.includes("accounts:unlock") && !R.ROLES.fin.permissions.includes("accounts:reset"), j(counts));
 check("P3", "neither is overridable: a stored grant gives an employee nothing", !R.OVERRIDABLE.some((p) => p.startsWith("accounts:")) && !["accounts:reset", "accounts:unlock", "accounts:disable"].some((p) => R.hasPermission({ ...S.getUser(ARJUN), grantPermissions: [p] }, p)));
 check("P4", "only the Admin holds accounts:disable (E1b): HR, Finance, an employee and a manager don't", R.hasPermission(S.getUser(AARAV), "accounts:disable") && [PRIYA, KABIR, ARJUN, SNEHA].every((id) => !R.hasPermission(S.getUser(id), "accounts:disable")));
 
@@ -162,13 +162,16 @@ check("L8", "HR can't unlock (accounts:unlock is the Admin's); not locked any mo
 check("L9", "a failure after the lock ran out starts a new count of 1", (await C.signInWithPassword("kabir.shah@northwind.com", "again", T0 + min(256))).code === "invalid" && box().accounts[KABIR].failedCount === 1);
 
 section("A. Help from others");
-const hrLink = await C.issueReset(PRIYA, ARJUN, "link", T0 + min(300));
+const mailsBefore = M.allMail().length;
+const hrNoReset = await C.issueReset(PRIYA, ARJUN, "link", T0 + min(299));   // IT2 (behaviour): HR no longer resets directly; the next checks are the Admin's direct reset
+check("A0", "IT2: HR can't reset directly any more (accounts:reset is the Admin's): refused, nothing issued, no mail", hrNoReset.code === "not-allowed" && hrNoReset.error === "You can't do that." && !hrNoReset.link && M.allMail().length === mailsBefore && !R.hasPermission(S.getUser(PRIYA), "accounts:reset") && R.hasPermission(S.getUser(AARAV), "accounts:reset"));
+const hrLink = await C.issueReset(AARAV, ARJUN, "link", T0 + min(300));   // IT2 (behaviour; was PRIYA)
 secrets.push(tokenOf(hrLink.link));
 check("A1", "HR issues Arjun a reset link (60 minutes), shown once and in the outbox", hrLink.ok && /reset-password\.html\?token=/.test(hrLink.link) && hrLink.expiresAt === T0 + min(360) && M.allMail()[0].to === "arjun.kapoor@northwind.com" && events(ARJUN).includes("reset-issued"));
-const hrTemp = await C.issueReset(PRIYA, ARJUN, "temp", T0 + min(301));
+const hrTemp = await C.issueReset(AARAV, ARJUN, "temp", T0 + min(301));   // IT2 (behaviour; was PRIYA)
 secrets.push(hrTemp.tempPassword);
 check("A2", "...or a temporary password: Arjun must change it at the next sign-in; the earlier link is dead", hrTemp.ok && hrTemp.tempPassword.length === 14 && (await C.signInWithPassword("arjun.kapoor@northwind.com", hrTemp.tempPassword, T0 + min(302))).mustChange && (await C.checkToken(tokenOf(hrLink.link), T0 + min(302))).code === "used");
-check("A3", "HR can't reset an Admin's sign-in, nor their own here", (await C.issueReset(PRIYA, AARAV, "link", T0)).error === "Only an Admin can change an Admin's sign-in." && (await C.issueReset(PRIYA, PRIYA, "link", T0)).code === "not-allowed");
+check("A3", "HR can't reset an Admin's sign-in, nor their own here (IT2: HR is refused for everyone); an Admin can't reset their own here either", (await C.issueReset(PRIYA, AARAV, "link", T0)).error === "You can't do that." && (await C.issueReset(PRIYA, PRIYA, "link", T0)).code === "not-allowed" && (await C.issueReset(AARAV, AARAV, "link", T0)).code === "not-allowed");
 check("A4", "Finance and an employee can't issue resets", (await C.issueReset(KABIR, ARJUN, "link", T0)).code === "not-allowed" && (await C.issueReset(ARJUN, KABIR, "temp", T0)).code === "not-allowed");
 check("A5", "only an Admin disables (accounts:disable): HR, Finance, an employee and a manager are refused, the Admin's own is refused", [PRIYA, KABIR, ARJUN, SNEHA].every((id) => C.setSignInEnabled(id, MEGHNA, false, T0).code === "not-allowed") && C.setSignInEnabled(PRIYA, ARJUN, false, T0).code === "not-allowed" && C.setSignInEnabled(AARAV, AARAV, false, T0).code === "not-allowed");
 const dis = C.setSignInEnabled(AARAV, MEGHNA, false, T0 + min(310));

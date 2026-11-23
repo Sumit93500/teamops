@@ -10,6 +10,8 @@ import { isManager } from "../../../assets/js/data/reporting.js";
 import { getCurrentUserId } from "../../../assets/js/core/auth.js";
 import { isPlaceholder } from "./placeholders.js";
 import { ASSET_NAV_PERMISSION, isAssetPage, mayOpenAssetPage } from "./assetAccess.js";   // AS2
+import { IT_NAV, isItPage, mayOpenItPage } from "./itAccess.js";   // IT2
+import { COMPLETE_DETAILS } from "../routes.js";
 
 const PIN = "M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5";
 const OFFICES_ITEM = { label: "Offices", icon: "pin", iconPath: PIN, href: OFFICES, permission: "offices:view" };
@@ -18,8 +20,11 @@ const OFFICES_ITEM = { label: "Offices", icon: "pin", iconPath: PIN, href: OFFIC
 const MY_VISITS_ITEM = { label: "My visits", icon: "pin", iconPath: PIN, href: MY_VISITS, permission: "visits:request" };
 const TEAM_VISITS_ITEM = { label: "Team visits", icon: "pin", iconPath: PIN, href: TEAM_VISITS, permission: "visits:view-all", alsoForReports: true };
 // AS2: the Assets & inventory pages are real again; each shows for the AS1 / IT1 permission its page needs (shell/assetAccess.js), not the old Admin-only ones
-const withAssetPermissions = (g) => (g.group === "Assets & inventory" ? { ...g, items: g.items.map((i) => (ASSET_NAV_PERMISSION[i.href] ? { ...i, permission: ASSET_NAV_PERMISSION[i.href] } : i)) } : g);
-export const APP_NAV = NAV.map((g) => (g.group === "Attendance" ? { ...g, items: [...g.items, MY_VISITS_ITEM, TEAM_VISITS_ITEM, OFFICES_ITEM] } : g)).map(withAssetPermissions)
+// IT2: Complete details joins that group for assets:manage; the IT desk is a group of its own, right after it
+const COMPLETE_ITEM = { label: "Complete details", icon: "tag", href: COMPLETE_DETAILS, permission: "assets:manage" };
+const withAssetPermissions = (g) => (g.group === "Assets & inventory" ? { ...g, items: [...g.items.map((i) => (ASSET_NAV_PERMISSION[i.href] ? { ...i, permission: ASSET_NAV_PERMISSION[i.href] } : i)), COMPLETE_ITEM] } : g);
+const withDesk = (list) => list.flatMap((g) => (g.group === "Assets & inventory" ? [g, IT_NAV] : [g]));
+export const APP_NAV = withDesk(NAV.map((g) => (g.group === "Attendance" ? { ...g, items: [...g.items, MY_VISITS_ITEM, TEAM_VISITS_ITEM, OFFICES_ITEM] } : g)).map(withAssetPermissions))
   .map((g) => ({ ...g, items: g.items.filter((i) => !isPlaceholder(i.href)) })).filter((g) => g.items.length > 0);
 export const APP_OTHER_PAGES = [...OTHER_PAGES, { label: "My locations", group: "Attendance", href: MY_LOCATIONS }, { label: "Appearance", group: "My account", href: APPEARANCE },
   { label: "Rates and rules", group: "Payroll", href: RATES_RULES }, { label: "Leave policy", group: "Leave", href: LEAVE_POLICY_PAGE },
@@ -30,4 +35,4 @@ export const mayOpenRates = () => can("tax:view") || can("payroll-rules:verify")
 export const mayOpenLeavePolicy = () => can("leave:approve") || can("leave-policy:edit");
 export const mayOpenOutbox = () => can("accounts:unlock");
 export const mayOpenTeamVisits = () => can("visits:view-all") || isManager(getCurrentUserId());
-export const openable = (href) => (isAssetPage(href) ? mayOpenAssetPage(href) : href === RATES_RULES ? mayOpenRates() : href === LEAVE_POLICY_PAGE ? mayOpenLeavePolicy() : href === MAIL_OUTBOX ? mayOpenOutbox() : href === TEAM_VISITS ? mayOpenTeamVisits() : APP_OWN.includes(href) || canOpenPage(href));
+export const openable = (href) => (isAssetPage(href) ? mayOpenAssetPage(href) : isItPage(href) ? mayOpenItPage(href) : href === RATES_RULES ? mayOpenRates() : href === LEAVE_POLICY_PAGE ? mayOpenLeavePolicy() : href === MAIL_OUTBOX ? mayOpenOutbox() : href === TEAM_VISITS ? mayOpenTeamVisits() : APP_OWN.includes(href) || canOpenPage(href));

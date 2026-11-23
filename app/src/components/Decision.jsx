@@ -22,6 +22,8 @@ import { decideOvertimeItem } from "../../../assets/js/data/overtime-store.js";
 import { resolveUnlockRequest } from "../../../assets/js/data/lockouts.js";
 import { decideVisit, okVisitLocation, rejectVisitLocation } from "../../../assets/js/data/visits.js";   // CV1
 import { correctionContext } from "../../../assets/js/data/night-fix.js";
+import { approveRequest, rejectRequest, needsBreakGlass } from "../../../assets/js/data/it-desk.js";   // IT2
+import { TYPES as IT_TYPES, BREAK_GLASS_MIN } from "../../../assets/js/data/it-rules.js";
 import { getCurrentUserId, getCurrentRole } from "../../../assets/js/core/auth.js";
 import { bump } from "../data/bus.js";
 import { useToast } from "../ui/Toast.jsx";
@@ -183,6 +185,29 @@ export const VISIT_LOCATION_FLOW = {
   },
 };
 
+// IT2: an IT request waiting for an Admin (the inbox, the card and the bell). Approve asks for an optional note; when the request is about or from
+// the only Admin it asks for their written reason (break-glass, at least 20 characters), which the desk checks and flags. Reject needs a reason.
+const toNote = (r) => (r.ok || !r.field ? r : { ...r, field: "note" });
+export const IT_FLOW = {
+  decide: (id, actorUserId, _role, action, note) => {
+    if (action === "approve") {
+      const glass = needsBreakGlass(actorUserId, id);
+      return toNote(approveRequest(actorUserId, id, glass ? "" : note, Date.now(), { breakGlass: glass ? note : null }));
+    }
+    return toNote(rejectRequest(actorUserId, id, note));
+  },
+  describe: (r) => `${nameOf(r.userId)}: ${IT_TYPES[r.type]?.label ?? r.type}, ${r.title}${needsBreakGlass(getCurrentUserId(), r.id) ? `. You are the only Admin: a written reason of at least ${BREAK_GLASS_MIN} characters is needed (break-glass).` : ""}`,
+  noteId: "reject-it-note",
+  approveNote: { title: "Approve the IT request", submit: "Approve", optional: true, placeholder: "Optional note. If it is about you or from you and you are the only Admin, give your reason (at least 20 characters)." },
+  labels: {
+    title: "Reject the IT request",
+    submit: "Reject request",
+    placeholder: "IT and the person who raised it see this",
+    approved: (res) => (res.breakGlass ? "Approved as the only Admin. It is flagged for review." : "Request approved. IT carries it out next."),
+    rejected: "Request rejected. It goes back to IT.",
+  },
+};
+
 const decider = () => ({ id: getCurrentUserId(), role: getCurrentRole()?.key });
 
 export function useDecision(flow) {
@@ -226,8 +251,8 @@ export function useDecision(flow) {
       <form noValidate onSubmit={submit} id={`${flow.noteId}-form`}>
         <div className="form">
           <div className="form-field">
-            <label className={`form-label${flow.noteOptional ? "" : " form-label--required"}`} htmlFor={flow.noteId}>{flow.noteOptional ? "Note (optional)" : "Reason"}</label>
-            <textarea className="textarea" id={flow.noteId} required={!flow.noteOptional} placeholder={(rejecting?.mode === "approve" ? flow.approveNote.placeholder : flow.labels.placeholder) ?? "The employee sees this note"} value={note}
+            <label className={`form-label${(rejecting?.mode === "approve" ? flow.approveNote.optional : flow.noteOptional) ? "" : " form-label--required"}`} htmlFor={flow.noteId}>{(rejecting?.mode === "approve" ? flow.approveNote.optional : flow.noteOptional) ? "Note (optional)" : "Reason"}</label>
+            <textarea className="textarea" id={flow.noteId} required={!(rejecting?.mode === "approve" ? flow.approveNote.optional : flow.noteOptional)} placeholder={(rejecting?.mode === "approve" ? flow.approveNote.placeholder : flow.labels.placeholder) ?? "The employee sees this note"} value={note}
               aria-describedby={error ? `${flow.noteId}-error` : undefined} onChange={(e) => { setNote(e.target.value); setError(null); }} />
             {error && <span className="form-error" id={`${flow.noteId}-error`}>{error}</span>}
           </div>

@@ -39,5 +39,18 @@ export const MY_VISITS = "visits/my-visits.html";
 export const TEAM_VISITS = "visits/team-visits.html";
 export const VISIT_PAGE = "visits/visit.html";
 
+// The IT desk (IT2): the app's own pages. The dashboard, the requests list and the licences: IT and the Admin (it:requests-handle or it:approve;
+// licences it:licences-manage or it:licences-view-costs); one request: whoever may see it; raising a request and My IT requests: everyone;
+// Offboarding: it:offboard or the Admin; the review trail: it:activity-review (the Admin). Complete details: assets:manage.
+export const IT_DASHBOARD = "it/dashboard.html";
+export const IT_REQUESTS = "it/requests.html";
+export const IT_REQUEST = "it/request.html";
+export const IT_NEW = "it/new.html";
+export const IT_MINE = "it/mine.html";
+export const IT_LICENCES = "it/licences.html";
+export const IT_OFFBOARDING = "it/offboarding.html";
+export const IT_REVIEW = "it/review.html";
+export const COMPLETE_DETAILS = "inventory/complete-details.html";
+
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

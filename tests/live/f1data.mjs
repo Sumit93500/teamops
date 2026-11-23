@@ -47,7 +47,7 @@ check("P3", "the Admin holds it", R.hasPermission(S.getUser(AARAV), ANY));
 check("P4", "HR, Finance, an employee and a manager don't", [PRIYA, KABIR, ARJUN, SNEHA].every((id) => !R.hasPermission(S.getUser(id), ANY)));
 check("P5", "not overridable: a stored grant gives it to nobody", !R.OVERRIDABLE.includes(ANY) && !R.hasPermission({ ...S.getUser(PRIYA), grantPermissions: [ANY] }, ANY));
 const counts = Object.fromEntries(Object.entries(R.ROLES).map(([k, r]) => [k, r.permissions.length]));
-check("P6", "role counts: Admin 102, HR 58, Finance 48, Employee 30 (E1, E1b: accounts; SH1: shifts, overtime)", j(counts) === j({ admin: 119, hr: 64, fin: 56, emp: 31, it: 42 }), j(counts));   // IT1 (behaviour; were 111, 63, 54, 30)   // AS1 (behaviour; were 102, 61, 50)   // FS1 (behaviour; HR was 58, Finance 48)
+check("P6", "role counts: Admin 102, HR 58, Finance 48, Employee 30 (E1, E1b: accounts; SH1: shifts, overtime)", j(counts) === j({ admin: 119, hr: 63, fin: 56, emp: 31, it: 42 }), j(counts));   // IT2 (behaviour; HR was 64: accounts:reset is the Admin's)   // IT1 (behaviour; were 111, 63, 54, 30)   // AS1 (behaviour; were 102, 61, 50)   // FS1 (behaviour; HR was 58, Finance 48)
 check("P7", "a denied grant can't take it from the Admin either (no overrides for an Admin)", R.hasPermission({ ...S.getUser(AARAV), denyPermissions: [ANY] }, ANY));
 
 section("L. placesFor");

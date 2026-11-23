@@ -51,7 +51,7 @@ import { depreciation, disposalFigures, toPaise, rupees } from "./depreciation.j
 import { buildImport, oldSource } from "./inventory-import.js";   // AS2: the seed is the old inventory, imported
 import {
   ASSET_CATEGORIES, ASSET_STATES, METHODS, CONDITIONS, TAG_PATTERN, tagOf, tagNumber, moveRefusal,
-  text, money, percent, lifeYears, date as dateCheck, EMAIL, phoneOk, GSTIN,
+  text, money, percent, lifeYears, date as dateCheck, EMAIL, phoneOk, GSTIN, isStockOnlyCategory, STOCK_ONLY_MESSAGE,
 } from "./asset-rules.js";
 
 const KEY = "asset-register";
@@ -350,6 +350,7 @@ function assetFields(box, fields, today, current = null) {
     out.name = r.value;
   }
   if (has("category")) {
+    if (isStockOnlyCategory(fields.category)) return fail(STOCK_ONLY_MESSAGE, "category");   // IT2: access cards are stock items
     if (!Object.hasOwn(ASSET_CATEGORIES, String(fields.category ?? ""))) return fail("Choose a category.", "category");
     out.category = fields.category;
   }
@@ -508,6 +509,40 @@ export function editAsset(actorId, assetId, changes = {}, now = Date.now()) {
   if (!save(box)) return fail(SAVE_FAILED);
   logEvent({ actorId: actor.id, kind: "asset-changed", detail: `${oldTag}${f.tag && f.tag !== oldTag ? ` -> ${f.tag}` : ""}: ${changed.join(", ")}` }, now);
   return { ok: true, record: fullView(box, a, can(actor, "assets:view-values")) };
+}
+
+// IT2 (ruling B4): the assets that still lack details the old register never had. Each of the four fields is its own flag: completing one removes
+// it (the "Details missing" label itself goes once the purchase date and price are both there). Only imported assets, for assets:manage.
+export const DETAIL_FIELDS = ["purchaseDate", "purchasePrice", "vendorId", "serial"];
+const blankField = (a, k) => a[k] == null || String(a[k]).trim() === "";
+export function detailsToComplete(viewerId) {
+  const v = holding(viewerId, "assets:manage");
+  if (!v) return [];
+  const box = store.read();
+  const mayPrice = can(v, "assets:view-values");
+  return box.assets.filter((a) => a.imported && stateOf(box, a.id).status !== "disposed")
+    .map((a) => ({ id: a.id, tag: a.tag, name: a.name, category: a.category, status: stateOf(box, a.id).status, missing: DETAIL_FIELDS.filter((k) => blankField(a, k)), mayPrice }))
+    .filter((x) => x.missing.length).sort((x, y) => x.tag.localeCompare(y.tag));
+}
+// Fills in the missing ones among the four fields, checked as AS1's Edit checks them (the price also needs assets:view-values). A field
+// that is already filled is refused: change it with Edit.
+export function completeDetails(actorId, assetId, fields = {}, now = Date.now()) {
+  const actor = holding(actorId, "assets:manage");
+  if (!actor) return fail("You can't complete asset details.");
+  const keys = Object.keys(fields ?? {});
+  const extra = keys.filter((k) => !DETAIL_FIELDS.includes(k));
+  if (extra.length) return fail(`These can't be set here: ${extra.join(", ")}.`);
+  const box = store.read();
+  const a = findAsset(box, assetId);
+  if (!a) return fail(`No asset ${assetId}.`);
+  const given = keys.filter((k) => String(fields[k] ?? "").trim() !== "");
+  if (!given.length) return fail("Fill in at least one of the missing details.");
+  const filled = given.filter((k) => !blankField(a, k));
+  if (filled.length) return fail(`${filled.join(", ")} ${filled.length > 1 ? "are" : "is"} already filled in: use Edit to change ${filled.length > 1 ? "them" : "it"}.`, filled[0]);
+  const res = editAsset(actorId, a.id, Object.fromEntries(given.map((k) => [k, fields[k]])), now);
+  if (!res.ok) return res;
+  const after = store.read().assets.find((x) => x.id === a.id);
+  return { ...res, missing: DETAIL_FIELDS.filter((k) => blankField(after, k)) };
 }
 
 // An asset's own method, life, rate and salvage value (depreciation:configure). Not for a disposed asset.

@@ -46,6 +46,11 @@ export const ASSET_CATEGORIES = {
   other:     { label: "Other equipment", defaults: { method: "slm", usefulLifeYears: 5,  wdvRatePercent: 45.07, salvagePercent: 5 } },
 };
 export const ASSET_CATEGORY_KEYS = Object.keys(ASSET_CATEGORIES);
+// IT2 (ruling B4): an access card is a counted stock item, not a fixed asset: it can't be added to the register or asked for as an asset.
+// The imported records are as they were (the old register's access cards stay "Other equipment").
+export const STOCK_ONLY_CATEGORIES = ["access-card"];
+export const STOCK_ONLY_MESSAGE = "Access cards are stock items, not fixed assets: record them in Stock movements.";
+export const isStockOnlyCategory = (c) => STOCK_ONLY_CATEGORIES.includes(String(c ?? "").trim().toLowerCase().replace(/[\s_]+/g, "-"));
 
 // The lifecycle. "In store" covers a new asset (purchased) and one handed back (returned); the register's history says which.
 export const ASSET_STATES = {

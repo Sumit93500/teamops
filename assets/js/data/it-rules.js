@@ -75,14 +75,27 @@ export const noteCheck = (v, label = "Note") => text(v, label, { min: NOTE_MIN, 
 // ---------- the separation of duties ----------
 const holds = (user, permission, perms) => Boolean(user) && user.status !== "inactive" && perms(user).includes(permission);
 
-// May this person approve or reject this request? perms(user) -> their permissions (config/roles.js permissionsOf).
-export function approvalRefusal(request, user, perms) {
-  if (!holds(user, "it:approve", perms)) return "Only an Admin can approve IT requests.";
-  if (user.role === "it") return "IT can't approve IT requests.";
-  if (request.requesterId === user.id) return "You can't approve a request you raised.";
-  if (request.subjectPersonId === user.id) return "You can't approve a request about yourself.";
-  if ((request.workedBy ?? []).includes(user.id)) return "You can't approve a request you worked on.";
-  if (request.status !== "awaiting-approval") return `This request is ${STATUSES[request.status]?.label.toLowerCase() ?? request.status}, not awaiting approval.`;
+// IT2 (ruling B2, 2026-11-23): a request raised by an Admin or about an Admin needs a DIFFERENT Admin. When only one Admin exists
+// (adminCount 1) that Admin may approve it with a written reason of at least BREAK_GLASS_MIN characters: "break-glass", flagged on the
+// review trail until someone else reviews it. A second Admin, anyone who isn't an Admin and IT never get it.
+export const BREAK_GLASS_MIN = 20;
+// -> { error } (refused), { breakGlass: true, why } (allowed only with the written reason) or {} (allowed).
+export function approvalPath(request, user, perms, adminCount = 2) {
+  if (!holds(user, "it:approve", perms)) return { error: "Only an Admin can approve IT requests." };
+  if (user.role === "it") return { error: "IT can't approve IT requests." };
+  const own = request.requesterId === user.id ? "You can't approve a request you raised." : request.subjectPersonId === user.id ? "You can't approve a request about yourself." : null;
+  if (own && adminCount !== 1) return { error: own };
+  if ((request.workedBy ?? []).includes(user.id)) return { error: "You can't approve a request you worked on." };
+  if (request.status !== "awaiting-approval") return { error: `This request is ${STATUSES[request.status]?.label.toLowerCase() ?? request.status}, not awaiting approval.` };
+  return own ? { breakGlass: true, why: own } : {};
+}
+
+// May this person approve or reject this request? perms(user) -> their permissions (config/roles.js permissionsOf). adminCount: the
+// active Admins (default 2: no break-glass); breakGlass: the written reason, for the one-Admin case.
+export function approvalRefusal(request, user, perms, adminCount = 2, breakGlass = "") {
+  const p = approvalPath(request, user, perms, adminCount);
+  if (p.error) return p.error;
+  if (p.breakGlass && String(breakGlass ?? "").trim().length < BREAK_GLASS_MIN) return `${p.why} You are the only Admin, so approving it takes a written reason of at least ${BREAK_GLASS_MIN} characters (break-glass).`;
   return null;
 }
 

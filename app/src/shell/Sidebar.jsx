@@ -13,7 +13,6 @@ import { ICONS, SECTION_ICONS } from "../../../assets/js/ui/icons.js";
 import { activeHeadcount } from "../../../assets/js/data/store.js";
 import { managesAnyone, pendingFor } from "../../../assets/js/data/expenses-store.js";
 import { isManager as hasReports } from "../../../assets/js/data/reporting.js";
-import { pendingFor as pendingAssetRequests } from "../../../assets/js/data/asset-requests-store.js";
 import { waitingCount } from "../data/waiting.js";
 import { useData, useSession, signOutNow } from "../data/hooks.js";
 import { pageUrl, ABOUT } from "../routes.js";
@@ -31,10 +30,10 @@ export const SIGN_OUT_ICON = "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-
 // ui/sidebar.js navItemHref / navItemVisible, for the signed-in person.
 export const navItemHref = (item, role) => (item.href === "@landing" ? role?.landing ?? "auth/login.html" : item.href);
 function isManagerNow(userId, roleKey) {
-  return managesAnyone(userId) || pendingFor(userId, roleKey).length > 0 || pendingAssetRequests(userId, roleKey).length > 0;
+  return managesAnyone(userId) || pendingFor(userId, roleKey).length > 0;   // IT2: the old asset-request chain is retired: it no longer makes anyone a manager here
 }
 export function navItemVisible(item, userId, roleKey) {
-  return can(item.permission) || (item.alsoForManagers && isManagerNow(userId, roleKey)) || (item.alsoForReports && hasReports(userId));
+  return (item.permission ? can(item.permission) : false) || (item.anyOf ?? []).some((p) => can(p)) || (item.alsoForManagers && isManagerNow(userId, roleKey)) || (item.alsoForReports && hasReports(userId));
 }
 
 const Icon = ({ d, solid }) => (
@@ -167,7 +166,7 @@ export default function Sidebar({ page, drawerOpen, closeDrawer }) {
               {!single && (
                 <button type="button" className="nav__trigger" data-label={group.group} aria-label={group.group}
                   aria-expanded={String(open === index)} aria-controls={`nav-panel-${index}`} onClick={(e) => onTrigger(e, index)}>
-                  <Icon d={SECTION_ICONS[group.icon]} solid /><span className="nav__trigger-label">{group.group}</span>
+                  <Icon d={group.iconPath ?? SECTION_ICONS[group.icon]} solid /><span className="nav__trigger-label">{group.group}</span>
                 </button>
               )}
               <div className="nav__panel" id={single ? undefined : `nav-panel-${index}`}>
@@ -178,7 +177,7 @@ export default function Sidebar({ page, drawerOpen, closeDrawer }) {
                     <Link key={item.label} className={`nav__item${active ? " is-active" : ""}`} to={pageUrl(href)}
                       aria-current={active ? "page" : undefined} data-label={single ? item.label : undefined}
                       data-count-waiting={item.countWaiting ? "" : undefined}>
-                      <Icon d={single ? SECTION_ICONS[group.icon] : item.iconPath ?? ICONS[item.icon] ?? ICONS.default} solid={single} />{item.label}
+                      <Icon d={single ? group.iconPath ?? SECTION_ICONS[group.icon] : item.iconPath ?? ICONS[item.icon] ?? ICONS.default} solid={single} />{item.label}
                       {item.countWaiting && waiting > 0 && <span className="nav__count">{String(waiting)}</span>}
                     </Link>
                   );

@@ -207,6 +207,7 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "assetimport.mjs") { Run "assetimport-$t" @("assetimport.mjs") }
   # IT1: the IT desk (data/it-rules.js, data/it-store.js, data/it-desk.js, data/licences.js; the credentials' request steps)
   if (Test-Path "itdesk.mjs") { Run "itdesk-$t" @("itdesk.mjs") }
+  if (Test-Path "itdesk2.mjs") { Run "itdesk2-$t" @("itdesk2.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

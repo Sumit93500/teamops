@@ -11,6 +11,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { THEMES, ACCENTS, ROLE_COLOUR, usePrefs, setPref } from "../data/prefs.js";
 import { canOpenPage } from "../../../assets/js/core/guard.js";
 import { waitingCount } from "../data/waiting.js";
+import { itNoticesFor } from "../../../assets/js/data/it-desk.js";   // IT2
 import { useData, useSession, signOutNow } from "../data/hooks.js";
 import { pageUrl, ABOUT, APPEARANCE } from "../routes.js";
 import { COMPANY } from "../data/company.js";
@@ -62,6 +63,7 @@ function Bell() {
   const showToast = useToast();
   const inbox = useData(() => canOpenPage(INBOX), [userId, role?.key]);
   const n = useData(() => waitingCount(userId, role?.key), [userId, role?.key]);
+  const u = useData(() => itNoticesFor(userId, { unreadOnly: true }).length, [userId]);   // IT2: updates on their own IT requests, counted apart from what waits for a decision
   const open = useBellOpen();
   if (!inbox) return null;   // F2: no bell for someone with no approvals inbox (it only said it wasn't available)
   // The list of what waits, and each item's card (ui/ApprovalCard.jsx, round 13b: drawn on <body> by the shell's CardHost).
@@ -69,7 +71,7 @@ function Bell() {
   const onClick = (e) => toggleBellPanel(e.currentTarget);
   return (
     <button className="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-haspopup="dialog" aria-expanded={String(open)} aria-controls={open ? "bell-panel" : undefined}
-      aria-label={`Waiting for you: ${n}`} title={`Waiting for you: ${n}`} data-waiting={n > 0 ? "" : undefined}
+      aria-label={`Waiting for you: ${n}${u ? `, ${u} new ${u === 1 ? "update" : "updates"} on your IT requests` : ""}`} title={`Waiting for you: ${n}${u ? `, ${u} new ${u === 1 ? "update" : "updates"} on your IT requests` : ""}`} data-waiting={n > 0 || u > 0 ? "" : undefined}
       onClick={onClick}><Icon d={BELL} /></button>
   );
 }

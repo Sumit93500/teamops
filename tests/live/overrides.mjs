@@ -324,7 +324,7 @@ const e2b = { count: txt(d.getElementById("effective-count")), chips: chips(), g
 submit();
 const e2c = ov(PRIYA);
 check("E2", "an Admin editing Priya (HR): 15 to grant, HR's 10 to deny; ticking inventory:view and denying audit:view redraws Effective permissions at once (54, SH1: was 50; E1: was 49; P5: was 48; L0: was 45: + inventory:view, marked 'Granted to this person'; - audit:view); saving stores both lists",
-  e2.grants.length === 15 && j(e2.denies) === j(offer.hr[1]) && e2b.count === "64" /* IT1 (behaviour; was 63) */ /* AS1 (behaviour; was 61) */ /* FS1 (behaviour; was 58) */ && j(e2b.chips) === j(permissionsOf({ role: "hr", grantPermissions: ["inventory:view"], denyPermissions: ["audit:view"] }))
+  e2.grants.length === 15 && j(e2.denies) === j(offer.hr[1]) && e2b.count === "63" /* IT2 (behaviour; was 64: HR no longer holds accounts:reset) */ /* IT1 (behaviour; was 63) */ /* AS1 (behaviour; was 61) */ /* FS1 (behaviour; was 58) */ && j(e2b.chips) === j(permissionsOf({ role: "hr", grantPermissions: ["inventory:view"], denyPermissions: ["audit:view"] }))
   && j(e2b.granted) === j([["inventory:view", "Granted to this person"]]) && j(e2c) === j([["inventory:view"], ["audit:view"]]), j({ e2b: { ...e2b, chips: e2b.chips.length }, e2c }));
 fresh(); setSession(...SESS.admin); S.updateUser(AARAV, ARJUN, { grantPermissions: ["reports:view"] });
 await open("users/user-form", { query: `?id=${ARJUN}` });

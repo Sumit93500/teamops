@@ -48,6 +48,8 @@ async function open(base, who, page, { width = 1280, theme = "light" } = {}) {
   await ctx.addInitScript(([w, th]) => {
     if (sessionStorage.getItem("a-set")) return;
     sessionStorage.setItem("a-set", "1"); localStorage.clear();
+    localStorage.setItem("officeos:asset-requests", JSON.stringify({ version: 1, nextNum: 3, records: [{ id: "ARQ-1", userId: "EMP-1105", assetType: "laptop", reason: "My laptop is over 3 years old and too slow for builds", replacesTag: "AST-0188", status: "cancelled", stage: "done", managerId: "EMP-1029", appliedOn: "2026-09-17", assetTag: null, history: [{ stage: "manager", byUserId: "EMP-1105", decision: "applied", at: "2026-09-17T04:45:00.000Z", note: "" }, { stage: "done", byUserId: "EMP-1105", decision: "cancelled", at: "2026-09-18T04:45:00.000Z", note: "" }] }, { id: "ARQ-2", userId: "EMP-1017", assetType: "monitor", reason: "A second monitor for the weekly sales reports", replacesTag: null, status: "cancelled", stage: "done", managerId: null, appliedOn: "2026-09-24", assetTag: null, history: [{ stage: "manager", byUserId: "EMP-1017", decision: "applied", at: "2026-09-24T07:10:00.000Z", note: "" }, { stage: "done", byUserId: "EMP-1017", decision: "cancelled", at: "2026-09-25T07:10:00.000Z", note: "" }] }] }));   // IT2 (behaviour): the old asset-request chain is closed in the app (nothing of it waits), so both sides start with its two seed requests cancelled
+
     localStorage.setItem("officeos:theme", JSON.stringify(th));
     localStorage.setItem("officeos:session", JSON.stringify({ userLabel: w[0], employeeId: w[1], signedInAt: 1790000000000 }));
   }, [WHO[who], theme]);
@@ -69,7 +71,7 @@ const read = (t) => t.evaluate(() => {
     // without one" (the eighth kind, checked in sh1.mjs O); read without them too.
     // FS1 (the brief, item 4): Claim expense's Receipt is a file picker now (checked in fs1.mjs U, R, K); read without that field on both sides
     text: tx(m.innerText).replace(tx(document.getElementById("expense-receipt")?.closest(".form-field")?.innerText ?? "\u0000"), "").replace(" Asset Salary Location Profile Overtime ", " Asset Salary ").replace(" Overtime Manager; HR or an Admin for people without one", "").replace(" Asset Salary Location Profile ", " Asset Salary ").replace(" Asset Salary Location ", " Asset Salary ").replace(" Home location changes An Admin", "").replace(" Visits Manager; HR or an Admin for people without one", "").replace(/ Sign-in Visit /, " Sign-in ").replace(/(Rejected \d+) Location changes/, "$1"),
-    controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).filter((c) => !c.closest(".form-field")?.querySelector("#expense-receipt")).filter((c) => !(c.tagName === "BUTTON" && c.getAttribute("role") === "tab" && tx(c.textContent) === "Location changes")).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.tagName === "SELECT" ? c.textContent.replace(/SalaryLocation(Profile)?(Overtime)?(Sign-in)?(Visit)?$/, "Salary") : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
+    controls: [...m.querySelectorAll("button, a.btn, input, select, textarea")].filter(vis).filter((c) => !c.closest(".form-field")?.querySelector("#expense-receipt")).filter((c) => !(c.tagName === "BUTTON" && c.getAttribute("role") === "tab" && tx(c.textContent) === "Location changes")).map((c) => [c.tagName, tx(c.tagName === "TEXTAREA" ? "" : c.tagName === "SELECT" ? c.textContent.replace(/SalaryLocation(Profile)?(Overtime)?(Sign-in)?(Visit)?(IT)?$/, "Salary") : c.textContent) || tx(c.getAttribute("aria-label") || c.name || c.id || ""), c.disabled ?? null, c.type === "radio" || c.type === "checkbox" ? c.checked : c.value ?? null]),
     tables: [...m.querySelectorAll("table")].map((tb) => [...tb.querySelectorAll("tbody tr")].filter(vis).map((r) => [...r.cells].map((c) => tx(c.innerText)))),
     hiddenIds: [...m.querySelectorAll("[id]")].filter((e) => e.hidden).map((e) => (/^reason-\d+$|^_r_\w*_$/.test(e.id) ? "reason" : e.id)).sort(),
     cal: [...m.querySelectorAll(".calendar__day")].map((c) => c.className.replace("calendar__day ", "")).join("|"),
@@ -100,12 +102,14 @@ const f2Req = (x, old) => {
   const o = { ...x };
   if (typeof o.text === "string") {
     if (/^Approvals Everything waiting/.test(o.text)) delete o.text;
-    else o.text = (old ? o.text : o.text.replace(" Asset IT Attendance ", " Asset Attendance ")).replace(/Showing (\d+) of \1 /g, "$1 ").replace(/\b1 requests\b/g, "1 request");
+    else o.text = (old ? o.text : o.text.replace(" Asset IT Attendance ", " Asset Attendance ").replace(" Request an asset My IT requests ", " Request an asset ")).replace(/Showing (\d+) of \1 /g, "$1 ").replace(/\b1 requests\b/g, "1 request");
   }
   // the inbox's tab counts include the old samples: read as "Pending #" on both sides (the rows themselves still compare)
   if (Array.isArray(o.controls)) o.controls = o.controls.map((c) => (c[0] === "BUTTON" && /^(Pending|Approved|Rejected) \d+$/.test(c[1]) ? [c[0], c[1].replace(/\d+$/, "#"), ...c.slice(2)] : c));
   // AS2: "Request an asset" is a link to the old page and a button here (it opens the dialog): the same control, the same words
   if (Array.isArray(o.controls)) o.controls = o.controls.map((c) => (c[1] === "Request an asset" ? ["A", c[1], null, null] : c));
+  // IT2: My requests links to My IT requests (the app's own page): that link is read past on the app side
+  if (!old && Array.isArray(o.controls)) o.controls = o.controls.filter((c) => c[1] !== "My IT requests");
   // AS2: the type filter has the IT type (IT requests are listed here); its option is read past on the app side
   if (!old && Array.isArray(o.controls)) o.controls = o.controls.map((c) => (c[0] === "SELECT" ? [c[0], String(c[1]).replace("AssetITAttendance", "AssetAttendance"), ...c.slice(2)] : c));
   if (old && Array.isArray(o.controls)) o.controls = o.controls.filter((c) => !/Approval rules/.test(j(c)));
@@ -173,7 +177,7 @@ if (ONLY.includes("I")) {
     const steps = async (t) => {
       const out = [];
       for (const i of [1, 2, 0]) { await t.click(`.table__toolbar .tabs__tab >> nth=${i}`); await settle(t, 150); out.push(await read(t)); }
-      const types = await t.evaluate(() => [...document.querySelectorAll('select[aria-label="Filter by type"] option')].map((o) => o.value).filter((v) => v !== "location" && v !== "profile" && v !== "overtime" && v !== "sign-in" && v !== "visit"));   // CV1: Visit (cv1.mjs E)   // SH1: Overtime (sh1.mjs); L2: Location is new (locs.mjs); E1: Profile (e1.mjs)
+      const types = await t.evaluate(() => [...document.querySelectorAll('select[aria-label="Filter by type"] option')].map((o) => o.value).filter((v) => v !== "it" && v !== "location" && v !== "profile" && v !== "overtime" && v !== "sign-in" && v !== "visit"));   // CV1: Visit (cv1.mjs E)   // SH1: Overtime (sh1.mjs); L2: Location is new (locs.mjs); E1: Profile (e1.mjs)
       for (const v of [...types.slice(1), ""]) { await t.selectOption('select[aria-label="Filter by type"]', v); await settle(t, 100); out.push((await read(t)).tables); }
       return out;
     };

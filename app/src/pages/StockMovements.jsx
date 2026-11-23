@@ -148,7 +148,7 @@ export default function StockMovements() {
   const outCount = d.items.filter((i) => stockStatus(i).key === "out").length;
 
   const itemCols = [
-    { key: "name", label: "Item", sort: (i) => i.name, csv: (i) => i.name, render: (i) => <span className="as-cell"><strong>{i.name}</strong>{i.sku && <span className="text-muted text-sm">{i.sku}{i.tagged ? ", tagged units are in the asset register" : ""}</span>}{!i.active && <Pill>No longer in use</Pill>}</span> },
+    { key: "name", label: "Item", className: "as-asset", sort: (i) => i.name, csv: (i) => i.name, render: (i) => <span className="as-cell"><strong>{i.name}</strong>{i.sku && <span className="text-muted text-sm">{i.sku}{i.tagged ? ", tagged units are in the asset register" : ""}</span>}{!i.active && <Pill>No longer in use</Pill>}</span> },
     { key: "category", label: "Category", sort: (i) => STOCK_CATEGORIES[i.category]?.label ?? i.category, render: (i) => STOCK_CATEGORIES[i.category]?.label ?? i.category },
     { key: "onHand", label: "On hand", num: true, sort: (i) => i.onHand, render: (i) => <span><strong>{qtyText(i.onHand)}</strong> {i.unit}</span> },
     { key: "level", label: "Reorder level", num: true, sort: (i) => i.reorderLevel, render: (i) => (i.reorderLevel > 0 ? qtyText(i.reorderLevel) : <span className="text-muted">None</span>) },
@@ -189,7 +189,7 @@ export default function StockMovements() {
             {tab === 0 ? (
               d.items.length ? <>
                 {d.low.length > 0 && <p className="ds-note ds-note--warning" id="low-stock-note" role="status"><Icon d={PATH.alert} /> {d.low.length === 1 ? "1 item is" : `${d.low.length} items are`} at or under the reorder level: {d.low.slice(0, 4).map((i) => i.name).join(", ")}{d.low.length > 4 ? "…" : ""}.</p>}
-                <Table bare columns={itemCols} rows={d.items} rowKey={(i) => i.id} empty="No items." tableId="items-table" />
+                <Table bare columns={itemCols} rows={d.items} rowKey={(i) => i.id} empty="No items." tableId="items-table" tableClass="table table--tight as-table" />
                 <p className="ds-hint" id="items-count">{countText(d.items.length, d.items.length, "item")}</p>
               </> : <EmptyState title="No items yet." text={canMove ? "Add the first one with Add item." : "Nothing has been counted."} />
             ) : (

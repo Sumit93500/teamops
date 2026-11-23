@@ -7,7 +7,7 @@
 | key | label | permissions | landing page | Data scope (as the pages word it) |
 |---|---|---|---|---|
 | admin | Admin | 119 of 122 (not the three `files` ones: FS1, a ruling item) | dashboard/admin.html | All records |
-| hr | HR Manager | 64 | dashboard/hr.html | All records |
+| hr | HR Manager | 63 | dashboard/hr.html | All records |
 | fin | Finance Manager | 56 | dashboard/finance.html | All finance records |
 | emp | Employee | 31 (self-service) | dashboard/employee.html | Own records, plus your direct reports if you manage people |
 | it | IT | 42 (IT1: nobody seeded) | dashboard/employee.html | Own records, plus IT requests, licences and the asset register |
@@ -43,6 +43,8 @@ FS1 (2026-11-22) added the module `files`: `files:view-expense` (HR, Finance), `
 ## The IT desk (IT1)
 
 IT1 (2026-11-22) added the role `it` (label IT; the designation "IT Engineer" carries it; nobody is seeded with it) and the module `it` (see [it-desk.md](it-desk.md)): `it:requests-create` (everyone), `it:requests-handle`, `it:licences-manage`, `it:account-prepare`, `it:offboard` (IT), `it:approve` and `it:activity-review` (the Admin), `it:licences-view-costs` (Finance, Admin). The IT role also holds AS1's custodian permissions (`assets:manage`, `assets:issue`, `assets:maintain`, `vendors:manage`, `stock:move`; the Admin keeps them as the documented override) and `assets:view-all`, `stock:view`; never a pay, bank, tax, leave-approval, attendance-edit, people, file, account or approval permission. None is overridable. 114 -> 122 in 47 modules; Admin 119, HR 64, Finance 56, Employee 31, IT 42. HR keeps `accounts:reset` for people who already have a sign-in; a new employee's first sign-in details come from IT's approved new-account request (or an Admin's direct flow).
+
+IT2 (2026-11-23) took `accounts:reset` away from HR (HR 64 to 63; the Admin keeps it): HR's "reset password" asks IT, an Admin's direct reset is flagged on the IT review trail, and a sensitive request about or raised by the only Admin is approved by them with a written reason (break-glass); see [it-desk.md](it-desk.md). No permission was added (122 in 47 modules).
 
 ## Assets and stock (AS1)
 

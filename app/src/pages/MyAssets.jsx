@@ -61,7 +61,7 @@ export default function MyAssets() {
           {now.length ? <Table bare pager={false} columns={nowCols} rows={now} rowKey={(a) => a.tag} tableId="my-assets-table" /> : <EmptyState title="Nothing is issued to you." text={canRequest ? "Ask IT for what you need with Request an asset." : undefined} />}
         </Card>
         {open.length > 0 && (
-          <Card id="asks-card" title="Your open asset requests" meta={<Link to={pageUrl("requests/my-requests.html")}>Follow them in My requests</Link>}>
+          <Card id="asks-card" title="Your open asset requests" meta={<Link to={pageUrl("it/mine.html")}>Follow them in My IT requests</Link>}>
             <ul className="as-asks" id="asks-list">
               {open.map((r) => <li key={r.id}><strong>{r.title}</strong> <Pill tone={IT_STATUS[r.status]?.[1] ?? ""} data-chip="it-status">{IT_STATUS[r.status]?.[0] ?? r.status}</Pill></li>)}
             </ul>

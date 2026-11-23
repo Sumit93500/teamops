@@ -31,6 +31,8 @@ import { csvColumns, csvRows, csvStat, initExports } from "../../../assets/js/ui
 import { waitingFor } from "../data/waiting.js";
 import { changeText } from "../../../assets/js/data/employee-record.js";
 import { cardLink } from "../ui/ApprovalCard.jsx";
+import ItReviewCard from "../ui/itCards.jsx";   // IT2
+import { TYPES as IT_TYPES } from "../../../assets/js/data/it-rules.js";
 import { can } from "../../../assets/js/core/rbac.js";
 import { resolvePageLink } from "../../../assets/js/core/paths.js";
 import Frame from "../ui/Frame.jsx";
@@ -58,6 +60,7 @@ const ICONS = {
 // ---------- pending approvals (admin-dashboard.js renderApprovals) ----------
 const sentOn = (request) => request.appliedOn ?? (request.requestedAt ? localDateOf(request.requestedAt) : request.enteredAt.slice(0, 10));
 const APPROVAL_TEXT = {
+  itApprovals: (r) => [`IT request: ${r.title}`, `${IT_TYPES[r.type]?.label ?? r.type}, raised by ${nameOf(r.requesterId)}`],   // IT2
   leave: (r) => [`${nameOf(r.userId)}, ${typeLabel(r.type).toLowerCase()}`, `${requestDates(r)}, ${formatDays(r.days)}`],
   corrections: (r) => [`Regularization: ${nameOf(r.userId)}`, `${formatDay(r.date)}: ${correctionDetails(r)}`],
   expenses: (c) => [`Expense claim: ${nameOf(c.userId)}`, `${rupees(c.amount)}, ${categoryLabel(c.category)}, ${EXPENSE_STAGE[c.stage]} stage`],
@@ -255,6 +258,7 @@ export default function AdminDashboard() {
             </section>
           </div>
 
+          <ItReviewCard />
           <div className="grid grid-2">
             <section className="card">
               <div className="card__header">

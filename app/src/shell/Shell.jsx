@@ -46,7 +46,8 @@ export default function Shell({ page, title, back, children }) {
       if (!a || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       closeCards();
-      navigate(new URL(a.href, window.location.href).pathname);
+      const to = new URL(a.href, window.location.href);
+      navigate(to.pathname + to.search);   // IT2: a bell link to one request keeps its ?id=
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);

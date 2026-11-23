@@ -28,7 +28,7 @@ import { rupees } from "../ui/payroll.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { countText } from "../data/counts.js";   // F2: one counter wording
 import { bump } from "../data/bus.js";
-import { pageUrl } from "../routes.js";
+import { pageUrl, IT_MINE, IT_REQUEST } from "../routes.js";
 
 const PAGE = "requests/my-requests.html";
 const TABS = [["all", "All"], ["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]];
@@ -76,7 +76,7 @@ export default function MyRequests() {
     const it = itRequestsFor(userId, { mine: true }).map((request) => ({ kind: "it", r: request, status: IT_TAB[request.status] ?? "pending", id: request.id, sent: request.createdAt.slice(0, 10) }));
     const rows = [...ownRequests(userId).map(({ kind, request, status }) => ({ kind, r: request, status, id: request.id, sent: request.appliedOn })), ...it]
       .sort((a, b) => b.sent.localeCompare(a.sent) || b.id.localeCompare(a.id));
-    const pending = newestPending([...requestsFor(userId), ...regularizationsFor(userId), ...expensesFor(userId), ...assetRequestsFor(userId)]);
+    const pending = newestPending([...requestsFor(userId), ...regularizationsFor(userId), ...expensesFor(userId)]);   // IT2: no old asset-request progress
     return { rows, pending };
   }, [userId]);
   if (!d) return <Frame page={PAGE}><div /></Frame>;
@@ -105,13 +105,15 @@ export default function MyRequests() {
   const status = (x) => (x.kind === "it" ? <Badge tone={IT_STATUS[x.r.status]?.[1] ?? ""} dot>{IT_STATUS[x.r.status]?.[0] ?? x.r.status}</Badge> : x.kind === "asset" ? <FromNode node={statusBadgeOf(x.r)} /> : x.kind === "expense" && x.r.status === "paid" ? <FromNode node={stageBadge(x.r)} /> : <StatusBadge status={x.r.status} />);
   const actions = (x) => {
     const r = x.r;
-    const cancellable = x.kind === "it" ? ["open", "in-progress", "awaiting-approval", "approved", "rejected"].includes(r.status) : x.kind === "asset" ? ["pending", "approved"].includes(r.status) : r.status === "pending";
+    // IT2: the old asset-request chain is closed: its rows stay readable, nothing can be done to them, and nothing waits on them
+    if (x.kind === "asset" && ["pending", "approved"].includes(r.status)) return <span className="text-sm text-muted" data-closed-chain="">Closed: ask IT instead.</span>;
+    const cancellable = x.kind === "it" ? ["open", "in-progress", "awaiting-approval", "approved", "rejected"].includes(r.status) : x.kind === "asset" ? false : r.status === "pending";
     if (cancellable) return <button className="btn btn--sm btn--danger" type="button" data-permission="requests:cancel" hidden={!canCancel || undefined} onClick={() => cancel(x.kind, r)}>Cancel</button>;
     const note = x.kind === "it" ? (r.status === "done" && r.closedNote ? `Asset ${r.closedNote}` : "") : x.kind === "asset" ? endNote(r) : r.status === "rejected" ? rejectionNote(r) : "";
     return note ? <span className="text-sm text-muted">{note}</span> : null;
   };
   const columns = [
-    { key: "title", label: "Request", render: (x) => <span className="table__user-name">{title(x)}</span> },
+    { key: "title", label: "Request", render: (x) => (x.kind === "it" ? <Link className="table__user-name" to={`${pageUrl(IT_REQUEST)}?id=${x.id}`}>{title(x)}</Link> : <span className="table__user-name">{title(x)}</span>) },
     { key: "type", label: "Type", render: (x) => <Badge square>{BADGE_TEXT[x.kind]}</Badge> },
     { key: "sent", label: "Sent", render: (x) => formatDay(x.sent) },
     { key: "with", label: "With", render: (x) => (x.kind === "it" ? (x.r.assignedTo ? names([x.r.assignedTo]) : "IT desk") : withText(x.kind, x.r)) },
@@ -135,6 +137,7 @@ export default function MyRequests() {
           <Link className="btn" to={pageUrl("leave/apply-leave.html")} data-permission="leave:create" hidden={!canLeave || undefined}>Apply for leave</Link>
           <Link className="btn" to={pageUrl("requests/claim-expense.html")} data-permission="expenses:create" hidden={!canClaim || undefined}>Claim an expense</Link>
           <button className="btn" type="button" id="request-asset" data-permission="assets:request" hidden={!canAsset || undefined} onClick={() => setAsking(true)}>Request an asset</button>
+          <Link className="btn" to={pageUrl(IT_MINE)} id="my-it-requests">My IT requests</Link>
         </div>
       </div>
       <div className="grid grid-main-aside">

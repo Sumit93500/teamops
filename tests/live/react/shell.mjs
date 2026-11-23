@@ -59,6 +59,8 @@ const ruledShell = (s) => ({ ...s, brand: s.brand === "O OfficeOS" ? `N${COMPANY
 // AS2: the inventory pages are real in the app. HR and Finance open four of them there (assets:view-all, stock:view) where the old site sends them to 403, so those links are read past on the app's side for them
 const AS2_PAGES = /^\/pages\/inventory\/(items|stock-movements|asset-assignment|vendors)\.html/;
 const withoutAs2 = (s, who, od) => (who === "hr" || who === "fin" ? { ...s, sections: s.sections?.map((x) => { if (!x.items) return x; const kept = x.items.filter((it) => !AS2_PAGES.test(it[1] ?? "")); if (kept.length === x.items.length) return x; /* the group left with My assets alone is drawn by the app's one-item rule, which is not the old site's group: the old section stands for it */ const o = od.sections?.find((y) => y.title === x.title); return o && JSON.stringify(o.items.map((it) => it[1])) === JSON.stringify(kept.map((it) => it[1])) ? o : { ...x, items: kept }; }) } : s);
+// IT2: the IT desk's own sidebar group and Complete details (Assets & inventory, for assets:manage) are the app's: read past on the app's side
+const withoutIt2 = (s) => ({ ...s, sections: s.sections?.filter((x) => x.title !== "IT desk").map((x) => (x.items ? { ...x, items: x.items.filter((it) => !/\/inventory\/complete-details\.html/.test(it[1] ?? "")) } : x)) });
 const CV1_VISITS = /^\/pages\/visits\/(my|team)-visits\.html/;
 const withoutVisits = (s) => ({ ...s, sections: s.sections?.map((x) => (x.items ? { ...x, items: x.items.filter((it) => !CV1_VISITS.test(it[1] ?? "")) } : x)) });
 const ruledPhone = (s) => (s.toggle?.[0] ? { ...s, shown: [s.shown[0], `About ${COMPANY}`, ...s.shown.slice(1)] } : s);
@@ -76,6 +78,7 @@ async function open(base, who, page, width = 1280, theme = "light", init = null)
     if (sessionStorage.getItem("shell-set")) return;
     sessionStorage.setItem("shell-set", "1");
     localStorage.clear();
+    localStorage.setItem("officeos:asset-requests", JSON.stringify({ version: 1, nextNum: 3, records: [{ id: "ARQ-1", userId: "EMP-1105", assetType: "laptop", reason: "My laptop is over 3 years old and too slow for builds", replacesTag: "AST-0188", status: "cancelled", stage: "done", managerId: "EMP-1029", appliedOn: "2026-09-17", assetTag: null, history: [{ stage: "manager", byUserId: "EMP-1105", decision: "applied", at: "2026-09-17T04:45:00.000Z", note: "" }, { stage: "done", byUserId: "EMP-1105", decision: "cancelled", at: "2026-09-18T04:45:00.000Z", note: "" }] }, { id: "ARQ-2", userId: "EMP-1017", assetType: "monitor", reason: "A second monitor for the weekly sales reports", replacesTag: null, status: "cancelled", stage: "done", managerId: null, appliedOn: "2026-09-24", assetTag: null, history: [{ stage: "manager", byUserId: "EMP-1017", decision: "applied", at: "2026-09-24T07:10:00.000Z", note: "" }, { stage: "done", byUserId: "EMP-1017", decision: "cancelled", at: "2026-09-25T07:10:00.000Z", note: "" }] }] }));   // IT2 (behaviour): the old asset-request chain is closed in the app (nothing of it waits), so both sides start with its two seed requests cancelled
     localStorage.setItem("officeos:theme", JSON.stringify(th));
     localStorage.setItem("officeos:sidebar", JSON.stringify("collapsed"));   // S1: the rail (1280 opens expanded by default; side.mjs checks that)
     if (w) localStorage.setItem("officeos:session", JSON.stringify({ userLabel: w[0], employeeId: w[1], signedInAt: 1790000000000 }));
@@ -121,7 +124,7 @@ if (ONLY.includes("D")) {
   for (const who of Object.keys(PAGES)) for (const page of PAGES[who]) {
     const o = await open(O, who, page), n = await open(N, who, page);
     const od = ruledShell(await readShell(o.t));
-    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, od, f2Singles(od, withoutAs2(withoutVisits(await readShell(n.t)), who, od)));
+    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, od, f2Singles(od, withoutIt2(withoutAs2(withoutVisits(await readShell(n.t)), who, od))));
     if (o.errs.length || n.errs.length) check(`D.${who}.err`, "no page errors", false, j([o.errs, n.errs]));
     await o.ctx.close(); await n.ctx.close();
   }

@@ -1,6 +1,5 @@
 // "Request an asset" and "Request return" (AS2): the two ways a person asks IT for equipment, shared by My assets and My requests. Each makes an
-// IT request (data/it-desk.js createRequest: type asset-request or asset-return); the IT desk's own screens come in a later round, so the
-// person follows the request in My requests. The desk refuses a second open request for the same thing and a return of an asset the person
+// IT request (data/it-desk.js createRequest: type asset-request or asset-return); the person follows the request in My IT requests (IT2). The desk refuses a second open request for the same thing and a return of an asset the person
 // doesn't hold, and says so; those words are shown as they are.
 import { useState } from "react";
 import { createRequest } from "../../../assets/js/data/it-desk.js";
@@ -26,7 +25,7 @@ function useAsk(onClose) {
     const r = createRequest(userId, fields);
     if (!r.ok) { setError({ field: r.field ?? null, text: r.error }); return; }
     bump();
-    toast(`${message} (${r.record.id}). Follow it in My requests.`, "success");
+    toast(`${message} (${r.record.id}). Follow it in My IT requests.`, "success");
     onClose();
   };
   return { error, setError, send, fe: (n) => (error?.field === n ? error.text : null), general: error && !error.field ? error.text : null };

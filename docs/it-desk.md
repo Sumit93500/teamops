@@ -1,6 +1,6 @@
 # The IT desk (IT1)
 
-Built in IT1 (2026-11-22): data, rules and permissions only. The IT screens come in the next round.
+Built in IT1 (2026-11-22): data, rules and permissions. The screens and four rulings on it came in IT2 (2026-11-23), below.
 
 **Files:**
 
@@ -12,7 +12,7 @@ Built in IT1 (2026-11-22): data, rules and permissions only. The IT screens come
 - `config/roles.js`: the IT role.
 - `data/store.js`: the IT department; the deactivation hook.
 
-**Tests:** `tests/live/itdesk.mjs` (3 zones).
+**Tests:** `tests/live/itdesk.mjs` and `tests/live/itdesk2.mjs` (3 zones), `tests/live/react/it2.mjs` (the screens, in Edge).
 
 **Storage:** `officeos:it-desk` and `officeos:it-licences`, read through `pureBox`, so a read stores nothing.
 
@@ -149,9 +149,40 @@ Each item records who and when. The offboarding is done only once approved and e
 
 **The waiting kind** `IT_WAITING_KIND` ("itApprovals"): `pendingItApprovals(viewer)` lists what waits for this Admin's decision. The inbox, the bell, the sidebar count and the Admin dashboard get it, with its card, in the screens round. A kind without a card would break them, so it isn't wired yet.
 
+## The screens (IT2)
+
+The pages are the app's own (not in `config/routes.js`): each carries its guard (`ui/OwnPage.jsx`), from the same rule as `shell/itAccess.js`, which the sidebar and the search use too. The data layer says who may do what; a page draws it. Nothing is decided only on a page.
+
+| page | who | what |
+|---|---|---|
+| IT dashboard (`it/dashboard.html`) | `it:requests-handle`, the Admin | open, overdue, assigned to you, unassigned, awaiting approval (each opens the list on that view); open requests by type and requests by status as horizontal bars; the overdue and your own lists; people who left with no offboarding |
+| IT requests (`it/requests.html`) | the same | every request: filters for type, status, priority, assignee, who raised it, the shared date range ("No data in this range."), a search, the shared counter |
+| One request (`it/request.html?id=`) | whoever may see it | details, the immutable timeline, a comment box, and the buttons `availableActions` returns; anyone else is told they can't open it |
+| Raise a request (`it/new.html`) | everyone | every type; the desk's words at the field; the due time the priority gives. A new account is not raised here (it opens when HR adds the employee); Offboarding only for `users:deactivate` or `it:offboard` |
+| My IT requests (`it/mine.html`) | everyone | only their own, open / finished / all, each with its timeline; what changed since they last looked; Request an asset ends here |
+| Licences (`it/licences.html`) | `it:licences-manage`, `it:licences-view-costs` | licences and seats (give, take back), renewals in 30 / 60 / 90 days, seats of people who left, licences with free seats |
+| Offboarding (`it/offboarding.html`) | `it:offboard`, the Admin | each checklist, what is still with the person, the buttons, the Admin's waiver; people who left with none |
+| IT review trail (`it/review.html`) | `it:activity-review` | the feed with filters, "Reviewed", the unreviewed count and break-glass |
+| Complete details (`inventory/complete-details.html`) | `assets:manage` | the imported assets that still lack a purchase date, price, vendor or serial |
+
+**What a request's page offers** (`it-desk.js availableActions`, the one list): comment; assign; prepare (a new account); send to the Admin (a sensitive request, prepared first); approve and reject (the Admin); take it back (after a rejection); cancel (whoever raised it, or IT); the type's own step (reset, unlock, issue an asset, take one back, give a seat, resolve, make the sign-in details, complete the offboarding); for an offboarding tick, disable the sign-in and the Admin's waiver; and the Admin's flagged override of an IT step, drawn apart. A move the state machine or the separation of duties refuses is not offered.
+
+**Sign-in details are shown once.** A hand-over (and an IT reset) returns the secret to the IT person who made it; the page keeps it in its own state only: a panel "Share these sign-in details" with Copy buttons, gone when it is closed or the page is left, never stored, never shown to the Admin (the desk refuses the Admin a hand-over, and the Admin's page has no panel).
+
+**The IT approvals kind** (`itApprovals`, `data/waiting.js`): the Approvals inbox (pending, approved, rejected), the approval card, the bell's list, the sidebar's count and the Admin dashboard's list all count it from one place, once each. Approve asks for an optional note; Reject needs a reason. **Updates on your own requests** (assigned, approved, rejected, done) are in the bell under "Your IT requests", counted apart ("Waiting for you: 0, 1 new update on your IT requests"), and on My IT requests.
+
+## Rulings built in IT2
+
+1. **HR no longer resets passwords directly.** `accounts:reset` is the Admin's (HR holds one permission fewer). HR's "reset password" on a profile is "Ask IT to reset the password": `openPasswordReset` raises a password-reset request (one open per person). The Admin keeps the direct reset: audited as before and now **flagged "admin override" on the review trail** (never the secret).
+2. **Break-glass.** A sensitive request about or raised by an Admin needs a different Admin. When only one Admin exists, that Admin may approve it with a written reason of at least 20 characters (`approveRequest(..., { breakGlass })`; `needsBreakGlass` tells a dialog to ask). It is flagged `breakGlass` on the trail, listed on the Admin dashboard (`breakGlassOpen`) until another Admin marks it reviewed (not the one who approved it), and a banner recommends a second Admin (`soleAdmin`). A second Admin, a non-Admin and IT never get it; rejecting your own isn't break-glass.
+3. **The old asset-request chain is closed** (manager, then an Admin, then fulfilment): "Request an asset" makes only the IT request; the chain's waiting kind is no longer counted or shown and its approval steps are gone from the inbox, card, bell and sidebar. Its history is still readable in My requests (with "This old process is closed"); its store is untouched, and every existing record reads byte for byte as before.
+4. **Complete details**: `detailsToComplete` lists the imported assets and which of the four fields (purchase date, price, vendor, serial) each lacks; `completeDetails` fills them with Edit's own validation (the price needs `assets:view-values`; a filled field is refused; nothing outside the four). Each field is its own flag; the "Details missing" label goes once the date and price are in. **Access cards are stock items, not fixed assets** (`STOCK_ONLY_CATEGORIES`): the register and an asset request refuse the category and say so; existing records, the imported access cards included, are not changed.
+
+**Choices where the brief was silent:** the break-glass approval can't be reviewed by the Admin who made it (so it stays on the dashboard while there is only one Admin); a rejection is never break-glass; the dashboards' response times are shown but changing them (`setSlaHours`) has no screen yet; the bell's updates are marked read by opening them.
+
 ## Not built yet
 
-- **The IT screens:** the queue, the request page, the review trail, licences, the offboarding checklist, the bell's notices, the waiting kind wired into the four places that count it.
-- **The role's colour** (tokens) and the IT dashboard. The IT role lands on the employee dashboard for now.
+- **The role's colour** (tokens). The IT role lands on the employee dashboard; the IT dashboard is in its sidebar.
+- **A screen for the response times** (`setSlaHours` has no page), and email (backend stage).
 - **The old static site:** it is frozen, and its roles list still shows four roles. Its user form, which reads the same designations, offers "IT Engineer".
 - **Email, and a server owning accounts, approvals and the trail** (backend stage).

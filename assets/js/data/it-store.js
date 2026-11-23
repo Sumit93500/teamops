@@ -31,8 +31,9 @@ export const pushTimeline = (b, requestId, actorId, kind, note, now) => {
   b.next.tl += 1;
   return entry;
 };
-export const pushActivity = (b, { actorId, kind, requestId = null, personId = null, override = false, summary }, now) => {
+export const pushActivity = (b, { actorId, kind, requestId = null, personId = null, override = false, breakGlass = false, summary }, now) => {
   const entry = { id: `IA-${b.next.act}`, at: new Date(now).toISOString(), actorId, kind, requestId, personId, override: Boolean(override), summary, reviewedBy: null, reviewedAt: null };
+  if (breakGlass) entry.breakGlass = true;   // IT2: a sole Admin's approval of a request about or raised by themself (it-rules.js approvalPath)
   b.activity.push(entry);
   b.next.act += 1;
   return entry;

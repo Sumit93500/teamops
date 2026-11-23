@@ -44,7 +44,7 @@ export default function AssetAssignment() {
 
   const heldCols = [
     { key: "tag", label: "Tag", sort: (a) => a.tag, render: tagLink },
-    { key: "name", label: "Asset", sort: (a) => a.name, render: (a) => <span className="as-cell"><strong>{a.name}</strong><span className="text-muted text-sm">{categoryLabel(a.category)}</span></span> },
+    { key: "name", label: "Asset", className: "as-asset", sort: (a) => a.name, render: (a) => <span className="as-cell"><strong>{a.name}</strong><span className="text-muted text-sm">{categoryLabel(a.category)}</span></span> },
     { key: "holder", label: "Assigned to", sort: (a) => nameOf(a.holderId), render: (a) => nameOf(a.holderId) },
     { key: "since", label: "Since", sort: (a) => a.since ?? "", render: (a) => dayText(a.since) },
     { key: "condition", label: "Condition", render: (a) => <ConditionBadge condition={a.condition} /> },
@@ -52,7 +52,7 @@ export default function AssetAssignment() {
   ];
   const storeCols = [
     { key: "tag", label: "Tag", sort: (a) => a.tag, render: tagLink },
-    { key: "name", label: "Asset", sort: (a) => a.name, render: (a) => <span className="as-cell"><strong>{a.name}</strong><span className="text-muted text-sm">{categoryLabel(a.category)}</span></span> },
+    { key: "name", label: "Asset", className: "as-asset", sort: (a) => a.name, render: (a) => <span className="as-cell"><strong>{a.name}</strong><span className="text-muted text-sm">{categoryLabel(a.category)}</span></span> },
     { key: "where", label: "Kept at", render: (a) => <span className="as-cell">{officeName(a.locationId)}{a.storeRoom && <span className="text-muted text-sm">{a.storeRoom}</span>}</span> },
     { key: "condition", label: "Condition", render: (a) => <ConditionBadge condition={a.condition} /> },
     { key: "status", label: "Status", render: (a) => <StatusChip status={a.status} /> },

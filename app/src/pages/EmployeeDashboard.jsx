@@ -175,8 +175,8 @@ export default function EmployeeDashboard() {
     const balance = balanceFor(userId, year, month);
     const limited = LEAVE_TYPES.filter((type) => balance[type].allowance !== null).map((type) => ({ type, ...balance[type] }));
     const days = shiftRangeFor(userId, addDays(today, -(LOOK_BACK - 1)), today) ?? [];
-    return { user, limited, days, summary: shiftMonthFor(userId, year, month), open: openRequests(userId), slip: payslipsFor(userId, today).find((s) => s.month === today.slice(0, 7)),
-      leave: requestsFor(userId), corrections: regularizationsFor(userId), assets: assetRequestsFor(userId),
+    return { user, limited, days, summary: shiftMonthFor(userId, year, month), open: openRequests(userId).filter((r) => r.kind !== "asset"), slip: payslipsFor(userId, today).find((s) => s.month === today.slice(0, 7)),
+      leave: requestsFor(userId), corrections: regularizationsFor(userId), assets: assetRequestsFor(userId).filter((r) => !["pending", "approved"].includes(r.status)),
       hours: days.length ? hoursChart(days.slice(-CHART_DAYS).map(asOld), today) : null, balanceChart: leaveBalanceChart(userId, year, month) };
   }, [userId, today]);
   if (!d.user) return <Frame page={PAGE}><div /></Frame>;

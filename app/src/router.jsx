@@ -59,10 +59,20 @@ import Inventory from "./pages/Inventory.jsx";
 import AssetAssignment from "./pages/AssetAssignment.jsx";
 import StockMovements from "./pages/StockMovements.jsx";
 import Vendors from "./pages/Vendors.jsx";
+import ItDashboard from "./pages/ItDashboard.jsx";   // IT2: the IT desk's pages
+import ItRequests from "./pages/ItRequests.jsx";
+import ItRequest from "./pages/ItRequest.jsx";
+import ItNew from "./pages/ItNew.jsx";
+import MyItRequests from "./pages/MyItRequests.jsx";
+import Licences from "./pages/Licences.jsx";
+import Offboarding from "./pages/Offboarding.jsx";
+import ItReview from "./pages/ItReview.jsx";
+import CompleteDetails from "./pages/CompleteDetails.jsx";
 import { isPlaceholder } from "./shell/placeholders.js";
 import { Login, ForgotPassword, ResetPassword, SetPassword, SET_PASSWORD } from "./pages/AuthPages.jsx";
 import MailOutbox, { MAIL_OUTBOX } from "./pages/MailOutbox.jsx";
 import { sessionAllowed, mustChangePassword } from "../../assets/js/data/credentials.js";
+import { IT_DASHBOARD, IT_REQUESTS, IT_REQUEST, IT_NEW, IT_MINE, IT_LICENCES, IT_OFFBOARDING, IT_REVIEW, COMPLETE_DETAILS } from "./routes.js";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT, OFFICES, MY_LOCATIONS, APPEARANCE, RATES_RULES, LEAVE_POLICY_PAGE, MY_VISITS, TEAM_VISITS, VISIT_PAGE } from "./routes.js";
 import { useSession, signOutNow } from "./data/hooks.js";
 
@@ -152,6 +162,15 @@ export const router = createBrowserRouter([{ element: <AccountGate />, children:
   { path: pageUrl(VISIT_PAGE), element: <VisitDetail /> },   // CV1: one visit and its punch trail
   { path: pageUrl(RATES_RULES), element: <RatesRules /> },   // P4a: the statutory rates and rules (Finance reads, Admin verifies)
   { path: pageUrl(LEAVE_POLICY_PAGE), element: <LeavePolicy /> },   // P4b: the tenure leave policy (HR reads, Admin edits)
+  { path: pageUrl(IT_DASHBOARD), element: <ItDashboard /> },   // IT2: the IT desk (each page carries its own guard: ui/OwnPage.jsx)
+  { path: pageUrl(IT_REQUESTS), element: <ItRequests /> },
+  { path: pageUrl(IT_REQUEST), element: <ItRequest /> },
+  { path: pageUrl(IT_NEW), element: <ItNew /> },
+  { path: pageUrl(IT_MINE), element: <MyItRequests /> },
+  { path: pageUrl(IT_LICENCES), element: <Licences /> },
+  { path: pageUrl(IT_OFFBOARDING), element: <Offboarding /> },
+  { path: pageUrl(IT_REVIEW), element: <ItReview /> },
+  { path: pageUrl(COMPLETE_DETAILS), element: <CompleteDetails /> },   // IT2: the imported assets that still lack details
   ...ALL_PAGES.map((page) => ({ path: pageUrl(page), element: <RequireRoute page={page}>{pageElement(page)}</RequireRoute> })),
   { path: "*", element: <Navigate to={pageUrl("errors/404.html")} replace /> },
 ] }]);

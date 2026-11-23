@@ -17,6 +17,8 @@ import { Field, Input, Select, TextArea } from "../components/Form.jsx";
 import { Icon } from "../components/icons.jsx";
 import { useConfirm } from "../components/Confirm.jsx";
 import { useToast } from "./Toast.jsx";
+import { Link } from "react-router-dom";
+import { pageUrl, COMPLETE_DETAILS } from "../routes.js";
 import "../design/assets.css";
 
 // ---------- icons (24-unit line paths) ----------
@@ -343,5 +345,5 @@ export function useAssetDialogs(onSaved) {
 // A note under a table that has assets with no purchase details.
 export function DetailsMissingNote({ count, canFix }) {
   if (!count) return null;
-  return <p className="ds-note ds-note--warning" id="details-missing-note"><Icon d={PATH.alert} /> {count === 1 ? "1 asset has" : `${count} assets have`} no purchase date or price: they came from the old register, which didn't record them.{canFix ? " Add them from the asset's Edit button; nothing is made up." : ""}</p>;
+  return <p className="ds-note ds-note--warning" id="details-missing-note"><Icon d={PATH.alert} /> {count === 1 ? "1 asset has" : `${count} assets have`} no purchase date or price: they came from the old register, which didn't record them.{canFix ? <> Add them on <Link to={pageUrl(COMPLETE_DETAILS)}>Complete details</Link>; nothing is made up.</> : ""}</p>;
 }

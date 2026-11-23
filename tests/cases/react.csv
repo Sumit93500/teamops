@@ -478,9 +478,9 @@ react-e1.R5,react-e1,Arjun's session ends at the next step: the sign-in page say
 react-e1.R6,react-e1,disabled: his right password is refused,x1
 react-e1.R7,react-e1,...and the Employee demo button too,x1
 react-e1.R8,react-e1,Enable sign-in: Active,x1
-react-e1.R9,react-e1,"HR: Send reset link and New temporary password, no Unlock or Disable (accounts:reset only); no account events",x1
-react-e1.R10,react-e1,HR's reset link is shown once in the share dialog (60 minutes),x1
-react-e1.R11,react-e1,HR on the Admin's profile: no reset buttons,x1
+react-e1.R9,react-e1,HR: no direct reset any more (IT2: accounts:reset is the Admin's): 'Ask IT to reset the password' only; no Unlock or Disable; no account events,x1
+react-e1.R10,react-e1,the Admin's reset link is shown once in the share dialog (60 minutes) (IT2: was HR's),x1
+react-e1.R11,react-e1,"HR on the Admin's profile: no reset buttons (IT2: only 'Ask IT to reset the password', which an Admin approves)",x1
 react-e1.T.R12,react-e1,R12: no plain password or token in any stored value (7 known),x1
 react-e1.D1,react-e1,"admin: no bank account, PAN, Aadhaar or document number in the page's HTML",x4 (4 roles)
 react-e1.D2,react-e1,"admin: all five sections and every field, the bank masked to its last 4",x2 (2 roles)
@@ -846,6 +846,211 @@ react-gallery.K2.412.dark,react-gallery,"Tabs: arrows, Home and End move and ope
 react-gallery.K3.412.dark,react-gallery,"Segmented: arrows choose (wrapping), one Tab stop; Toggle: Space switches, says Off",x1
 react-gallery.K4.412.dark,react-gallery,"DownloadMenu: Enter opens on the first item, arrows move, Esc closes back on the button, a choice runs",x1
 react-gallery.K5.412.dark,react-gallery,"SelectField: the status line follows the choice, in words, and the field points at it",x1
+react-it2.A1,react-it2,"admin: opens dash, list, req, new, mine, lic, off, review, complete; the others show the 403 page",x1
+react-it2.A2,react-it2,"admin: the sidebar lists IT dashboard, IT requests, My IT requests, Raise a request, Licences, Offboarding, IT review trail, Complete details and nothing else of the desk",x1
+react-it2.A1#2,react-it2,"hr: opens req, new, mine; the others show the 403 page",x3 (3 roles)
+react-it2.A2#2,react-it2,"hr: the sidebar lists My IT requests, Raise a request and nothing else of the desk",x3 (3 roles)
+react-it2.A1#3,react-it2,"fin: opens req, new, mine, lic; the others show the 403 page",x1
+react-it2.A2#3,react-it2,"fin: the sidebar lists My IT requests, Raise a request, Licences and nothing else of the desk",x1
+react-it2.A1.it,react-it2,"it: opens dash, list, req, new, mine, lic, off, complete; the others show the 403 page",x1
+react-it2.A2.it,react-it2,"it: the sidebar lists IT dashboard, IT requests, My IT requests, Raise a request, Licences, Offboarding, Complete details and nothing else of the desk",x1
+react-it2.I1,react-it2,"the numbers: 4 open (the finished one is not), 1 overdue (the urgent one, 30 h old), 2 assigned to Isha (the reset and the access request), 2 unassigned, 1 awaiting approval",x1
+react-it2.I2,react-it2,open requests by type are horizontal bars ranked by count: IT issue 2 first,x1
+react-it2.I3,react-it2,"requests by status: every status has its bar, with its count",x1
+react-it2.I4,react-it2,the overdue list names the urgent laptop request with an 'Overdue by' time,x1
+react-it2.I5,react-it2,"assigned to you: the password reset, with its status chip and due time",x1
+react-it2.I6,react-it2,"a number opens the list on that view: Overdue requests, 1 request",x1
+react-it2.I7,react-it2,the Admin opens the same desk,x1
+react-it2.I8,react-it2,"a desk with no requests says so (nothing drawn as a chart), with zeros in the numbers",x1
+react-it2.L1,react-it2,"the list: 6 requests, the columns, the counter in the shared words",x1
+react-it2.L2,react-it2,Type = IT issue: 2 of 6,x1
+react-it2.L3,react-it2,"...and Status = Open, Priority = Urgent: only the laptop",x1
+react-it2.L4,react-it2,Clear All brings back all 6,x1
+react-it2.L5,react-it2,"Assigned to Isha: 2 (the reset and the access request); Unassigned: 3 (laptop, printer, monitor)",x1
+react-it2.L6,react-it2,Raised by Priya Nair: 2,x1
+react-it2.L7,react-it2,the shared date range: Today = 3 requests (raised after midnight),x1
+react-it2.L8,react-it2,"a range with nothing in it says 'No data in this range.' (the shared words), not an empty table",x1
+react-it2.L9,react-it2,search finds the printer request,x1
+react-it2.L10,react-it2,"a status chip carries an icon, a word and a pattern (awaiting approval is striped), so colour is never the only cue",x1
+react-it2.L11,react-it2,a row opens the request's page,x1
+react-it2.L12,react-it2,"the dashboard's view links filter: ?view=awaiting shows the one waiting for the Admin, titled 'Awaiting approval'",x1
+react-it2.L13,react-it2,the Admin opens the same list (6),x1
+react-it2.R1,react-it2,"the requester opens their own request: its title, status and priority, the timeline, only 'Cancel' to do",x1
+react-it2.R2,react-it2,"another employee is told they can't open it: no title, no details",x1
+react-it2.R2b,react-it2,a manager can't open a request raised by their report either (only what they raised),x1
+react-it2.R3,react-it2,"the assignee on a non-sensitive request in progress: Assign, Reset the password, Cancel (and no Send to the Admin: it needs none)",x1
+react-it2.R4,react-it2,"the other IT person: Assign and Cancel, not the reset step",x1
+react-it2.R5,react-it2,"the Admin on one awaiting their approval: Approve and Reject; no Cancel, no execute step",x1
+react-it2.R6,react-it2,"HR, who raised it, has no Approve (only Cancel)",x1
+react-it2.R7,react-it2,"the Admin on an IT step in progress: Assign, and the Reset only as a flagged override (the buttons say so)",x1
+react-it2.R8,react-it2,"a finished request: nothing to do, and the page says so",x1
+react-it2.R9,react-it2,"the timeline is a read-only list in time order: Raised, Assigned (to a name, not an id), Status in words; no edit or delete control",x1
+react-it2.R10,react-it2,"an empty comment is refused at its field, in the desk's words",x1
+react-it2.R11,react-it2,"a comment is added at the end of the timeline, with who and when; the box clears",x1
+react-it2.R12,react-it2,"Assign opens a dialog with the IT people (Isha and Neha), nobody else",x1
+react-it2.R13,react-it2,"assigning to Neha: the dialog closes, the page says Neha, the timeline has the entry, the requester gets a notice",x1
+react-it2.R14,react-it2,"Reject needs a reason: refused at the field with the desk's words, the dialog stays open",x1
+react-it2.R15,react-it2,"with a reason it is rejected: Rejected, the reason in the timeline, back to IT, HR told",x1
+react-it2.R16,react-it2,"IT is then offered 'Take it back' (resume), and the Admin is not",x1
+react-it2.R17,react-it2,the Admin has nothing to do on it now,x1
+react-it2.N1,react-it2,"an employee can raise: password reset, account unlock, access, asset, asset return, software, IT issue (and is told how a new account starts); no Offboarding",x1
+react-it2.N2,react-it2,"password reset: the title writes itself, no 'For' choice for someone with nobody reporting to them, the priority says when IT aims to answer",x1
+react-it2.N3,react-it2,"Urgent: within 4 h, by 23 Nov, 14:00",x1
+react-it2.N4,react-it2,an empty title is refused at its field in the desk's words; nothing was made,x1
+react-it2.N5,react-it2,"sent: the request's page opens, Open, normal, due in 24 h, raised by them; one request stored",x1
+react-it2.N6,react-it2,access request with nothing chosen: 'Say which permission or role is needed.' at the field,x1
+react-it2.N7,react-it2,a role request is stored with payload { role: 'fin' } and the person's own name in the title,x1
+react-it2.N8,react-it2,"?type= preselects the kind (asset request), and the form says access cards are stock",x1
+react-it2.N9,react-it2,no kind of asset chosen: 'Choose the kind of asset.' at the field,x1
+react-it2.N10,react-it2,access cards are not on the list of kinds (they are counted stock),x1
+react-it2.N11,react-it2,"a laptop request is sent; asking again for the same kind while it is open is refused, naming it",x1
+react-it2.N12,react-it2,the duplicate: 'There is already an open request for this kind of asset (ITR-3).' at the field,x1
+react-it2.N13,react-it2,software with no name: 'Software is required.',x1
+react-it2.N14,react-it2,an asset return with no asset chosen: refused at its field ('Asset tag is required.'),x1
+react-it2.N15,react-it2,"a new account is not raised here: the form explains it, offers no Send, and an employee gets no link to add one",x1
+react-it2.N16,react-it2,HR is offered the link to add an employee,x1
+react-it2.N17,react-it2,HR also raises an Offboarding,x1
+react-it2.N18,react-it2,HR can raise for anyone still working here: the 'For' list has them and not the person who has left (Divya Menon),x1
+react-it2.N19,react-it2,an offboarding with no person: 'That employee doesn't exist.' at the field,x1
+react-it2.N20,react-it2,"with a person it opens their offboarding: the page has the checklist, four items, none done",x1
+react-it2.N21,react-it2,a manager's 'For' list is themself and their direct reports only,x1
+react-it2.F1,react-it2,HR sees no direct way to make the sign-in; 'Make sign-in details' asks IT,x1
+react-it2.F2,react-it2,"a new-account request is open for Meghna, raised by HR; no credential exists; the note still says none have been made",x1
+react-it2.F3,react-it2,IT opens it: Assign is offered; nothing to prepare before it is taken,x1
+react-it2.F4,react-it2,assigned to Isha: in progress; now Prepare the account is offered (no Send yet: nothing is prepared),x1
+react-it2.F5,react-it2,"the prepare form: role (no Admin to choose: HR raised it), work email, department, manager, start date",x1
+react-it2.F6,react-it2,a bad email is refused at its field in the desk's words; the dialog stays,x1
+react-it2.F7,react-it2,"prepared: the details are on the page (role, email, department, start date); 'Send to the Admin' is offered",x1
+react-it2.F8,react-it2,sent: Awaiting approval; IT has nothing more to do but wait (cancel only),x1
+react-it2.F9,react-it2,still no credential: nothing in the credentials box for Meghna,x1
+react-it2.F10,react-it2,"the Admin is offered Approve and Reject, and sees the prepared details",x1
+react-it2.F11,react-it2,"approving asks for an optional note (no break-glass: HR raised it, it is about Meghna)",x1
+react-it2.F12,react-it2,"approved: the status says so; the Admin is offered nothing to carry out (no hand-over button, no override); there is no sign-in panel",x1
+react-it2.F13,react-it2,"the prepared details are on Meghna's record (email, role)",x1
+react-it2.F14,react-it2,the other IT person can't make the sign-in details (only the one who prepared it),x1
+react-it2.F15,react-it2,the IT person who prepared it is offered 'Make the sign-in details',x1
+react-it2.F16,react-it2,"it asks first, saying the details are shown once, to them only",x1
+react-it2.F17,react-it2,"'Share these sign-in details': a 14-character temporary password and the set-password link, 'Shown once', the request is Done",x1
+react-it2.F18,react-it2,Copy puts the password on the clipboard,x1
+react-it2.F19,react-it2,"the password and the link's token are in no stored record (not the desk, the audit, the mail outbox)",x1
+react-it2.F20,react-it2,"the account exists now, invited, with a hash, and the person must change the password",x1
+react-it2.F21,react-it2,closing the panel removes it: nothing of it is left on the page,x1
+react-it2.F22,react-it2,opening the request again shows no panel and no button to make them again: it is never shown twice,x1
+react-it2.F23,react-it2,"the Admin never sees them either, before or after: no panel, no secret text",x1
+react-it2.F24,react-it2,"the review trail lists the approval and the credential issue, 'not reviewed', and never the secret",x1
+react-it2.F25,react-it2,"HR, who raised it, sees it finished in My IT requests, and was told three times (assigned, approved, done)",x1
+react-it2.M1,react-it2,"only their own: 3 (laptop, figma seat, mouse), none of HR's reset about them, none of Rohan's",x1
+react-it2.M2,react-it2,"tabs: Open 2, Finished 1, All 3",x1
+react-it2.M3,react-it2,"All: ITR-7, ITR-5, ITR-1 (newest first); never ITR-2 (about them, raised by HR) or ITR-6 (Rohan's)",x1
+react-it2.M4,react-it2,each request opens its timeline in place (read-only),x1
+react-it2.M5,react-it2,"what changed: the one unread update (the read one isn't listed), with 'Mark as read'",x1
+react-it2.M6,react-it2,"the bell counts it apart from what waits for a decision: 'Waiting for you: 0, 1 new update on your IT requests'",x1
+react-it2.M7,react-it2,"the bell's list has 'Your IT requests' with the update, a link to the request",x1
+react-it2.M8,react-it2,Mark as read clears it here and from the bell,x1
+react-it2.M9,react-it2,"Request an asset ends here: the toast says 'Follow it in My IT requests', the new request is listed; no old-chain record is made",x1
+react-it2.M10,react-it2,"asking again for the same kind is refused in the dialog, naming the open one",x1
+react-it2.B1,react-it2,"the only Admin on a request about themself: Approve is offered (not Reject), and the page says a written reason is needed",x1
+react-it2.B2,react-it2,"the dialog says break-glass in words (flagged, stays on the dashboard until another Admin reviews it) and asks for the reason",x1
+react-it2.B3,react-it2,"with no reason it is refused at the reason's field, naming the rule",x1
+react-it2.B4,react-it2,18 characters is still refused; the request is unchanged,x1
+react-it2.B5,react-it2,a written reason approves it: the toast says it is flagged for review; the timeline keeps 'Break-glass: ...',x1
+react-it2.B6,react-it2,"stored flagged breakGlass, reviewedBy empty; the reason is in the timeline, not the trail's summary",x1
+react-it2.B7,react-it2,"the review trail shows a Break-glass chip on it, not yet reviewed; 'Break-glass waiting' is 1; Mark reviewed is disabled for the Admin who did it, with the reason",x1
+react-it2.B8,react-it2,the review page tells the only Admin to add a second one,x1
+react-it2.B9,react-it2,"the Admin dashboard lists it until it is reviewed, and its banner recommends creating a second Admin",x1
+react-it2.B10,react-it2,with a second Admin the banner goes; the break-glass entry stays listed until reviewed,x1
+react-it2.B11,react-it2,the other Admin marks it reviewed: 'Reviewed by Dev Anand'; waiting is 0,x1
+react-it2.B12,react-it2,it leaves the dashboard card,x1
+react-it2.B13,react-it2,"with two Admins the first can't approve a request about themself: no Approve, no break-glass option, nothing to do",x1
+react-it2.B14,react-it2,"the other Admin is offered Approve and Reject, with no reason asked",x1
+react-it2.B15,react-it2,...the dialog has no break-glass note and no reason field,x1
+react-it2.B16,react-it2,approved by the other Admin: not flagged break-glass,x1
+react-it2.W0,react-it2,"before: the four surfaces agree (sidebar, bell, dashboard, inbox stat) and the inbox has no IT rows",x1
+react-it2.W1,react-it2,"two IT requests wait: every surface counts exactly two more, once each (the open ticket nobody has to approve is not counted)",x1
+react-it2.W2,react-it2,"the inbox rows: 'IT: Access for Arjun' and 'IT: Reset Kabir's password', type IT, by whoever raised it, Approve and Reject on each",x1
+react-it2.W3,react-it2,"the dashboard's approvals list has each once ('IT request: ...'), with Review",x1
+react-it2.W4,react-it2,"the bell lists each IT request once, as 'IT request: <type>'",x1
+react-it2.W5,react-it2,"a bell item opens the approval card: who it is about, the request, its type, who raised it, Reject and Approve",x1
+react-it2.W6,react-it2,Approve from the card asks for an optional note (the shared flow) and approves,x1
+react-it2.W7,react-it2,approved: every surface drops by one; the approved request is in the Approved tab as 'IT: ...',x1
+react-it2.W8,react-it2,...and in Recently decided,x1
+react-it2.W9,react-it2,the requester (HR) is told: the bell says 1 new update on their IT requests,x1
+react-it2.W10,react-it2,the bell shows 'Your IT requests' with 'Approved by the Admin'; clicking it opens the request and marks it read,x1
+react-it2.W11,react-it2,the request page opens; the bell's count of updates is gone,x1
+react-it2.K1,react-it2,Sneha (Arjun's manager) has nothing waiting from the old chain: no 'Asset:' row among what waits (leave and an expense still do),x1
+react-it2.K2,react-it2,nor does the Admin (Ananya's old request was waiting at the Admin stage): no Asset rows,x1
+react-it2.K3,react-it2,the Admin dashboard's approvals list has no old asset request,x1
+react-it2.K4,react-it2,"Arjun's old request is still readable in My requests (history), with no Cancel and a note that the process is closed",x1
+react-it2.K5,react-it2,the progress card never follows the old chain (no 'Asset:' title),x1
+react-it2.K6,react-it2,"Request an asset makes only an IT request: the old chain's store is byte-identical, the desk has the new request",x1
+react-it2.K7,react-it2,Sneha still has nothing waiting; the IT request isn't hers to decide either,x1
+react-it2.H1,react-it2,"HR's account card for Rohan offers no direct reset (no link, no temporary password); it offers 'Ask IT to reset the password'",x1
+react-it2.H2,react-it2,"asking makes a password-reset request about Rohan, raised by HR; the toast says where to follow it",x1
+react-it2.H3,react-it2,"asking twice is refused in words, naming the open one; still one request",x1
+react-it2.H4,react-it2,"for an Admin's profile HR is offered the same ask (sensitive: an Admin approves it first), never a direct reset",x1
+react-it2.H5,react-it2,the Admin still has 'Send reset link' and 'New temporary password' (the documented override) and no 'Ask IT',x1
+react-it2.H6,react-it2,it works and shows the link once (the share dialog),x1
+react-it2.H7,react-it2,"and it is on the IT review trail, flagged 'admin override', not yet reviewed; the link isn't in it",x1
+react-it2.H8,react-it2,the review page shows it with the Admin override chip,x1
+react-it2.H9,react-it2,"HR finds the request in My IT requests, open, with no one assigned",x1
+react-it2.Q1,react-it2,"IT sees the licence, its seats and renewal, and no cost: no column, no cell, no figure anywhere in the page",x1
+react-it2.Q2,react-it2,"the row: 4 of 10 seats, 6 free, renews 31 Jan 2027",x1
+react-it2.Q3,react-it2,"renewals in 30, 60, 90 days: 0, 0 and 1 (it renews in 69 days)",x1
+react-it2.Q4,react-it2,"seats held by someone who left: Divya Menon's, with Revoke; the number is on the card",x1
+react-it2.Q5,react-it2,"revoking asks first, then the seat is gone: none left for leavers, 3 in use",x1
+react-it2.Q6,react-it2,"Seats opens the licence's seats: 3 people, each with Revoke; Give a seat lists people without one",x1
+react-it2.Q7,react-it2,"giving Priya a seat: 4 in use, her name in the list; the dialog says '4 of 10'",x1
+react-it2.Q8,react-it2,an empty licence form is refused at the fields in the desk's words,x1
+react-it2.Q9,react-it2,"IT adds Figma with a cost from the invoice: it is listed, and IT still can't see any cost",x1
+react-it2.Q10,react-it2,a second active licence for the same software is refused at its field,x1
+react-it2.Q11,react-it2,"Finance sees the costs: a 'Cost per year' column with ₹1,29,600 and ₹50,000; no Add, no Edit; seats are 'See seats' (read-only)",x1
+react-it2.Q12,react-it2,Finance's seat list has no Revoke and no 'Give a seat' form,x1
+react-it2.Q13,react-it2,the Admin sees costs too,x1
+react-it2.O1,react-it2,"people who left with no offboarding are listed (Divya Menon), with a button to open one",x1
+react-it2.O2,react-it2,"opened: the checklist has four items, none done, with who/when once they are",x1
+react-it2.O3,react-it2,'Still with Divya Menon' names her licence seat,x1
+react-it2.O3b,react-it2,"nobody has it yet: Assign is offered, no tick",x1
+react-it2.O4,react-it2,ticking 'Revoke licences' while she holds a seat is refused in the desk's words; the dialog stays,x1
+react-it2.O5,react-it2,after the seat is revoked the tick works: 'Done by Neha Iyer' with the time,x1
+react-it2.O5b,react-it2,IT is not offered the Admin's waiver,x1
+react-it2.O6,react-it2,'Disable the sign-in' is not offered before the Admin approves (it is sensitive),x1
+react-it2.O7,react-it2,the Admin sees the waiver for 'return assets' and the flagged override to tick; no direct tick,x1
+react-it2.O8,react-it2,"a waiver needs a reason, refused at the field",x1
+react-it2.O9,react-it2,waived: 'Waived by Aarav Mehta' with the reason on the item; flagged as an override on the review trail,x1
+react-it2.O10,react-it2,an employee can't open Offboarding (403),x1
+react-it2.V1,react-it2,"five entries, newest first; 4 not reviewed, 1 break-glass waiting",x1
+react-it2.V2,react-it2,Flag = Admin override: 1; Break-glass: 1; Neither: 3,x1
+react-it2.V3,react-it2,Done by Isha: 2,x1
+react-it2.V4,react-it2,"...and Reviewed: 1 (the unlock, reviewed by the Admin)",x1
+react-it2.V5,react-it2,search 'rohan': 1,x1
+react-it2.V6,react-it2,a range with nothing says 'No data in this range.',x1
+react-it2.V7,react-it2,"an Admin's own override and own break-glass approval can't be marked reviewed by them: disabled, with the reason",x1
+react-it2.V8,react-it2,marking the plain approval reviewed works: 'Reviewed by Aarav Mehta'; not reviewed drops to 3,x1
+react-it2.V9,react-it2,a second Admin may review the first one's override: the button is live,x1
+react-it2.V10,react-it2,reviewed by Dev Anand; the first Admin's page no longer shows the sole-Admin note,x1
+react-it2.V11,react-it2,IT can't open the review trail,x1
+react-it2.C1,react-it2,"the 7 imported assets are listed, each with what is missing (date, price, vendor, serial)",x1
+react-it2.C2,react-it2,"IT's dialog offers the date, vendor and serial, not the price (it needs Finance or the Admin), and says so",x1
+react-it2.C3,react-it2,a future date is refused at its field with the AS1 words,x1
+react-it2.C4,react-it2,a serial with markup in it is refused at its field,x1
+react-it2.C5,react-it2,saved: the toast names what is still missing (the price); the row keeps only the price flag,x1
+react-it2.C6,react-it2,Inventory links to Complete details from its note,x1
+react-it2.C7,react-it2,the Admin's dialog offers the price,x1
+react-it2.C8,react-it2,an invalid price is refused at its field (AS1's words),x1
+react-it2.C9,react-it2,"the Admin's price completes AST-0099 (IT had added the rest): the toast says every detail is in, it leaves the list (6 left), and its page no longer says 'Details missing'",x1
+react-it2.C9b,react-it2,"the asset's own page has no 'Details missing' pill now, and shows its price",x1
+react-it2.C10,react-it2,Finance can't open Complete details (403): it is for whoever looks after the register,x1
+react-it2.X1.412.light,react-it2,"412px light: 15 pages, none scrolls sideways and no table is wider than its card",x1
+react-it2.X1.768.light,react-it2,"768px light: 15 pages, none scrolls sideways and no table is wider than its card",x1
+react-it2.X1.1280.light,react-it2,"1280px light: 15 pages, none scrolls sideways and no table is wider than its card",x1
+react-it2.Z1,react-it2,every button and link on a request's page has a name,x1
+react-it2.Z2,react-it2,Enter on Assign opens the dialog and focus goes to its first field,x1
+react-it2.Z3,react-it2,Tab stays inside the dialog,x1
+react-it2.Z4,react-it2,Esc closes it (nothing typed: no question) and focus returns to the Assign button,x1
+react-it2.Z5,react-it2,the new-request form is reachable by keyboard: its first control is the Kind select,x1
+react-it2.Z6.light,react-it2,"light: the words of every chip, badge and sub-line on five IT pages reach 4.5:1 (107 read)",x1
+react-it2.Z6.dark,react-it2,"dark: the words of every chip, badge and sub-line on five IT pages reach 4.5:1 (107 read)",x1
+react-it2.E1,react-it2,no page or console errors,x1
 react-leave.A1,react-leave,admin on leave/apply-leave.html: as it opens,x5 (5 roles)
 react-leave.A2,react-leave,"admin: Sick, a range, a half day over two dates refused live; too many casual days refused under the field; a valid request sent: toasts, button, landing",x5 (5 roles)
 react-leave.L1,react-leave,admin on leave/leave-approvals.html: as it opens,x2 (2 roles)
@@ -1298,7 +1503,7 @@ react-side.A2,react-side,"collapsed: the label shows as a chip on hover (""Atten
 react-side.A3,react-side,"collapsed: the active item is marked (aria-current, its own background)",x1
 react-side.A4,react-side,collapsed: no group headings; the brand is its mark only; the count is a small number on the icon; the person's avatar stays in the header,x1
 react-side.A5,react-side,expanded: every item shows its icon and label; the group headings; no section buttons; the brand's name; the avatar and name; the count; Dashboard current,x1
-react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (29), the same links as collapsed",x5 (5 roles)
+react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (37), the same links as collapsed",x5 (5 roles)
 react-side.K1.expanded,react-side,"expanded: Tab goes brand, the toggle, then the first item (Dashboard)",x1
 react-side.K2.expanded,react-side,"expanded: Enter toggles, Space toggles back, focus stays on the toggle",x1
 react-side.K1.collapsed,react-side,"collapsed: Tab goes brand, the toggle, then the first item (Dashboard)",x1

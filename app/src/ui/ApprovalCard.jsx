@@ -29,7 +29,7 @@ import { formatDay, formatDays, requestDates, typeLabel, nameOf, initials, avata
 import { waitingFor } from "../data/waiting.js";
 import { getLocationChange, homeOf } from "../../../assets/js/data/locations-store.js";
 import { getProfileChange, changeText } from "../../../assets/js/data/employee-record.js";
-import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, OVERTIME_FLOW, UNLOCK_FLOW, VISIT_FLOW, VISIT_LOCATION_FLOW, DecisionButtons } from "../components/Decision.jsx";
+import { useDecision, LEAVE_FLOW, CORRECTION_FLOW, EXPENSE_FLOW, ASSET_FLOW, SALARY_FLOW, LOCATION_FLOW, PROFILE_FLOW, OVERTIME_FLOW, UNLOCK_FLOW, VISIT_FLOW, VISIT_LOCATION_FLOW, IT_FLOW, DecisionButtons } from "../components/Decision.jsx";
 import { unlockRequestItem } from "../../../assets/js/data/lockouts.js";   // F2
 import { overtimeItem } from "../../../assets/js/data/overtime-store.js";
 import { getVisit } from "../../../assets/js/data/visits-store.js";   // CV1
@@ -38,25 +38,35 @@ import { correctionContext } from "../../../assets/js/data/night-fix.js";
 import { rupees } from "./payroll.jsx";
 import { Attachment } from "./files.jsx";   // FS1
 import { useData } from "../data/hooks.js";
-import { pageUrl } from "../routes.js";
+import { getItRequest, needsBreakGlass, itNoticesFor, markNoticeRead } from "../../../assets/js/data/it-desk.js";   // IT2
+import { TYPES as IT_TYPES } from "../../../assets/js/data/it-rules.js";
+import { PRIORITY_LABEL } from "./it.jsx";
+import { bump } from "../data/bus.js";
+import { pageUrl, IT_REQUEST } from "../routes.js";
 
 const INBOX = pageUrl("requests/approvals-inbox.html");
 const BELL_SHOWN = 5;
+const IT_NOTICE = { assigned: "Assigned to someone in IT", approved: "Approved by the Admin", rejected: "Sent back by the Admin", done: "Done" };
 export const GONE = "This request no longer exists.";
 export const DECIDED = "This request was already decided.";
 export const NOT_YOURS = "It's no longer waiting for you.";
 const capital = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
-const LOOKUP = { leave: getRequest, corrections: getRegularization, expenses: getExpense, assets: getAssetRequest, salary: (id) => salaryProposals().find((p) => p.id === id) ?? null, locations: getLocationChange, profile: getProfileChange, overtime: overtimeItem, unlock: unlockRequestItem, visits: (id) => { const v = getVisit(id); return v ? { ...v, userId: v.personId } : null; },
+// IT2: an IT request waiting for an Admin: the card shows who it is about; "pending" while it still waits (then it is not this person's)
+const itLookup = (id) => { const r = getItRequest(getCurrentUserId(), id); return r ? { ...r, userId: r.subjectPersonId ?? r.requesterId, status: r.status === "awaiting-approval" ? "pending" : r.status } : null; };
+const itRows = (r) => [["Request", r.title], ["Type", IT_TYPES[r.type]?.label ?? r.type], ["Raised by", nameOf(r.requesterId)], ...(r.subjectPersonId && r.subjectPersonId !== r.requesterId ? [["About", nameOf(r.subjectPersonId)]] : []),
+  ["Priority", PRIORITY_LABEL[r.priority] ?? r.priority], ...(needsBreakGlass(getCurrentUserId(), r.id) ? [["Note", "You are the only Admin: approving needs your written reason (break-glass)"]] : [])];
+const LOOKUP = { itApprovals: itLookup, leave: getRequest, corrections: getRegularization, expenses: getExpense, assets: getAssetRequest, salary: (id) => salaryProposals().find((p) => p.id === id) ?? null, locations: getLocationChange, profile: getProfileChange, overtime: overtimeItem, unlock: unlockRequestItem, visits: (id) => { const v = getVisit(id); return v ? { ...v, userId: v.personId } : null; },
   // CV1b: a location-unavailable punch: "pending" while its OK is still waiting (then it is not this person's), "approved" once settled, null when gone
   visitLocations: (id) => { const [vid, date, side] = String(id).split(":"); const v = getVisit(vid); const p = v?.days?.[date]?.[side === "out" ? "out" : "in"]; return p ? { id, userId: v.personId, status: p.needsOk && !p.okBy ? "pending" : "approved" } : null; } };
-const WHAT = { leave: (r) => typeLabel(r.type), corrections: () => "Regularization", expenses: () => "Expense claim", assets: () => "Asset request", salary: () => "Salary change", locations: (r) => `${capital(r.kind)} home location change`, profile: () => "Bank and tax details change", overtime: () => "Overtime", unlock: () => "Locked account", visits: (v) => (v.sameDay ? "Visit, started today" : "Client / official visit"), visitLocations: (v) => `Visit location: ${v.side === "out" ? "check-out" : "check-in"} without a location` };
+const WHAT = { itApprovals: (r) => `IT request: ${IT_TYPES[r.type]?.label ?? r.type}`, leave: (r) => typeLabel(r.type), corrections: () => "Regularization", expenses: () => "Expense claim", assets: () => "Asset request", salary: () => "Salary change", locations: (r) => `${capital(r.kind)} home location change`, profile: () => "Bank and tax details change", overtime: () => "Overtime", unlock: () => "Locked account", visits: (v) => (v.sameDay ? "Visit, started today" : "Client / official visit"), visitLocations: (v) => `Visit location: ${v.side === "out" ? "check-out" : "check-in"} without a location` };
 const CHAIN_STAGE = { manager: "Manager", hr: "HR" };
 const STAGE = {
   leave: (r) => CHAIN_STAGE[r.stage] ?? r.stage, corrections: (r) => CHAIN_STAGE[r.stage] ?? r.stage,
   expenses: (r) => capital(EXPENSE_STAGE[r.stage] ?? r.stage), assets: (r) => capital(ASSET_STAGE[r.stage] ?? r.stage),
 };
-const SINCE = { leave: (r) => r.history[0].at, corrections: (r) => r.history[0].at, expenses: (r) => r.history.at(-1).at, assets: (r) => r.history.at(-1).at, salary: (p) => p.enteredAt, locations: (r) => r.requestedAt, profile: (r) => r.requestedAt, overtime: (o) => o.requestedAt, unlock: (q) => q.requestedAt, visits: (v) => v.requestedAt ?? v.createdAt, visitLocations: (v) => v.requestedAt };
+const SINCE = { itApprovals: (r) => r.createdAt, leave: (r) => r.history[0].at, corrections: (r) => r.history[0].at, expenses: (r) => r.history.at(-1).at, assets: (r) => r.history.at(-1).at, salary: (p) => p.enteredAt, locations: (r) => r.requestedAt, profile: (r) => r.requestedAt, overtime: (o) => o.requestedAt, unlock: (q) => q.requestedAt, visits: (v) => v.requestedAt ?? v.createdAt, visitLocations: (v) => v.requestedAt };
 const ROWS = {
+  itApprovals: itRows,
   leave: (r) => [["Dates", requestDates(r)], ["Days", formatDays(r.days)], ["Applied", formatDay(r.appliedOn)]],
   corrections: (r) => [["Date", formatDay(r.date)], ["Issue", ISSUE_LABEL[r.issue] ?? r.issue], ["Recorded", r.recordedTime], ["Corrected to", `${r.time}${correctionContext(r.userId, r.date, r.time)?.nextDay ? " (next day)" : ""}`], ["Applied", formatDay(r.appliedOn)]],   // CV1: a night shift's morning
   expenses: (c) => [["Amount", rupees(c.amount)], ["Category", categoryLabel(c.category)], ["Spent on", c.date ? formatDay(c.date) : ""], ["Receipt", <Attachment key="r" linkTo={{ type: "expense", id: c.id }} oldText={c.receipt} empty="None" />], ["Applied", formatDay(c.appliedOn)]],   // FS1: the file, checked
@@ -76,7 +86,7 @@ const ROWS = {
   overtime: (o) => [["Date", formatDay(o.date)], ["Shift", `${o.shiftName}, ends ${o.shiftEnd}`], ["Checked out", o.checkOut], ["Overtime", [Math.floor(o.minutes / 60) ? `${Math.floor(o.minutes / 60)} h` : "", o.minutes % 60 ? `${o.minutes % 60} min` : ""].filter(Boolean).join(" ")]],   // SH1
 };
 // The buttons' permission, as the inbox's rows carry it: the manager stage and salary changes go by relationship / record.
-const PERMISSION = { leave: "leave:approve", corrections: "attendance:approve", expenses: "expenses:approve", assets: "assets:approve", locations: "locations:review", overtime: "overtime:approve", unlock: "accounts:unlock", visits: "visits:approve", visitLocations: "visits:approve" };
+const PERMISSION = { itApprovals: "it:approve", leave: "leave:approve", corrections: "attendance:approve", expenses: "expenses:approve", assets: "assets:approve", locations: "locations:review", overtime: "overtime:approve", unlock: "accounts:unlock", visits: "visits:approve", visitLocations: "visits:approve" };
 
 export function waitingSince(timestamp) {
   const minutes = Math.max(0, Math.floor((Date.now() - Date.parse(timestamp)) / 60000));
@@ -215,6 +225,7 @@ function waitingList() {
 function BellPanel({ onClose }) {
   const ref = useRef(null);
   const d = useData(waitingList, []);
+  const updates = useData(() => itNoticesFor(getCurrentUserId(), { unreadOnly: true }), []);
   const [pos] = useState(() => {
     const box = currentBell()?.getBoundingClientRect();
     return box ? { "--bell-top": `${Math.round(box.bottom + 6)}px`, "--bell-right": `${Math.max(8, Math.round(document.documentElement.clientWidth - box.right))}px` } : {};
@@ -240,6 +251,20 @@ function BellPanel({ onClose }) {
             ))}
           </ul>
         ) : <p className="bell-panel__empty">Nothing is waiting for you.</p>}
+        {updates.length > 0 && (
+          <>
+            <div className="bell-panel__header"><h3 className="bell-panel__title" id="bell-it-title">Your IT requests</h3></div>
+            <ul className="bell-panel__list" id="bell-it-updates" aria-labelledby="bell-it-title">
+              {updates.slice(0, BELL_SHOWN).map((n) => (
+                <li key={n.id} data-notice={n.id}>
+                  <a className="bell-panel__item" href={`${pageUrl(IT_REQUEST)}?id=${n.requestId}`} onClick={() => { markNoticeRead(getCurrentUserId(), n.id); bump(); }}>
+                    <span className="bell-panel__text"><span className="bell-panel__name">{n.requestId}</span><span className="bell-panel__what">{IT_NOTICE[n.kind] ?? n.kind}</span></span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
         <div className="bell-panel__footer"><InboxLink text="See all" /></div>
       </div>
     </div>
@@ -252,7 +277,7 @@ export function CardHost() {
   const open = useBellOpen();
   const { pathname } = useLocation();
   const opened = useRef({ opener: null, refresh: null, stale: false, width: 0 });
-  const flows = { leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW), overtime: useDecision(OVERTIME_FLOW), unlock: useDecision(UNLOCK_FLOW), visits: useDecision(VISIT_FLOW), visitLocations: useDecision(VISIT_LOCATION_FLOW) };
+  const flows = { itApprovals: useDecision(IT_FLOW), leave: useDecision(LEAVE_FLOW), corrections: useDecision(CORRECTION_FLOW), expenses: useDecision(EXPENSE_FLOW), assets: useDecision(ASSET_FLOW), salary: useDecision(SALARY_FLOW), locations: useDecision(LOCATION_FLOW), profile: useDecision(PROFILE_FLOW), overtime: useDecision(OVERTIME_FLOW), unlock: useDecision(UNLOCK_FLOW), visits: useDecision(VISIT_FLOW), visitLocations: useDecision(VISIT_LOCATION_FLOW) };
   const focusBack = () => {
     const back = connected(opened.current.opener) ? opened.current.opener : currentBell();
     back?.focus?.();

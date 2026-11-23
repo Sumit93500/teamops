@@ -73,7 +73,7 @@ check("X4", "no seeded person holds the IT role, and DEPARTMENTS (the seed) is u
 section("R. The role, the department, the permissions");
 const NEWP = ["it:requests-handle", "it:requests-create", "it:approve", "it:activity-review", "it:licences-manage", "it:licences-view-costs", "it:account-prepare", "it:offboard"];
 check("R1", "eight it:* permissions; 122 in all, in 47 modules (114 / 46 before IT1)", NEWP.every((p) => PE.ALL_PERMISSIONS.includes(p)) && PE.ALL_PERMISSIONS.length === 122 && Object.keys(PE.PERMISSIONS).length === 47, `${PE.ALL_PERMISSIONS.length} / ${Object.keys(PE.PERMISSIONS).length}`);
-check("R2", "five roles: Admin 119, HR 64, Finance 56, Employee 31, IT 42; the IT role is labelled IT", j(Object.fromEntries(Object.entries(RO.ROLES).map(([k, r]) => [k, r.permissions.length]))) === j({ admin: 119, hr: 64, fin: 56, emp: 31, it: 42 }) && RO.ROLES.it.label === "IT" && j(RO.ROLE_KEYS) === j(["admin", "hr", "fin", "emp", "it"]));
+check("R2", "five roles: Admin 119, HR 63 (IT2: was 64), Finance 56, Employee 31, IT 42; the IT role is labelled IT", j(Object.fromEntries(Object.entries(RO.ROLES).map(([k, r]) => [k, r.permissions.length]))) === j({ admin: 119, hr: 63, fin: 56, emp: 31, it: 42 }) && RO.ROLES.it.label === "IT" && j(RO.ROLE_KEYS) === j(["admin", "hr", "fin", "emp", "it"]));
 const holders = (p) => RO.ROLE_KEYS.filter((k) => RO.ROLES[k].permissions.includes(p)).join(" ");
 check("R3", "who holds each: handle / prepare / offboard / licences IT and Admin; create everyone; approve and activity-review the Admin only; costs Finance and Admin", j(NEWP.map(holders)) === j(["admin it", "admin hr fin emp it", "admin", "admin", "admin it", "admin fin", "admin it", "admin it"]), j(NEWP.map(holders)));
 check("R4", "IT holds the custodian's five asset permissions (and the Admin still does, through every permission)", ["assets:manage", "assets:issue", "assets:maintain", "vendors:manage", "stock:move"].every((p) => RO.ROLES.it.permissions.includes(p) && RO.ROLES.admin.permissions.includes(p)));
@@ -100,7 +100,7 @@ section("A. Account creation by IT, approved by the Admin");
 fresh();
 const meghna = hire(PRIYA, "Meghna Rao", "meghna.rao@northwind.com");
 const hrDirect = await C.createAccount(PRIYA, meghna, NOW);
-check("A1", "HR can't make sign-in details any more (code needs-it), nor a reset for someone with no sign-in", hrDirect.code === "needs-it" && (await C.issueReset(PRIYA, meghna, "temp", NOW)).code === "none" && (await C.issueReset(ADMIN, meghna, "temp", NOW)).code === "none" && !creds().accounts[meghna]);
+check("A1", "HR can't make sign-in details any more (code needs-it), nor a reset for someone with no sign-in", hrDirect.code === "needs-it" && (await C.issueReset(PRIYA, meghna, "temp", NOW)).code === "not-allowed" /* IT2 (behaviour; was "none": HR is refused before the account is looked at) */ && (await C.issueReset(ADMIN, meghna, "temp", NOW)).code === "none" && !creds().accounts[meghna]);
 const sign = await D.newSignIn(PRIYA, meghna, NOW);
 const nar = sign.requestId;
 check("A2", "HR's employee form opens a new-account request instead: no credential exists, the record says 'no sign-in yet'", sign.ok && sign.requested && st(nar) === "open" && req(nar).type === "new-account" && req(nar).subjectPersonId === meghna && C.accountOf(meghna, NOW).status === "none" && !creds().accounts[meghna] && !("tempPassword" in sign));

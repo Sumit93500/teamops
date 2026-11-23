@@ -50,6 +50,8 @@ async function open(base, who, page, { width = 1280, theme = "light", prep = nul
   await ctx.addInitScript(([w, th]) => {
     if (sessionStorage.getItem("d-set")) return;
     sessionStorage.setItem("d-set", "1"); localStorage.clear();
+    localStorage.setItem("officeos:asset-requests", JSON.stringify({ version: 1, nextNum: 3, records: [{ id: "ARQ-1", userId: "EMP-1105", assetType: "laptop", reason: "My laptop is over 3 years old and too slow for builds", replacesTag: "AST-0188", status: "cancelled", stage: "done", managerId: "EMP-1029", appliedOn: "2026-09-17", assetTag: null, history: [{ stage: "manager", byUserId: "EMP-1105", decision: "applied", at: "2026-09-17T04:45:00.000Z", note: "" }, { stage: "done", byUserId: "EMP-1105", decision: "cancelled", at: "2026-09-18T04:45:00.000Z", note: "" }] }, { id: "ARQ-2", userId: "EMP-1017", assetType: "monitor", reason: "A second monitor for the weekly sales reports", replacesTag: null, status: "cancelled", stage: "done", managerId: null, appliedOn: "2026-09-24", assetTag: null, history: [{ stage: "manager", byUserId: "EMP-1017", decision: "applied", at: "2026-09-24T07:10:00.000Z", note: "" }, { stage: "done", byUserId: "EMP-1017", decision: "cancelled", at: "2026-09-25T07:10:00.000Z", note: "" }] }] }));   // IT2 (behaviour): the old asset-request chain is closed in the app (nothing of it waits), so both sides start with its two seed requests cancelled
+
     localStorage.setItem("officeos:theme", JSON.stringify(th));
     localStorage.setItem("officeos:session", JSON.stringify({ userLabel: w[0], employeeId: w[1], signedInAt: 1790000000000 }));
   }, [WHO[who], theme]);
@@ -87,7 +89,7 @@ const read = (t) => t.evaluate(() => {
     chartLabel: chart?.getAttribute("aria-label") ?? null,
     bars: chart ? [...chart.querySelectorAll(".chart__bar")].map((b) => [b.title, b.className.replace("chart__bar", "").trim().replace("chart__bar--", ""), b.style.getPropertyValue("--h")]) : null,
     labels: chart ? [...chart.querySelectorAll(".chart__label")].map(tx) : null,
-    metas: [...m.querySelectorAll(".card__meta")].map(tx), notes: [...m.querySelectorAll(".card__body > p.text-xs")].map(tx),
+    metas: [...m.querySelectorAll(".card__meta")].filter((e) => !e.closest("#admin-it-card")).map(tx), /* IT2: the Admin dashboard's IT card is the app's */ notes: [...m.querySelectorAll(".card__body > p.text-xs")].map(tx),
     // D2b: the headcount card is the design system's BarChart on the new side; both sides are read as "<department> <count>"
     // pairs (old: the bar rows; new: the chart's data table), so the text compares exactly and the drawing doesn't
     cards: [...m.querySelectorAll(".list, .activity, #headcount-bars, #fin-dept-bars, #balance-card")].map((c) => [c.id || c.className, c.id !== "headcount-bars" && c.id !== "fin-dept-bars" ? tx(c)

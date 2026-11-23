@@ -167,7 +167,7 @@ check("C3", "role editor, Finance: pii:view not ticked; '48 of 102' (SH1: was 42
 await open("access/role-editor.html", "aarav", "?role=hr");
 // Round 11N (behaviour; behaviour; was 77: users:delete (round 11N) is a 78th permission, so the page draws it)
 // Round Manager scoping part 1 (behaviour; was 45 of 78: dashboard:finance is a 79th permission)
-check("C4", "role editor, HR: pii:view still ticked; '58 of 102' (SH1: was 50 of 94; E1b: was 50 of 93; E1: was 49 of 91; F1: was 49 of 90; L0: was 45 of 79)", ticked().includes("pii:view") && permMeta() === "64 of 122" /* IT1 (behaviour; was 63 of 114) */ /* AS1 (behaviour; was 61 of 105) */, permMeta());   // FS1 (behaviour; was 58 of 102)
+check("C4", "role editor, HR: pii:view still ticked; '58 of 102' (SH1: was 50 of 94; E1b: was 50 of 93; E1: was 49 of 91; F1: was 49 of 90; L0: was 45 of 79)", ticked().includes("pii:view") && permMeta() === "63 of 122" /* IT2 (behaviour; was 64: HR no longer holds accounts:reset) */ /* IT1 (behaviour; was 63 of 114) */ /* AS1 (behaviour; was 61 of 105) */, permMeta());   // FS1 (behaviour; was 58 of 102)
 const dd = (label) => [...d.querySelectorAll(".kv__row")].find((r) => txt(r.querySelector("dt")) === label)?.querySelector("dd");
 const reveal = () => ["Bank account", "PAN"].map((l) => dd(l)?.querySelector("button")?.hidden);
 await open("users/user-profile.html", "kabir", "?id=EMP-1105");

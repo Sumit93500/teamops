@@ -211,11 +211,17 @@ The old store's 7 tagged assets, 12 items, their 15 movements and 5 vendors are 
   - The tag is chosen when the asset is handed over, so nothing is reserved while a request waits.
 - **Status:** pending, approved, fulfilled, rejected, cancelled or closed.
 
+## Complete details and access cards (IT2)
+
+The imported assets have no purchase date, price, vendor or serial number. `detailsToComplete` (for `assets:manage`: IT and the Admin) lists them with the fields each still lacks and `completeDetails` fills them with Edit's validation: the price only with `assets:view-values`, a field already filled is refused, nothing outside the four. The page is Complete details (linked from Inventory's note); each field is its own flag and the "Details missing" label goes once the date and price are in.
+
+**Access cards are stock items, not fixed assets** (`asset-rules.js STOCK_ONLY_CATEGORIES`): the register refuses the category ("Access cards are stock items, not fixed assets: record them in Stock movements.") and so does an asset request. Existing records, the old register's access cards included, are unchanged.
+
 ## Not built yet
 
 - **Dashboard cards** for assets (low stock, overdue service): the data is there (`lowStock`, `overdueService`), no card shows it yet.
 - **Unit prices** are not carried over from the old inventory; the new item has no price field.
 - **`tagEdited`** (change a tag once) is in the data layer; the edit dialog doesn't offer it.
-- **The old asset-requests chain** (manager, Admin, fulfilment) is left as it is; the new requests go through the IT desk. Merging the two is a ruling item.
+- **The old asset-requests chain** (manager, Admin, fulfilment) is closed in IT2: nothing new is made and nothing waits on it; its history stays readable (see [it-desk.md](it-desk.md)).
 - **Income-Tax Act block rates** (the Finance round).
 - **Lost and transfer** in the lifecycle, and "the approver can't also hand over".

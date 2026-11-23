@@ -277,15 +277,20 @@ if (ONLY.includes("R")) {
   await t.click('[data-demo-role="hr"]'); await settle(t, 700);
   await navTo(t, "/pages/users/user-profile.html?id=EMP-1105"); await settle(t, 700);
   const hrButtons = await t.evaluate(() => [...document.querySelectorAll("#account-actions button")].map((b) => b.textContent));
-  check("R9", "HR: Send reset link and New temporary password, no Unlock or Disable (accounts:reset only); no account events", j(hrButtons) === j(["Send reset link", "New temporary password"]) && !(await t.$("#account-events")), j(hrButtons));
+  check("R9", "HR: no direct reset any more (IT2: accounts:reset is the Admin's): 'Ask IT to reset the password' only; no Unlock or Disable; no account events", j(hrButtons) === j(["Ask IT to reset the password"]) && !(await t.$("#account-events")), j(hrButtons));
+  await signOut(t);   // IT2 (behaviour): the reset is the Admin's now
+  await t.click('[data-demo-role="admin"]'); await settle(t, 700);
+  await navTo(t, "/pages/users/user-profile.html?id=EMP-1105"); await settle(t, 700);
   await t.click('#account-actions button:has-text("Send reset link")'); await settle(t, 300);
   await t.click(".modal.is-open .ds-btn--primary, .modal.is-open .btn--primary"); await settle(t, 900);
   const link = await text(t, "#share-link");
   if (link) secrets.add(tokenOf(link));
-  check("R10", "HR's reset link is shown once in the share dialog (60 minutes)", /reset-password\.html\?token=/.test(link ?? "") && /60 minutes/.test(await text(t, "#share-details")), link);
+  check("R10", "the Admin's reset link is shown once in the share dialog (60 minutes) (IT2: was HR's)", /reset-password\.html\?token=/.test(link ?? "") && /60 minutes/.test(await text(t, "#share-details")), link);
   await t.click("#share-modal .ds-btn--primary"); await settle(t, 300);
+  await signOut(t);
+  await t.click('[data-demo-role="hr"]'); await settle(t, 700);
   await navTo(t, "/pages/users/user-profile.html?id=EMP-1001"); await settle(t, 700);
-  check("R11", "HR on the Admin's profile: no reset buttons", (await t.$("#account-actions")) === null);
+  check("R11", "HR on the Admin's profile: no reset buttons (IT2: only 'Ask IT to reset the password', which an Admin approves)", j(await t.evaluate(() => [...document.querySelectorAll("#account-actions button")].map((b) => b.textContent))) === j(["Ask IT to reset the password"]));
   await scan(t, "R12");
   await n.ctx.close();
 }

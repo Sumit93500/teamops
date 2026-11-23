@@ -383,7 +383,10 @@ export async function issueReset(actorId, userId, mode = "link", now = Date.now(
   const actor = getUser(actorId), user = getUser(userId);
   const why = mayHelp(actor, user, "accounts:reset");
   if (why) return fail(why, "not-allowed");
-  return resetCore(actorId, user, mode, now);
+  const res = await resetCore(actorId, user, mode, now);
+  // IT2: HR no longer holds accounts:reset; an Admin's direct reset is the documented override, flagged on the IT review trail
+  if (res.ok && actor.role === "admin") recordAdminOverride(actorId, userId, "credential-issued", `An Admin issued ${nameOfId(userId)} ${mode === "temp" ? "a temporary password" : "a reset link"} directly (admin override); the secret was not kept.`, now);
+  return res;
 }
 
 // IT1: a reset for a password-reset request, by its IT assignee (approved first when the account holds Admin, HR or Finance), or by
