@@ -24,7 +24,7 @@ const GROUPS = [
   ["Finance", { payroll: "Payroll", payslips: "Everyone's payslips", payslip: "Own payslip", salary: "Salaries", "payroll-rules": "Pay rates and rules", expenses: "Expenses", tax: "Tax", declarations: "Tax declarations" }],   // P4: payroll-rules
   ["Operations", { inventory: "Inventory", assets: "Assets", vendors: "Vendors" }],
   ["Offices & locations", { offices: "Offices", company: "Company profile", locations: "Home locations", devices: "Devices" }],   // L0
-  ["System", { reports: "Reports", audit: "Audit log", settings: "Settings", backup: "Backup" }],
+  ["System", { reports: "Reports", audit: "Audit log", import: "Imports", export: "Exports", settings: "Settings", backup: "Backup" }],   // I1: import, export
   ["Your own account", { profile: "Profile", password: "Password", sessions: "Sessions", notifications: "Notifications" }],
 ];
 const ROLES_LIST = pageUrl("access/roles-list.html");

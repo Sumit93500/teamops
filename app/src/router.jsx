@@ -67,12 +67,15 @@ import MyItRequests from "./pages/MyItRequests.jsx";
 import Licences from "./pages/Licences.jsx";
 import Offboarding from "./pages/Offboarding.jsx";
 import ItReview from "./pages/ItReview.jsx";
+import ImportEmployees from "./pages/ImportEmployees.jsx";   // I1
+import ImportHistory from "./pages/ImportHistory.jsx";
+import ExportPay from "./pages/ExportPay.jsx";
 import CompleteDetails from "./pages/CompleteDetails.jsx";
 import { isPlaceholder } from "./shell/placeholders.js";
 import { Login, ForgotPassword, ResetPassword, SetPassword, SET_PASSWORD } from "./pages/AuthPages.jsx";
 import MailOutbox, { MAIL_OUTBOX } from "./pages/MailOutbox.jsx";
 import { sessionAllowed, mustChangePassword } from "../../assets/js/data/credentials.js";
-import { IT_DASHBOARD, IT_REQUESTS, IT_REQUEST, IT_NEW, IT_MINE, IT_LICENCES, IT_OFFBOARDING, IT_REVIEW, COMPLETE_DETAILS } from "./routes.js";
+import { IT_DASHBOARD, IT_REQUESTS, IT_REQUEST, IT_NEW, IT_MINE, IT_LICENCES, IT_OFFBOARDING, IT_REVIEW, COMPLETE_DETAILS, IMPORT_EMPLOYEES, IMPORT_HISTORY, EXPORT_PAY } from "./routes.js";
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT, OFFICES, MY_LOCATIONS, APPEARANCE, RATES_RULES, LEAVE_POLICY_PAGE, MY_VISITS, TEAM_VISITS, VISIT_PAGE } from "./routes.js";
 import { useSession, signOutNow } from "./data/hooks.js";
 
@@ -171,6 +174,9 @@ export const router = createBrowserRouter([{ element: <AccountGate />, children:
   { path: pageUrl(IT_OFFBOARDING), element: <Offboarding /> },
   { path: pageUrl(IT_REVIEW), element: <ItReview /> },
   { path: pageUrl(COMPLETE_DETAILS), element: <CompleteDetails /> },   // IT2: the imported assets that still lack details
+  { path: pageUrl(IMPORT_EMPLOYEES), element: <ImportEmployees /> },   // I1: imports and exports
+  { path: pageUrl(IMPORT_HISTORY), element: <ImportHistory /> },
+  { path: pageUrl(EXPORT_PAY), element: <ExportPay /> },
   ...ALL_PAGES.map((page) => ({ path: pageUrl(page), element: <RequireRoute page={page}>{pageElement(page)}</RequireRoute> })),
   { path: "*", element: <Navigate to={pageUrl("errors/404.html")} replace /> },
 ] }]);

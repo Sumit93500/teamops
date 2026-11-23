@@ -1,14 +1,14 @@
 // users/users-list.html (L1), built in the design system. What the old page (pages/users-list.js) does, in its words:
 // every employee from the live store; status tabs All / Active / On leave / Inactive with their counts; search by name,
 // email or ID; department and role filters (all combine); 10 a page; ?dept=<code> from Departments' "View people";
-// Export (the filtered rows, ui/csv-export.js, "users-<date>.csv"); Edit with users:edit; Add employee with users:create;
+// Export (I1: the shared export dialog, export:employees; it was the filtered rows through ui/csv-export.js, "users-<date>.csv"); Import
+// (I1: import:employees); Edit with users:edit; Add employee with users:create;
 // Reset demo data for Admin and HR only, after the same question, then a reload. New with the design: Clear All.
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getAllUsers, getAllDepartments, resetDemoData } from "../../../assets/js/data/store.js";
 import { DEPARTMENTS } from "../../../assets/js/data/users.js";
 import { ROLES } from "../../../assets/js/config/roles.js";
-import { downloadCsv } from "../../../assets/js/ui/csv-export.js";
 import { resetLeaveData } from "../../../assets/js/data/leave-store.js";
 import { resetAttendanceData } from "../../../assets/js/data/attendance-store.js";
 import { resetPayrollData } from "../../../assets/js/data/payroll-store.js";
@@ -30,7 +30,9 @@ import { resetPayStructures } from "../../../assets/js/data/pay-structure.js";
 import { resetPaySettings } from "../../../assets/js/data/pay-settings.js";
 import { resetLeavePolicy } from "../../../assets/js/data/leave-policy.js";   // P4: the pay rules, templates, start dates and the leave policy are demo data too
 import { useData, useSession, useCan } from "../data/hooks.js";
-import { pageUrl } from "../routes.js";
+import { pageUrl, IMPORT_EMPLOYEES } from "../routes.js";
+import { ExportDialog } from "../ui/impex.jsx";   // I1
+import { useToast } from "../ui/Toast.jsx";
 import Frame from "../ui/Frame.jsx";
 import Table from "../components/Table.jsx";
 import { useConfirm } from "../components/Confirm.jsx";
@@ -44,6 +46,7 @@ export const STATUS = { "active": { label: "Active", tone: "success" }, "on-leav
 const TABS = [["all", "All"], ["active", "Active"], ["on-leave", "On leave"], ["inactive", "Inactive"]];
 export const RESET_CONFIRM = "This discards every change made to users, departments, leave, holidays, attendance, salaries, salary changes, payroll runs, expense claims, inventory, asset requests, deleted people's names, the company profile, offices, home locations and registered devices in this browser. Continue?";
 const PLUS = "M12 5v14M5 12h14";
+const UPLOAD = "M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3", DOWNLOAD = "M12 4v12M7 11l5 5 5-5M4 20h16";   // I1
 
 // Live departments first, so ones added later have names too; the built-in list covers any other code.
 export const departmentName = (code) => getAllDepartments().find((d) => d.code === code)?.name ?? DEPARTMENTS.find((d) => d.code === code)?.name ?? code ?? "";
@@ -52,7 +55,8 @@ export const statusLabel = (status) => STATUS[status]?.label ?? status ?? "";
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 function Content() {
-  const { role } = useSession();
+  const { role, userId } = useSession();
+  const toast = useToast();
   const canEdit = useCan("users:edit"), canCreate = useCan("users:create");
   const confirm = useConfirm();
   const [params] = useSearchParams();
@@ -74,8 +78,12 @@ function Content() {
   const counts = { all: users.length, active: 0, "on-leave": 0, inactive: 0 };
   users.forEach((u) => { if (u.status in counts) counts[u.status] += 1; });
 
-  const exportCsv = () => downloadCsv([["ID", "Name", "Email", "Designation", "Department", "Role", "Status"],
-    ...filtered.map((u) => [u.id, u.name, u.email, u.designation, departmentName(u.department), roleLabel(u.role), statusLabel(u.status)])], "users");
+  // I1: Export is the shared export (data/export.js) for export:employees: the filtered rows or everyone, CSV or Excel, only the fields the
+  // exporter may see, masked as on the profile; Import goes to Import employees (import:employees)
+  const [exporting, setExporting] = useState(false);
+  const canExport = useCan("export:employees"), canImport = useCan("import:employees");
+  const filterWords = [status !== "all" && `Status: ${statusLabel(status)}`, dept && `Department: ${departmentName(dept)}`, roleKey && `Role: ${roleLabel(roleKey)}`,
+    signIn && "Sign-in: locked", query.trim() && `Search: "${query.trim()}"`].filter(Boolean).join("; ");
   const resetAll = async () => {
     if (!(await confirm({ message: RESET_CONFIRM, confirmLabel: "Reset demo data", danger: true }))) return;
     resetDemoData(); resetLeaveData(); resetAttendanceData(); resetPayrollData(); resetExpenseData(); resetAssetRegister(); resetStockData(); resetLicences(); resetItDesk(); resetAssetRequestData();   // AS2: the new register, ledger and IT desk (the old inventory store is the old site's: not touched) resetLocationData(); resetShiftData(); resetPayRules(); resetPayStructures(); resetPaySettings(); resetLeavePolicy();
@@ -98,7 +106,8 @@ function Content() {
       <PageHeader title="Users" subtitle={`${plural(users.length, "employee", "employees")} across ${plural(departments.length, "department", "departments")}`}
         actions={<>
           {["admin", "hr"].includes(role?.key) && <button type="button" className="ds-btn ds-btn--ghost" onClick={resetAll}>Reset demo data</button>}
-          <button type="button" className="ds-btn" onClick={exportCsv}>Export</button>
+          {canImport && <Link className="ds-btn" id="import-link" to={pageUrl(IMPORT_EMPLOYEES)}><Icon d={UPLOAD} />Import</Link>}
+          {canExport && <button type="button" className="ds-btn" id="export-open" onClick={() => setExporting(true)}><Icon d={DOWNLOAD} />Export</button>}
           {canCreate && <Link className="ds-btn ds-btn--primary" to={pageUrl("users/user-form.html")}><Icon d={PLUS} />Add employee</Link>}
         </>} />
       <Card id="users-card">
@@ -119,6 +128,8 @@ function Content() {
           <Table bare tableClass="table table--tight" columns={columns} rows={filtered} page={page} onPageChange={setPage} empty="No employees match these filters." tableId="users-table" />
         </div>
       </Card>
+      {canExport && <ExportDialog open={exporting} onClose={() => setExporting(false)} module="employees" userId={userId} total={users.length}
+        matching={filterWords ? filtered.map((u) => u.id) : null} filters={filterWords} onDone={(r) => toast(`Downloaded ${r.name} (${r.rows} ${r.rows === 1 ? "row" : "rows"}).`, "success")} />}
     </>
   );
 }

@@ -51,6 +51,11 @@ export const IT_LICENCES = "it/licences.html";
 export const IT_OFFBOARDING = "it/offboarding.html";
 export const IT_REVIEW = "it/review.html";
 export const COMPLETE_DETAILS = "inventory/complete-details.html";
+// I1: imports and exports (shell/importAccess.js): Import employees (import:employees), Import history (import:history-view), Export pay
+// details (export:employees-pay)
+export const IMPORT_EMPLOYEES = "people/import-employees.html";
+export const IMPORT_HISTORY = "people/import-history.html";
+export const EXPORT_PAY = "payroll/export-pay.html";
 
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

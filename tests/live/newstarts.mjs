@@ -280,7 +280,7 @@ const HERE = new URL(".", import.meta.url);
 const walk = (dir, base = "") => fs.readdirSync(new URL(`${dir}/${base}`, HERE), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(dir, `${base}${e.name}/`) : [`${base}${e.name}`])).sort();
 const srcAt = (dir, p) => fs.readFileSync(new URL(`${dir}/${p}`, HERE), "utf8");
 const callers = walk("./js").filter((p) => p !== "data/store.js" && /\baddUser\(/.test(srcAt("./js", p)));
-check("P1", "addUser is called by one page script only: pages/user-form.js (the Add page)", j(callers) === j(["pages/user-form.js"]), j(callers));
+check("P1", "addUser is called by one page script only: pages/user-form.js (the Add page)", j(callers) === j(["data/import-employees.js", "pages/user-form.js"]) /* I1 (behaviour): the employee import adds each good row through addUser too, as the Add page does */, j(callers));
 
 // =================================================================
 section("E9. What stays");

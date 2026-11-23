@@ -45,6 +45,10 @@ The user record keeps what it held before; the new fields are in `officeos:emplo
 - `tests/live/emprecord.mjs` (3 zones): the field list, who is who, what each sees, Show, edits and escalation, values, history, requests, completeness.
 - `tests/live/react/e1.mjs`: D (what each role's page holds in its HTML), P (own edits, a request through the approval card, history, completeness), M (the account tabs, change password), A (no "not available in this demo").
 
+## Exports (I1, 2026-11-23)
+
+`exportReader(viewerId)` gives an export ([import-export.md](import-export.md)) each person's plain fields as this viewer may see them, read once for many people: the same relation, the same fields and the same masking as `profileView()`; a sensitive value in full only when the export asks for it and the viewer may Show it (the export logs that once, so there is no `field-revealed` event per person).
+
 ## Bank and statutory details (F2, 2026-11-15)
 
 **Files:** `assets/js/config/ifsc-banks.js` (the bundled table of 51 main banks by IFSC code, `bankFromIfsc`), the rules in `assets/js/config/employee-fields.js`, `bankTogether` in `assets/js/data/employee-record.js`.

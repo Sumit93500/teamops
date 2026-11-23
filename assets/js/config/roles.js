@@ -69,6 +69,7 @@ export const ROLES = {
       // IT2: HR no longer holds accounts:reset; "reset password" opens an IT password-reset request instead (data/it-desk.js openPasswordReset)
       "files:view-expense", "files:view-documents", "files:manage-documents",   // FS1: expense files, every document file, add them for anyone
       "assets:view-all", "stock:view",   // AS1: every asset in the register (no values) and the stock ledger
+      "import:employees", "import:history-view", "export:employees",   // I1: import new employees, the Import history, export the people list
     ],
   },
 
@@ -93,6 +94,7 @@ export const ROLES = {
       "files:view-expense", "files:view-documents",   // FS1: expense files; bank and tax proof among document files (data/files.js)
       "assets:view-all", "assets:view-values", "stock:view", "depreciation:configure",   // AS1: every asset with its values; the stock ledger; depreciation settings
       "it:licences-view-costs",   // IT1: licence costs
+      "export:employees-pay",   // I1: the pay and bank columns Finance already sees, as a file (masked as on the profile)
     ],
   },
 

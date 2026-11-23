@@ -81,6 +81,13 @@ export const PERMISSIONS = {
   // Admin account (IT); offboard: work offboarding checklists (IT). Not overridable. 114 -> 122 in 47 modules; Admin 119, HR 64,
   // Finance 56, Employee 31, IT 42.
   it:            ["requests-handle", "requests-create", "approve", "activity-review", "licences-manage", "licences-view-costs", "account-prepare", "offboard"],
+  // I1 (2026-11-23): imports and exports, one permission per form or module: import:<form>, export:<module> (the pattern later forms and
+  // modules follow). import:employees: new employees from a file (HR, Admin); import:history-view: the Import history, every import and export
+  // (HR, Admin); export:employees: the people list as a file, only what the exporter may see (HR, Admin); export:employees-pay: the pay and
+  // bank columns Finance already sees, masked as on the profile (Finance; the Admin through every permission). IT, managers and employees hold
+  // none. Not overridable. 122 -> 126 in 49 modules; Admin 123, HR 66, Finance 57, Employee 31, IT 42.
+  import:        ["employees", "history-view"],
+  export:        ["employees", "employees-pay"],
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.

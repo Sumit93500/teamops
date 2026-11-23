@@ -1,0 +1,76 @@
+/* Imports and exports (I1): the import wizard (its steps, the drop zone, the chosen file), the history's details, the export dialog's choices.
+   Tokens only (tokens.css). Every class is prefixed ix- so nothing leaks into another page; nothing is told apart by colour alone. */
+
+.ix-steps { overflow-x: auto; padding-bottom: 2px; }
+.ix-steps .stepper { min-width: 520px; }
+@media (max-width: 560px) { .ix-steps .stepper { min-width: 0; } .ix-steps .stepper__text small { display: none; } .ix-steps .stepper__text strong { font-size: var(--ds-text-sm); } }
+.ix-steps .stepper__step.is-current .stepper__text strong { text-decoration: underline; text-underline-offset: 3px; }
+.ix-step-title { margin: 0; font-size: var(--ds-text-lg); }
+.ix-step-title:focus { outline: none; }
+.ix-step-title:focus-visible { outline: 2px solid var(--ds-primary); outline-offset: 2px; border-radius: var(--ds-radius-sm); }
+.ix-lead { margin: 0; color: var(--ds-text-2); }
+.ix-h3 { margin: 0; font-size: var(--ds-text-md); }
+.ix-alert-text { margin: 0; }
+.ix-alert-list { margin: var(--ds-space-2) 0 0; padding-left: 1.2em; }
+.ix-row { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); align-items: center; }
+.ix-actions { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); justify-content: flex-end; align-items: center; }
+.ix-actions .ix-grow { margin-right: auto; }
+@media (max-width: 560px) { .ix-actions { justify-content: stretch; } .ix-actions > .ds-btn { flex: 1 1 100%; justify-content: center; } .ix-actions .ix-grow { margin-right: 0; } }
+
+/* the drop zone: a label for the file input, so a click or Enter on it opens the picker; dashed (a word says it too) */
+.ix-drop { display: grid; justify-items: center; gap: var(--ds-space-2); padding: var(--ds-space-6) var(--ds-space-4); text-align: center; border: 2px dashed var(--ds-border-strong);
+  border-radius: var(--ds-radius-lg); background: var(--ds-surface-2); color: var(--ds-text-1); cursor: pointer; }
+.ix-drop:hover { border-color: var(--ds-primary); }
+.ix-drop.is-over { border-style: solid; border-color: var(--ds-primary); background: var(--ds-primary-soft, var(--ds-surface-3)); }
+.ix-drop:focus-within { outline: 2px solid var(--ds-primary); outline-offset: 2px; }
+.ix-drop[aria-disabled="true"] { cursor: progress; opacity: 0.7; }
+.ix-drop .icon { width: 28px; height: 28px; color: var(--ds-primary); }
+.ix-drop__main { font-weight: var(--ds-weight-semibold); }
+.ix-drop__hint { font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.ix-drop__pick { text-decoration: underline; text-underline-offset: 3px; color: var(--ds-primary); }
+.ix-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+.ix-file { display: flex; flex-wrap: wrap; gap: var(--ds-space-2) var(--ds-space-3); align-items: center; padding: var(--ds-space-3) var(--ds-space-4); border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md); background: var(--ds-surface-1); min-width: 0; }
+.ix-file__name { font-weight: var(--ds-weight-semibold); overflow-wrap: anywhere; min-width: 0; }
+.ix-file__size { color: var(--ds-text-2); font-size: var(--ds-text-sm); }
+.ix-file .ds-btn { margin-left: auto; }
+
+.ix-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ix-kpis .ds-kpi__value { font-size: var(--ds-text-xl); white-space: nowrap; }
+@media (max-width: 760px) { .ix-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.ix-template { display: grid; gap: var(--ds-space-2); }
+.ix-columns { margin: 0; padding-left: 1.2em; columns: 2 220px; column-gap: var(--ds-space-6); font-size: var(--ds-text-sm); }
+.ix-columns li { break-inside: avoid; margin-bottom: 2px; }
+.ix-columns small { color: var(--ds-text-2); }
+
+.ix-confirm { margin: 0; padding-left: 1.2em; display: grid; gap: var(--ds-space-2); }
+.ix-cell { display: grid; gap: 2px; min-width: 0; overflow-wrap: break-word; }
+.ix-cell .ds-pill { justify-self: start; }
+.ix-link { color: var(--ds-primary); text-decoration: underline; text-underline-offset: 2px; font-weight: var(--ds-weight-semibold); }
+@media (min-width: 1024px) { .table .ix-what { min-width: 140px; } .table .ix-file { min-width: 150px; } .table .ix-when { min-width: 120px; } .table .ix-status { white-space: nowrap; } }
+.ix-details > summary { cursor: pointer; font-size: var(--ds-text-sm); color: var(--ds-primary); font-weight: var(--ds-weight-semibold); margin-bottom: var(--ds-space-2); }
+.ix-sub { display: block; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+
+/* status chips: a word and a pattern each */
+.ds-pill[data-ix-status="imported"], .ds-pill[data-ix-status="exported"], .ds-pill[data-ix-status="ready"] { border: 1px solid currentColor; }
+.ds-pill[data-ix-status="checked"] { border: 1px dashed currentColor; }
+.ds-pill[data-ix-status="refused"], .ds-pill[data-ix-status="error"] { border: 1px dotted currentColor; }
+.ds-pill[data-ix-status="failed"], .ds-pill[data-ix-status="duplicate"] { box-shadow: inset 3px 0 0 currentColor; }
+
+/* the export dialog's choices */
+.ix-fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: var(--ds-space-2); min-width: 0; }
+.ix-fieldset legend { padding: 0; margin-bottom: var(--ds-space-1); font-weight: var(--ds-weight-semibold); font-size: var(--ds-text-sm); }
+.ix-choice { display: flex; gap: var(--ds-space-2); align-items: flex-start; font-size: var(--ds-text-sm); cursor: pointer; }
+.ix-choice input { margin-top: 3px; flex: none; accent-color: var(--ds-primary); width: 16px; height: 16px; }
+.ix-choice small { display: block; color: var(--ds-text-2); }
+.ix-dialog { display: grid; gap: var(--ds-space-4); }
+
+.ix-dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--ds-space-1) var(--ds-space-4); font-size: var(--ds-text-sm); }
+.ix-dl__row { display: contents; }
+.ix-dl dt { color: var(--ds-text-2); }
+.ix-dl dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 480px) { .ix-dl { grid-template-columns: minmax(0, 1fr); } .ix-dl dd { margin-bottom: var(--ds-space-2); } }
+.ix-hash { font-family: var(--ds-font-mono, ui-monospace, monospace); font-size: var(--ds-text-xs, 12px); }
+.ix-links { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: var(--ds-space-1) var(--ds-space-3); }

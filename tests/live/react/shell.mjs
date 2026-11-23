@@ -60,7 +60,9 @@ const ruledShell = (s) => ({ ...s, brand: s.brand === "O OfficeOS" ? `N${COMPANY
 const AS2_PAGES = /^\/pages\/inventory\/(items|stock-movements|asset-assignment|vendors)\.html/;
 const withoutAs2 = (s, who, od) => (who === "hr" || who === "fin" ? { ...s, sections: s.sections?.map((x) => { if (!x.items) return x; const kept = x.items.filter((it) => !AS2_PAGES.test(it[1] ?? "")); if (kept.length === x.items.length) return x; /* the group left with My assets alone is drawn by the app's one-item rule, which is not the old site's group: the old section stands for it */ const o = od.sections?.find((y) => y.title === x.title); return o && JSON.stringify(o.items.map((it) => it[1])) === JSON.stringify(kept.map((it) => it[1])) ? o : { ...x, items: kept }; }) } : s);
 // IT2: the IT desk's own sidebar group and Complete details (Assets & inventory, for assets:manage) are the app's: read past on the app's side
-const withoutIt2 = (s) => ({ ...s, sections: s.sections?.filter((x) => x.title !== "IT desk").map((x) => (x.items ? { ...x, items: x.items.filter((it) => !/\/inventory\/complete-details\.html/.test(it[1] ?? "")) } : x)) });
+const withoutIt2 = (s) => ({ ...s, sections: s.sections?.filter((x) => x.title !== "IT desk").map((x) => (x.items ? { ...x, items: x.items.filter((it) => !/\/inventory\/complete-details\.html/.test(it[1] ?? "") && !I1_PAGE.test(it[1] ?? "")) } : x)) });
+// I1: Import employees, Import history (People) and Export pay details (Payroll) are the app's own pages: read past on the app's side
+const I1_PAGE = /\/pages\/(people\/import-(employees|history)|payroll\/export-pay)\.html/;
 const CV1_VISITS = /^\/pages\/visits\/(my|team)-visits\.html/;
 const withoutVisits = (s) => ({ ...s, sections: s.sections?.map((x) => (x.items ? { ...x, items: x.items.filter((it) => !CV1_VISITS.test(it[1] ?? "")) } : x)) });
 const ruledPhone = (s) => (s.toggle?.[0] ? { ...s, shown: [s.shown[0], `About ${COMPANY}`, ...s.shown.slice(1)] } : s);
@@ -168,8 +170,9 @@ if (ONLY.includes("Q")) {
     };
     for (const q of ["le", "pay", "arj", "zzz"]) {
       let [a0, b] = [await res(o.t, q), await res(n.t, q)];
+      b = [b[0], b[1].filter(([, h]) => !h || !I1_PAGE.test(new URL(h, "http://x/pages/leave/").pathname))];   // I1: the app's own import and export pages read past
       const a = [a0[0], a0[1].filter(([, h]) => !h || !F2_PLACE.test(new URL(h, "http://x/pages/leave/").pathname))];   // F2: placeholder pages read past
-      if (a[1].length < a0[1].length) b = [b[0], b[1].slice(0, a[1].length)];   // F2: the result limit lets later matches in where they were
+      if (a[1].length < a0[1].length || b[1].length < a[1].length) { const k = Math.min(a[1].length, b[1].length); a[1] = a[1].slice(0, k); b = [b[0], b[1].slice(0, k)]; }   // F2 (I1: either side shortened)   // F2: the result limit lets later matches in where they were
       const norm = (r) => j([r[0], r[1].map(([x, h, act, role]) => [x, h ? new URL(h, "http://x/pages/leave/").pathname + new URL(h, "http://x/pages/leave/").search : null, act, role])]);
       check(`Q.${who}.${q}`, `${who} searches "${q}"`, norm(a) === norm(b), norm(a) === norm(b) ? `${b[1].length} results` : `old ${norm(a)} new ${norm(b)}`);
     }

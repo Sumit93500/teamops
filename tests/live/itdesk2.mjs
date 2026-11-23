@@ -54,7 +54,7 @@ const LONG = "I am the only Admin and this reset is needed today";
 // ---------- H ----------
 section("H. HR no longer resets directly");
 fresh();
-check("H1", "HR holds 63 permissions and not accounts:reset; the Admin still holds it (119 of 122)", RO.ROLES.hr.permissions.length === 63 && !RO.ROLES.hr.permissions.includes("accounts:reset") && RO.ROLES.admin.permissions.includes("accounts:reset") && RO.ROLES.admin.permissions.length === 119);
+check("H1", "HR holds 63 permissions and not accounts:reset; the Admin still holds it (119 of 122)", RO.ROLES.hr.permissions.length === 66 && !RO.ROLES.hr.permissions.includes("accounts:reset") && RO.ROLES.admin.permissions.includes("accounts:reset") && RO.ROLES.admin.permissions.length === 123 /* I1 (behaviour; were 119, 63, 56: imports and exports) */);
 const direct = await C.issueReset(PRIYA, ROHAN, "link", NOW);
 check("H2", "HR's direct reset is refused (not-allowed) and makes no link, no mail and no account change", !direct.ok && direct.code === "not-allowed" && !direct.link && !allStored().includes("reset-password.html?token"));
 const hrReq = D.openPasswordReset(PRIYA, ROHAN, NOW);

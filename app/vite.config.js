@@ -54,5 +54,7 @@ function demoOffForTests() {
 export default defineConfig({
   plugins: [react(), pageMeta(), demoOffForTests()],
   server: { fs: { allow: [".."] } },
+  // I1: the shared data layer (../assets/js/data/xlsx.js) imports fflate, which is installed here (app/package.json): resolve it from here
+  resolve: { alias: [{ find: /^fflate$/, replacement: path.resolve(__dirname, "node_modules/fflate") }] },
   build: { outDir: "dist", emptyOutDir: true },
 });

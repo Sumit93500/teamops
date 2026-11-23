@@ -168,7 +168,10 @@ if (ONLY.includes("L")) {
   const tab = async (t, label) => { await t.click(`main [role="tab"]:has-text("${label}"), main .tabs__tab:has-text("${label}")`); await settle(t, 150); };
   for (const who of ["admin", "hr"]) {
     const x = await pair(who, "users/users-list.html");
-    same(`L1.${who}`, `${who}: heading, subtitle, actions shown (Reset demo data, Export, Add employee)`, await head(x.o.t), await head(x.n.t));
+    // I1 (behaviour): the app's header also has Import (import:employees: HR, Admin), before Export; read past on the app's side, and checked there
+    const hn = await head(x.n.t);
+    check(`L1.${who}.import`, `${who}: the app's header has Import before Export (I1)`, j(hn.actions) === j(["Reset demo data", "Import", "Export", "Add employee"]), j(hn.actions));
+    same(`L1.${who}`, `${who}: heading, subtitle, actions shown (Reset demo data, Export, Add employee)`, await head(x.o.t), { ...hn, actions: hn.actions.filter((a) => a !== "Import") });
     same(`L2.${who}`, `${who}: tabs with counts, the table (every cell), Edit links, profile links, the filters' options`, await read(x.o.t), await read(x.n.t));
     const steps = async (t) => {
       const out = [];
@@ -191,8 +194,13 @@ if (ONLY.includes("L")) {
   }
   {
     const x = await pair("admin", "users/users-list.html");
+    // I1 (behaviour): the app's Export is the shared export (a dialog: CSV or Excel, the fields the exporter may see, masked as on the profile),
+    // named employees-<date>.csv; the old page's file stays users-<date>.csv. Compared: the same people, in the same order
     const file = async (t) => { const [d] = await Promise.all([t.waitForEvent("download"), t.click('main button:has-text("Export")')]); return [d.suggestedFilename(), fs.readFileSync(await d.path(), "utf8")]; };
-    same("L5", "Export: the same file, name and bytes", await file(x.o.t), await file(x.n.t));
+    const fileNew = async (t) => { await t.click("#export-open"); const [d] = await Promise.all([t.waitForEvent("download"), t.click("#export-go")]); return [d.suggestedFilename(), fs.readFileSync(await d.path(), "utf8")]; };
+    const ids = (text) => text.replace(/^\uFEFF/, "").trim().split(/\r?\n/).slice(1).map((l) => l.split(",")[0]);
+    const [of, nf] = [await file(x.o.t), await fileNew(x.n.t)];
+    check("L5", "Export: the same people in the same order (I1: the app's file is the shared export, employees-<date>.csv, with the BOM)", j(ids(of[1])) === j(ids(nf[1])) && /^users-\d{4}-\d{2}-\d{2}\.csv$/.test(of[0]) && /^employees-\d{4}-\d{2}-\d{2}\.csv$/.test(nf[0]) && nf[1].startsWith("\uFEFFEmployee ID,"), j([of[0], nf[0], ids(of[1]).length, ids(nf[1]).length]));
     const askReset = async (x2) => { await x2.t.click('main button:has-text("Reset demo data")'); return asked(x2, false); };
     same("L6", "Reset demo data asks the same question (answered no: nothing reset)", [await askReset(x.o)], [await askReset(x.n)]);
     await x.close();

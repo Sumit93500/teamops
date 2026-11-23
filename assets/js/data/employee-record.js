@@ -13,7 +13,7 @@
 //   edit      saveFields() refuses any field the actor may not change (and anything that isn't a field: a role, a
 //             permission); the person's own bank or tax change is a request (requestChange), decided by Finance or HR
 import { load, save, remove } from "../core/storage.js";
-import { getUser, getAllDepartments, reportingManagerName, updateUser, updateOwnContact, setPayDetails } from "./store.js";
+import { getUser, getAllUsers, getAllDepartments, reportingManagerName, updateUser, updateOwnContact, setPayDetails } from "./store.js";
 import { hasPermission, ROLES } from "../config/roles.js";
 import { FIELDS, FIELD, PROFILE_SECTIONS, RULES } from "../config/employee-fields.js";
 import { bankFromIfsc } from "../config/ifsc-banks.js";   // F2
@@ -116,6 +116,36 @@ export function profileView(viewerId, userId) {
     }),
   })).filter((s) => s.fields.length);
   return { relation, sections };
+}
+
+// I1: values for an export (data/export.js), read once for many people. exportReader(viewerId) -> read(user, keys, reveal) -> { key: value }
+// for the plain fields among keys (no lists, no photo, no salary) this viewer may see of this person (a user record, or an id), or null when
+// they may see none of it. A sensitive one comes masked, as the profile shows it; in full only when reveal is asked AND the viewer may Show
+// it (the export logs that once for the whole file, so no field-revealed event per person here). Everything is read once: the relation is
+// relationOf's (self, then users:view, then salary:edit, then relationOf itself for anyone else), the reveal rights once per relation and
+// field, the manager's name from the same list (reportingManagerName's rule), so 5,000 rows don't read storage 5,000 times.
+export function exportReader(viewerId) {
+  const viewer = active(viewerId);
+  const people = read().people;
+  const byId = new Map(getAllUsers().map((u) => [u.id, u]));
+  const others = !viewer ? null : hasPermission(viewer, "users:view") ? "people" : hasPermission(viewer, "salary:edit") ? "finance" : undefined;
+  const reveals = new Map();
+  const mayReveal = (relation, f) => { const k = `${relation}|${f.key}`; if (!reveals.has(k)) reveals.set(k, canReveal(viewerId, relation, f)); return reveals.get(k); };
+  return (person, keys, reveal = false) => {
+    const user = typeof person === "string" ? byId.get(person) : person;
+    if (!viewer || !user) return null;
+    const relation = user.id === viewer.id ? "self" : others !== undefined ? others : relationOf(viewerId, user.id);
+    if (!relation) return null;
+    const rec = people[user.id] ?? {};
+    const out = {};
+    for (const key of keys) {
+      const f = FIELD[key];
+      if (!f || f.kind === "list" || f.kind === "photo" || f.sensitive === "salary" || !canSee(relation, f)) continue;
+      const raw = key === "manager" ? (byId.get(user.reportingManagerId)?.name ?? user.reportingManager ?? "") : rawValue(user, rec, f);
+      out[key] = f.sensitive ? (reveal && mayReveal(relation, f) ? String(raw ?? "") : maskValue(f, raw)) : raw;
+    }
+    return out;
+  };
 }
 
 // Show: the full value of a sensitive field, for whoever may see it in full; written to the audit trail.

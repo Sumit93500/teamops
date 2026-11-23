@@ -846,6 +846,74 @@ react-gallery.K2.412.dark,react-gallery,"Tabs: arrows, Home and End move and ope
 react-gallery.K3.412.dark,react-gallery,"Segmented: arrows choose (wrapping), one Tab stop; Toggle: Space switches, says Off",x1
 react-gallery.K4.412.dark,react-gallery,"DownloadMenu: Enter opens on the first item, arrows move, Esc closes back on the button, a choice runs",x1
 react-gallery.K5.412.dark,react-gallery,"SelectField: the status line follows the choice, in words, and the field points at it",x1
+react-i1.A1,react-i1,Import employees and Import history: HR and the Admin; Export pay details: Finance and the Admin; the others get the 403 page,x1
+react-i1.A2,react-i1,an employee sent to Import employees lands on the 403 page,x1
+react-i1.A3,react-i1,the sidebar lists each page only for those who may open it,x1
+react-i1.A4,react-i1,the Users list: Import and Export for HR (and the Admin); the old plain export is gone,x1
+react-i1.A5,react-i1,...for the Admin too,x1
+react-i1.A6,react-i1,"the roles list counts: Admin 123 / 126, HR Manager 66 / 126, Finance Manager 57 / 126, Employee 31 / 126",x1
+react-i1.A7,react-i1,"the role editor shows Imports and Exports under System: HR ticks import:employees, import:history-view, export:employees, not the pay export",x1
+react-i1.U1,react-i1,"the page: title, four steps with Upload current, the columns listed (required ones marked; HR sees the bank ones)",x1
+react-i1.U2,react-i1,Check the file is disabled until a file is chosen,x1
+react-i1.U3,react-i1,"the CSV template: employees-template.csv, a BOM, the headers, the EXAMPLE row, the notes naming the live lists",x1
+react-i1.U4,react-i1,"the Excel template: employees-template.xlsx, a zip (PK)",x1
+react-i1.U5,react-i1,"a PDF: refused in words (role alert), still on Upload",x1
+react-i1.U6,react-i1,a file over 2 MB: refused at once with its size and the limit; no file kept,x1
+react-i1.U7,react-i1,an empty file is refused: 'The file is empty.',x1
+react-i1.U8,react-i1,"each refusal is in the history (refused): the PDF, the big one (no fingerprint: not read), the empty one",x1
+react-i1.U9,react-i1,"a dropped file is taken: its name and size are shown, the error goes, Check is enabled",x1
+react-i1.U10,react-i1,Remove clears it,x1
+react-i1.U11,react-i1,two files dropped at once: 'Drop one file at a time.',x1
+react-i1.U12,react-i1,"a file whose headers are wrong: every header problem is listed (an unknown column, the missing ones)",x1
+react-i1.C1,react-i1,"Check: the step moves, its heading takes the focus",x1
+react-i1.C2,react-i1,"the counts: 5 read, 3 ready, 1 with errors, 1 duplicate; the words say '3 will be imported, 1 has errors, 1 duplicate'",x1
+react-i1.C3,react-i1,"the first rows: row number, name, email, designation, status (Ready / Has errors / Duplicate)",x1
+react-i1.C4,react-i1,"every problem with its row and column: Mobile and Department on row 5, Work email on row 6 ('also in row 2')",x1
+react-i1.C5,react-i1,"nothing saved by the check: the same people, no IT request",x1
+react-i1.C6,react-i1,"Download error report: employees-import-errors-2026-11-23.csv, BOM, Row, Column, Problem",x1
+react-i1.F1,react-i1,"Confirm, in plain words: 3 new employees, 2 rows skipped, 'New sign-in requests will be sent to IT', all or none",x1
+react-i1.F2,react-i1,Back returns to Check with everything still there,x1
+react-i1.F3,react-i1,the Import button says how many: 'Import 3 employees',x1
+react-i1.F4,react-i1,Done: '3 employees were added; 2 rows were skipped. 3 sign-in requests are with IT.',x1
+react-i1.F5,react-i1,"three people saved, one new-account request for each, opened by HR; nobody got a sign-in",x1
+react-i1.F6,react-i1,the Added table links each person to their profile and their sign-in request,x1
+react-i1.F7,react-i1,a request link opens that request: 'Sign-in for Asha Verma',x1
+react-i1.F8,react-i1,the Users list shows the new people,x1
+react-i1.D1,react-i1,"a double click on Import (as the Admin): one person, one IT request, no sign-in made",x1
+react-i1.T1,react-i1,"31 minutes later, Import is refused: 'more than 30 minutes old', nobody added; Check the file again takes the Import button's place",x1
+react-i1.T2,react-i1,Check the file again goes back to Check with a fresh check,x1
+react-i1.T3,react-i1,...and then it imports,x1
+react-i1.H1,react-i1,empty: 'No imports or exports yet.' with a link to Import employees,x1
+react-i1.H2,react-i1,"the entries, newest first: the export, the refused PDF, the check left unconfirmed, the import, its check",x1
+react-i1.H3,react-i1,What: Exports,x1
+react-i1.H4,react-i1,"Details of the import: file, size, SHA-256, rows, imported / skipped; links to the 3 people and 3 IT requests; the problems as row, column, reason (no values)",x1
+react-i1.H5,react-i1,"the dialog never shows a value from the file (no email, no mobile)",x1
+react-i1.H6,react-i1,Esc closes the details; focus back on its button,x1
+react-i1.H7,react-i1,"the shared date range, last month: 'No data in this range.'",x1
+react-i1.H8,react-i1,Finance can't open the history (403),x1
+react-i1.E1,react-i1,"unfiltered: the dialog says 'All 10 you can see', offers CSV / Excel and the full numbers choice (HR has pii:view)",x1
+react-i1.E2,react-i1,"CSV: employees-2026-11-23.csv, BOM, 10 rows, dates YYYY-MM-DD in the header, PAN masked",x1
+react-i1.E3,react-i1,a toast says what was downloaded,x1
+react-i1.E4,react-i1,"filtered: 'Matching the filters: 1 of 10: Search: ""rohan""' or 'Everyone you can see'",x1
+react-i1.E5,react-i1,"matching + Excel + full numbers: employees-2026-11-23.xlsx, a zip",x1
+react-i1.E6,react-i1,"the audit trail: both exports, the second '1 rows (Search: ""rohan""), XLSX, sensitive values IN FULL'",x1
+react-i1.E7,react-i1,"Finance's Export pay details: the pay and bank columns (Bank account, PAN masked), no full-numbers choice",x1
+react-i1.E8,react-i1,"its dialog: no full-numbers box, 'masked' said; 'All 10 people you can see, one row each.'",x1
+react-i1.E9,react-i1,"the file: employees-pay-2026-11-23.csv, its header the pay columns only, every account masked",x1
+react-i1.K1,react-i1,"the file input takes the focus (inside the drop zone, which shows the ring) and Space opens the file picker",x1
+react-i1.K2,react-i1,"Enter on Check: the Check step, focus on its heading (read out), the summary in a live region",x1
+react-i1.K3,react-i1,...Confirm and Import by keyboard too,x1
+react-i1.K4,react-i1,"the export dialog by keyboard: focus inside it, Tab stays in, Esc closes and focus returns to Export",x1
+react-i1.K5,react-i1,...Tab stays inside; Esc closes; focus back on Export,x1
+react-i1.K6,react-i1,"every button, link and input on Import employees has a name",x1
+react-i1.X1.412.light,react-i1,"412px light: 18 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i1.X1.768.light,react-i1,"768px light: 18 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i1.X1.1280.light,react-i1,"1280px light: 18 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i1.X1.412.dark,react-i1,"412px dark: 18 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i1.X1.1280.dark,react-i1,"1280px dark: 18 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i1.Z1.light,react-i1,"light: every chip, note, hint and sub-line on the import pages reaches 4.5:1 (43 read)",x1
+react-i1.Z1.dark,react-i1,"dark: every chip, note, hint and sub-line on the import pages reaches 4.5:1 (43 read)",x1
+react-i1.Z9,react-i1,no page or console errors,x1
 react-it2.A1,react-it2,"admin: opens dash, list, req, new, mine, lic, off, review, complete; the others show the 403 page",x1
 react-it2.A2,react-it2,"admin: the sidebar lists IT dashboard, IT requests, My IT requests, Raise a request, Licences, Offboarding, IT review trail, Complete details and nothing else of the desk",x1
 react-it2.A1#2,react-it2,"hr: opens req, new, mine; the others show the 403 page",x3 (3 roles)
@@ -1503,7 +1571,7 @@ react-side.A2,react-side,"collapsed: the label shows as a chip on hover (""Atten
 react-side.A3,react-side,"collapsed: the active item is marked (aria-current, its own background)",x1
 react-side.A4,react-side,collapsed: no group headings; the brand is its mark only; the count is a small number on the icon; the person's avatar stays in the header,x1
 react-side.A5,react-side,expanded: every item shows its icon and label; the group headings; no section buttons; the brand's name; the avatar and name; the count; Dashboard current,x1
-react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (37), the same links as collapsed",x5 (5 roles)
+react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (40), the same links as collapsed",x5 (5 roles)
 react-side.K1.expanded,react-side,"expanded: Tab goes brand, the toggle, then the first item (Dashboard)",x1
 react-side.K2.expanded,react-side,"expanded: Enter toggles, Space toggles back, focus stays on the toggle",x1
 react-side.K1.collapsed,react-side,"collapsed: Tab goes brand, the toggle, then the first item (Dashboard)",x1
@@ -1524,6 +1592,7 @@ react-users.R.users-list,react-users,admin opens users/users-list.html: the same
 react-users.R.user-form,react-users,admin opens users/user-form.html: the same outcome,x5 (5 roles)
 react-users.R.user-profile,react-users,admin opens users/user-profile.html?id=EMP-1042: the same outcome,x5 (5 roles)
 react-users.R.departments,react-users,admin opens users/departments.html: the same outcome,x5 (5 roles)
+react-users.L1.import,react-users,admin: the app's header has Import before Export (I1),x2 (2 roles)
 react-users.L1,react-users,"admin: heading, subtitle, actions shown (Reset demo data, Export, Add employee)",x2 (2 roles)
 react-users.L2,react-users,"admin: tabs with counts, the table (every cell), Edit links, profile links, the filters' options",x2 (2 roles)
 react-users.L3.1,react-users,"admin: step 1 of Active, Inactive, search ""ka"", Engineering, Employee, ""zzz"" (No employees match these filters.)",x2 (2 roles)
@@ -1533,7 +1602,7 @@ react-users.L3.4,react-users,"admin: step 4 of Active, Inactive, search ""ka"", 
 react-users.L3.5,react-users,"admin: step 5 of Active, Inactive, search ""ka"", Engineering, Employee, ""zzz"" (No employees match these filters.)",x2 (2 roles)
 react-users.L3.6,react-users,"admin: step 6 of Active, Inactive, search ""ka"", Engineering, Employee, ""zzz"" (No employees match these filters.)",x2 (2 roles)
 react-users.L4,react-users,?dept=FIN (Departments' View people): the Finance filter is set,x1
-react-users.L5,react-users,"Export: the same file, name and bytes",x1
+react-users.L5,react-users,"Export: the same people in the same order (I1: the app's file is the shared export, employees-<date>.csv, with the BOM)",x1
 react-users.L6,react-users,Reset demo data asks the same question (answered no: nothing reset),x1
 react-users.F1,react-users,"admin (add): heading, crumbs, tab title",x2 (2 roles)
 react-users.F2,react-users,"admin (add): every field, access summary, effective permissions, overrides and their lock, Account, the submit button",x2 (2 roles)
