@@ -210,6 +210,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "itdesk2.mjs") { Run "itdesk2-$t" @("itdesk2.mjs") }
   # I1: imports and exports (data/csv.js, data/xlsx.js, data/import-engine.js, data/import-employees.js, data/import-history.js, data/export.js)
   if (Test-Path "importexport.mjs") { Run "importexport-$t" @("importexport.mjs") }
+  # TD1: the to-do (data/tasks-store.js)
+  if (Test-Path "tasks.mjs") { Run "tasks-$t" @("tasks.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

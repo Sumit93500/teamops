@@ -11,6 +11,7 @@ import { LEAVE_TYPES, balanceFor, requestsFor, currentApproverName } from "../..
 import { monthFor, rangeFor, regularizationsFor } from "../../../assets/js/data/attendance-store.js";
 import { shiftRangeFor, shiftMonthFor } from "../../../assets/js/data/shift-days.js";   // SH1: days by the person's shift
 import { ShiftLine, statusNodes } from "../ui/shifts.jsx";
+import { TasksCard } from "../ui/todo.jsx";   // TD1: the small "My tasks" card
 import { payslipsFor } from "../../../assets/js/data/payroll-store.js";
 import { assetRequestsFor, waitingOn as assetWaitingOn } from "../../../assets/js/data/asset-requests-store.js";
 import { openRequests } from "../../../assets/js/data/own-requests.js";
@@ -233,6 +234,7 @@ export default function EmployeeDashboard() {
       </div>
       <div className="stack">
         <ShiftLine userId={userId} id="dash-shift" />
+        <TasksCard />
         <StatStrip label="Key numbers">
           <StatCard id="present" icon={ICONS.present} tone={1} label="Days present" value={present.value} note={present.note} noteTone={present.tone} />
           <StatCard id="balance" icon={ICONS.balance} tone={2} label="Leave balance" value={`${total} ${total === 1 ? "day" : "days"}`} note={most.map((r) => `${SHORT[r.type]} ${r.left}`).join(", ")} />

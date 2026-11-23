@@ -62,7 +62,7 @@ const withoutAs2 = (s, who, od) => (who === "hr" || who === "fin" ? { ...s, sect
 // IT2: the IT desk's own sidebar group and Complete details (Assets & inventory, for assets:manage) are the app's: read past on the app's side
 const withoutIt2 = (s) => ({ ...s, sections: s.sections?.filter((x) => x.title !== "IT desk").map((x) => (x.items ? { ...x, items: x.items.filter((it) => !/\/inventory\/complete-details\.html/.test(it[1] ?? "") && !I1_PAGE.test(it[1] ?? "")) } : x)) });
 // I1: Import employees, Import history (People) and Export pay details (Payroll) are the app's own pages: read past on the app's side
-const I1_PAGE = /\/pages\/(people\/import-(employees|history)|payroll\/export-pay)\.html/;
+const I1_PAGE = /\/pages\/(people\/import-(employees|history)|payroll\/export-pay|tasks\/(my-todo|team))\.html/;   // TD1: and the to-do pages
 const CV1_VISITS = /^\/pages\/visits\/(my|team)-visits\.html/;
 const withoutVisits = (s) => ({ ...s, sections: s.sections?.map((x) => (x.items ? { ...x, items: x.items.filter((it) => !CV1_VISITS.test(it[1] ?? "")) } : x)) });
 const ruledPhone = (s) => (s.toggle?.[0] ? { ...s, shown: [s.shown[0], `About ${COMPANY}`, ...s.shown.slice(1)] } : s);

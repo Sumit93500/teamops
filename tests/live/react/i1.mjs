@@ -123,7 +123,7 @@ if (ONLY.includes("A")) {
   check("A5", "...for the Admin too", (await n.t.locator("#import-link").count()) === 1 && (await n.t.locator("#export-open").count()) === 1);
   await go(n, "access/roles-list.html", "admin");
   const counts = await n.t.evaluate(() => Object.fromEntries([...document.querySelectorAll("[data-cell='permissions']")].map((c) => [c.closest("tr").innerText.split("\n")[0].trim(), c.innerText.trim()])));
-  check("A6", "the roles list counts: Admin 123 / 126, HR Manager 66 / 126, Finance Manager 57 / 126, Employee 31 / 126", j(counts) === j({ Admin: "123 / 126", "HR Manager": "66 / 126", "Finance Manager": "57 / 126", Employee: "31 / 126" }), j(counts));
+  check("A6", "the roles list counts: Admin 127 / 130, HR Manager 70 / 130, Finance Manager 60 / 130, Employee 34 / 130", j(counts) === j({ Admin: "127 / 130", "HR Manager": "70 / 130", "Finance Manager": "60 / 130", Employee: "34 / 130" }) /* TD1 (behaviour; were 123 / 66 / 57 / 31 of 126) */, j(counts));
   await go(n, "access/role-editor.html", "admin", "?role=hr");
   const keys = await n.t.evaluate(() => Object.fromEntries(["import:employees", "import:history-view", "export:employees", "export:employees-pay"].map((k) => [k, document.querySelector(`[data-permission-key="${k}"]`)?.getAttribute("aria-label") ?? null])));
   check("A7", "the role editor shows Imports and Exports under System: HR ticks import:employees, import:history-view, export:employees, not the pay export", (await main(n.t)).includes("Imports") && (await main(n.t)).includes("Exports") && keys["import:employees"].endsWith("yes") && keys["import:history-view"].endsWith("yes") && keys["export:employees"].endsWith("yes") && keys["export:employees-pay"].endsWith("no"), j(keys));

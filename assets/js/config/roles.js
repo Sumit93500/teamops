@@ -28,6 +28,8 @@ const SELF_SERVICE = [
   "visits:request", "visits:approve", "visits:assign",
   // IT1: raise IT tickets and requests for yourself
   "it:requests-create",
+  // TD1: your own tasks; give work tasks to, and read the tasks of, your direct reports (a relationship, as visits)
+  "tasks:own", "tasks:assign", "tasks:view-team",
 ];
 
 // FS1 (2026-11-22): the stored-file permissions the Admin role does NOT hold by default: seeing other people's expense files and employee
@@ -70,6 +72,7 @@ export const ROLES = {
       "files:view-expense", "files:view-documents", "files:manage-documents",   // FS1: expense files, every document file, add them for anyone
       "assets:view-all", "stock:view",   // AS1: every asset in the register (no values) and the stock ledger
       "import:employees", "import:history-view", "export:employees",   // I1: import new employees, the Import history, export the people list
+      "tasks:view-all",   // TD1: every work task, and assigning to anyone
     ],
   },
 

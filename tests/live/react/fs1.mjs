@@ -269,7 +269,7 @@ if (ONLY.includes("K")) {
   const n = await make("emp");
   await go(n, "requests/claim-expense.html", "emp");
   let reached = false;
-  for (let i = 0; i < 25 && !reached; i++) { await n.t.keyboard.press("Tab"); reached = await n.t.evaluate(() => document.activeElement?.id === "expense-receipt-choose"); }
+  for (let i = 0; i < 30 && !reached; i++) { /* TD1 (behaviour; was 25: My to-do is one more sidebar link before the form) */ await n.t.keyboard.press("Tab"); reached = await n.t.evaluate(() => document.activeElement?.id === "expense-receipt-choose"); }
   check("K1", "Tab reaches 'Choose a file'; its name says Receipt and the hint is tied to it", reached && /Receipt/.test(await n.t.evaluate(() => { const b = document.getElementById("expense-receipt-choose"); return (b.getAttribute("aria-labelledby") ?? "").split(" ").map((id) => document.getElementById(id)?.innerText).join(" "); })) && (await n.t.getAttribute("#expense-receipt-choose", "aria-describedby"))?.includes("expense-receipt-hint"));
   check("K2", "the hidden file inputs are out of the Tab order", await n.t.evaluate(() => [...document.querySelectorAll("[data-file-input], [data-camera-input]")].every((x) => x.tabIndex === -1)));
   await n.ctx.close();

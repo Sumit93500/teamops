@@ -851,7 +851,7 @@ react-i1.A2,react-i1,an employee sent to Import employees lands on the 403 page,
 react-i1.A3,react-i1,the sidebar lists each page only for those who may open it,x1
 react-i1.A4,react-i1,the Users list: Import and Export for HR (and the Admin); the old plain export is gone,x1
 react-i1.A5,react-i1,...for the Admin too,x1
-react-i1.A6,react-i1,"the roles list counts: Admin 123 / 126, HR Manager 66 / 126, Finance Manager 57 / 126, Employee 31 / 126",x1
+react-i1.A6,react-i1,"the roles list counts: Admin 127 / 130, HR Manager 70 / 130, Finance Manager 60 / 130, Employee 34 / 130",x1
 react-i1.A7,react-i1,"the role editor shows Imports and Exports under System: HR ticks import:employees, import:history-view, export:employees, not the pay export",x1
 react-i1.U1,react-i1,"the page: title, four steps with Upload current, the columns listed (required ones marked; HR sees the bank ones)",x1
 react-i1.U2,react-i1,Check the file is disabled until a file is chosen,x1
@@ -1571,7 +1571,7 @@ react-side.A2,react-side,"collapsed: the label shows as a chip on hover (""Atten
 react-side.A3,react-side,"collapsed: the active item is marked (aria-current, its own background)",x1
 react-side.A4,react-side,collapsed: no group headings; the brand is its mark only; the count is a small number on the icon; the person's avatar stays in the header,x1
 react-side.A5,react-side,expanded: every item shows its icon and label; the group headings; no section buttons; the brand's name; the avatar and name; the count; Dashboard current,x1
-react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (40), the same links as collapsed",x5 (5 roles)
+react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (42), the same links as collapsed",x5 (5 roles)
 react-side.K1.expanded,react-side,"expanded: Tab goes brand, the toggle, then the first item (Dashboard)",x1
 react-side.K2.expanded,react-side,"expanded: Enter toggles, Space toggles back, focus stays on the toggle",x1
 react-side.K1.collapsed,react-side,"collapsed: Tab goes brand, the toggle, then the first item (Dashboard)",x1
@@ -1588,6 +1588,63 @@ react-side.C1.light,react-side,"admin, light: sidebar text 4.5:1 or more, the to
 react-side.C1.dark,react-side,"admin, dark: sidebar text 4.5:1 or more, the toggle's icon 3:1 or more",x4 (4 roles)
 react-side.W1,react-side,shots written,x1
 react-side.E1,react-side,no page or console errors,x1
+react-td1.A1,react-td1,"My to-do opens for all seven; Team tasks only for a manager (Sneha, and Kabir who manages Meera), HR and the Admin (IT and colleagues get the 403 page)",x1
+react-td1.A2,react-td1,the sidebar lists My to-do for everyone and Team tasks only for those who may open it,x1
+react-td1.A3,react-td1,a colleague with no reports sent to Team tasks lands on 403,x1
+react-td1.P1,react-td1,"the owner sees it on the Personal tab (overdue, in words)",x1
+react-td1.P2,react-td1,"for the manager, HR, the Admin, Finance and a colleague: no page, dashboard, inbox or bell shows the personal task's words",x1
+react-td1.P3,react-td1,the manager's Team tasks counts Rohan's work task but not his personal one (1 task),x1
+react-td1.P4,react-td1,the work task he was given is visible to the manager; the personal one never in her task list,x1
+react-td1.P5,react-td1,no stored key but the tasks box holds the words,x1
+react-td1.U1,react-td1,empty: 'No personal tasks yet.' and the quick add; the counter says 0 tasks,x1
+react-td1.U2,react-td1,Add task is disabled until there is a title,x1
+react-td1.U3,react-td1,"quick add: the task is listed with Pending, High and its due date; the title box is cleared; the counter 1 task",x1
+react-td1.U4,react-td1,the status changes in the row (In progress),x1
+react-td1.U5,react-td1,edit: new title and notes shown,x1
+react-td1.U6,react-td1,"the title field stops at 120 characters (maxlength), as the data layer does",x1
+react-td1.U7,react-td1,Delete asks first; Cancel keeps it,x1
+react-td1.U8,react-td1,...still listed,x1
+react-td1.U9,react-td1,"Delete confirmed: gone, empty state back",x1
+react-td1.U10,react-td1,the priority filter keeps the urgent one; the counter 'Showing 1 of 3 tasks',x1
+react-td1.U11,react-td1,the status filter: Done,x1
+react-td1.W1,react-td1,"the Assign picker holds only Sneha herself, Rohan and Arjun (no one else)",x1
+react-td1.W2,react-td1,assigned: the dialog closes and the task shows under Assigned by me with 'To Rohan Gupta',x1
+react-td1.W2b,react-td1,on Assigned by me a row has no status control (only the assignee moves a status),x1
+react-td1.W3,react-td1,"a past due date is refused at the field, in the data layer's words; the dialog stays open",x1
+react-td1.W4,react-td1,"Rohan sees it on Work: 'From Sneha Rao', Pending, with the update on top: 'Task assigned to you: Prepare the Q4 deck'",x1
+react-td1.W5,react-td1,"the detail: Start and Mark done (not Edit or Cancel: he isn't the assigner), the timeline, who it reports to (Sneha)",x1
+react-td1.W6,react-td1,"Start: In progress, and 'Back to pending' appears",x1
+react-td1.W7,react-td1,a comment is added to the timeline,x1
+react-td1.W8,react-td1,Mark done: Done; no way back for the assignee,x1
+react-td1.W9,react-td1,Sneha's bell has 'Done: Prepare the Q4 deck',x1
+react-td1.W10,react-td1,the assigner's detail of a finished task: Reopen only,x1
+react-td1.W11,react-td1,reopen without a reason is refused at the field,x1
+react-td1.W12,react-td1,"with a reason it reopens: Pending again, the timeline says Reopened",x1
+react-td1.D1,react-td1,"Rohan's card: 2 due today, 1 overdue, 3 open (personal and work); no team line",x1
+react-td1.D2,react-td1,"the manager's card has a team line: Arjun's overdue one counts (1 overdue, 1 due today)",x1
+react-td1.D3,react-td1,the Admin dashboard and the HR dashboard have the card too,x1
+react-td1.D4,react-td1,"Team tasks: progress by person for her two reports only (Rohan 2 tasks, Arjun 1; overdue 0 / 1)",x1
+react-td1.D5,react-td1,the chart is drawn by the shared chart components (a figure with its data table),x1
+react-td1.D6,react-td1,choosing a person narrows the task list to them,x1
+react-td1.D7,react-td1,HR sees everyone in the progress table (8 people),x1
+react-td1.D8,react-td1,HR's Assign picker holds everyone active,x1
+react-td1.B1,react-td1,"a plain employee's bell counts the update: 'Waiting for you: 0, 1 new update on your tasks'",x1
+react-td1.B2,react-td1,"the panel: 'Your tasks' with 'Due tomorrow: My own due tomorrow' (a personal task, to its owner)",x1
+react-td1.B3,react-td1,reloads make no second update (still one),x1
+react-td1.B4,react-td1,nobody else is told about it: the manager's bell has nothing from Arjun's personal task,x1
+react-td1.K1,react-td1,typing a title and pressing Enter adds the task,x1
+react-td1.K2,react-td1,the arrow keys move between the tabs,x1
+react-td1.K3,react-td1,"Add a work task by keyboard: focus inside the dialog, Tab stays in, Esc closes and focus returns",x1
+react-td1.K4,react-td1,...Tab stays inside; Esc closes; focus back on the button,x1
+react-td1.K5,react-td1,"every button, link, input and select on My to-do has a name",x1
+react-td1.X1.412.light,react-td1,"412px light: 14 screens and states, none scrolls sideways, no table wider than its card",x1
+react-td1.X1.768.light,react-td1,"768px light: 14 screens and states, none scrolls sideways, no table wider than its card",x1
+react-td1.X1.1280.light,react-td1,"1280px light: 14 screens and states, none scrolls sideways, no table wider than its card",x1
+react-td1.X1.412.dark,react-td1,"412px dark: 14 screens and states, none scrolls sideways, no table wider than its card",x1
+react-td1.X1.1280.dark,react-td1,"1280px dark: 14 screens and states, none scrolls sideways, no table wider than its card",x1
+react-td1.Z1.light,react-td1,"light: every chip, sub-line, link-button and label on the to-do screens reaches 4.5:1 (83 read)",x1
+react-td1.Z1.dark,react-td1,"dark: every chip, sub-line, link-button and label on the to-do screens reaches 4.5:1 (83 read)",x1
+react-td1.Z9,react-td1,no page or console errors,x1
 react-users.R.users-list,react-users,admin opens users/users-list.html: the same outcome,x5 (5 roles)
 react-users.R.user-form,react-users,admin opens users/user-form.html: the same outcome,x5 (5 roles)
 react-users.R.user-profile,react-users,admin opens users/user-profile.html?id=EMP-1042: the same outcome,x5 (5 roles)

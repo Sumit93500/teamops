@@ -44,6 +44,7 @@ import { BarChart } from "../components/charts/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { countText } from "../data/counts.js";   // F2: one counter wording
 import { pageUrl } from "../routes.js";
+import { TasksCard } from "../ui/todo.jsx";   // TD1: the small "My tasks" card
 
 csvColumns("admin-dashboard-attendance", { Employee: { split: "Work email" } });   // Round Data export part 2
 
@@ -233,6 +234,7 @@ export default function AdminDashboard() {
             <StatCard id="stock" permission="inventory:view" hidden={!canStock} icon={ICONS.stock} tone={4} label="Items to reorder"
               value={d.alerts ? String(d.alerts.length) : "—"} note={d.alerts ? stockNote : ""} noteTone={d.alerts?.length ? "down" : ""} />
           </StatStrip>
+          <TasksCard />
           <VisitsToday />
         <VisitsNoCheckIn />
 

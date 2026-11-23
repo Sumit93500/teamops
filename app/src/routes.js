@@ -51,6 +51,9 @@ export const IT_LICENCES = "it/licences.html";
 export const IT_OFFBOARDING = "it/offboarding.html";
 export const IT_REVIEW = "it/review.html";
 export const COMPLETE_DETAILS = "inventory/complete-details.html";
+// TD1: the to-do (shell/taskAccess.js): My to-do for everyone, Team tasks for managers, HR and the Admin
+export const MY_TODO = "tasks/my-todo.html";
+export const TEAM_TASKS = "tasks/team.html";
 // I1: imports and exports (shell/importAccess.js): Import employees (import:employees), Import history (import:history-view), Export pay
 // details (export:employees-pay)
 export const IMPORT_EMPLOYEES = "people/import-employees.html";

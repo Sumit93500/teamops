@@ -38,6 +38,7 @@ import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
 import { stampsBy, flagText } from "../data/stamps.js";
 import { PlaceCell } from "../ui/attendance.jsx";
+import { TasksCard } from "../ui/todo.jsx";   // TD1: the small "My tasks" card
 import { dayNumber, isoFromDayNumber } from "../../../assets/js/data/holidays.js";
 
 csvColumns("hr-dashboard-leave-requests", { Days: { number: true } });   // Round Data export
@@ -155,6 +156,7 @@ export default function HrDashboard() {
         </div>
       </div>
       <div className="stack">
+        <TasksCard />
         <StatStrip label="Key numbers">
           <StatCard id="on-leave" icon={ICONS.onLeave} tone={2} label="On leave today" value={String(d.summary.onLeave)}
             note={d.summary.total ? `${percent(d.summary.onLeave, d.summary.total)} of ${d.summary.total} employees, ${d.summary.expected} expected at work` : "No active employees"} />

@@ -39,10 +39,11 @@ import { rupees } from "./payroll.jsx";
 import { Attachment } from "./files.jsx";   // FS1
 import { useData } from "../data/hooks.js";
 import { getItRequest, needsBreakGlass, itNoticesFor, markNoticeRead } from "../../../assets/js/data/it-desk.js";   // IT2
+import { syncTaskNotices, taskNoticesFor, markTaskNoticeRead } from "../../../assets/js/data/tasks-store.js";   // TD1
 import { TYPES as IT_TYPES } from "../../../assets/js/data/it-rules.js";
 import { PRIORITY_LABEL } from "./it.jsx";
 import { bump } from "../data/bus.js";
-import { pageUrl, IT_REQUEST } from "../routes.js";
+import { pageUrl, IT_REQUEST, MY_TODO } from "../routes.js";
 
 const INBOX = pageUrl("requests/approvals-inbox.html");
 const BELL_SHOWN = 5;
@@ -226,6 +227,8 @@ function BellPanel({ onClose }) {
   const ref = useRef(null);
   const d = useData(waitingList, []);
   const updates = useData(() => itNoticesFor(getCurrentUserId(), { unreadOnly: true }), []);
+  const taskUpdates = useData(() => taskNoticesFor(getCurrentUserId(), { unreadOnly: true }), []);   // TD1: drawn only for the person they are for
+  useEffect(() => { if (syncTaskNotices(Date.now())) bump(); }, []);   // TD1: when the bell opens
   const [pos] = useState(() => {
     const box = currentBell()?.getBoundingClientRect();
     return box ? { "--bell-top": `${Math.round(box.bottom + 6)}px`, "--bell-right": `${Math.max(8, Math.round(document.documentElement.clientWidth - box.right))}px` } : {};
@@ -259,6 +262,20 @@ function BellPanel({ onClose }) {
                 <li key={n.id} data-notice={n.id}>
                   <a className="bell-panel__item" href={`${pageUrl(IT_REQUEST)}?id=${n.requestId}`} onClick={() => { markNoticeRead(getCurrentUserId(), n.id); bump(); }}>
                     <span className="bell-panel__text"><span className="bell-panel__name">{n.requestId}</span><span className="bell-panel__what">{IT_NOTICE[n.kind] ?? n.kind}</span></span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        {taskUpdates.length > 0 && (
+          <>
+            <div className="bell-panel__header"><h3 className="bell-panel__title" id="bell-task-title">Your tasks</h3></div>
+            <ul className="bell-panel__list" id="bell-task-updates" aria-labelledby="bell-task-title">
+              {taskUpdates.slice(0, BELL_SHOWN).map((n) => (
+                <li key={n.id} data-task-notice={n.id}>
+                  <a className="bell-panel__item" href={pageUrl(MY_TODO)} onClick={() => { markTaskNoticeRead(getCurrentUserId(), n.id); bump(); }}>
+                    <span className="bell-panel__text"><span className="bell-panel__name">{n.personal ? "Personal task" : "Work task"}</span><span className="bell-panel__what">{n.text}</span></span>
                   </a>
                 </li>
               ))}

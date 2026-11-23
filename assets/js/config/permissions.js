@@ -88,6 +88,11 @@ export const PERMISSIONS = {
   // none. Not overridable. 122 -> 126 in 49 modules; Admin 123, HR 66, Finance 57, Employee 31, IT 42.
   import:        ["employees", "history-view"],
   export:        ["employees", "employees-pay"],
+  // TD1 (2026-11-24): the to-do (data/tasks-store.js). own: your own personal and work tasks (everyone); assign: give work tasks to others and view-team: read
+  // your team's work tasks (everyone holds both; the data layer allows them only through the manager relation, as visits); view-all: every work task and
+  // assigning to anyone (HR, Admin). Personal tasks are private to the owner and no permission reaches them. Not overridable.
+  // 126 -> 130 in 50 modules; Admin 127, HR 70, Finance 60, Employee 34, IT 45.
+  tasks:         ["own", "assign", "view-team", "view-all"],
 };
 
 // Flatten it into one list like dashboard:view, approvals:view, and so on.

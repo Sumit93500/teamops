@@ -13,6 +13,7 @@ import { ASSET_NAV_PERMISSION, isAssetPage, mayOpenAssetPage } from "./assetAcce
 import { IT_NAV, isItPage, mayOpenItPage } from "./itAccess.js";   // IT2
 import { COMPLETE_DETAILS } from "../routes.js";
 import { PEOPLE_ITEMS, PAYROLL_ITEMS, isImportPage, mayOpenImportPage } from "./importAccess.js";   // I1
+import { TASK_ITEMS, isTaskPage, mayOpenTaskPage } from "./taskAccess.js";   // TD1
 
 const PIN = "M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5";
 const OFFICES_ITEM = { label: "Offices", icon: "pin", iconPath: PIN, href: OFFICES, permission: "offices:view" };
@@ -27,7 +28,7 @@ const withAssetPermissions = (g) => (g.group === "Assets & inventory" ? { ...g, 
 const withDesk = (list) => list.flatMap((g) => (g.group === "Assets & inventory" ? [g, IT_NAV] : [g]));
 // I1: Import employees and Import history after Users in People; Export pay details at the end of Payroll (each for its permission)
 const withImports = (g) => (g.group === "People" ? { ...g, items: g.items.flatMap((i) => (i.href === "users/users-list.html" ? [i, ...PEOPLE_ITEMS] : [i])) }
-  : g.group === "Payroll" ? { ...g, items: [...g.items, ...PAYROLL_ITEMS] } : g);
+  : g.group === "Payroll" ? { ...g, items: [...g.items, ...PAYROLL_ITEMS] } : g.group === "Requests & expenses" ? { ...g, items: [...TASK_ITEMS, ...g.items] } : g);   // TD1: My to-do, Team tasks
 export const APP_NAV = withDesk(NAV.map((g) => (g.group === "Attendance" ? { ...g, items: [...g.items, MY_VISITS_ITEM, TEAM_VISITS_ITEM, OFFICES_ITEM] } : g)).map(withAssetPermissions).map(withImports))
   .map((g) => ({ ...g, items: g.items.filter((i) => !isPlaceholder(i.href)) })).filter((g) => g.items.length > 0);
 export const APP_OTHER_PAGES = [...OTHER_PAGES, { label: "My locations", group: "Attendance", href: MY_LOCATIONS }, { label: "Appearance", group: "My account", href: APPEARANCE },
@@ -39,4 +40,4 @@ export const mayOpenRates = () => can("tax:view") || can("payroll-rules:verify")
 export const mayOpenLeavePolicy = () => can("leave:approve") || can("leave-policy:edit");
 export const mayOpenOutbox = () => can("accounts:unlock");
 export const mayOpenTeamVisits = () => can("visits:view-all") || isManager(getCurrentUserId());
-export const openable = (href) => (isAssetPage(href) ? mayOpenAssetPage(href) : isImportPage(href) ? mayOpenImportPage(href) : isItPage(href) ? mayOpenItPage(href) : href === RATES_RULES ? mayOpenRates() : href === LEAVE_POLICY_PAGE ? mayOpenLeavePolicy() : href === MAIL_OUTBOX ? mayOpenOutbox() : href === TEAM_VISITS ? mayOpenTeamVisits() : APP_OWN.includes(href) || canOpenPage(href));
+export const openable = (href) => (isAssetPage(href) ? mayOpenAssetPage(href) : isImportPage(href) ? mayOpenImportPage(href) : isTaskPage(href) ? mayOpenTaskPage(href) : isItPage(href) ? mayOpenItPage(href) : href === RATES_RULES ? mayOpenRates() : href === LEAVE_POLICY_PAGE ? mayOpenLeavePolicy() : href === MAIL_OUTBOX ? mayOpenOutbox() : href === TEAM_VISITS ? mayOpenTeamVisits() : APP_OWN.includes(href) || canOpenPage(href));

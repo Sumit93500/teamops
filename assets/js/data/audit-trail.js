@@ -23,6 +23,8 @@ export const AUDIT_KINDS = [
   "inventory-imported",   // AS2: data/inventory-migrate.js (counts only)
   // I1: data/import-engine.js and data/export.js (the form or module, the file's name, counts; never a cell's value)
   "import-checked", "import-done", "import-failed", "import-refused", "export-done", "export-refused",
+  // TD1: data/tasks-store.js (task ids and statuses only; a personal task is only ever "a personal task was added")
+  "task-personal", "task-assigned", "task-reassigned", "task-status", "task-cancelled", "task-reopened",
 ];
 export const AUDIT_LABEL = {
   "account-created": "Account created", "link-used": "Set-password link used", "password-set": "Password set",
@@ -47,6 +49,7 @@ export const AUDIT_LABEL = {
   "seat-assigned": "Licence seat assigned", "seat-revoked": "Licence seat revoked", "inventory-imported": "Old inventory imported",
   "import-checked": "Import file checked", "import-done": "Import done", "import-failed": "Import failed (rolled back)", "import-refused": "Import refused",
   "export-done": "Export downloaded", "export-refused": "Export refused",
+  "task-personal": "Personal task added", "task-assigned": "Task assigned", "task-reassigned": "Task reassigned", "task-status": "Task status changed", "task-cancelled": "Task cancelled", "task-reopened": "Task reopened",
 };
 
 const empty = () => ({ version: 1, nextNum: 1, events: [] });

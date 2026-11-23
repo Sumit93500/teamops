@@ -1,0 +1,55 @@
+/* The to-do (TD1): the chips' patterns, the due chip, the quick add, the detail, the dashboard card, the progress table.
+   Tokens only (tokens.css). Every class is prefixed td- (or scoped by an id) so nothing leaks into another page; nothing is told apart by colour alone. */
+
+.td-h3 { margin: 0; font-size: var(--ds-text-md); }
+.td-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.td-chips { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); align-items: center; }
+.td-actions { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); align-items: center; }
+@media (max-width: 560px) { .td-actions > .ds-btn { flex: 1 1 100%; justify-content: center; } }
+.td-dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--ds-space-1) var(--ds-space-4); font-size: var(--ds-text-sm); }
+.td-dl__row { display: contents; }
+.td-dl dt { color: var(--ds-text-2); }
+.td-dl dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 480px) { .td-dl { grid-template-columns: minmax(0, 1fr); } .td-dl dd { margin-bottom: var(--ds-space-2); } }
+
+/* status chips: a word, an icon and a pattern each */
+.ds-pill[data-task-status="pending"] { border: 1px dashed currentColor; }
+.ds-pill[data-task-status="in-progress"] { box-shadow: inset 3px 0 0 currentColor; }
+.ds-pill[data-task-status="done"] { border: 1px solid currentColor; }
+.ds-pill[data-task-status="cancelled"] { color: var(--ds-text-2); border: 1px solid var(--ds-border-strong); background: repeating-linear-gradient(135deg, var(--ds-surface-2) 0 5px, var(--ds-surface-3) 5px 10px); }
+.ds-pill[data-task-priority="high"] { border: 1px dashed currentColor; }
+.ds-pill[data-task-priority="urgent"] { box-shadow: inset 3px 0 0 currentColor; }
+
+.td-due { display: inline-flex; flex-wrap: wrap; gap: var(--ds-space-1) var(--ds-space-2); align-items: center; }
+.td-due[data-due="overdue"] .td-due__date { color: var(--ds-danger); font-weight: var(--ds-weight-semibold); }
+.td-cell { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.td-cell .td-sub { font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.td-title-btn { background: none; border: 0; padding: 0; font: inherit; text-align: left; color: var(--ds-text-1); text-decoration: underline; text-underline-offset: 2px; font-weight: var(--ds-weight-semibold); cursor: pointer; overflow-wrap: anywhere; }
+.td-title-done { text-decoration: line-through; color: var(--ds-text-2); }
+@media (min-width: 1024px) { .table .td-title-col { min-width: 220px; } .table .td-status-col { white-space: nowrap; } .table .td-due-col { min-width: 150px; } }
+
+.td-add { display: grid; grid-template-columns: minmax(0, 1fr) 11rem 9rem auto; gap: var(--ds-space-2); align-items: end; }
+.td-add .ds-field { min-width: 0; }
+@media (max-width: 900px) { .td-add { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .td-add .ds-field:first-child { grid-column: 1 / -1; } .td-add > .ds-btn { grid-column: 1 / -1; } }
+.td-updates { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--ds-space-2); }
+.td-updates li { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); align-items: center; justify-content: space-between; padding: var(--ds-space-2) var(--ds-space-3); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-1); }
+.td-updates span { min-width: 0; overflow-wrap: anywhere; }
+
+.td-card { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ds-space-3); }
+.td-card__stat { display: grid; gap: 2px; padding: var(--ds-space-3); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-1); min-width: 0; }
+.td-card__stat[data-alert] { border-style: dashed; border-color: var(--ds-danger); }
+.td-card__num { font-size: var(--ds-text-xl); font-weight: var(--ds-weight-semibold); line-height: 1.1; }
+.td-card__label { display: flex; flex-wrap: wrap; gap: var(--ds-space-1); align-items: center; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.td-card__team { margin: var(--ds-space-3) 0 0; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+@media (max-width: 560px) { .td-card { gap: var(--ds-space-2); } .td-card__stat { padding: var(--ds-space-2); } .td-card__label .ds-pill { display: none; } }
+.td-card__stat[data-alert] .td-card__num { color: var(--ds-danger); }
+#todo-card .tabs { overflow-x: auto; flex-wrap: nowrap; }
+#todo-card .tabs__tab { white-space: nowrap; padding-inline: 10px; }
+#tasks-card { margin-bottom: var(--ds-space-4); }
+
+.td-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--ds-surface-3); min-width: 80px; }
+.td-bar > span { display: block; height: 100%; }
+.td-bar__done { background: var(--ds-success); }
+.td-bar__doing { background: var(--ds-info); background-image: repeating-linear-gradient(135deg, transparent 0 4px, rgba(255, 255, 255, 0.35) 4px 6px); }
+.td-bar__todo { background: var(--ds-warning); opacity: 0.55; }
+.td-people { display: grid; gap: var(--ds-space-2); }

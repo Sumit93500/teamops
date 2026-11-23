@@ -625,7 +625,7 @@ payruns.X7,payruns,"store.js: imports unchanged (no payroll-store import, no cyc
 payruns.X8,payruns,"nothing seeds a payroll run (the seed is empty), and nothing but prepareRun / approveRun writes one",x3 (3 zones)
 paysettings.A1,paysettings,"both are in PERMISSIONS, and ALL_PERMISSIONS has 102 (SH1: the shift and overtime ones; E1b: accounts:disable; P5: the two declarations ones; F1: attendance:any-office; E1: the two accounts ones)",x3 (3 zones)
 paysettings.A2,paysettings,"the Admin holds both; HR, Finance, an employee and a manager hold neither",x3 (3 zones)
-paysettings.A3,paysettings,"the roles' counts: admin 102, hr 58, fin 48, emp 30 (SH1: were 94, 50, 42, 24; E1b: admin was 93; F1: admin was 90; E1: 91 / 49)","x3 (3 zones, 4 roles)"
+paysettings.A3,paysettings,"the roles' counts: admin 102, hr 58, fin 48, emp 30 (SH1: were 94, 50, 42, 24; E1b: admin was 93; F1: admin was 90; E1: 91 / 50)","x3 (3 zones, 4 roles)"
 paysettings.A4,paysettings,"not overridable: a stored grant gives nothing, a deny takes nothing from the Admin",x3 (3 zones)
 paysettings.B1,paysettings,"nothing saved: the new rules start 2026-11, the leave policy 2026-12-01",x3 (3 zones)
 paysettings.B2,paysettings,"a month before, at and after the start: October 2026 old, November and December new",x3 (3 zones)
