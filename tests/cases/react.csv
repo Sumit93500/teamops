@@ -851,7 +851,7 @@ react-i1.A2,react-i1,an employee sent to Import employees lands on the 403 page,
 react-i1.A3,react-i1,the sidebar lists each page only for those who may open it,x1
 react-i1.A4,react-i1,the Users list: Import and Export for HR (and the Admin); the old plain export is gone,x1
 react-i1.A5,react-i1,...for the Admin too,x1
-react-i1.A6,react-i1,"the roles list counts: Admin 127 / 130, HR Manager 70 / 130, Finance Manager 60 / 130, Employee 34 / 130",x1
+react-i1.A6,react-i1,"the roles list counts: Admin 137 / 141, HR Manager 77 / 141, Finance Manager 62 / 141, Employee 34 / 141",x1
 react-i1.A7,react-i1,"the role editor shows Imports and Exports under System: HR ticks import:employees, import:history-view, export:employees, not the pay export",x1
 react-i1.U1,react-i1,"the page: title, four steps with Upload current, the columns listed (required ones marked; HR sees the bank ones)",x1
 react-i1.U2,react-i1,Check the file is disabled until a file is chosen,x1
@@ -914,6 +914,68 @@ react-i1.X1.1280.dark,react-i1,"1280px dark: 18 screens and states, none scrolls
 react-i1.Z1.light,react-i1,"light: every chip, note, hint and sub-line on the import pages reaches 4.5:1 (43 read)",x1
 react-i1.Z1.dark,react-i1,"dark: every chip, note, hint and sub-line on the import pages reaches 4.5:1 (43 read)",x1
 react-i1.Z9,react-i1,no page or console errors,x1
+react-i2.A1.assets,react-i2,"inventory/import-assets.html opens for admin, it only (the others get the 403 page)",x1
+react-i2.A1.stock,react-i2,"inventory/import-stock.html opens for admin, it only (the others get the 403 page)",x1
+react-i2.A1.lic,react-i2,"it/import-licences.html opens for admin, it only (the others get the 403 page)",x1
+react-i2.A1.leave,react-i2,"leave/import-balances.html opens for admin, hr only (the others get the 403 page)",x1
+react-i2.A1.att,react-i2,"attendance/import-corrections.html opens for admin, hr only (the others get the 403 page)",x1
+react-i2.A1.exp,react-i2,"system/export-data.html opens for admin, hr, fin only (the others get the 403 page)",x1
+react-i2.A2,react-i2,"Aarav Mehta's sidebar has the new items they may use: Import assets, Import stock counts, Import licences, Import leave balances, Import attendance corrections, Export data",x1
+react-i2.A2#2,react-i2,"Priya Nair's sidebar has the new items they may use: Import leave balances, Import attendance corrections, Export data",x1
+react-i2.A2#3,react-i2,Kabir Shah's sidebar has the new items they may use: Export data,x1
+react-i2.A2#4,react-i2,Arjun Kapoor's sidebar has the new items they may use: none,x2 (2 roles)
+react-i2.A2.it,react-i2,"Isha Kulkarni's sidebar has the new items they may use: Import assets, Import stock counts, Import licences",x1
+react-i2.A3,react-i2,"Export data: HR gets leave, attendance, visits, work tasks and the payroll register (no expenses)",x1
+react-i2.A4,react-i2,Finance gets expenses and the payroll register,x1
+react-i2.A5,react-i2,the Admin gets no expenses card (the expense files are Finance's),x1
+react-i2.A6,react-i2,"the roles list counts (I2): Admin 137 / 141, HR Manager 77 / 141, Finance Manager 62 / 141, Employee 34 / 141",x1
+react-i2.F1,react-i2,the template is named for the form and starts with its headers,x1
+react-i2.F2,react-i2,the Excel template too,x1
+react-i2.F3,react-i2,"Check: the summary in words, the counts, the problems with their rows",x1
+react-i2.F4,react-i2,the first rows show the file's own words,x1
+react-i2.F5,react-i2,"the error report: Row, Column, Problem; named for the form",x1
+react-i2.F6,react-i2,Confirm in plain words,x1
+react-i2.F7,react-i2,"Done: the summary, the asset with its tag and a link to it",x1
+react-i2.F8,react-i2,"the history keeps the generic name, never the uploaded one",x1
+react-i2.F9,react-i2,stock counts: a new item without a unit is refused in words,x1
+react-i2.F10,react-i2,"Done: one count recorded, as a stock in with the reason",x1
+react-i2.F11,react-i2,"licences: the one that has an active licence is a duplicate; the other is added, with no seat",x1
+react-i2.F12,react-i2,leave balances (HR): your own row refused in words,x1
+react-i2.F13,react-i2,"Confirm says what happens to the balance, and that the app shows it from the policy's start (1 Dec 2026)",x1
+react-i2.F14,react-i2,"Done: the balances set, each person linked to their profile, the date in words",x1
+react-i2.F15,react-i2,"stored as leave openings, nothing else",x1
+react-i2.F16,react-i2,attendance corrections: a future day refused,x1
+react-i2.F17,react-i2,Confirm: recorded as approved by you; the day's rules follow,x1
+react-i2.F18,react-i2,"Done: the correction with the person, the date in words and what was corrected",x1
+react-i2.F19,react-i2,"the correction is approved, by HR, and the day is written",x1
+react-i2.F20,react-i2,"a file whose rows are all on record already: nothing ready, Continue is off, the note says what to do",x1
+react-i2.F21,react-i2,"Import employees still reads as before (its own words, on the shared wizard)",x1
+react-i2.H1,react-i2,"the new entries read as what they are, with the generic file name",x1
+react-i2.H2,react-i2,"an I2 entry's details: what, the file, the counts; no people list",x1
+react-i2.E1,react-i2,"the dialog: dates from the 1st of the month to today, CSV or Excel, no full-numbers choice for leave",x1
+react-i2.E2,react-i2,"a backwards range is refused in words, with no ISO date",x1
+react-i2.E3,react-i2,"the leave file: named for the range, its header",x1
+react-i2.E4,react-i2,logged with the dates in words,x1
+react-i2.E5,react-i2,payroll for HR (who may Show the numbers): the full-numbers choice,x1
+react-i2.E6,react-i2,payroll file: masked unless asked,x1
+react-i2.E7,react-i2,Finance (no pii:view) gets no full-numbers choice,x1
+react-i2.E8,react-i2,Finance's expenses file,x1
+react-i2.E9,react-i2,an employee gets the 403 page,x1
+react-i2.X1.412.light,react-i2,"412px light: 22 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i2.X2.412.light,react-i2,412px light: no ISO date or record id in a message,x1
+react-i2.X1.768.light,react-i2,"768px light: 22 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i2.X2.768.light,react-i2,768px light: no ISO date or record id in a message,x1
+react-i2.X1.1280.light,react-i2,"1280px light: 22 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i2.X2.1280.light,react-i2,1280px light: no ISO date or record id in a message,x1
+react-i2.X1.412.dark,react-i2,"412px dark: 22 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i2.X2.412.dark,react-i2,412px dark: no ISO date or record id in a message,x1
+react-i2.X1.768.dark,react-i2,"768px dark: 22 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i2.X2.768.dark,react-i2,768px dark: no ISO date or record id in a message,x1
+react-i2.X1.1280.dark,react-i2,"1280px dark: 22 screens and states, none scrolls sideways, no table wider than its card",x1
+react-i2.X2.1280.dark,react-i2,1280px dark: no ISO date or record id in a message,x1
+react-i2.Z1.light,react-i2,"light: every chip, note, hint and sub-line on the new pages reaches 4.5:1 (28 read)",x1
+react-i2.Z1.dark,react-i2,"dark: every chip, note, hint and sub-line on the new pages reaches 4.5:1 (28 read)",x1
+react-i2.Z9,react-i2,no page or console errors,x1
 react-it2.A1,react-it2,"admin: opens dash, list, req, new, mine, lic, off, review, complete; the others show the 403 page",x1
 react-it2.A2,react-it2,"admin: the sidebar lists IT dashboard, IT requests, My IT requests, Raise a request, Licences, Offboarding, IT review trail, Complete details and nothing else of the desk",x1
 react-it2.A1#2,react-it2,"hr: opens req, new, mine; the others show the 403 page",x3 (3 roles)
@@ -1571,7 +1633,7 @@ react-side.A2,react-side,"collapsed: the label shows as a chip on hover (""Atten
 react-side.A3,react-side,"collapsed: the active item is marked (aria-current, its own background)",x1
 react-side.A4,react-side,collapsed: no group headings; the brand is its mark only; the count is a small number on the icon; the person's avatar stays in the header,x1
 react-side.A5,react-side,expanded: every item shows its icon and label; the group headings; no section buttons; the brand's name; the avatar and name; the count; Dashboard current,x1
-react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (42), the same links as collapsed",x5 (5 roles)
+react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (48), the same links as collapsed",x5 (5 roles)
 react-side.K1.expanded,react-side,"expanded: Tab goes brand, the toggle, then the first item (Dashboard)",x1
 react-side.K2.expanded,react-side,"expanded: Enter toggles, Space toggles back, focus stays on the toggle",x1
 react-side.K1.collapsed,react-side,"collapsed: Tab goes brand, the toggle, then the first item (Dashboard)",x1

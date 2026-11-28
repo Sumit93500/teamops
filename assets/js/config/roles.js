@@ -34,7 +34,8 @@ const SELF_SERVICE = [
 
 // FS1 (2026-11-22): the stored-file permissions the Admin role does NOT hold by default: seeing other people's expense files and employee
 // documents is HR's and Finance's. Held back until Sumit rules on it (the Admin still sees and changes profile photos through users:edit).
-export const ADMIN_HELD_BACK = ["files:view-expense", "files:view-documents", "files:manage-documents"];
+// I2 (2026-11-28): the expenses file (export:expenses) too: the Admin has no expense-file access; it is Finance's.
+export const ADMIN_HELD_BACK = ["files:view-expense", "files:view-documents", "files:manage-documents", "export:expenses"];
 
 export const ROLES = {
   admin: {
@@ -73,6 +74,8 @@ export const ROLES = {
       "assets:view-all", "stock:view",   // AS1: every asset in the register (no values) and the stock ledger
       "import:employees", "import:history-view", "export:employees",   // I1: import new employees, the Import history, export the people list
       "tasks:view-all",   // TD1: every work task, and assigning to anyone
+      "import:leave-balances", "import:attendance-corrections",   // I2: leave balances and attendance corrections from a file
+      "export:leave", "export:attendance", "export:visits", "export:tasks", "export:payroll",   // I2: those lists as files (work tasks only)
     ],
   },
 
@@ -98,6 +101,7 @@ export const ROLES = {
       "assets:view-all", "assets:view-values", "stock:view", "depreciation:configure",   // AS1: every asset with its values; the stock ledger; depreciation settings
       "it:licences-view-costs",   // IT1: licence costs
       "export:employees-pay",   // I1: the pay and bank columns Finance already sees, as a file (masked as on the profile)
+      "export:expenses", "export:payroll",   // I2: the expense claims and the payroll register as files (the expenses file is Finance's only)
     ],
   },
 
@@ -125,6 +129,7 @@ export const ROLES = {
       "it:requests-handle", "it:licences-manage", "it:account-prepare", "it:offboard",
       "assets:manage", "assets:issue", "assets:maintain", "vendors:manage", "stock:move",
       "assets:view-all", "stock:view",   // to see what it issues and keeps (no values: not assets:view-values)
+      "import:assets", "import:stock-opening", "import:licences",   // I2: the asset register, stock opening balances and licences from a file
     ],
   },
 };

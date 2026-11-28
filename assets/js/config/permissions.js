@@ -86,8 +86,13 @@ export const PERMISSIONS = {
   // (HR, Admin); export:employees: the people list as a file, only what the exporter may see (HR, Admin); export:employees-pay: the pay and
   // bank columns Finance already sees, masked as on the profile (Finance; the Admin through every permission). IT, managers and employees hold
   // none. Not overridable. 122 -> 126 in 49 modules; Admin 123, HR 66, Finance 57, Employee 31, IT 42.
-  import:        ["employees", "history-view"],
-  export:        ["employees", "employees-pay"],
+  // I2 (2026-11-28): the same pattern for the next forms and modules. import:assets and import:stock-opening: the asset register and the stock
+  // ledger's opening balances (IT, the custodian; the Admin); import:licences (IT; Admin); import:leave-balances and import:attendance-corrections
+  // (HR; Admin). export:leave, export:attendance, export:visits, export:tasks (work tasks only) (HR; Admin); export:expenses (Finance ONLY: the
+  // Admin has no expense-file access, roles.js ADMIN_HELD_BACK); export:payroll, the payroll register (Finance, HR; Admin). Not overridable.
+  // 130 -> 141 in 50 modules; Admin 137, HR 77, Finance 62, Employee 34, IT 48.
+  import:        ["employees", "history-view", "assets", "stock-opening", "licences", "leave-balances", "attendance-corrections"],
+  export:        ["employees", "employees-pay", "leave", "attendance", "expenses", "visits", "tasks", "payroll"],
   // TD1 (2026-11-24): the to-do (data/tasks-store.js). own: your own personal and work tasks (everyone); assign: give work tasks to others and view-team: read
   // your team's work tasks (everyone holds both; the data layer allows them only through the manager relation, as visits); view-all: every work task and
   // assigning to anyone (HR, Admin). Personal tasks are private to the owner and no permission reaches them. Not overridable.

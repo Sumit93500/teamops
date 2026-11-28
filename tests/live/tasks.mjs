@@ -35,8 +35,8 @@ const work = (o = {}) => ({ title: "Prepare the report", description: "Q4 number
 
 // ---------- P ----------
 section("P. Permissions");
-check("P1", "130 permissions in 50 modules; tasks: own, assign, view-team, view-all", PM.ALL_PERMISSIONS.length === 130 && Object.keys(PM.PERMISSIONS).length === 50 && j(PM.PERMISSIONS.tasks) === j(["own", "assign", "view-team", "view-all"]));
-check("P2", "role sizes: Admin 127, HR 70, Finance 60, Employee 34, IT 45", j(Object.fromEntries(Object.entries(RO.ROLES).map(([k, r]) => [k, r.permissions.length]))) === j({ admin: 127, hr: 70, fin: 60, emp: 34, it: 45 }), j(Object.fromEntries(Object.entries(RO.ROLES).map(([k, r]) => [k, r.permissions.length]))));
+check("P1", "130 permissions in 50 modules; tasks: own, assign, view-team, view-all", PM.ALL_PERMISSIONS.length === 141 /* I2 (behaviour; was 130: the next imports and the record exports) */ && Object.keys(PM.PERMISSIONS).length === 50 && j(PM.PERMISSIONS.tasks) === j(["own", "assign", "view-team", "view-all"]));
+check("P2", "role sizes: Admin 127, HR 70, Finance 60, Employee 34, IT 45", j(Object.fromEntries(Object.entries(RO.ROLES).map(([k, r]) => [k, r.permissions.length]))) === j({ admin: 137, hr: 77, fin: 62, emp: 34, it: 48 /* I2 (behaviour; was 127, 70, 60, 34, 45: the next imports and the record exports) */ }), j(Object.fromEntries(Object.entries(RO.ROLES).map(([k, r]) => [k, r.permissions.length]))));
 const holds = (r, p) => RO.ROLES[r].permissions.includes(p);
 check("P3", "every role holds own, assign and view-team (assign and view-team work only through the manager relation); only HR and Admin hold view-all", ["admin", "hr", "fin", "emp", "it"].every((r) => ["tasks:own", "tasks:assign", "tasks:view-team"].every((p) => holds(r, p))) && holds("admin", "tasks:view-all") && holds("hr", "tasks:view-all") && !holds("fin", "tasks:view-all") && !holds("emp", "tasks:view-all") && !holds("it", "tasks:view-all"));
 check("P4", "none of the four is overridable", !RO.OVERRIDABLE.some((p) => p.startsWith("tasks:")));

@@ -65,6 +65,15 @@
 .ix-choice { display: flex; gap: var(--ds-space-2); align-items: flex-start; font-size: var(--ds-text-sm); cursor: pointer; }
 .ix-choice input { margin-top: 3px; flex: none; accent-color: var(--ds-primary); width: 16px; height: 16px; }
 .ix-choice small { display: block; color: var(--ds-text-2); }
+/* I2: the export dialog's dates; Export data's cards */
+.ix-dates { display: flex; flex-wrap: wrap; gap: var(--ds-space-3); }
+.ix-date { display: grid; gap: var(--ds-space-1); font-size: var(--ds-text-sm); flex: 1 1 150px; min-width: 0; }
+.ix-date .ds-input { width: 100%; }
+.ix-export-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); align-items: start; }
+@media (max-width: 560px) { .ix-export-grid { grid-template-columns: minmax(0, 1fr); } }
+.ix-export-note { margin-top: var(--ds-space-4); }
+.ix-wrap { overflow-wrap: anywhere; }
+.ix-nowrap { white-space: nowrap; }
 .ix-dialog { display: grid; gap: var(--ds-space-4); }
 
 .ix-dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--ds-space-1) var(--ds-space-4); font-size: var(--ds-text-sm); }

@@ -20,6 +20,8 @@ import { todayIso } from "../../../assets/js/ui/leave-view.js";
 
 const NONE = { preset: "", from: "", to: "" };
 const officeDay = (iso) => new Date(Date.parse(iso) + 330 * 60000).toISOString().slice(0, 10);
+// I2: the files that can carry Aadhaar, bank account or PAN numbers (the others have none to mask)
+const SENSITIVE_FILES = ["employees", "employees-pay", "payroll"];
 const nameOf = (id) => getUser(id)?.name ?? id ?? "";
 
 function StatusPill({ status }) {
@@ -41,7 +43,7 @@ function Details({ entry, onClose }) {
   if (e.fileName) rows.push(["File", e.fileName]);
   if (e.size != null) rows.push(["Size", sizeText(e.size)]);
   if (e.sha256) rows.push(["SHA-256", <span key="h" className="ix-hash">{e.sha256}</span>]);
-  if (e.kind === "export") rows.push(["Rows", String(e.rows ?? 0)], ["Filters", e.filters || "None"], ["Sensitive values", e.sensitive ? "In full" : "Masked"], ["Format", String(e.format ?? "csv").toUpperCase()]);
+  if (e.kind === "export") rows.push(["Rows", String(e.rows ?? 0)], ["Filters", e.filters || "None"], ...(SENSITIVE_FILES.includes(e.module) ? [["Sensitive values", e.sensitive ? "In full" : "Masked"]] : []), ["Format", String(e.format ?? "csv").toUpperCase()]);
   else if (e.rowsRead != null) rows.push(["Rows read", String(e.rowsRead)]);
   if (e.status === "imported") rows.push(["Imported", String(e.imported)], ["Skipped", String(e.skipped)]);
   if (e.reason) rows.push(["Why", e.reason]);
@@ -55,7 +57,7 @@ function Details({ entry, onClose }) {
       footer={<button type="button" className="ds-btn" onClick={onClose}>Close</button>}>
       <div className="ds-stack">
         <dl className="ix-dl" id="entry-facts">{rows.map(([k, v]) => <div key={k} className="ix-dl__row"><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
-        {e.created?.length > 0 && (
+        {e.created?.length > 0 && (e.form ?? "employees") === "employees" && (   // I2: the other forms' records are counted above, not listed
           <section aria-labelledby="entry-people">
             <h3 className="ix-h3" id="entry-people">People added ({e.created.length})</h3>
             <ul className="ix-links" id="entry-created">{e.created.map((id) => <li key={id}><Link className="ix-link" to={`${pageUrl("users/user-profile.html")}?id=${encodeURIComponent(id)}`}>{nameOf(id)} ({id})</Link></li>)}</ul>

@@ -21,6 +21,7 @@ import { officeNow } from "./shift-engine.js";
 import { logEvent } from "./audit-trail.js";
 import { addHistory } from "./import-history.js";
 import { toCsv } from "./csv.js";
+import { RECORD_MODULES, isRecordModule } from "./export-records.js";   // I2: leave, attendance, expenses, visits, work tasks, the payroll register
 
 export const EXPORT_LIMIT = 5000;
 const STATUS = { active: "Active", "on-leave": "On leave", inactive: "Inactive" };
@@ -80,8 +81,9 @@ function cellOf(user, key, values, departments) {
   return v == null ? "" : String(v);
 }
 
-export async function exportFile(viewerId, module, { ids = null, includeSensitive = false, format = "csv", filters = "", now = Date.now() } = {}) {
-  const m = EXPORT_MODULES[module], v = active(viewerId);
+// I2: from / to ("YYYY-MM-DD", office days) are the date range of a record module (data/export-records.js); the people modules ignore them.
+export async function exportFile(viewerId, module, { ids = null, includeSensitive = false, format = "csv", filters = "", from = null, to = null, now = Date.now() } = {}) {
+  const m = EXPORT_MODULES[module] ?? (isRecordModule(module) ? RECORD_MODULES[module] : null), v = active(viewerId);
   const refuse = (error, code, rows = 0) => {
     if (v) {
       logEvent({ actorId: v.id, kind: "export-refused", detail: `${m?.label ?? module}: export refused (${code})` }, now);
@@ -93,6 +95,7 @@ export async function exportFile(viewerId, module, { ids = null, includeSensitiv
   if (!v || !hasPermission(v, m.permission)) return refuse(`You can't export ${m.label.toLowerCase()}.`, "not-allowed");
   if (includeSensitive && !mayExportSensitive(v.id)) return refuse("You can't export full Aadhaar, bank account or PAN numbers: they stay masked.", "sensitive");
   if (!["csv", "xlsx"].includes(format)) return refuse("Choose CSV or Excel.", "format");
+  if (isRecordModule(module)) return recordFile(v, module, m, { includeSensitive, format, filters, from, to, now }, refuse);
   const scope = exportScope(v.id, module);
   const wanted = Array.isArray(ids) ? new Set(ids.map(String)) : null;
   const people = wanted ? scope.filter((u) => wanted.has(u.id)) : scope;
@@ -112,4 +115,29 @@ export async function exportFile(viewerId, module, { ids = null, includeSensitiv
   const entry = addHistory({ kind: "export", module, actorId: v.id, status: "exported", rows: people.length, filters: String(filters).slice(0, 200), sensitive, format, fileName: file.name }, now);
   logEvent({ actorId: v.id, kind: "export-done", detail: `${m.label}: ${people.length} rows (${filters || "all they can see"}), ${format.toUpperCase()}, sensitive values ${sensitive ? "IN FULL" : "masked"}${entry ? ` (${entry.id})` : ""}` }, now);
   return { ok: true, ...file, rows: people.length, columns: cols.map((c) => c.header), historyId: entry?.id ?? null };
+}
+
+// ---------- I2: the record modules' files ----------
+// The range is checked here (real days, the start not after the end, at most the module's days or months); the rows are the module's own
+// read (data/export-records.js), the file and its log as above. The name: <module>-<from>-to-<to>.csv, like leave-2026-11-01-to-2026-11-30.csv.
+const dayNumberOf = (d) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d ?? "")); if (!m) return null; const t = Date.UTC(+m[1], +m[2] - 1, +m[3]); const x = new Date(t); return x.getUTCDate() === +m[3] && x.getUTCMonth() === +m[2] - 1 ? t / 86400000 : null; };
+async function recordFile(v, module, m, { includeSensitive, format, filters, from, to, now }, refuse) {
+  const a = dayNumberOf(from), b = dayNumberOf(to);
+  if (a === null || b === null) return refuse("Choose the dates to export: a start and an end.", "range");
+  if (a > b) return refuse("The start date is after the end date: swap them.", "range");
+  if (b - a + 1 > m.maxDays) return refuse(`That's ${(b - a + 1).toLocaleString("en-IN")} days; at most ${m.maxDays} can be exported at once. Choose a shorter range.`, "range");
+  if (m.maxMonths && (Number(to.slice(0, 4)) * 12 + Number(to.slice(5, 7))) - (Number(from.slice(0, 4)) * 12 + Number(from.slice(5, 7))) + 1 > m.maxMonths) return refuse(`At most ${m.maxMonths} months can be exported at once. Choose a shorter range.`, "range");
+  const cols = m.columns();
+  const rows = m.rows(v.id, { from, to, full: Boolean(includeSensitive) }, now);
+  if (!rows.length) return refuse("There is nothing to export between those dates.", "empty");
+  if (rows.length > EXPORT_LIMIT) return refuse(`That's ${rows.length.toLocaleString("en-IN")} rows; at most ${EXPORT_LIMIT.toLocaleString("en-IN")} can be exported at once. Choose a shorter range.`, "too-many", rows.length);
+  const table = [cols.map((c) => c.header), ...rows.map((r) => cols.map((c) => (r[c.key] == null ? "" : String(r[c.key]))))];
+  const base = `${module}-${from}-to-${to}`;
+  const file = format === "xlsx"
+    ? { name: `${base}.xlsx`, mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes: (await import("./xlsx.js")).writeXlsx(table) }
+    : { name: `${base}.csv`, mime: "text/csv;charset=utf-8", text: toCsv(table) };
+  const sensitive = Boolean(includeSensitive) && cols.some((c) => c.sensitive);
+  const entry = addHistory({ kind: "export", module, actorId: v.id, status: "exported", rows: rows.length, filters: String(filters || `${from} to ${to}`).slice(0, 200), from, to, sensitive, format, fileName: file.name }, now);
+  logEvent({ actorId: v.id, kind: "export-done", detail: `${m.label}: ${rows.length} rows (${filters || `${from} to ${to}`}), ${format.toUpperCase()}, sensitive values ${sensitive ? "IN FULL" : cols.some((c) => c.sensitive) ? "masked" : "none"}${entry ? ` (${entry.id})` : ""}` }, now);
+  return { ok: true, ...file, rows: rows.length, columns: cols.map((c) => c.header), historyId: entry?.id ?? null };
 }

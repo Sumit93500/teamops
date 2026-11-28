@@ -52,6 +52,7 @@ import { leavePolicyActive } from "./pay-settings.js";
 import { employmentOf } from "./employment.js";
 import { compOffShield } from "./comp-off.js";   // SH1
 import { isAppCreated } from "./employment-period.js";   // F2
+import { openingAdjust } from "./leave-openings.js";   // I2: balances imported from a file
 
 const KEY = "leave-policy";
 export const LEAVE_BANDS = ["intern", "under1", "over1"];
@@ -171,9 +172,11 @@ function account(userId, type, date, band, e) {
   // SH1: comp-off days earned from approved overtime count in earned leave while they last (data/comp-off.js); none
   // earned (comp-off is off by default) leaves the account exactly as it was.
   const compOff = type === "earned" ? compOffShield(userId, date, taken, entitled + carriedIn) : 0;
-  const available = entitled + carriedIn + compOff;
-  const usable = (usableFrom && date < usableFrom ? 0 : entitled + carriedIn) + compOff;   // SH1: comp-off is usable at once
-  return { type, band, accrual: policy.accrual, entitled, carriedIn, ...(compOff ? { compOff } : {}), taken, pending, available, usable, ...(usableFrom ? { usableFrom } : {}), left: Math.max(0, usable - taken), lop: Math.max(0, taken - usable) };
+  // I2: a balance imported from a file (data/leave-openings.js) adds its adjustment from its date, in its year (0 when nothing was imported)
+  const opening = openingAdjust(userId, type, date);
+  const available = opening ? Math.max(0, entitled + carriedIn + compOff + opening) : entitled + carriedIn + compOff;
+  const usable = opening ? Math.max(0, (usableFrom && date < usableFrom ? 0 : entitled + carriedIn) + compOff + opening) : (usableFrom && date < usableFrom ? 0 : entitled + carriedIn) + compOff;   // SH1: comp-off is usable at once
+  return { type, band, accrual: policy.accrual, entitled, carriedIn, ...(compOff ? { compOff } : {}), ...(opening ? { opening } : {}), taken, pending, available, usable, ...(usableFrom ? { usableFrom } : {}), left: Math.max(0, usable - taken), lop: Math.max(0, taken - usable) };
 }
 export function leaveAccount(userId, date) {
   const band = tenureBand(userId, date);

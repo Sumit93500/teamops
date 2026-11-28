@@ -59,6 +59,13 @@ export const TEAM_TASKS = "tasks/team.html";
 export const IMPORT_EMPLOYEES = "people/import-employees.html";
 export const IMPORT_HISTORY = "people/import-history.html";
 export const EXPORT_PAY = "payroll/export-pay.html";
+// I2: the next imports (each in its area's folder) and Export data (shell/importAccess.js)
+export const IMPORT_ASSETS = "inventory/import-assets.html";
+export const IMPORT_STOCK = "inventory/import-stock.html";
+export const IMPORT_LICENCES = "it/import-licences.html";
+export const IMPORT_LEAVE = "leave/import-balances.html";
+export const IMPORT_ATTENDANCE = "attendance/import-corrections.html";
+export const EXPORT_DATA = "system/export-data.html";
 
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

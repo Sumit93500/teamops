@@ -1,6 +1,6 @@
-# Imports and exports (I1)
+# Imports and exports (I1, I2)
 
-Built in I1 (2026-11-23): one import engine and one export helper that every later form and module reuses, with the first of each: new employees in, the people list and Finance's pay details out.
+Built in I1 (2026-11-23): one import engine and one export helper that every later form and module reuses, with the first of each: new employees in, the people list and Finance's pay details out. I2 (2026-11-28) added four imports and six record exports on the same engine: see [I2](#i2-the-next-imports-and-the-record-exports-2026-11-28) below.
 
 **Files:**
 
@@ -193,3 +193,88 @@ A form definition is:
 - An HR import's office sets the Work location only (as the employee form does for HR); the check-in office assignment needs `offices:manage`.
 - The joining date is required in a file (the form's "empty means today" isn't carried over); the employee code is stored as `employeeCode`.
 - Finance's pay export is its own page (Payroll group), since Finance doesn't open the Users list.
+
+## I2: the next imports and the record exports (2026-11-28)
+
+I2 reuses the engine and the export helper for four more imports and six record exports. Nothing is forked: each import is a form definition, each export a module beside I1's.
+
+**Files:**
+
+- `assets/js/data/import-common.js`: what the I2 forms share (dates as people type them, a person by employee ID, code or work email, amounts, half days, `plain()`: a store's sentence with its ISO dates in words and no record id).
+- `data/import-assets.js`: `ASSETS_FORM` (the asset register) and `STOCK_OPENING_FORM` (the stock ledger's opening counts).
+- `data/import-licences.js`: `LICENCES_FORM`.
+- `data/import-leave.js` with `data/leave-openings.js`: `LEAVE_BALANCES_FORM` and the store of imported balances (`officeos:leave-openings`).
+- `data/import-attendance.js` with `data/attendance-store.js` `correctionProblem` / `importCorrection` (additive): `ATTENDANCE_CORRECTIONS_FORM`.
+- `data/export-records.js`: the record modules (`RECORD_MODULES`); `data/export.js` `exportFile` writes, names and logs their files as it does I1's.
+- Screens:
+  - `app/src/ui/ImportWizard.jsx`: the wizard, shared (I1's Import employees now uses it too, with the same words);
+  - `app/src/pages/ImportPages.jsx`: Import assets, Import stock counts, Import licences, Import leave balances, Import attendance corrections;
+  - `app/src/pages/ExportData.jsx`: Export data;
+  - `app/src/ui/impex.jsx`: the export dialog takes a date range (`range`) and leaves out the full-numbers choice for a file without those columns (`sensitiveColumns`).
+
+**Tests:** `tests/live/i2.mjs` (3 zones), `tests/live/react/i2.mjs` (the screens, in Edge).
+
+### The engine, changed additively
+
+- **A generic file name** (`genericName` on a form, every I2 form): the history and the audit trail keep `<form>-file.csv` (or `.xlsx`), never the uploaded name, which may name a person. I1's employees form keeps the uploaded name.
+- **Two-column keys:** a `unique` entry may give `value(values)` (the person and the date, say), an `id`, and `onRecord(owner)`, its own words for one already on record.
+- **"Already imported"** no longer names the history entry's id: "This file was already imported: nothing was imported again."
+
+### Permissions (130 -> 141, still 50 modules)
+
+| permission | who | what |
+|---|---|---|
+| `import:assets` | IT, Admin | Import assets |
+| `import:stock-opening` | IT, Admin | Import stock counts |
+| `import:licences` | IT, Admin | Import licences |
+| `import:leave-balances` | HR, Admin | Import leave balances |
+| `import:attendance-corrections` | HR, Admin | Import attendance corrections |
+| `export:leave`, `export:attendance`, `export:visits`, `export:tasks` | HR, Admin | those lists as files |
+| `export:expenses` | Finance only | the expense claims (the Admin has no expense-file access: `ADMIN_HELD_BACK`) |
+| `export:payroll` | Finance, HR, Admin | the payroll register |
+
+None is overridable. Admin 137, HR 77, Finance 62, Employee 34, IT 48. The Import history stays HR's and the Admin's (`import:history-view`).
+
+### The forms
+
+Every form: the template (CSV or Excel), the check row by row with no record written (the dry run), Confirm in plain words, the good rows applied in one transaction (all or nothing; a failure puts every key back), a history entry with a generic file name, and no sign-in made. Problems name no ISO date and no record id. Mode: good rows.
+
+- **Assets** (`import:assets`): Name, Category (an asset category; an access card is a stock item and is refused), Make and model, Serial number (unique on the register and in the file), Purchase date (not in the future), Purchase price, Vendor (an active one), Invoice reference, Warranty end (not before the purchase), Office (an active one). Saved by `addAsset`: the next free tag, the category's depreciation, in store.
+- **Stock counts** (`import:stock-opening`): Item, Category, Unit and Reorder level (for a new item), Opening quantity, As of (not in the future), Reference. A new item is added (`addStockItem`), then ONE stock in (`recordStockMovement`, reason "Opening balance (imported)"). An item that already has movements is refused: its count is on record.
+- **Licences** (`import:licences`): Software (not one with an active licence, nor twice in the file), Vendor, Seats (1 to 100,000), Cost per year (optional; Finance and the Admin read it back), Renewal date (today or later). Saved by `addLicence`; no seat is given from a file.
+- **Leave balances** (`import:leave-balances`): Employee (ID, code or work email), Leave type (casual, sick or earned; one the person's band has), Days left (whole or half days), As of (this calendar year, not in the future, after the newest approved payroll month).
+  - Balances are still worked out, never stored. The import stores the one difference that makes the worked-out balance on that date equal the file's (`leave-openings.js`: balance, as of, the adjustment, who); `leave-policy.js` `account()` adds it on that date and after, in that year only. Before the date, in any other year, and when nothing was imported, every balance is exactly as before.
+  - Refused: your own balance, a person and type already imported for the year, an inactive person, a date before joining or after leaving.
+  - The app shows these balances from the leave policy's start (`leaveFrom`, 1 Dec 2026), as it shows every policy balance.
+- **Attendance corrections** (`import:attendance-corrections`): Employee, Date, What to correct (late arrival, missed check-in, missed check-out: `ui/attendance-view.js`'s words), Correct time (24-hour; "9:40" and "6:30 PM" are read), Reason.
+  - Each is recorded as approved by the importer (`importCorrection`): a person's own request's checks in HR's words, then the same write as a finally approved request, and the request kept, approved, with `importedBy`.
+  - From the shift rules' start (1 Dec 2026) the person's shift decides the day (`shiftDayFor`): its weekly off, whether they were late, when check-in closes. Before it, the old rules. Lateness, half days and late marks then follow the corrected times as on any day.
+  - Refused: your own attendance, a visit day (its own punches count), a holiday, weekend, weekly off or leave day with no check-in, a day with a correction waiting, a day with sample times (generated, not stored), the future, an approved payroll month, a check-in at or after the day's end. Not the 7-day window: HR corrects older days.
+
+### The record exports
+
+`exportFile(viewerId, module, { from, to, format, includeSensitive, filters })`: a date range (real days, the start not after the end), one row per record, CSV (UTF-8, BOM, CRLF) or Excel, every cell protected against formula injection, named `<module>-<from>-to-<to>.csv`, logged in the history (module, from, to, rows, format, whether full numbers) and the audit trail. People's names and departments come through `exportReader`, as the profile shows them.
+
+| module | rows | limit |
+|---|---|---|
+| `leave` | the leave requests touching the range, with the reason | a year |
+| `attendance` | one row per person and day (not before joining or after leaving), by the person's shift from the shift rules' start; whether the day was corrected | 92 days |
+| `expenses` | the claims spent in the range; whether a receipt is attached, never its name | a year |
+| `visits` | the visits touching the range; the site's name, never a location reading | a year |
+| `tasks` | WORK tasks due in the range (personal tasks are never read) | a year |
+| `payroll` | each person's row for every month in the range, the stored run where there is one; bank account and PAN masked unless someone with `pii:view` asks (recorded) | 12 months |
+
+### Screens
+
+- The five import pages are the shared wizard with their own words; each is in its area's sidebar group (Assets & inventory, IT desk, Leave, Attendance).
+- **Export data** (System group, for anyone holding one of the six): a card per module the person may export, each opening the export dialog with From and To (the 1st of the month to today by default) and CSV or Excel.
+- The Import history labels the new entries; an I2 entry's details list no people.
+
+### Choices made where the brief was silent
+
+- One permission per form and module (11), in the existing `import` and `export` modules: stock opening counts are their own form beside the assets.
+- The generic file name is `<form>-file.<ext>`, for the I2 forms only (I1's employees form unchanged: a ruling item).
+- Leave balances: "days left on a date", stored as an adjustment (balances stay worked out); casual, sick and earned only; once per person, type and year; not your own.
+- Attendance corrections: recorded as approved by the importer, as a correction request; no 7-day window, but never an approved payroll month; visit days and sample days refused.
+- Licences: licences only, no seats from a file. Assets: no issue to a person from a file (Asset assignment does that).
+- Export data is one page (System) rather than a button on each list; HR's payroll register may carry full numbers (HR holds `pii:view`), Finance's never.

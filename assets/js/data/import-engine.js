@@ -112,7 +112,7 @@ export function checkTable(form, upload, actor, now = Date.now()) {
   const ctx = form.context(actor, now);
   const cols = columnsFor(form, actor);
   const formulaAt = new Set((upload.formulas ?? []).map((f) => `${f.row}:${f.col}`));
-  const seen = Object.fromEntries((form.unique ?? []).map((u) => [u.key, new Map()]));
+  const seen = Object.fromEntries((form.unique ?? []).map((u) => [u.id ?? u.key, new Map()]));
   const out = rows.map((rec) => {
     const values = {}, errors = [], warnings = [];
     let duplicate = false;
@@ -127,14 +127,15 @@ export function checkTable(form, upload, actor, now = Date.now()) {
       else { values[c.key] = r.value; if (r.warning) warnings.push({ column: c.header, message: r.warning }); }
     }
     for (const u of form.unique ?? []) {
-      const val = values[u.key];
+      // I2: a key of two columns (value: the person and the date, say; id names it) and its own words for one already on record (onRecord)
+      const val = u.value ? u.value(values) : values[u.key];
       if (val == null || val === "") continue;
       const k = String(val).toLowerCase();
       const header = form.columns.find((c) => c.key === u.key).header;
       const owner = u.existing(ctx).get(k);
-      if (owner) { errors.push({ column: header, message: `already belongs to ${owner}`, reason: "already on record" }); duplicate = true; }
-      else if (seen[u.key].has(k)) { errors.push({ column: header, message: `also in row ${seen[u.key].get(k)}`, reason: "twice in the file" }); duplicate = true; }
-      else seen[u.key].set(k, rec.row);
+      if (owner) { errors.push({ column: header, message: u.onRecord ? u.onRecord(owner) : `already belongs to ${owner}`, reason: "already on record" }); duplicate = true; }
+      else if (seen[u.id ?? u.key].has(k)) { errors.push({ column: header, message: `also in row ${seen[u.id ?? u.key].get(k)}`, reason: "twice in the file" }); duplicate = true; }
+      else seen[u.id ?? u.key].set(k, rec.row);
     }
     if (!errors.length && form.checkRow) { const extra = form.checkRow(values, ctx, actor); if (extra) errors.push(extra); }
     return { row: rec.row, values, raw, errors, warnings, status: !errors.length ? "ready" : duplicate ? "duplicate" : "error" };
@@ -162,7 +163,14 @@ export async function tokenRefusal(token, actorId, formId, sha, now = Date.now()
 }
 
 const keepProblems = (problems) => problems.map((p) => ({ row: p.row, column: p.column, reason: p.reason }));   // no values
-const sizeAndName = (upload, sha) => ({ fileName: String(upload.name ?? "").split(/[\\/]/).pop().slice(0, 120), size: upload.bytes?.length ?? upload.bytes?.byteLength ?? 0, sha256: sha });
+// I2: a form with genericName keeps no uploaded file's name (it may name a person): the history and the audit trail say "<form>-file.csv"
+export const keptName = (form, name) => {
+  const base = String(name ?? "").split(/[\\/]/).pop().slice(0, 120);
+  if (!form?.genericName) return base;
+  const ext = /\.(csv|xlsx|txt)$/i.exec(base)?.[1]?.toLowerCase();
+  return `${form.id}-file${ext ? `.${ext}` : ""}`;
+};
+const sizeAndName = (upload, sha, form) => ({ fileName: keptName(form, upload.name), size: upload.bytes?.length ?? upload.bytes?.byteLength ?? 0, sha256: sha });
 
 // Upload -> Check. Writes no record. -> the check's result with { sha256, token, kind } or a refusal (logged as refused)
 // someone without the permission tried: the audit trail says so (no history entry: the history is for those who may import)
@@ -178,7 +186,7 @@ export async function checkImport(form, upload, actorId, now = Date.now()) {
   const sha = bytes.length ? await sha256Hex(bytes) : "";
   const read = await readUpload({ bytes, name: upload.name });
   const res = read.ok ? checkTable(form, read, actor, now) : read;
-  const base = { kind: "import", form: form.id, actorId: actor.id, ...sizeAndName({ ...upload, bytes }, sha) };
+  const base = { kind: "import", form: form.id, actorId: actor.id, ...sizeAndName({ ...upload, bytes }, sha, form) };
   if (!res.ok) {
     addHistory({ ...base, status: "refused", reason: res.error, problems: keepProblems(res.problems ?? []) }, now);
     logEvent({ actorId: actor.id, kind: "import-refused", detail: `${form.label}: ${base.fileName} refused (${res.code})` }, now);
@@ -196,7 +204,7 @@ export function refuseUnread(form, actorId, { name, size }, now = Date.now()) {
   const actor = active(actorId);
   if (!can(actor, form.permission)) return notAllowed(actor, form, "a check", now);
   const res = size > IMPORT_LIMITS.bytes ? fail(`The file is ${mb(size)}; at most 2 MB can be imported. Split it, or remove what isn't needed.`, "too-big") : fail("The file is empty.", "empty");
-  const fileName = String(name ?? "").split(/[\\/]/).pop().slice(0, 120);
+  const fileName = keptName(form, name);
   addHistory({ kind: "import", form: form.id, actorId: actor.id, fileName, size, sha256: "", status: "refused", reason: res.error, problems: [] }, now);
   logEvent({ actorId: actor.id, kind: "import-refused", detail: `${form.label}: ${fileName} refused (${res.code})` }, now);
   return res;
@@ -232,7 +240,7 @@ const inFlight = new Set();
 async function confirmOnce(form, upload, actor, token, now) {
   const bytes = upload.bytes instanceof Uint8Array ? upload.bytes : new Uint8Array(upload.bytes ?? []);
   const sha = await sha256Hex(bytes);
-  const base = { kind: "import", form: form.id, actorId: actor.id, token: String(token ?? "").slice(0, 60), ...sizeAndName({ ...upload, bytes }, sha) };
+  const base = { kind: "import", form: form.id, actorId: actor.id, token: String(token ?? "").slice(0, 60), ...sizeAndName({ ...upload, bytes }, sha, form) };
   // every confirm that doesn't import is logged too: in the history (as refused) and the audit trail
   const refused = (r, extra = {}) => {
     addHistory({ ...base, status: "refused", reason: r.error, ...extra }, now);
@@ -242,7 +250,7 @@ async function confirmOnce(form, upload, actor, token, now) {
   const why = await tokenRefusal(token, actor.id, form.id, sha, now);
   if (why) return refused(fail(why, "token"));
   const done = importedWithToken(token);
-  if (done) return refused(fail(`This file was already imported (${done.id}): nothing was imported again.`, "already-imported", { historyId: done.id, created: done.created }));
+  if (done) return refused(fail("This file was already imported: nothing was imported again.", "already-imported", { historyId: done.id, created: done.created }));
   return applyChecked(form, upload, actor, bytes, base, refused, now);
 }
 

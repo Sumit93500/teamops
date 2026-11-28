@@ -16,7 +16,7 @@ Roles come from the configuration: they can't be created, edited or deleted in t
 
 ## Permissions
 
-- `module:action` strings, 50 modules, 130 in all (126 before TD1, 122 before I1, 114 before IT1, 105 before AS1, 102 before FS1, 98 before CV1, 94 before SH1, 93 before E1b, 91 before E1, 90 before F1, 88 before P5, 86 before P4, 79 before L0). F1 (2026-11-14) added `attendance:any-office`: check in from any active office, not only your own (the Admin only, through every permission; not overridable), so Admin 91 and the others unchanged. P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
+- `module:action` strings, 50 modules, 141 in all (130 before I2, 126 before TD1, 122 before I1, 114 before IT1, 105 before AS1, 102 before FS1, 98 before CV1, 94 before SH1, 93 before E1b, 91 before E1, 90 before F1, 88 before P5, 86 before P4, 79 before L0). F1 (2026-11-14) added `attendance:any-office`: check in from any active office, not only your own (the Admin only, through every permission; not overridable), so Admin 91 and the others unchanged. P5 (2026-11-14) added the module `declarations`: `declarations:submit-own` (everyone, self-service: fill in and submit your own tax declaration) and `declarations:manage` (Finance and the Admin: edit anyone's, verify and lock, unlock, set the cutoff). Managers get neither for their team, so Admin 90, HR 49, Finance 42, Employee 24. P4 (2026-11-14) moved `payroll-rules:verify` (the Rates and rules page: verify a row, add a dated row) and `leave-policy:edit` (the Leave policy page: edit the numbers, close a leave year) here from their data modules: Admin only, not overridable, so Admin 88, HR 48, Finance 40, Employee 23.
 - Examples: `payroll:create` (prepare a run), `payroll:approve`, `salary:view`, `dashboard:finance`, `users:delete` (Admin only), `pii:view` (bank account and PAN).
 - A page needs one permission (`config/routes.js`). A control on a page needs its own, through `data-permission="..."` on the static pages and `perm()` / `useCan()` in the React app.
 
@@ -50,9 +50,11 @@ IT2 (2026-11-23) took `accounts:reset` away from HR (HR 64 to 63; the Admin keep
 
 TD1 (2026-11-24) added the module `tasks` (see [todo.md](todo.md)): `tasks:own` (everyone), `tasks:assign` and `tasks:view-team` (everyone, through the manager relation, as visits), `tasks:view-all` (HR, Admin). None is overridable; a personal task is private to its owner and no permission reaches it. 126 -> 130 in 50 modules: Admin 127, HR 70, Finance 60, Employee 34, IT 45.
 
-## Imports and exports (I1)
+## Imports and exports (I1, I2)
 
 I1 (2026-11-23) added the modules `import` and `export` (see [import-export.md](import-export.md)): `import:employees`, `import:history-view` and `export:employees` (HR, Admin), `export:employees-pay` (Finance; the Admin through every permission). The pattern is `import:<form>` / `export:<module>`; IT, managers and employees hold none; none is overridable. 122 -> 126 in 49 modules: Admin 123, HR 66, Finance 57, Employee 31, IT 42. A file's full Aadhaar, bank account and PAN numbers need `pii:view` and an audited choice.
+
+I2 (2026-11-28) added eleven more in the same modules: `import:assets`, `import:stock-opening`, `import:licences` (IT; the Admin), `import:leave-balances`, `import:attendance-corrections`, `export:leave`, `export:attendance`, `export:visits`, `export:tasks` (HR; the Admin), `export:expenses` (Finance only: held back from the Admin with the expense files, `ADMIN_HELD_BACK`) and `export:payroll` (Finance, HR; the Admin). None is overridable. 130 -> 141 in 50 modules: Admin 137, HR 77, Finance 62, Employee 34, IT 48.
 
 ## Assets and stock (AS1)
 

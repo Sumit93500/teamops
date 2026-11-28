@@ -12,7 +12,7 @@ import { isPlaceholder } from "./placeholders.js";
 import { ASSET_NAV_PERMISSION, isAssetPage, mayOpenAssetPage } from "./assetAccess.js";   // AS2
 import { IT_NAV, isItPage, mayOpenItPage } from "./itAccess.js";   // IT2
 import { COMPLETE_DETAILS } from "../routes.js";
-import { PEOPLE_ITEMS, PAYROLL_ITEMS, isImportPage, mayOpenImportPage } from "./importAccess.js";   // I1
+import { PEOPLE_ITEMS, PAYROLL_ITEMS, AREA_IMPORT_ITEMS, isImportPage, mayOpenImportPage } from "./importAccess.js";   // I1, I2
 import { TASK_ITEMS, isTaskPage, mayOpenTaskPage } from "./taskAccess.js";   // TD1
 
 const PIN = "M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5";
@@ -26,10 +26,13 @@ const TEAM_VISITS_ITEM = { label: "Team visits", icon: "pin", iconPath: PIN, hre
 const COMPLETE_ITEM = { label: "Complete details", icon: "tag", href: COMPLETE_DETAILS, permission: "assets:manage" };
 const withAssetPermissions = (g) => (g.group === "Assets & inventory" ? { ...g, items: [...g.items.map((i) => (ASSET_NAV_PERMISSION[i.href] ? { ...i, permission: ASSET_NAV_PERMISSION[i.href] } : i)), COMPLETE_ITEM] } : g);
 const withDesk = (list) => list.flatMap((g) => (g.group === "Assets & inventory" ? [g, IT_NAV] : [g]));
+// I2: each area's import page (and Export data in System) at the end of its group, once the groups are made (the IT desk's included)
+// (Offices stays last in Attendance, as ruled in L1: the import goes before it)
+const withAreaImports = (g) => (!AREA_IMPORT_ITEMS[g.group] ? g : { ...g, items: [...g.items.filter((i) => i.href !== OFFICES), ...AREA_IMPORT_ITEMS[g.group], ...g.items.filter((i) => i.href === OFFICES)] });
 // I1: Import employees and Import history after Users in People; Export pay details at the end of Payroll (each for its permission)
 const withImports = (g) => (g.group === "People" ? { ...g, items: g.items.flatMap((i) => (i.href === "users/users-list.html" ? [i, ...PEOPLE_ITEMS] : [i])) }
   : g.group === "Payroll" ? { ...g, items: [...g.items, ...PAYROLL_ITEMS] } : g.group === "Requests & expenses" ? { ...g, items: [...TASK_ITEMS, ...g.items] } : g);   // TD1: My to-do, Team tasks
-export const APP_NAV = withDesk(NAV.map((g) => (g.group === "Attendance" ? { ...g, items: [...g.items, MY_VISITS_ITEM, TEAM_VISITS_ITEM, OFFICES_ITEM] } : g)).map(withAssetPermissions).map(withImports))
+export const APP_NAV = withDesk(NAV.map((g) => (g.group === "Attendance" ? { ...g, items: [...g.items, MY_VISITS_ITEM, TEAM_VISITS_ITEM, OFFICES_ITEM] } : g)).map(withAssetPermissions).map(withImports)).map(withAreaImports)
   .map((g) => ({ ...g, items: g.items.filter((i) => !isPlaceholder(i.href)) })).filter((g) => g.items.length > 0);
 export const APP_OTHER_PAGES = [...OTHER_PAGES, { label: "My locations", group: "Attendance", href: MY_LOCATIONS }, { label: "Appearance", group: "My account", href: APPEARANCE },
   { label: "Rates and rules", group: "Payroll", href: RATES_RULES }, { label: "Leave policy", group: "Leave", href: LEAVE_POLICY_PAGE },

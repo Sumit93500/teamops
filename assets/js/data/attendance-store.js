@@ -926,3 +926,78 @@ export function writeCompletedDay(byUserId, userId, date, time, note) {
     history: [...record.history, { at: new Date().toISOString(), byUserId, action: "regularized", note: `Check-out added: ${time}. ${note}`.trim() }],
   });
 }
+
+// ---------- I2 (2026-11-28): attendance corrections imported from a file ----------
+// HR (or an Admin) records a correction to someone else's past day, approved at once (data/import-attendance.js, import:attendance-corrections).
+// The checks are a person's own request's, in HR's words, then the same write as a finally approved request (applyCorrection), and the
+// request is kept, approved, so the day shows it was corrected and by whom. Not the 7-day window: HR corrects older days too (the form refuses
+// a day in an approved payroll month). Under the shift rules (from their start date) the person's shift decides the day: the form passes
+// that day (data/shift-days.js shiftDayFor) as `shiftDay`, and its weekly off, its lateness and its end are used. A day with sample times
+// (generated, not stored) can't be corrected. Additive: nothing above changed.
+//   correctionProblem(actorId, userId, { date, issue, time, reason }, { shiftDay })   null, or a fail() in plain words (writes nothing)
+//   importCorrection(actorId, userId, fields, { shiftDay })                          { ok, record } (the approved request) or a fail()
+export function correctionProblem(actorId, userId, fields = {}, { shiftDay = null } = {}) {
+  const user = getUser(userId);
+  if (!user) return fail("No such employee.");
+  if (!isTracked(user)) return fail(`${user.name} is inactive.`);
+  if (user.id === actorId) return fail("You can't correct your own attendance: someone else in HR does.");
+  const date = String(fields.date ?? "").trim();
+  const issue = String(fields.issue ?? "").trim();
+  const time = String(fields.time ?? "").trim();
+  const reason = String(fields.reason ?? "").trim();
+  if (!ISSUES.includes(issue)) return fail("Choose late arrival, missed check-in or missed check-out.", "issue");
+  if (!isValidDate(date)) return fail("Pick a valid date.", "date");
+  if (!isValidTime(time)) return fail("Enter the time as HH:MM, like 09:40.", "time");
+  if (reason.length < 3 || reason.length > 200) return fail("Give a reason of 3 to 200 characters.", "reason");
+  const ctx = context();
+  if (date > ctx.today) return fail("The day hasn't happened yet.", "date");
+  const joined = joinedOn(user);
+  if (joined && date < joined) return fail(`That day is before ${user.name} joined.`, "date");
+  const day = deriveDay(ctx, user, date);
+  const judged = shiftDay ?? day;
+  if (day.status === "left" || judged.status === "left") return fail(`${user.name} wasn't working here that day.`, "date");
+  if (!day.checkIn && (judged.status === "holiday" || judged.status === "weekend" || judged.status === "weekly-off")) return fail("No attendance is needed that day (a holiday, weekend or weekly off).", "date");
+  if (!day.checkIn && judged.status === "on-leave") return fail(`${user.name} was on approved leave that day.`, "date");
+  const record = recordOn(ctx, user, date);
+  if (record && !record.id) return fail("That day's times are sample data, not a record: only a recorded day can be corrected.", "date");
+  const t = toMinutes(time);
+  if (issue === "late-arrival") {
+    if (!record?.checkIn) return fail("There's no check-in that day to correct: use Missed check-in.", "issue");
+    if (!(judged.minutesLate > 0)) return fail("The day isn't marked late, so there's no late arrival to correct.", "issue");
+    if (t >= toMinutes(record.checkIn)) return fail(`The corrected time must be earlier than the recorded check-in (${record.checkIn}).`, "time");
+  } else if (issue === "missed-check-in") {
+    if (record?.checkIn) return fail(`A check-in at ${record.checkIn} is already recorded: use Late arrival to correct it.`, "issue");
+  } else {
+    if (!record?.checkIn) return fail("There's no check-in that day, so there's no check-out to add: add the check-in first.", "issue");
+    if (record.checkOut) return fail(`A check-out at ${record.checkOut} is already recorded that day.`, "issue");
+    if (date === ctx.today) return fail("The day isn't over yet: the check-out can still be made from Mark attendance.", "date");
+    const night = nightCheckOutJudge(record.userId, date, record, time);
+    if (night && !night.ok) return fail(night.error, "time");
+    if (!night && t <= toMinutes(record.checkIn)) return fail(`The check-out must be later than the check-in (${record.checkIn}).`, "time");
+  }
+  if (issue !== "missed-check-out") {
+    // a corrected check-in is before the day's own end: the shift's end under the shift rules (not a night shift), else the old rule's (round 14F)
+    const closes = shiftDay ? (shiftDay.crossesMidnight || toMinutes(shiftDay.shiftEnd) === null ? null : toMinutes(shiftDay.shiftEnd)) : checkInWindow(day).closes;
+    if (closes !== null && t >= closes) return fail(`The corrected check-in has to be before ${clockLabel(closes)}.`, "time");
+  }
+  if (ctx.requests.some((r) => r.userId === user.id && r.date === date && r.status === "pending")) return fail(`${user.name} has a correction waiting for that day: decide it first.`, "date");
+  return null;
+}
+
+export function importCorrection(actorId, userId, fields = {}, opts = {}) {
+  const problem = correctionProblem(actorId, userId, fields, opts);
+  if (problem) return problem;
+  const ctx = context();
+  const record = recordOn(ctx, getUser(userId), fields.date);
+  const at = new Date().toISOString();
+  const added = regularizations.add({
+    userId, date: fields.date, issue: fields.issue, time: fields.time, recordedTime: fields.issue === "late-arrival" ? record.checkIn : null, reason: String(fields.reason).trim(),
+    status: "approved", stage: "done", managerId: managerFor(userId), appliedOn: ctx.today, importedBy: actorId,
+    history: [{ stage: "hr", byUserId: actorId, decision: "approved", at, note: "Recorded by HR from an imported file" }],
+  });
+  if (!added.ok) return added;
+  const applied = applyCorrection(added.record, actorId);
+  if (applied.ok) return added;
+  regularizations.remove(added.record.id);
+  return applied;
+}

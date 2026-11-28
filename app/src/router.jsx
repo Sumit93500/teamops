@@ -70,6 +70,8 @@ import ItReview from "./pages/ItReview.jsx";
 import ImportEmployees from "./pages/ImportEmployees.jsx";   // I1
 import ImportHistory from "./pages/ImportHistory.jsx";
 import ExportPay from "./pages/ExportPay.jsx";
+import { ImportAssets, ImportStock, ImportLicences, ImportLeave, ImportAttendance } from "./pages/ImportPages.jsx";   // I2
+import ExportData from "./pages/ExportData.jsx";   // I2
 import MyTodo from "./pages/MyTodo.jsx";   // TD1
 import TeamTasks from "./pages/TeamTasks.jsx";
 import CompleteDetails from "./pages/CompleteDetails.jsx";
@@ -78,6 +80,7 @@ import { Login, ForgotPassword, ResetPassword, SetPassword, SET_PASSWORD } from 
 import MailOutbox, { MAIL_OUTBOX } from "./pages/MailOutbox.jsx";
 import { sessionAllowed, mustChangePassword } from "../../assets/js/data/credentials.js";
 import { IT_DASHBOARD, IT_REQUESTS, IT_REQUEST, IT_NEW, IT_MINE, IT_LICENCES, IT_OFFBOARDING, IT_REVIEW, COMPLETE_DETAILS, IMPORT_EMPLOYEES, IMPORT_HISTORY, EXPORT_PAY, MY_TODO, TEAM_TASKS } from "./routes.js";
+import { IMPORT_ASSETS, IMPORT_STOCK, IMPORT_LICENCES, IMPORT_LEAVE, IMPORT_ATTENDANCE, EXPORT_DATA } from "./routes.js";   // I2
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT, OFFICES, MY_LOCATIONS, APPEARANCE, RATES_RULES, LEAVE_POLICY_PAGE, MY_VISITS, TEAM_VISITS, VISIT_PAGE } from "./routes.js";
 import { useSession, signOutNow } from "./data/hooks.js";
 
@@ -179,6 +182,12 @@ export const router = createBrowserRouter([{ element: <AccountGate />, children:
   { path: pageUrl(IMPORT_EMPLOYEES), element: <ImportEmployees /> },   // I1: imports and exports
   { path: pageUrl(IMPORT_HISTORY), element: <ImportHistory /> },
   { path: pageUrl(EXPORT_PAY), element: <ExportPay /> },
+  { path: pageUrl(IMPORT_ASSETS), element: <ImportAssets /> },   // I2: the next imports, Export data
+  { path: pageUrl(IMPORT_STOCK), element: <ImportStock /> },
+  { path: pageUrl(IMPORT_LICENCES), element: <ImportLicences /> },
+  { path: pageUrl(IMPORT_LEAVE), element: <ImportLeave /> },
+  { path: pageUrl(IMPORT_ATTENDANCE), element: <ImportAttendance /> },
+  { path: pageUrl(EXPORT_DATA), element: <ExportData /> },
   { path: pageUrl(MY_TODO), element: <MyTodo /> },   // TD1: the to-do
   { path: pageUrl(TEAM_TASKS), element: <TeamTasks /> },
   ...ALL_PAGES.map((page) => ({ path: pageUrl(page), element: <RequireRoute page={page}>{pageElement(page)}</RequireRoute> })),
