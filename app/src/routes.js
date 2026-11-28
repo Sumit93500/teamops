@@ -66,6 +66,9 @@ export const IMPORT_LICENCES = "it/import-licences.html";
 export const IMPORT_LEAVE = "leave/import-balances.html";
 export const IMPORT_ATTENDANCE = "attendance/import-corrections.html";
 export const EXPORT_DATA = "system/export-data.html";
+// SD1: Announcements is the old page's route (config/routes.js, announcements:view), now a real page; Help is the app's own (everyone signed in)
+export const ANNOUNCEMENTS = "announcements/announcements.html";
+export const HELP = "help/help.html";
 
 // "leave/holidays.html" -> "/pages/leave/holidays.html"
 export const pageUrl = (key) => `/pages/${key}`;

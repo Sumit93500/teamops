@@ -1,0 +1,31 @@
+/* SD1: the Announcements page's posts and the Help page. Tokens only (light and dark). */
+.posts { display: flex; flex-direction: column; gap: var(--ds-space-3); }
+.post {
+  display: flex; flex-direction: column; gap: var(--ds-space-2); padding: var(--ds-space-4) var(--ds-space-5);
+  border: 1px solid var(--ds-border); border-radius: var(--ds-radius-lg); background: var(--ds-surface-1); box-shadow: var(--ds-shadow-1);
+}
+.post--pinned { border-left: 4px solid var(--ds-primary); }
+.post--off { background: var(--ds-surface-2); box-shadow: none; }
+.post__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--ds-space-2); }
+.post__title { margin: 0; font-size: var(--ds-text-lg, 17px); font-weight: 600; color: var(--ds-text); }
+.post__chips { display: flex; gap: var(--ds-space-2); }
+.post__body { margin: 0; font-size: var(--ds-text-base, 14px); color: var(--ds-text); white-space: pre-line; overflow-wrap: anywhere; }
+.post__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--ds-space-2); }
+.post__meta { font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.post__actions { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
+@media (max-width: 560px) {
+  .post { padding: var(--ds-space-4); }
+  .post__actions { width: 100%; }
+  .post__actions > .ds-btn { flex: 1 1 auto; justify-content: center; }
+}
+
+/* ---------- Help ---------- */
+.help-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--ds-space-4); align-items: start; }
+.help-faq { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.help-faq details { border-bottom: 1px solid var(--ds-border); }
+.help-faq details:last-child { border-bottom: 0; }
+.help-faq summary { cursor: pointer; padding: 10px 0; font-size: var(--ds-text-sm); font-weight: 500; color: var(--ds-text); }
+.help-faq summary:focus-visible { outline: 2px solid var(--ds-focus-color, var(--ds-primary)); outline-offset: 2px; border-radius: 4px; }
+.help-faq p { margin: 0 0 var(--ds-space-3); font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.help-links { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.help-links a { font-size: var(--ds-text-sm); }

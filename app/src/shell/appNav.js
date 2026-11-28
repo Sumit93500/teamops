@@ -14,6 +14,8 @@ import { IT_NAV, isItPage, mayOpenItPage } from "./itAccess.js";   // IT2
 import { COMPLETE_DETAILS } from "../routes.js";
 import { PEOPLE_ITEMS, PAYROLL_ITEMS, AREA_IMPORT_ITEMS, isImportPage, mayOpenImportPage } from "./importAccess.js";   // I1, I2
 import { TASK_ITEMS, isTaskPage, mayOpenTaskPage } from "./taskAccess.js";   // TD1
+import { ANNOUNCEMENTS, HELP, MY_TODO, TEAM_TASKS, IT_DASHBOARD, IT_REQUESTS, IT_MINE, IT_NEW, IT_LICENCES, IT_OFFBOARDING, IT_REVIEW, IMPORT_EMPLOYEES, IMPORT_HISTORY, EXPORT_PAY,
+  IMPORT_ASSETS, IMPORT_STOCK, IMPORT_LICENCES, IMPORT_LEAVE, IMPORT_ATTENDANCE, EXPORT_DATA } from "../routes.js";   // SD1
 
 const PIN = "M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5";
 const OFFICES_ITEM = { label: "Offices", icon: "pin", iconPath: PIN, href: OFFICES, permission: "offices:view" };
@@ -32,12 +34,36 @@ const withAreaImports = (g) => (!AREA_IMPORT_ITEMS[g.group] ? g : { ...g, items:
 // I1: Import employees and Import history after Users in People; Export pay details at the end of Payroll (each for its permission)
 const withImports = (g) => (g.group === "People" ? { ...g, items: g.items.flatMap((i) => (i.href === "users/users-list.html" ? [i, ...PEOPLE_ITEMS] : [i])) }
   : g.group === "Payroll" ? { ...g, items: [...g.items, ...PAYROLL_ITEMS] } : g.group === "Requests & expenses" ? { ...g, items: [...TASK_ITEMS, ...g.items] } : g);   // TD1: My to-do, Team tasks
-export const APP_NAV = withDesk(NAV.map((g) => (g.group === "Attendance" ? { ...g, items: [...g.items, MY_VISITS_ITEM, TEAM_VISITS_ITEM, OFFICES_ITEM] } : g)).map(withAssetPermissions).map(withImports)).map(withAreaImports)
+const BASE_NAV = withDesk(NAV.map((g) => (g.group === "Attendance" ? { ...g, items: [...g.items, MY_VISITS_ITEM, TEAM_VISITS_ITEM, OFFICES_ITEM] } : g)).map(withAssetPermissions).map(withImports)).map(withAreaImports)
   .map((g) => ({ ...g, items: g.items.filter((i) => !isPlaceholder(i.href)) })).filter((g) => g.items.length > 0);
+// SD1 (2026-11-28): the sidebar by area. Every item keeps its own label, icon and permission (the rules above); only its group
+// changes: Main, My work (your own pages), Time & Attendance (the team's days, leave, visits, tasks, shifts), Money, People, IT & Assets,
+// System. Announcements (announcements:view, everyone) and Help (everyone signed in) join Main. A group with nothing the person may open
+// is not drawn (Sidebar.jsx). SD1_GROUPS lists every page by its href; UNPLACED (a check) is any old item left out.
+const HELP_ICON = "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01";
+const MY_WORK_ICON = "M9 11l3 3 8-8M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9";
+const ANNOUNCEMENTS_ITEM = { label: "Announcements", icon: "megaphone", href: ANNOUNCEMENTS, permission: "announcements:view" };
+const HELP_ITEM = { label: "Help", icon: "help", iconPath: HELP_ICON, href: HELP, permission: "dashboard:view" };
+export const SD1_GROUPS = [
+  { group: "Main", icon: "dashboard", hrefs: ["@landing", "requests/approvals-inbox.html", ANNOUNCEMENTS, HELP] },
+  { group: "My work", icon: "requests", iconPath: MY_WORK_ICON, hrefs: [MY_TODO, "attendance/my-attendance.html", "attendance/mark-attendance.html", "leave/my-leave.html", MY_VISITS,
+    "requests/my-requests.html", "requests/claim-expense.html", "payroll/payslips.html", "inventory/my-assets.html", IT_MINE, IT_NEW] },
+  { group: "Time & Attendance", icon: "attendance", hrefs: ["attendance/team-attendance.html", "leave/leave-approvals.html", "leave/team-leave.html", TEAM_VISITS, TEAM_TASKS,
+    "attendance/shifts.html", IMPORT_ATTENDANCE, IMPORT_LEAVE, OFFICES] },
+  { group: "Money", icon: "payroll", hrefs: ["payroll/payroll-run.html", "payroll/salary-structure.html", "finance/tax-deductions.html", "finance/expenses.html", EXPORT_PAY] },
+  { group: "People", icon: "people", hrefs: ["users/users-list.html", "users/departments.html", "access/designations.html", "access/roles-list.html", IMPORT_EMPLOYEES, IMPORT_HISTORY] },
+  { group: "IT & Assets", icon: "assets", hrefs: [IT_DASHBOARD, IT_REQUESTS, IT_LICENCES, IT_OFFBOARDING, IT_REVIEW, "inventory/items.html", "inventory/asset-assignment.html",
+    "inventory/stock-movements.html", "inventory/vendors.html", COMPLETE_DETAILS, IMPORT_ASSETS, IMPORT_STOCK, IMPORT_LICENCES] },
+  { group: "System", icon: "system", hrefs: ["system/settings.html", EXPORT_DATA] },
+];
+const BASE_ITEMS = BASE_NAV.flatMap((g) => g.items);
+const itemFor = (href) => (href === ANNOUNCEMENTS ? ANNOUNCEMENTS_ITEM : href === HELP ? HELP_ITEM : BASE_ITEMS.find((i) => i.href === href));
+export const APP_NAV = SD1_GROUPS.map(({ hrefs, ...g }) => ({ ...g, items: hrefs.map(itemFor).filter(Boolean) })).filter((g) => g.items.length > 0);
+export const UNPLACED = BASE_ITEMS.filter((i) => !SD1_GROUPS.some((g) => g.hrefs.includes(i.href))).map((i) => i.href);
 export const APP_OTHER_PAGES = [...OTHER_PAGES, { label: "My locations", group: "Attendance", href: MY_LOCATIONS }, { label: "Appearance", group: "My account", href: APPEARANCE },
   { label: "Rates and rules", group: "Payroll", href: RATES_RULES }, { label: "Leave policy", group: "Leave", href: LEAVE_POLICY_PAGE },
   { label: "Mail outbox", group: "System", href: MAIL_OUTBOX }, { label: "Visit", group: "Attendance", href: VISIT_PAGE }].filter((p) => !isPlaceholder(p.href));   // E1: found by search, linked from a profile's Account card; F2: no placeholder
-const APP_OWN = [OFFICES, MY_LOCATIONS, ABOUT, APPEARANCE, MY_VISITS, VISIT_PAGE];
+const APP_OWN = [OFFICES, MY_LOCATIONS, ABOUT, APPEARANCE, MY_VISITS, VISIT_PAGE, HELP];   // SD1: Help
 // Rates and rules: Finance and Admin; Leave policy: HR and Admin. They are searched for and linked, not in the sidebar.
 export const mayOpenRates = () => can("tax:view") || can("payroll-rules:verify");
 export const mayOpenLeavePolicy = () => can("leave:approve") || can("leave-policy:edit");

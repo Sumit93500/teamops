@@ -90,6 +90,11 @@ const dialogOpen = (t) => t.locator(".modal.is-open").count();
 const stored = (t) => t.evaluate(() => JSON.parse(localStorage.getItem("officeos:tasks") ?? "null"));
 const tab = async (t, name) => { await t.getByRole("tab", { name: new RegExp(`^${name}`) }).click(); await sleep(t, 250); };
 const fill = async (t, sel, v) => { await t.fill(sel, v); };
+// SD1: My to-do lists compact rows in sections (Overdue, Today, Upcoming, No date, Done folded): a row is [title, its line of tag, due,
+// status, who], and the section it sits in
+const trows = (t) => t.evaluate(() => [...document.querySelectorAll("#todo-sections .tr")].map((r) => [r.querySelector(".tr__title").textContent.trim(), [...r.querySelector(".tr__meta").children].map((c) => c.textContent.trim()).join(" "), r.closest("[data-section]").dataset.section]));   // textContent: Done is folded
+const unfold = (t) => t.evaluate(() => document.querySelectorAll("#todo-sections details").forEach((d) => { d.open = true; }));
+const openTitle = async (t, title) => { await unfold(t); await t.locator(".tr", { hasText: title }).locator(".tr__title").click(); await sleep(t, 350); };
 
 // ---------- A ----------
 if (ONLY.includes("A")) {
@@ -117,7 +122,7 @@ if (ONLY.includes("P")) {
   await go(n, "dashboard/employee.html", "rohan");
   await seed(n.t, { personal: [pt(1, { title: SECRET, notes: "tell nobody", dueDate: "2026-11-22" })], work: [wt(1, { title: "Ship the release" })] });
   await go(n, P.todo, "rohan");
-  check("P1", "the owner sees it on the Personal tab (overdue, in words)", (await body(n.t)).includes(SECRET) && (await text(n.t, "#todo-table")).includes("Overdue"));
+  check("P1", "the owner sees it on Mine, under Overdue, in words (SD1: the sections)", (await body(n.t)).includes(SECRET) && (await trows(n.t)).some((r) => r[0] === SECRET && r[2] === "overdue" && /Overdue since 22 Nov 2026/.test(r[1])), j(await trows(n.t)));
   let leaks = [];
   for (const who of ["mgr", "hr", "admin", "fin", "arjun"]) {
     await go(n, "dashboard/employee.html", who);
@@ -145,36 +150,36 @@ if (ONLY.includes("U")) {
   const n = await make("rohan");
   const t = n.t;
   await go(n, P.todo, "rohan");
-  check("U1", "empty: 'No personal tasks yet.' and the quick add; the counter says 0 tasks", (await body(t)).includes("No personal tasks yet.") && (await t.locator("#quick-add").count()) === 1 && (await text(t, "#todo-count")) === "0 tasks", j([await text(t, "#todo-count"), await t.locator("#quick-add").count()]));
+  // SD1: the rows are compact (no status column or filters); status, notes and priority are in the edit dialog (the title opens it)
+  check("U1", "empty: 'Nothing on your list.' and the quick add; the tab's count says 0", (await body(t)).includes("Nothing on your list.") && (await t.locator("#quick-add").count()) === 1 && /0$/.test((await t.locator('[role="tab"][aria-selected="true"]').innerText()).trim()), j([await t.locator('[role="tab"][aria-selected="true"]').innerText(), await t.locator("#quick-add").count()]));
   await SHOT(t, "u-empty-rohan-1280-light");
-  check("U2", "Add task is disabled until there is a title", await t.locator("#qa-add").isDisabled());
-  await fill(t, "#qa-title", "Buy the cake"); await fill(t, "#qa-due", "2026-11-24"); await t.selectOption("#qa-priority", "high"); await t.click("#qa-add"); await sleep(t, 400);
-  const r1 = await rows(t, "#todo-table");
-  check("U3", "quick add: the task is listed with Pending, High and its due date; the title box is cleared; the counter 1 task", r1.length === 1 && r1[0][0].includes("Buy the cake") && r1[0][1].includes("Pending") && r1[0][2].includes("High") && r1[0][3].includes("24 Nov 2026") && r1[0][3].includes("Due soon") && (await t.inputValue("#qa-title")) === "" && (await text(t, "#todo-count")) === "1 task", j([r1, await text(t, "#todo-count"), await t.inputValue("#qa-title")]));
-  await t.getByRole("combobox", { name: /Change the status of Buy the cake/ }).selectOption("in-progress"); await sleep(t, 300);
-  check("U4", "the status changes in the row (In progress)", (await rows(t, "#todo-table"))[0][1].includes("In progress"));
-  await t.getByRole("button", { name: "Edit" }).first().click(); await sleep(t, 300);
+  check("U2", "Add is disabled until there is a title", await t.locator("#qa-add").isDisabled());
+  await fill(t, "#qa-title", "Buy the cake"); await fill(t, "#qa-due", "2026-11-24"); await t.click("#qa-add"); await sleep(t, 400);
+  const r1 = await trows(t);
+  check("U3", "quick add: listed under Upcoming as Personal, due in words; stored pending; the title box is cleared; the count 1", r1.length === 1 && r1[0][0] === "Buy the cake" && r1[0][2] === "upcoming" && r1[0][1].includes("Personal") && r1[0][1].includes("Due 24 Nov 2026") && (await stored(t)).personal[0].status === "pending" && (await t.inputValue("#qa-title")) === "" && /1$/.test((await t.locator('[role="tab"][aria-selected="true"]').innerText()).trim()), j([r1, await t.inputValue("#qa-title")]));
+  await openTitle(t, "Buy the cake");
+  await t.selectOption("#pedit-status", "in-progress"); await t.locator("#pedit-modal button[type=submit]").click(); await sleep(t, 400);
+  check("U4", "the status changes (In progress), from the task's dialog", (await stored(t)).personal[0].status === "in-progress");
+  await openTitle(t, "Buy the cake");
   await fill(t, "#pedit-title", "Buy the cake and candles"); await fill(t, "#pedit-notes", "Chocolate"); await t.locator("#pedit-modal button[type=submit]").click(); await sleep(t, 400);
-  check("U5", "edit: new title and notes shown", (await text(t, "#todo-table")).includes("Buy the cake and candles") && (await text(t, "#todo-table")).includes("Chocolate"));
-  await t.locator("#todo-table tbody tr .td-actions button").first().click(); await sleep(t, 300);
-  if (!(await t.locator("#pedit-title").count())) console.log("DEBUG after second Edit:", (await body(t)).slice(0, 300).split("\n").join(" | "), await dialogOpen(t));
+  check("U5", "edit: the new title is shown, the notes kept", (await trows(t))[0]?.[0] === "Buy the cake and candles" && (await stored(t)).personal[0].notes === "Chocolate");
+  await openTitle(t, "Buy the cake and candles");
   await fill(t, "#pedit-title", "x".repeat(130));
   check("U6", "the title field stops at 120 characters (maxlength), as the data layer does", (await t.getAttribute("#pedit-title", "maxlength")) === "120" && (await t.inputValue("#pedit-title")).length <= 120);
   await t.keyboard.press("Escape"); await sleep(t, 300); if (await t.locator(".confirm-dialog").count()) { await t.locator(".confirm-dialog").getByRole("button", { name: "Discard" }).click(); await sleep(t, 300); }
   await t.getByRole("button", { name: "Delete" }).first().click(); await sleep(t, 300);
   check("U7", "Delete asks first; Cancel keeps it", (await t.locator(".confirm-dialog").count()) === 1);
   await t.locator(".confirm-dialog").getByRole("button", { name: "Cancel" }).click(); await sleep(t, 300);
-  check("U8", "...still listed", (await rows(t, "#todo-table")).length === 1);
+  check("U8", "...still listed", (await trows(t)).length === 1);
   await t.getByRole("button", { name: "Delete" }).first().click(); await sleep(t, 300); await t.locator(".confirm-dialog").getByRole("button", { name: "Delete" }).click(); await sleep(t, 400);
-  check("U9", "Delete confirmed: gone, empty state back", (await body(t)).includes("No personal tasks yet.") && (await stored(t)).personal.length === 0);
+  check("U9", "Delete confirmed: gone, empty state back", (await body(t)).includes("Nothing on your list.") && (await stored(t)).personal.length === 0);
   await seed(t, { personal: [pt(1, { title: "Low one", priority: "low" }), pt(2, { title: "Urgent one", priority: "urgent", dueDate: "2026-12-30" }), pt(3, { title: "Done one", status: "done" })] });
   await go(n, P.todo, "rohan");
-  await t.getByLabel("Priority", { exact: true }).last().selectOption("urgent").catch(() => {}); await sleep(t, 300);
-  const f1 = await rows(t, "#todo-table");
-  check("U10", "the priority filter keeps the urgent one; the counter 'Showing 1 of 3 tasks'", f1.length === 1 && f1[0][0].includes("Urgent one") && (await text(t, "#todo-count")) === "Showing 1 of 3 tasks", j([f1, await text(t, "#todo-count")]));
-  await go(n, P.todo, "rohan");
-  await t.getByLabel("Status", { exact: true }).last().selectOption("done"); await sleep(t, 300);
-  check("U11", "the status filter: Done -> one row", (await rows(t, "#todo-table")).length === 1);
+  const f1 = await trows(t);
+  check("U10", "the sections: the two open ones under Upcoming, soonest first; the finished one under Done (SD1: in place of the filters)", j(f1.map((r) => [r[0], r[2]])) === j([["Low one", "upcoming"], ["Urgent one", "upcoming"], ["Done one", "done"]]), j(f1));
+  check("U11", "Done is folded until opened", (await t.evaluate(() => document.querySelector('[data-section="done"]')?.open)) === false);
+  await t.locator('.tr', { hasText: "Low one" }).locator(".tr__tick").click(); await sleep(t, 400);
+  check("U12", "a tick finishes a personal task: stored done, moved to Done", (await stored(t)).personal.find((x) => x.title === "Low one").status === "done" && (await trows(t)).find((r) => r[0] === "Low one")[2] === "done");
   await n.ctx.close();
 }
 
@@ -189,15 +194,14 @@ if (ONLY.includes("W")) {
   check("W1", "the Assign picker holds only Sneha herself, Rohan and Arjun (no one else)", j(opts.slice(1).sort()) === j(["Arjun Kapoor", "Rohan Gupta", "Sneha Rao"]), j(opts));
   await t.selectOption("#assign-assigneeId", { label: "Rohan Gupta" }); await fill(t, "#assign-title", "Prepare the Q4 deck"); await fill(t, "#assign-description", "Ten slides"); await fill(t, "#assign-dueDate", "2026-11-25");
   await t.locator("#assign-modal button[type=submit]").click(); await sleep(t, 500);
-  check("W2", "assigned: the dialog closes and the task shows under Assigned by me with 'To Rohan Gupta'", (await dialogOpen(t)) === 0 && (await tab(t, "Assigned by me"), (await text(t, "#todo-table")).includes("Prepare the Q4 deck") && (await text(t, "#todo-table")).includes("To Rohan Gupta")));
-  check("W2b", "on Assigned by me a row has no status control (only the assignee moves a status)", (await t.locator("#todo-table select").count()) === 0);
+  check("W2", "assigned: the dialog closes and the task shows under Assigned by me with 'For Rohan Gupta' (SD1 rows)", (await dialogOpen(t)) === 0 && (await tab(t, "Assigned by me"), (await trows(t)).some((r) => r[0] === "Prepare the Q4 deck" && r[1].includes("For Rohan Gupta"))), j(await trows(t)));
+  check("W2b", "on Assigned by me a row has no tick or status control (only the assignee moves a status)", (await t.locator("#todo-sections .tr__tick, #todo-sections select").count()) === 0);
   await t.click("#assign-open"); await sleep(t, 300); await t.selectOption("#assign-assigneeId", { label: "Arjun Kapoor" }); await fill(t, "#assign-title", "Late one"); await fill(t, "#assign-dueDate", "2026-11-01"); await t.locator("#assign-modal button[type=submit]").click(); await sleep(t, 400);
   check("W3", "a past due date is refused at the field, in the data layer's words; the dialog stays open", (await dialogOpen(t)) === 1 && /can't be in the past/.test(await text(t, "#assign-modal")));
   await t.keyboard.press("Escape"); await sleep(t, 300); if (await t.locator(".confirm-dialog").count()) { await t.locator(".confirm-dialog").getByRole("button", { name: "Discard" }).click(); await sleep(t, 300); }
   await go(n, P.todo, "rohan");
-  await tab(t, "Work");
-  check("W4", "Rohan sees it on Work: 'From Sneha Rao', Pending, with the update on top: 'Task assigned to you: Prepare the Q4 deck'", (await text(t, "#todo-table")).includes("Prepare the Q4 deck") && (await text(t, "#todo-table")).includes("From Sneha Rao") && (await text(t, "#task-updates")).includes("Task assigned to you: Prepare the Q4 deck"));
-  await t.locator("[data-task]").first().click(); await sleep(t, 350);
+  check("W4", "Rohan sees it on Mine (SD1: work and personal together): 'From Sneha Rao', To do, with the update on top: 'Task assigned to you: Prepare the Q4 deck'", (await trows(t)).some((r) => r[0] === "Prepare the Q4 deck" && r[1].includes("From Sneha Rao") && r[1].includes("To do")) && (await text(t, "#task-updates")).includes("Task assigned to you: Prepare the Q4 deck"), j(await trows(t)));
+  await openTitle(t, "Prepare the Q4 deck");
   check("W5", "the detail: Start and Mark done (not Edit or Cancel: he isn't the assigner), the timeline, who it reports to (Sneha)", (await t.locator('[data-action="start"]').count()) === 1 && (await t.locator('[data-action="edit"]').count()) === 0 && (await text(t, "#task-facts")).includes("Reports to Sneha Rao") && (await t.locator("#task-timeline li").count()) === 2);
   await SHOT(t, "w-detail-rohan-1280-light");
   await t.click('[data-action="start"]'); await sleep(t, 350);
@@ -209,7 +213,7 @@ if (ONLY.includes("W")) {
   await go(n, "dashboard/employee.html", "mgr");
   await t.evaluate(() => document.querySelector(".topbar__icon-btn--dot")?.click()); await sleep(t, 300);
   check("W9", "Sneha's bell has 'Done: Prepare the Q4 deck'", (await text(t, "#bell-task-updates"))?.includes("Done: Prepare the Q4 deck") ?? false);
-  await go(n, P.todo, "mgr"); await tab(t, "Assigned by me"); await t.locator("[data-task]").first().click(); await sleep(t, 350);
+  await go(n, P.todo, "mgr"); await tab(t, "Assigned by me"); await openTitle(t, "Prepare the Q4 deck");   // SD1: under Done, folded
   check("W10", "the assigner's detail of a finished task: Reopen only", (await t.locator('[data-action="reopen"]').count()) === 1 && (await t.locator('[data-action="edit"]').count()) === 0);
   await t.click('[data-action="reopen"]'); await sleep(t, 300); await t.locator("#reopen-modal button[type=submit]").click(); await sleep(t, 300);
   check("W11", "reopen without a reason is refused at the field", (await dialogOpen(t)) === 2 && (await text(t, "#reopen-modal")).includes("Enter the reason") || /reason/i.test((await text(t, "#reopen-modal")) ?? ""));
@@ -226,12 +230,19 @@ if (ONLY.includes("D")) {
   await go(n, "dashboard/employee.html", "rohan");
   await seed(t, { personal: [pt(1, { dueDate: "2026-11-23" }), pt(2, { dueDate: "2026-11-22" })], work: [wt(1, { dueDate: "2026-11-23" }), wt(2, { assigneeId: "EMP-1105", dueDate: "2026-11-21" }), wt(3, { status: "done", dueDate: "2026-11-20" })] });
   await go(n, "dashboard/employee.html", "rohan");
-  check("D1", "Rohan's card: 2 due today, 1 overdue, 3 open (personal and work); no team line", (await text(t, '[data-stat="due-today"]')).startsWith("2") && (await text(t, '[data-stat="overdue"]')).startsWith("1") && (await text(t, '[data-stat="open"]')).startsWith("3") && (await t.locator("#tasks-team").count()) === 0, await text(t, "#tasks-card"));
+  // SD1: the "My tasks" card is now the frame's My to-do tile (its count: open tasks) and the Needs you lines (overdue, due today, the team's overdue)
+  const tile = (k) => t.evaluate((x) => document.querySelector(`[data-tile="${x}"] .dh-tile__count`)?.textContent ?? "", k);
+  const needs = () => t.evaluate(() => [...document.querySelectorAll("[data-attention]")].map((e) => e.innerText.trim()));
+  check("D1", "Rohan's dashboard: My to-do 3 open (personal and work); Needs you: 1 overdue, 2 due today; no team line", (await tile("todo")) === "3" && (await needs()).includes("1 of your tasks is overdue") && (await needs()).includes("2 tasks are due today") && !(await needs()).some((x) => /your team/.test(x)), j([await tile("todo"), await needs()]));
   await SHOT(t, "d-card-rohan-1280-light");
   await go(n, "dashboard/employee.html", "mgr");
-  check("D2", "the manager's card has a team line: Arjun's overdue one counts (1 overdue, 1 due today)", /Your team: 1 overdue, 1 due today/.test((await text(t, "#tasks-team")) ?? ""), await text(t, "#tasks-team"));
+  check("D2", "the manager's dashboard has the team line: Arjun's overdue one counts (1 task in your team is overdue), and Team tasks is a tile", (await needs()).includes("1 task in your team is overdue") && (await t.locator('[data-tile="teamTasks"]').count()) === 1, j(await needs()));
+  await seed(t, { personal: [pt(1, { dueDate: "2026-11-23" }), pt(2, { dueDate: "2026-11-22" }), pt(7, { id: "PT-7", ownerId: "EMP-1001", title: "Admin's own", dueDate: "2026-11-23" }), pt(8, { id: "PT-8", ownerId: "EMP-1003", title: "HR's own", dueDate: "2026-11-22" })], work: [wt(1, { dueDate: "2026-11-23" }), wt(2, { assigneeId: "EMP-1105", dueDate: "2026-11-21" }), wt(3, { status: "done", dueDate: "2026-11-20" })] });
   await go(n, "dashboard/admin.html", "admin");
-  check("D3", "the Admin dashboard and the HR dashboard have the card too", (await t.locator("#tasks-card").count()) === 1 && (await go(n, "dashboard/hr.html", "hr"), (await t.locator("#tasks-card").count()) === 1));
+  const adminNeeds = await needs();
+  await go(n, "dashboard/hr.html", "hr");
+  const hrNeeds = await needs();
+  check("D3", "the Admin dashboard and the HR dashboard tell them of their own tasks too (Needs you, to My to-do)", adminNeeds.includes("1 task is due today") && hrNeeds.includes("1 of your tasks is overdue") && (await t.locator('[data-attention="tasks-overdue"] a').getAttribute("href")).endsWith("tasks/my-todo.html"), j([adminNeeds, hrNeeds]));
   await go(n, P.team, "mgr");
   const prog = await rows(t, "#people-table");
   check("D4", "Team tasks: progress by person for her two reports only (Rohan 2 tasks, Arjun 1; overdue 0 / 1)", j(prog.map((r) => [r[0], r[1], r[3] === undefined ? "" : r[3]])).includes("Rohan Gupta") && prog.length === 2 && prog.find((r) => r[0] === "Arjun Kapoor")[3] === "1", j(prog));
@@ -275,15 +286,16 @@ if (ONLY.includes("K")) {
   const t = n.t;
   await go(n, P.todo, "rohan");
   await t.focus("#qa-title"); await t.keyboard.type("Keyboard task"); await t.keyboard.press("Enter"); await sleep(t, 400);
-  check("K1", "typing a title and pressing Enter adds the task", (await rows(t, "#todo-table")).length === 1);
+  check("K1", "typing a title and pressing Enter adds the task", (await trows(t)).length === 1);
   await t.focus('[role="tab"][aria-selected="true"]'); await t.keyboard.press("ArrowRight"); await sleep(t, 250);
-  check("K2", "the arrow keys move between the tabs", (await t.locator('[role="tab"][aria-selected="true"]').innerText()).startsWith("Work"));
-  await t.focus("#add-work"); await t.keyboard.press("Enter"); await sleep(t, 350);
-  check("K3", "Add a work task by keyboard: focus inside the dialog, Tab stays in, Esc closes and focus returns", (await t.evaluate(() => document.querySelector(".modal.is-open")?.contains(document.activeElement))) === true);
+  check("K2", "the arrow keys move between the tabs", (await t.locator('[role="tab"][aria-selected="true"]').innerText()).startsWith("Assigned by me"));
+  await t.keyboard.press("ArrowLeft"); await sleep(t, 250);
+  await t.focus("#todo-sections .tr__title"); await t.keyboard.press("Enter"); await sleep(t, 350);
+  check("K3", "a task's dialog by keyboard (SD1: the title opens it): focus inside the dialog, Tab stays in, Esc closes and focus returns", (await t.evaluate(() => document.querySelector(".modal.is-open")?.contains(document.activeElement))) === true);
   for (let i = 0; i < 8; i++) await t.keyboard.press("Tab");
   const inside = await t.evaluate(() => document.querySelector(".modal.is-open")?.contains(document.activeElement));
   await t.keyboard.press("Escape"); await sleep(t, 300);
-  check("K4", "...Tab stays inside; Esc closes; focus back on the button", inside === true && (await dialogOpen(t)) === 0 && (await t.evaluate(() => document.activeElement?.id)) === "add-work");
+  check("K4", "...Tab stays inside; Esc closes; focus back on the title", inside === true && (await dialogOpen(t)) === 0 && (await t.evaluate(() => document.activeElement?.classList.contains("tr__title"))));
   const unnamed = await t.evaluate(() => [...document.querySelectorAll("main button, main a, main input, main select")].filter((b) => !(b.getAttribute("aria-label") || b.textContent.trim() || b.labels?.length)).length);
   check("K5", "every button, link, input and select on My to-do has a name", unnamed === 0, unnamed);
   await n.ctx.close();
@@ -296,8 +308,8 @@ const WORKS = [wt(1, { title: "Overdue work from the manager", dueDate: "2026-11
 const STATES = [
   ["empty", "arjun", async (n) => { await go(n, P.todo, "arjun"); await seed(n.t, {}); await go(n, P.todo, "arjun"); }],
   ["personal-many", "rohan", async (n) => { await go(n, P.todo, "rohan"); await seed(n.t, { personal: MANY }); await go(n, P.todo, "rohan"); }],
-  ["work", "rohan", async (n) => { await go(n, P.todo, "rohan"); await seed(n.t, { work: WORKS }); await go(n, P.todo, "rohan"); await tab(n.t, "Work"); }],
-  ["detail", "rohan", async (n) => { await go(n, P.todo, "rohan"); await seed(n.t, { work: WORKS }); await go(n, P.todo, "rohan"); await tab(n.t, "Work"); await n.t.locator("[data-task]").first().click(); await sleep(n.t, 350); }],
+  ["work", "rohan", async (n) => { await go(n, P.todo, "rohan"); await seed(n.t, { work: WORKS }); await go(n, P.todo, "rohan"); await unfold(n.t); }],   // SD1: work is on Mine
+  ["detail", "rohan", async (n) => { await go(n, P.todo, "rohan"); await seed(n.t, { work: WORKS }); await go(n, P.todo, "rohan"); await n.t.locator('[data-task^="WT-"] .tr__title').first().click(); await sleep(n.t, 350); }],
   ["assign-dialog", "mgr", async (n) => { await go(n, P.todo, "mgr"); await n.t.click("#assign-open"); await sleep(n.t, 350); }],
   ["by-me", "mgr", async (n) => { await go(n, P.todo, "mgr"); await seed(n.t, { work: WORKS }); await go(n, P.todo, "mgr"); await tab(n.t, "Assigned by me"); }],
   ["team", "mgr", async (n) => { await go(n, P.team, "mgr"); await seed(n.t, { work: WORKS }); await go(n, P.team, "mgr"); }],
@@ -343,11 +355,12 @@ if (ONLY.includes("Z")) {
       await setup(m);
       const chips = await m.t.evaluate(() => {
         const probe = document.createElement("canvas").getContext("2d");
-        const rgb = (css) => { probe.fillStyle = "#000"; probe.fillStyle = css; const v = probe.fillStyle; const mm = /^#([0-9a-f]{6})$/i.exec(v); if (mm) return [0, 2, 4].map((i) => parseInt(mm[1].slice(i, i + 2), 16)); const q = /rgba?\(([^)]+)\)/.exec(v); return q ? q[1].split(",").slice(0, 3).map(Number) : [0, 0, 0]; };
+        // SD1: color(srgb ...) (from color-mix) read too
+        const rgb = (css) => { const k = /^color\(srgb ([\d.e-]+) ([\d.e-]+) ([\d.e-]+)/.exec(String(css).trim()); if (k) return [1, 2, 3].map((i) => Math.round(Number(k[i]) * 255)); probe.fillStyle = "#000"; probe.fillStyle = css; const v = probe.fillStyle; const mm = /^#([0-9a-f]{6})$/i.exec(v); if (mm) return [0, 2, 4].map((i) => parseInt(mm[1].slice(i, i + 2), 16)); const q = /rgba?\(([^)]+)\)/.exec(v); return q ? q[1].split(",").slice(0, 3).map(Number) : [0, 0, 0]; };
         const root = getComputedStyle(document.documentElement);
         const token = (nm) => rgb(root.getPropertyValue(nm).trim());
         const out = [];
-        for (const el of document.querySelectorAll("main .ds-pill, main .td-sub, main .td-card__label, main .td-title-btn, .modal.is-open .ds-pill, .modal.is-open .td-dl dt")) {
+        for (const el of document.querySelectorAll("main .ds-pill, main .td-sub, main .td-card__label, main .td-title-btn, main .tr__tag, main .tr__due, main .tr__status, main .tr__who, main .ts__label, .modal.is-open .ds-pill, .modal.is-open .td-dl dt")) {   // SD1: the rows' words
           const cs = getComputedStyle(el);
           const bgs = cs.backgroundColor === "rgba(0, 0, 0, 0)" ? [token("--ds-surface-1"), token("--ds-surface-2")] : [rgb(cs.backgroundColor)];
           out.push({ label: el.textContent.trim().slice(0, 30), fg: rgb(cs.color), bgs });

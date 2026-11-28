@@ -38,7 +38,7 @@ import { bump } from "../data/bus.js";
 import { pageUrl } from "../routes.js";
 import { stampsBy, flagText } from "../data/stamps.js";
 import { PlaceCell } from "../ui/attendance.jsx";
-import { TasksCard } from "../ui/todo.jsx";   // TD1: the small "My tasks" card
+import DashFrame from "../ui/DashFrame.jsx";   // SD1: the shared dashboard (TD1's My tasks card is now its tiles and attention list)
 import { dayNumber, isoFromDayNumber } from "../../../assets/js/data/holidays.js";
 
 csvColumns("hr-dashboard-leave-requests", { Days: { number: true } });   // Round Data export
@@ -142,28 +142,16 @@ export default function HrDashboard() {
   const shownApprovals = d.waiting.slice(0, SHOWN_APPROVALS);
   return (
     <Frame page={PAGE}>
-      <div className="page-header">
-        <div>
-          <h1>Dashboard</h1>
-          <p className="page-header__subtitle" id="dash-subtitle">{`People operations for ${monthName(Number(today.slice(5, 7)))} ${today.slice(0, 4)}`}</p>
-        </div>
-        <div className="page-header__actions">
-          <button className="btn" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export data-export-stats="hr-dashboard-stats">Export</button>
-          <Link className="btn" to={pageUrl("attendance/mark-attendance.html")} data-permission="attendance:mark" hidden={!canMark || undefined} id="dash-mark">
-            <Icon d={ICONS.mark} />
-            Mark attendance
-          </Link>
-        </div>
-      </div>
-      <div className="stack">
-        <TasksCard />
-        <StatStrip label="Key numbers">
-          <StatCard id="on-leave" icon={ICONS.onLeave} tone={2} label="On leave today" value={String(d.summary.onLeave)}
-            note={d.summary.total ? `${percent(d.summary.onLeave, d.summary.total)} of ${d.summary.total} employees, ${d.summary.expected} expected at work` : "No active employees"} />
-          <StatCard id="pending" icon={ICONS.pending} tone={3} label="Leave for you to decide" value={String(d.pendingLeave.length)}
-            note={oldestPendingNote(d.pendingLeave, today) || "Nothing waiting"} noteTone={d.pendingLeave.length ? "down" : ""} />
-          <StatCard id="joiners" icon={ICONS.joiners} tone={4} label={`New joiners, ${monthShort(`${d.month}-01`)}`} value={String(joiners.length)} note={joinNotes.join("; ")} />
-        </StatStrip>
+      <DashFrame kind="hr" actions={<button className="btn" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export data-export-stats="hr-dashboard-stats">Export</button>}
+        numbers={
+          <StatStrip label="Key numbers">
+            <StatCard id="on-leave" icon={ICONS.onLeave} tone={2} label="On leave today" value={String(d.summary.onLeave)}
+              note={d.summary.total ? `${percent(d.summary.onLeave, d.summary.total)} of ${d.summary.total} employees, ${d.summary.expected} expected at work` : "No active employees"} />
+            <StatCard id="pending" icon={ICONS.pending} tone={3} label="Leave for you to decide" value={String(d.pendingLeave.length)}
+              note={oldestPendingNote(d.pendingLeave, today) || "Nothing waiting"} noteTone={d.pendingLeave.length ? "down" : ""} />
+            <StatCard id="joiners" icon={ICONS.joiners} tone={4} label={`New joiners, ${monthShort(`${d.month}-01`)}`} value={String(joiners.length)} note={joinNotes.join("; ")} />
+          </StatStrip>
+        }>
         <VisitsToday />
         <VisitsNoCheckIn />
 
@@ -283,7 +271,7 @@ export default function HrDashboard() {
             <Link className="btn btn--sm" to={pageUrl("leave/leave-approvals.html")}>View all</Link>
           </div>
         </section>
-      </div>
+      </DashFrame>
       {leaveDecision.modal}
       {correctionDecision.modal}
     </Frame>

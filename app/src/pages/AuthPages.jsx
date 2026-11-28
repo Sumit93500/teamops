@@ -4,12 +4,15 @@
 //   - says what went wrong in a labelled message that takes focus (role="alert"), and every field has its label;
 //   - shows the password with a Show / Hide button, the strength as four steps and a word, and the rules ticked off;
 //   - keeps the demo's one-click role buttons (they sign in the four demo people, as before).
+// SD1: in demo mode only (config/demo.js), a tidy grid with one button for every role (Admin, HR, Manager, Finance, Employee, and
+// every other role in config/roles.js, IT included): each names the person it signs in. A role nobody holds yet (IT in the seed)
+// shows its button switched off, saying so. With demo mode off, none of it is drawn.
 // Forgot password answers the same whether or not the email is someone's; a link that is expired, used or wrong says so,
 // with a way to ask for a new one.
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { getUser } from "../../../assets/js/data/store.js";
-import { ROLES } from "../../../assets/js/config/roles.js";
+import { getUser, getAllUsers } from "../../../assets/js/data/store.js";
+import { ROLES, ROLE_KEYS } from "../../../assets/js/config/roles.js";
 import { signInWithPassword, requestReset, checkToken, redeemToken, setFirstPassword, passwordProblems, passwordStrength, sessionAllowed, mustChangePassword, MIN_LENGTH } from "../../../assets/js/data/credentials.js";
 import { signInAs, useSession } from "../data/hooks.js";
 import { bump } from "../data/bus.js";
@@ -22,7 +25,14 @@ import { Icon, ICON } from "../components/icons.jsx";
 import "../design/auth.css";
 
 export const SET_PASSWORD = "auth/set-password.html";
-const DEMO_USERS = { admin: ["Admin", "EMP-1001"], hr: ["HR Manager", "EMP-1003"], fin: ["Finance", "EMP-1008"], emp: ["Employee", "EMP-1105"] };
+// SD1: the demo people, one per role (a manager is an employee with people reporting to them); any role not named here gets its
+// first active holder, or none.
+const DEMO_PICKS = [["admin", "Admin", "EMP-1001"], ["hr", "HR", "EMP-1003"], ["mgr", "Manager", "EMP-1029"], ["fin", "Finance", "EMP-1008"], ["emp", "Employee", "EMP-1105"]];
+export function demoPeople() {
+  const picks = DEMO_PICKS.map(([key, label, id]) => ({ key, label, user: getUser(id) ?? null }));
+  for (const r of ROLE_KEYS) if (!picks.some((p) => p.key === r)) picks.push({ key: r, label: ROLES[r].label, user: getAllUsers().find((u) => u.role === r && u.status !== "inactive") ?? null });
+  return picks;
+}
 const landingOf = (user) => pageUrl(ROLES[user.role]?.landing ?? "dashboard/employee.html");
 
 // F2: the brand panel beside the card (wide screens only; the card keeps the company's name on a phone or a tablet): the
@@ -144,7 +154,7 @@ export function Login() {
     done(getUser(r.userId), r.mustChange);
   };
   const demo = (key) => {
-    const user = getUser(DEMO_USERS[key][1]);
+    const user = demoPeople().find((p) => p.key === key)?.user;
     if (!user || !sessionAllowed(user.id)) { setError("This demo account can't sign in. Ask an Admin."); return; }
     done(user, mustChangePassword(user.id));
   };
@@ -152,9 +162,15 @@ export function Login() {
   const demoSection = DEMO.mode && (
     <section className="auth-demo" aria-labelledby="demo-title">
       <p className="auth-demo__title" id="demo-title">Demo accounts</p>
-      <p className="ds-hint">Sign in with any demo work email, like arjun.kapoor@northwind.com, and the password <code>{DEMO.password}</code>, or pick a role:</p>
-      <div className="auth-demo__roles">
-        {Object.entries(DEMO_USERS).map(([key, [label]]) => <button key={key} type="button" className="ds-btn ds-btn--sm" data-demo-role={key} onClick={() => demo(key)}>{label}</button>)}
+      <p className="ds-hint">Pick a role to try it, or sign in with any demo work email and the password <code>{DEMO.password}</code>.</p>
+      <div className="auth-demo__roles" id="demo-roles">
+        {demoPeople().map(({ key, label, user }) => (
+          <button key={key} type="button" className="auth-demo__role" data-demo-role={key} disabled={!user || undefined} onClick={() => demo(key)}
+            aria-describedby={user ? undefined : `demo-${key}-none`}>
+            <strong>{label}</strong>
+            <span id={user ? undefined : `demo-${key}-none`}>{user ? user.name : "Nobody has this role yet"}</span>
+          </button>
+        ))}
       </div>
     </section>
   );

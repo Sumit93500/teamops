@@ -99,7 +99,7 @@ if (ONLY.includes("L")) {
   let n = await open(null, "auth/login.html");
   check("L1", "1280: the brand panel beside the card, with the company's name, a product line and three points", await visible(n.t, "aside.auth-brand") && (await text(n.t, ".auth-brand__name > span:last-child")) === COMPANY
     && (await n.t.$$eval(".auth-brand__points li", (l) => l.length)) === 3 && /attendance, leave and pay/.test(await text(n.t, ".auth-brand__line")), await text(n.t, "aside.auth-brand"));
-  check("L2", "the demo's accounts in their own section under the card (not inside it), 4 role buttons", (await n.t.$(".auth-card .auth-demo")) === null && (await n.t.$$eval("section.auth-demo [data-demo-role]", (b) => b.length)) === 4);
+  check("L2", "the demo's accounts in their own section under the card (not inside it), 6 role buttons (SD1)", (await n.t.$(".auth-card .auth-demo")) === null && (await n.t.$$eval("section.auth-demo [data-demo-role]", (b) => b.length)) === 6);
   check("L3", "the footer: \"© 2026 <company> · Powered by OfficeOS\"", (await text(n.t, ".app-footer--auth")) === `© 2026 ${COMPANY} · Powered by OfficeOS`, await text(n.t, ".app-footer--auth"));
   await n.t.fill("#password", "secret"); await n.t.click(".pw-control__toggle");
   check("L4", "Show shows the password, Hide hides it", (await n.t.getAttribute("#password", "type")) === "text" && (await n.t.getAttribute(".pw-control__toggle", "aria-pressed")) === "true");
@@ -155,7 +155,7 @@ if (ONLY.includes("O")) {
 // ---------- P ----------
 if (ONLY.includes("P")) {
   console.log("\n--- P. Rebuilt sections ---");
-  const PLACE = ["announcements/announcements.html",
+  const PLACE = [   // SD1: Announcements is restored (no longer a placeholder)
     "recruitment/job-openings.html", "recruitment/candidates.html", "system/reports.html", "system/audit-log.html", "system/backup.html", "access/delegation.html", "access/approval-workflows.html",
     "account/notifications.html", "account/sessions.html"];
   const inNav = [];

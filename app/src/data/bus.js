@@ -24,4 +24,8 @@ if (typeof window !== "undefined") {
   window.addEventListener("storage", (event) => {
     if (event.key === null || event.key.startsWith("officeos:")) bump();
   });
+  // SD1: coming back to the window re-reads too (a change made while it was in the background, e.g. by a timer, or a tab the
+  // browser kept asleep), so a dashboard's numbers are never stale when someone looks at it again.
+  window.addEventListener("focus", () => bump());
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") bump(); });
 }

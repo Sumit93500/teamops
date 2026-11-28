@@ -155,7 +155,7 @@ The pages are the app's own (not in `config/routes.js`): each carries its guard 
 
 | page | who | what |
 |---|---|---|
-| IT dashboard (`it/dashboard.html`) | `it:requests-handle`, the Admin | open, overdue, assigned to you, unassigned, awaiting approval (each opens the list on that view); open requests by type and requests by status as horizontal bars; the overdue and your own lists; people who left with no offboarding |
+| IT dashboard (`it/dashboard.html`) | `it:requests-handle`, the Admin | SD1: on the shared dashboard frame and live (no reload: a change here, in another tab, or on coming back to the window). Numbers: open requests, awaiting an Admin, my queue, renewals in 30 days, offboarding due (open offboarding requests, and anyone who left with none), each opening its list; requests by status; the latest changes; overdue; my queue |
 | IT requests (`it/requests.html`) | the same | every request: filters for type, status, priority, assignee, who raised it, the shared date range ("No data in this range."), a search, the shared counter |
 | One request (`it/request.html?id=`) | whoever may see it | details, the immutable timeline, a comment box, and the buttons `availableActions` returns; anyone else is told they can't open it |
 | Raise a request (`it/new.html`) | everyone | every type; the desk's words at the field; the due time the priority gives. A new account is not raised here (it opens when HR adds the employee); Offboarding only for `users:deactivate` or `it:offboard` |

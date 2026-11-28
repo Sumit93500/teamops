@@ -115,7 +115,7 @@ if (ONLY.includes("L")) {
   const page = await t.evaluate(() => ({ h1: document.querySelector("h1")?.textContent, email: document.querySelector('label[for="email"]')?.textContent, pw: document.querySelector('label[for="password"]')?.textContent,
     type: document.getElementById("password")?.type, forgot: [...document.querySelectorAll("a")].some((a) => a.textContent === "Forgot password?"), demo: document.querySelectorAll("[data-demo-role]").length,
     old: /part of this demo|isn't available in this demo/.test(document.body.textContent) }));
-  check("L1", "the page: Sign in, labelled Work email and Password, the password hidden, Forgot password?, 4 demo buttons, no demo disclaimers", page.h1 === "Sign in" && /Work email/.test(page.email) && /Password/.test(page.pw) && page.type === "password" && page.forgot && page.demo === 4 && !page.old, j(page));
+  check("L1", "the page: Sign in, labelled Work email and Password, the password hidden, Forgot password?, 6 demo buttons (SD1: one per role, the manager too), no demo disclaimers", page.h1 === "Sign in" && /Work email/.test(page.email) && /Password/.test(page.pw) && page.type === "password" && page.forgot && page.demo === 6 && !page.old, j(page));
   await t.fill("#password", "abc"); await t.click(".pw-control__toggle"); const shown = await t.getAttribute("#password", "type"); await t.click(".pw-control__toggle");
   check("L2", "Show / Hide turns the password into text and back, with aria-pressed", shown === "text" && (await t.getAttribute("#password", "type")) === "password" && (await t.getAttribute(".pw-control__toggle", "aria-pressed")) === "false");
   await signIn(t, "arjun.kapoor@northwind.com", "wrong-guess-1");
@@ -522,7 +522,7 @@ if (ONLY.includes("G")) {
   try { srvOff.kill(); } catch {}
   const n = await open(null, "auth/login.html");
   const on = await n.t.evaluate(() => ({ demo: !!document.getElementById("demo-title"), buttons: document.querySelectorAll("[data-demo-role]").length, code: document.querySelector(".auth-demo code")?.textContent }));
-  check("G4", "on (the default build): the hint with the demo password and the four role buttons", on.demo && on.buttons === 4 && on.code === DEMO, j(on));
+  check("G4", "on (the default build): the hint with the demo password and the six role buttons (SD1)", on.demo && on.buttons === 6 && on.code === DEMO, j(on));
   await n.ctx.close();
   // Disable sign-in belongs to accounts:disable: the Admin sees it, HR (reset only) doesn't, and neither does the Unlock-only story
   const a = await open("admin", "users/user-profile.html?id=EMP-1105");

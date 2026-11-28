@@ -1,0 +1,57 @@
+/* SD1: the sidebar's folding group headings (expanded sidebar) and the menu search ("Find a page"). The rail keeps its flyouts and has no
+   search box (the "/" shortcut goes to the top bar's search there). */
+.nav__items { display: flex; flex-direction: column; gap: 2px; }
+.nav__items[hidden] { display: none; }
+
+/* ---------- the menu search ---------- */
+.nav__find { position: relative; flex: none; padding: 0 0 var(--space-3); }
+.nav__find-box {
+  display: flex; align-items: center; gap: var(--space-2);
+  height: 36px; padding: 0 var(--space-2) 0 var(--space-3);
+  border: 1px solid var(--ds-border-control); border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-1); color: var(--ds-text-2); cursor: text;
+}
+.nav__find-box .icon { width: 16px; height: 16px; flex: none; }
+.nav__find-box input { flex: 1; min-width: 0; border: 0; background: none; color: var(--ds-text); font: inherit; font-size: var(--ds-text-sm); outline: none; }
+.nav__find-box input::placeholder { color: var(--ds-text-2); opacity: 1; }
+.nav__find-box:focus-within { border-color: var(--ds-primary); box-shadow: 0 0 0 2px var(--ds-focus-color, var(--ds-primary)); }
+.nav__find-key {
+  flex: none; min-width: 20px; padding: 0 6px; border: 1px solid var(--ds-border); border-radius: 6px; background: none; box-shadow: none;
+  font-family: inherit; font-size: var(--ds-text-xs); line-height: 18px; text-align: center; color: var(--ds-text-2);
+}
+.nav__find-list {
+  position: absolute; left: 0; right: 0; top: 40px; z-index: 30; margin: 0; padding: var(--space-1); list-style: none;
+  background: var(--ds-surface-1); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); box-shadow: var(--ds-shadow-float);
+}
+.nav__find-list a { display: flex; flex-direction: column; gap: 1px; padding: 6px var(--space-2); border-radius: var(--ds-radius-sm); color: var(--ds-text); text-decoration: none; font-size: var(--ds-text-sm); }
+.nav__find-list small { font-size: var(--ds-text-xs); color: var(--ds-text-2); }
+.nav__find-list li.is-active a, .nav__find-list a:hover { background: var(--ds-surface-3); }
+.nav__find-none { padding: 6px var(--space-2); font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+
+@media (min-width: 821px) {
+  /* the rail: no box */
+  html:not([data-nav-wide]) .nav__find { display: none; }
+  /* the expanded sidebar is dark in both themes: the box sits on it */
+  html[data-nav-wide] .nav__find-box { background: rgb(255 255 255 / 0.07); border-color: rgb(255 255 255 / 0.28); color: #cbd5e1; }
+  html[data-nav-wide] .nav__find-box input { color: #ffffff; }
+  html[data-nav-wide] .nav__find-box input::placeholder { color: #cbd5e1; }
+  html[data-nav-wide] .nav__find-key { border-color: rgb(255 255 255 / 0.28); color: #cbd5e1; }
+  html[data-nav-wide] .nav__find-box:focus-within { border-color: #ffffff; box-shadow: 0 0 0 2px rgb(255 255 255 / 0.5); }
+
+  /* ---------- a group heading that folds its group ---------- */
+  html[data-nav-wide] .nav__group-fold {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+    border: 0; background: none; cursor: pointer; text-align: left; border-radius: var(--ds-radius-sm); font-family: inherit;
+  }
+  html[data-nav-wide] .nav__group-fold .icon { width: 14px; height: 14px; transition: transform var(--ds-fast); }
+  html[data-nav-wide] .nav__group-fold[aria-expanded="false"] .icon { transform: rotate(-90deg); }
+  html[data-nav-wide] .nav__group-fold:hover:not(:disabled) { color: #ffffff; background: rgba(255, 255, 255, 0.06); }
+  html[data-nav-wide] .nav__group-fold:focus-visible { outline: 2px solid #ffffff; outline-offset: 1px; }
+  html[data-nav-wide] .nav__group-fold:disabled { cursor: default; }
+  html[data-nav-wide] .nav__group-fold:disabled .icon { opacity: 0.45; }
+}
+/* the phone's drawer: the box under the person's name */
+@media (max-width: 820px) {
+  .nav__find { padding: 0 var(--space-4) var(--space-3); }
+  .nav__find-list { left: var(--space-4); right: var(--space-4); }
+}

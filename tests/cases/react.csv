@@ -437,7 +437,7 @@ react-design.P.errors/404.html.1280,react-design,"errors/404.html: company brand
 react-design.P.errors/404.html.412,react-design,"errors/404.html: company brand, footer after main, tab title",x1
 react-design.R,react-design,reduced motion: transitions finish at once; without it they run,x1
 react-design.E,react-design,no page or console errors,x1
-react-e1.L1,react-e1,"the page: Sign in, labelled Work email and Password, the password hidden, Forgot password?, 4 demo buttons, no demo disclaimers",x1
+react-e1.L1,react-e1,"the page: Sign in, labelled Work email and Password, the password hidden, Forgot password?, 6 demo buttons (SD1: one per role, the manager too), no demo disclaimers",x1
 react-e1.L2,react-e1,"Show / Hide turns the password into text and back, with aria-pressed",x1
 react-e1.L3,react-e1,"a wrong password and an unknown email: the same words, an alert that takes focus",x1
 react-e1.L4,react-e1,the demo password signs Arjun in: his dashboard,x1
@@ -518,7 +518,7 @@ react-e1.G0,react-e1,a build with demo mode off,x1
 react-e1.G1,react-e1,"off: the sign-in page has no demo hint, no role buttons and never names the demo password",x1
 react-e1.G2,react-e1,"off: the demo password signs nobody in (the usual words, still on the sign-in page)",x1
 react-e1.G3,react-e1,off: with nobody signed in the app still sends you to sign in,x1
-react-e1.G4,react-e1,on (the default build): the hint with the demo password and the four role buttons,x1
+react-e1.G4,react-e1,on (the default build): the hint with the demo password and the six role buttons (SD1),x1
 react-e1.G5,react-e1,the Admin's card offers Disable sign-in (accounts:disable) beside the reset buttons,x1
 react-e1.G6,react-e1,HR's card has no Disable sign-in,x1
 react-e1.B1.Team,react-e1,"attendance mgr on Team attendance: 2 names, every one a profile link",x3 (3 roles)
@@ -655,7 +655,7 @@ react-f1.E2.dark,react-f1,dark: the place line (not allowed) is 4.5:1 or more,x1
 react-f1.W1,react-f1,shots taken,x1
 react-f1.X1,react-f1,no page or console errors,x1
 react-f2.L1,react-f2,"1280: the brand panel beside the card, with the company's name, a product line and three points",x1
-react-f2.L2,react-f2,"the demo's accounts in their own section under the card (not inside it), 4 role buttons",x1
+react-f2.L2,react-f2,"the demo's accounts in their own section under the card (not inside it), 6 role buttons (SD1)",x1
 react-f2.L3,react-f2,"the footer: ""© 2026 <company> · Powered by OfficeOS""",x1
 react-f2.L4,react-f2,"Show shows the password, Hide hides it",x1
 react-f2.L5,react-f2,"nothing typed, then a malformed email: each says what to do",x1
@@ -668,7 +668,7 @@ react-f2.O1,react-f2,"nothing filtered: ""N people, 1 joining soon"", every pers
 react-f2.O2,react-f2,"the joiner listed ""joins on 1 Dec 2026""; People working counts only those already working",x1
 react-f2.O3,react-f2,"a search on: ""Showing 1 of N people""",x1
 react-f2.P1,react-f2,no placeholder page is linked anywhere on any role's landing page (navigation included),x1
-react-f2.P2,react-f2,each of the 10 placeholder URLs shows the neutral page with Back to dashboard (the role's landing),x1
+react-f2.P2,react-f2,each of the 9 placeholder URLs shows the neutral page with Back to dashboard (the role's landing),x1
 react-f2.P3,react-f2,no placeholder or round wording in app/src outside comments (Gallery aside),x1
 react-f2.U1,react-f2,"the Admin's inbox: ""Locked account: Arjun Kapoor"", 5 failed sign-ins, with Dismiss and Unlock now",x1
 react-f2.U2,react-f2,the bell counts it,x1
@@ -1262,7 +1262,7 @@ react-leave4.K4,react-leave4,Close leave year from the keyboard asks first with 
 react-leave4.K5,react-leave4,the policy card is a named region of the form's aside,x1
 react-leave4.W1,react-leave4,"the band pills, the loss-of-pay and policy cards are at least 4.5:1 in both themes",x1
 react-leave4.E1,react-leave4,no page errors,x1
-react-locs.R1,react-locs,"admin: opens My locations (heading, tab title, privacy line); Offices last in the sidebar's Attendance section",x5 (5 roles)
+react-locs.R1,react-locs,"admin: opens My locations (heading, tab title, privacy line); Offices last in the sidebar's Time & Attendance group (SD1)",x5 (5 roles)
 react-locs.R2,react-locs,the topbar search finds My locations (under Attendance),x1
 react-locs.N1,react-locs,"emp: the office (head office, 150 m), ""Home check-in isn't on for you"", whom to ask by name (HR / Admin), no forms, no request or history cards",x2 (2 roles)
 react-locs.S1,react-locs,"eligible: both homes ""Not set"" with a form each; empty requests and history say what comes next",x1
@@ -1518,8 +1518,81 @@ react-rest.Sa.rebuilt,react-rest,"admin on system/audit-log.html: where the old 
 react-rest.Ss.f2,react-rest,"Settings: no sample sections, no links to Backup or the Audit log (F2)",x1
 react-rest.Rj.rebuilt,react-rest,"admin on recruitment/job-openings.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
 react-rest.Rc.rebuilt,react-rest,"admin on recruitment/candidates.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
-react-rest.Ra.rebuilt,react-rest,"admin on announcements/announcements.html: where the old site opens it, the app says ""This section is being rebuilt."" (F2)",x5 (5 roles)
 react-rest.P.settings,react-rest,admin on system/settings.html at 412: the same cards,x1
+react-sd1.N1,react-sd1,"Aarav Mehta: the groups they may open, in order; empty ones not drawn",x5 (5 roles)
+react-sd1.N1.it,react-sd1,"Isha Kulkarni: the groups they may open, in order; empty ones not drawn",x1
+react-sd1.N2,react-sd1,"Main: Dashboard, Announcements and Help (no Approvals for someone with none)",x1
+react-sd1.N3,react-sd1,"a group folds from its heading, and stays folded for that person after a reload",x1
+react-sd1.N4,react-sd1,another person's sidebar isn't folded by it,x1
+react-sd1.N5,react-sd1,"the group of the page you're on is open, folded or not, and its heading can't fold it",x1
+react-sd1.S1,react-sd1,"""/"" puts the cursor in Find a page",x1
+react-sd1.S2,react-sd1,"only pages the person may open: an employee gets My leave and Apply for leave, not Leave approvals",x1
+react-sd1.S3,react-sd1,Esc clears it,x1
+react-sd1.S4,react-sd1,Enter opens the first match,x1
+react-sd1.S5,react-sd1,Ctrl+/ does the same,x1
+react-sd1.S6,react-sd1,no match says so,x1
+react-sd1.S7,react-sd1,HR finds Leave approvals and Leave policy too,x1
+react-sd1.S8,react-sd1,"in the collapsed rail (no box) ""/"" goes to the top bar's search",x1
+react-sd1.B1,react-sd1,"HR finds Rohan Gupta, with the department, linking to the profile",x1
+react-sd1.B2,react-sd1,an employee finds no person (no profile they may open),x1
+react-sd1.B3,react-sd1,a manager finds their direct report,x1
+react-sd1.B4,react-sd1,...but nobody else,x1
+react-sd1.B5,react-sd1,"the person's own requests, in words with readable dates: no ISO date, no id",x1
+react-sd1.B6,react-sd1,Esc closes the list,x1
+react-sd1.C1,react-sd1,Aarav Mehta: the greeting by office time and the date in words,x5 (5 roles)
+react-sd1.C2,react-sd1,Aarav Mehta: Do next holds the role's main pages,x5 (5 roles)
+react-sd1.C3,react-sd1,Aarav Mehta: each tile opens its page in one click (no 403),x5 (5 roles)
+react-sd1.C4,react-sd1,Aarav Mehta: Needs you and Announcements are drawn,x5 (5 roles)
+react-sd1.C1.it,react-sd1,Isha Kulkarni: the greeting by office time and the date in words,x1
+react-sd1.C2.it,react-sd1,Isha Kulkarni: Do next holds the role's main pages,x1
+react-sd1.C3.it,react-sd1,Isha Kulkarni: each tile opens its page in one click (no 403),x1
+react-sd1.C4.it,react-sd1,Isha Kulkarni: Needs you and Announcements are drawn,x1
+react-sd1.C5,react-sd1,today's attendance in words with Mark attendance beside it,x1
+react-sd1.C6,react-sd1,the employee's key numbers are kept,x1
+react-sd1.C7,react-sd1,"the Admin's Needs you: approvals waiting, in words",x1
+react-sd1.C8,react-sd1,no My tasks card any more (its counts are the tiles and Needs you),x1
+react-sd1.C9,react-sd1,"a tile shows only when its page opens: Finance without salary and tax access has no Salary structure tile, and every tile left opens",x1
+react-sd1.D1,react-sd1,"a request raised in another tab moves Open requests at once, with no reload",x1
+react-sd1.D2,react-sd1,a change seen when the window comes back into focus moves My queue,x1
+react-sd1.D3,react-sd1,"the five numbers: open, awaiting an Admin, my queue, licences renewing, offboarding due",x1
+react-sd1.T1,react-sd1,an employee's tabs: Mine and Assigned by me (no Team),x1
+react-sd1.T2,react-sd1,one line adds a personal task; with no date it is under No date,x1
+react-sd1.T3,react-sd1,"due today: under Today, its due date in words",x1
+react-sd1.T4,react-sd1,work for yourself needs a due date: refused in words,x1
+react-sd1.T5,react-sd1,...and never one in the past,x1
+react-sd1.T6,react-sd1,a tick finishes it: it moves to Done,x1
+react-sd1.T7,react-sd1,the rows: a Personal tag and no ISO date anywhere,x1
+react-sd1.T8,react-sd1,a manager also gets the Team tab,x1
+react-sd1.T9,react-sd1,the team's tab never holds a personal task,x1
+react-sd1.T10,react-sd1,a task past its day is under Overdue: 'Overdue since 20 Nov 2026',x1
+react-sd1.A1,react-sd1,an employee reads the posts for everyone and has no Post button,x1
+react-sd1.A2,react-sd1,"HR posts it, pinned: it is first",x1
+react-sd1.A3,react-sd1,the employee's bell shows (they have no inbox) and names the new announcement,x1
+react-sd1.A4,react-sd1,the bell lists it by title,x1
+react-sd1.A5,react-sd1,opening the page reads it: the bell no longer names a new announcement,x1
+react-sd1.A6,react-sd1,"taking it down: off the list, kept under Taken down or ended for HR",x1
+react-sd1.H1,react-sd1,"an employee: their own areas, not HR's, Finance's or IT's",x1
+react-sd1.H2,react-sd1,every link on it opens for them,x1
+react-sd1.H3,react-sd1,HR also gets People and HR,x1
+react-sd1.L1,react-sd1,"one tile per role: Admin, HR, Manager, Finance, Employee, IT; each names the person",x1
+react-sd1.L2,react-sd1,"IT, which nobody holds in the seed, is switched off and says so",x1
+react-sd1.L3,react-sd1,the Manager tile signs in Sneha Rao,x1
+react-sd1.L4,react-sd1,"demo mode off: no tile, no grid",x1
+react-sd1.X1.412.light,react-sd1,"412px light: 18 screens, none scrolls sideways, no table wider than its card",x1
+react-sd1.X2.412.light,react-sd1,412px light: no ISO date or record id in what is read,x1
+react-sd1.X1.768.light,react-sd1,"768px light: 18 screens, none scrolls sideways, no table wider than its card",x1
+react-sd1.X2.768.light,react-sd1,768px light: no ISO date or record id in what is read,x1
+react-sd1.X1.1280.light,react-sd1,"1280px light: 18 screens, none scrolls sideways, no table wider than its card",x1
+react-sd1.X2.1280.light,react-sd1,1280px light: no ISO date or record id in what is read,x1
+react-sd1.X1.412.dark,react-sd1,"412px dark: 18 screens, none scrolls sideways, no table wider than its card",x1
+react-sd1.X2.412.dark,react-sd1,412px dark: no ISO date or record id in what is read,x1
+react-sd1.X1.768.dark,react-sd1,"768px dark: 18 screens, none scrolls sideways, no table wider than its card",x1
+react-sd1.X2.768.dark,react-sd1,768px dark: no ISO date or record id in what is read,x1
+react-sd1.X1.1280.dark,react-sd1,"1280px dark: 18 screens, none scrolls sideways, no table wider than its card",x1
+react-sd1.X2.1280.dark,react-sd1,1280px dark: no ISO date or record id in what is read,x1
+react-sd1.Z1.light,react-sd1,light: every new text pair reaches 4.5:1 (98 read),x1
+react-sd1.Z1.dark,react-sd1,dark: every new text pair reaches 4.5:1 (98 read),x1
+react-sd1.Z9,react-sd1,no page or console errors,x1
 react-sh1.R,react-sh1,admin: opens the Shifts page,x2 (2 roles)
 react-sh1.R#2,react-sh1,fin: sent to 403 (shifts:manage),x3 (3 roles)
 react-sh1.S1,react-sh1,"four shifts: General (default), Early, Night (overnight), Part-time, each with its rules in words",x1
@@ -1582,6 +1655,7 @@ react-shell.D.employee,react-shell,emp on dashboard/employee.html,x2 (2 roles)
 react-shell.D.my-requests,react-shell,emp on requests/my-requests.html,x1
 react-shell.D.team-leave,react-shell,mgr on leave/team-leave.html,x1
 react-shell.R1,react-shell,"keyboard open + focus, Esc, arrows, hover open and leave: the same",x1
+react-shell.R2,react-shell,SD1: the rail's first group is Main and its flyout starts with Dashboard,x1
 react-shell.Q.le,react-shell,"admin searches ""le""",x2 (2 roles)
 react-shell.Q.pay,react-shell,"admin searches ""pay""",x2 (2 roles)
 react-shell.Q.arj,react-shell,"admin searches ""arj""",x2 (2 roles)
@@ -1633,10 +1707,10 @@ react-side.A2,react-side,"collapsed: the label shows as a chip on hover (""Atten
 react-side.A3,react-side,"collapsed: the active item is marked (aria-current, its own background)",x1
 react-side.A4,react-side,collapsed: no group headings; the brand is its mark only; the count is a small number on the icon; the person's avatar stays in the header,x1
 react-side.A5,react-side,expanded: every item shows its icon and label; the group headings; no section buttons; the brand's name; the avatar and name; the count; Dashboard current,x1
-react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (48), the same links as collapsed",x5 (5 roles)
-react-side.K1.expanded,react-side,"expanded: Tab goes brand, the toggle, then the first item (Dashboard)",x1
+react-side.R1,react-side,"admin: expanded shows every item of the role's nav, labelled (50), the same links as collapsed",x5 (5 roles)
+react-side.K1.expanded,react-side,"expanded: Tab goes brand, the toggle, then Find a page (expanded) or the Main group (collapsed) (SD1)",x1
 react-side.K2.expanded,react-side,"expanded: Enter toggles, Space toggles back, focus stays on the toggle",x1
-react-side.K1.collapsed,react-side,"collapsed: Tab goes brand, the toggle, then the first item (Dashboard)",x1
+react-side.K1.collapsed,react-side,"collapsed: Tab goes brand, the toggle, then Find a page (expanded) or the Main group (collapsed) (SD1)",x1
 react-side.K2.collapsed,react-side,"collapsed: Enter toggles, Space toggles back, focus stays on the toggle",x1
 react-side.L1.1440.expanded,react-side,"1440, expanded: no sideways scroll on 8 wide pages",x1
 react-side.L1.1440.collapsed,react-side,"1440, collapsed: no sideways scroll on 8 wide pages",x1
@@ -1653,27 +1727,28 @@ react-side.E1,react-side,no page or console errors,x1
 react-td1.A1,react-td1,"My to-do opens for all seven; Team tasks only for a manager (Sneha, and Kabir who manages Meera), HR and the Admin (IT and colleagues get the 403 page)",x1
 react-td1.A2,react-td1,the sidebar lists My to-do for everyone and Team tasks only for those who may open it,x1
 react-td1.A3,react-td1,a colleague with no reports sent to Team tasks lands on 403,x1
-react-td1.P1,react-td1,"the owner sees it on the Personal tab (overdue, in words)",x1
+react-td1.P1,react-td1,"the owner sees it on Mine, under Overdue, in words (SD1: the sections)",x1
 react-td1.P2,react-td1,"for the manager, HR, the Admin, Finance and a colleague: no page, dashboard, inbox or bell shows the personal task's words",x1
 react-td1.P3,react-td1,the manager's Team tasks counts Rohan's work task but not his personal one (1 task),x1
 react-td1.P4,react-td1,the work task he was given is visible to the manager; the personal one never in her task list,x1
 react-td1.P5,react-td1,no stored key but the tasks box holds the words,x1
-react-td1.U1,react-td1,empty: 'No personal tasks yet.' and the quick add; the counter says 0 tasks,x1
-react-td1.U2,react-td1,Add task is disabled until there is a title,x1
-react-td1.U3,react-td1,"quick add: the task is listed with Pending, High and its due date; the title box is cleared; the counter 1 task",x1
-react-td1.U4,react-td1,the status changes in the row (In progress),x1
-react-td1.U5,react-td1,edit: new title and notes shown,x1
+react-td1.U1,react-td1,empty: 'Nothing on your list.' and the quick add; the tab's count says 0,x1
+react-td1.U2,react-td1,Add is disabled until there is a title,x1
+react-td1.U3,react-td1,"quick add: listed under Upcoming as Personal, due in words; stored pending; the title box is cleared; the count 1",x1
+react-td1.U4,react-td1,"the status changes (In progress), from the task's dialog",x1
+react-td1.U5,react-td1,"edit: the new title is shown, the notes kept",x1
 react-td1.U6,react-td1,"the title field stops at 120 characters (maxlength), as the data layer does",x1
 react-td1.U7,react-td1,Delete asks first; Cancel keeps it,x1
 react-td1.U8,react-td1,...still listed,x1
 react-td1.U9,react-td1,"Delete confirmed: gone, empty state back",x1
-react-td1.U10,react-td1,the priority filter keeps the urgent one; the counter 'Showing 1 of 3 tasks',x1
-react-td1.U11,react-td1,the status filter: Done,x1
+react-td1.U10,react-td1,"the sections: the two open ones under Upcoming, soonest first; the finished one under Done (SD1: in place of the filters)",x1
+react-td1.U11,react-td1,Done is folded until opened,x1
+react-td1.U12,react-td1,"a tick finishes a personal task: stored done, moved to Done",x1
 react-td1.W1,react-td1,"the Assign picker holds only Sneha herself, Rohan and Arjun (no one else)",x1
-react-td1.W2,react-td1,assigned: the dialog closes and the task shows under Assigned by me with 'To Rohan Gupta',x1
-react-td1.W2b,react-td1,on Assigned by me a row has no status control (only the assignee moves a status),x1
+react-td1.W2,react-td1,assigned: the dialog closes and the task shows under Assigned by me with 'For Rohan Gupta' (SD1 rows),x1
+react-td1.W2b,react-td1,on Assigned by me a row has no tick or status control (only the assignee moves a status),x1
 react-td1.W3,react-td1,"a past due date is refused at the field, in the data layer's words; the dialog stays open",x1
-react-td1.W4,react-td1,"Rohan sees it on Work: 'From Sneha Rao', Pending, with the update on top: 'Task assigned to you: Prepare the Q4 deck'",x1
+react-td1.W4,react-td1,"Rohan sees it on Mine (SD1: work and personal together): 'From Sneha Rao', To do, with the update on top: 'Task assigned to you: Prepare the Q4 deck'",x1
 react-td1.W5,react-td1,"the detail: Start and Mark done (not Edit or Cancel: he isn't the assigner), the timeline, who it reports to (Sneha)",x1
 react-td1.W6,react-td1,"Start: In progress, and 'Back to pending' appears",x1
 react-td1.W7,react-td1,a comment is added to the timeline,x1
@@ -1682,9 +1757,9 @@ react-td1.W9,react-td1,Sneha's bell has 'Done: Prepare the Q4 deck',x1
 react-td1.W10,react-td1,the assigner's detail of a finished task: Reopen only,x1
 react-td1.W11,react-td1,reopen without a reason is refused at the field,x1
 react-td1.W12,react-td1,"with a reason it reopens: Pending again, the timeline says Reopened",x1
-react-td1.D1,react-td1,"Rohan's card: 2 due today, 1 overdue, 3 open (personal and work); no team line",x1
-react-td1.D2,react-td1,"the manager's card has a team line: Arjun's overdue one counts (1 overdue, 1 due today)",x1
-react-td1.D3,react-td1,the Admin dashboard and the HR dashboard have the card too,x1
+react-td1.D1,react-td1,"Rohan's dashboard: My to-do 3 open (personal and work); Needs you: 1 overdue, 2 due today; no team line",x1
+react-td1.D2,react-td1,"the manager's dashboard has the team line: Arjun's overdue one counts (1 task in your team is overdue), and Team tasks is a tile",x1
+react-td1.D3,react-td1,"the Admin dashboard and the HR dashboard tell them of their own tasks too (Needs you, to My to-do)",x1
 react-td1.D4,react-td1,"Team tasks: progress by person for her two reports only (Rohan 2 tasks, Arjun 1; overdue 0 / 1)",x1
 react-td1.D5,react-td1,the chart is drawn by the shared chart components (a figure with its data table),x1
 react-td1.D6,react-td1,choosing a person narrows the task list to them,x1
@@ -1696,16 +1771,16 @@ react-td1.B3,react-td1,reloads make no second update (still one),x1
 react-td1.B4,react-td1,nobody else is told about it: the manager's bell has nothing from Arjun's personal task,x1
 react-td1.K1,react-td1,typing a title and pressing Enter adds the task,x1
 react-td1.K2,react-td1,the arrow keys move between the tabs,x1
-react-td1.K3,react-td1,"Add a work task by keyboard: focus inside the dialog, Tab stays in, Esc closes and focus returns",x1
-react-td1.K4,react-td1,...Tab stays inside; Esc closes; focus back on the button,x1
+react-td1.K3,react-td1,"a task's dialog by keyboard (SD1: the title opens it): focus inside the dialog, Tab stays in, Esc closes and focus returns",x1
+react-td1.K4,react-td1,...Tab stays inside; Esc closes; focus back on the title,x1
 react-td1.K5,react-td1,"every button, link, input and select on My to-do has a name",x1
 react-td1.X1.412.light,react-td1,"412px light: 14 screens and states, none scrolls sideways, no table wider than its card",x1
 react-td1.X1.768.light,react-td1,"768px light: 14 screens and states, none scrolls sideways, no table wider than its card",x1
 react-td1.X1.1280.light,react-td1,"1280px light: 14 screens and states, none scrolls sideways, no table wider than its card",x1
 react-td1.X1.412.dark,react-td1,"412px dark: 14 screens and states, none scrolls sideways, no table wider than its card",x1
 react-td1.X1.1280.dark,react-td1,"1280px dark: 14 screens and states, none scrolls sideways, no table wider than its card",x1
-react-td1.Z1.light,react-td1,"light: every chip, sub-line, link-button and label on the to-do screens reaches 4.5:1 (83 read)",x1
-react-td1.Z1.dark,react-td1,"dark: every chip, sub-line, link-button and label on the to-do screens reaches 4.5:1 (83 read)",x1
+react-td1.Z1.light,react-td1,"light: every chip, sub-line, link-button and label on the to-do screens reaches 4.5:1 (108 read)",x1
+react-td1.Z1.dark,react-td1,"dark: every chip, sub-line, link-button and label on the to-do screens reaches 4.5:1 (108 read)",x1
 react-td1.Z9,react-td1,no page or console errors,x1
 react-users.R.users-list,react-users,admin opens users/users-list.html: the same outcome,x5 (5 roles)
 react-users.R.user-form,react-users,admin opens users/user-form.html: the same outcome,x5 (5 roles)

@@ -100,12 +100,13 @@ if (ONLY.includes("R")) {
   for (const who of Object.keys(WHO)) {
     const n = await open(who, PAGE);
     const s = await n.t.evaluate(() => {
-      const att = [...document.querySelectorAll(".nav__section")].find((s) => s.querySelector(".nav__group-title")?.textContent === "Attendance");
+      // SD1: the groups are by area; Offices is last in Time & Attendance (one link drawn on its own for someone with nothing else there)
+      const att = document.querySelector('.nav__section[data-group="Time & Attendance"]');
       return { at: location.pathname, h1: document.querySelector("main h1")?.textContent, title: document.title.replace(/ \| .*$/, ""),
-        items: att ? [...att.querySelectorAll(".nav__panel a")].map((a) => a.textContent.trim()) : [], href: att ? [...att.querySelectorAll(".nav__panel a")].find((a) => a.textContent.trim() === "Offices")?.getAttribute("href") : null,
+        items: att ? [...att.querySelectorAll("a.nav__item")].map((a) => a.textContent.trim()) : [], href: att ? [...att.querySelectorAll("a.nav__item")].find((a) => a.textContent.trim() === "Offices")?.getAttribute("href") : null,
         privacy: [...document.querySelectorAll("main .ds-privacy")].map((p) => p.textContent).includes("Your location is read only when you check in or out, never in the background.") };
     });
-    check(`R1.${who}`, `${who}: opens My locations (heading, tab title, privacy line); Offices last in the sidebar's Attendance section`,
+    check(`R1.${who}`, `${who}: opens My locations (heading, tab title, privacy line); Offices last in the sidebar's Time & Attendance group (SD1)`,
       s.at === "/pages/account/my-locations.html" && s.h1 === "My locations" && s.title === "My locations" && s.privacy && s.items.at(-1) === "Offices" && s.href === "/pages/company/offices.html", j(s));
     await n.ctx.close();
   }

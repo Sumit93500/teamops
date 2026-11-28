@@ -2,33 +2,17 @@
 // people for whoever may view users, 5 of each; arrows move, Enter opens, Esc closes the list and then the box; Ctrl/Cmd+K
 // focuses it. Below the topbar's width the box hides behind the search-open button (topbar.is-searching). Results open
 // through the router.
+// SD1: three kinds, 5 of each (shell/searchResults.js): pages the person may open, people whose profile they may open (name and
+// department only, read through the profile's field rules), and their own requests in words. Each option says its kind first.
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { APP_NAV as NAV, APP_OTHER_PAGES as OTHER_PAGES, openable as canOpenPage } from "./appNav.js";
-import { can } from "../../../assets/js/core/rbac.js";
-import { getAllUsers } from "../../../assets/js/data/store.js";
+import { searchResults } from "./searchResults.js";   // SD1
 import { useSession } from "../data/hooks.js";
 import { pageUrl } from "../routes.js";
-import { navItemHref, navItemVisible } from "./Sidebar.jsx";
-
-const PROFILE = "users/user-profile.html";
-const MAX_EACH = 5;
 export const SEARCH_ICON = <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>;
 const CLOSE_ICON = <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>;
 
-function results(query, userId, role) {
-  const inNav = NAV.flatMap((group) => group.items
-    .filter((item) => item.label.toLowerCase().includes(query) && navItemVisible(item, userId, role?.key) && canOpenPage(navItemHref(item, role)))
-    .map((item) => ({ label: item.label, meta: group.group, to: pageUrl(navItemHref(item, role)) })));
-  const others = OTHER_PAGES
-    .filter((page) => !page.needs && page.label.toLowerCase().includes(query) && canOpenPage(page.href))
-    .map((page) => ({ label: page.label, meta: page.group, to: pageUrl(page.href) }));
-  const people = !can("users:view") || !canOpenPage(PROFILE) ? [] : getAllUsers()
-    .filter((u) => u.name.toLowerCase().includes(query) || u.id.toLowerCase().includes(query))
-    .map((u) => ({ label: u.name, meta: u.designation ?? "", to: `${pageUrl(PROFILE)}?id=${encodeURIComponent(u.id)}` }))
-    .slice(0, MAX_EACH);
-  return [...[...inNav, ...others].slice(0, MAX_EACH), ...people];
-}
+const results = (query, userId, role) => searchResults(query, userId, role);
 
 // The opener lives in the topbar's actions; the box in the topbar. Both share the state passed down from Topbar.
 export function SearchOpener({ searching, open, openerRef }) {
@@ -109,7 +93,7 @@ export function SearchBox({ searching, setSearching, openerRef, inputRef }) {
         {list && list.map((r, i) => (
           <a key={`${r.to}${i}`} className={`dropdown__item${i === active ? " is-active" : ""}`} id={`search-option-${i}`} href={r.to} tabIndex={-1}
             role="option" aria-selected={String(i === active)} onClick={(e) => { e.preventDefault(); go(r); }}>
-            <span>{r.label}</span><span className="text-xs text-muted">{r.meta}</span>
+            <span>{r.label}</span><span className="text-xs text-muted" data-kind={r.kind}>{r.meta}</span>
           </a>
         ))}
         {list && !list.length && <div className="dropdown__label" role="option" aria-disabled="true">No matches</div>}

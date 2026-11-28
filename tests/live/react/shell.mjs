@@ -65,6 +65,16 @@ const withoutIt2 = (s) => ({ ...s, sections: s.sections?.filter((x) => x.title !
 const I1_PAGE = /\/pages\/(people\/import-(employees|history)|payroll\/export-pay|tasks\/(my-todo|team)|inventory\/import-(assets|stock)|it\/import-licences|leave\/import-balances|attendance\/import-corrections|system\/export-data)\.html/;   // TD1: and the to-do pages   // I2: and the next import pages and Export data
 const CV1_VISITS = /^\/pages\/visits\/(my|team)-visits\.html/;
 const withoutVisits = (s) => ({ ...s, sections: s.sections?.map((x) => (x.items ? { ...x, items: x.items.filter((it) => !CV1_VISITS.test(it[1] ?? "")) } : x)) });
+// SD1 (the brief, A): the sidebar is grouped by area (app/src/shell/appNav.js SD1_GROUPS: Main, My work, Time & Attendance, Money, People,
+// IT & Assets, System), so a group's button, title and order are no longer the old site's. D compares the links as one list sorted by page:
+// each link's words (with the waiting count), page, current and aria-current. A link's icon and data-label follow its group (a one-link
+// group draws the group's icon), so they are read past too. The groups themselves are checked in react/sd1.mjs N.
+// The app's own links are read past on the app's side: Announcements and Help (SD1), My/Team visits (CV1), the import and export pages
+// (I1, I2), the to-do pages (TD1), the IT pages and Complete details (IT2), and for HR and Finance the inventory pages (AS2).
+const SD1_OWN = /^\/pages\/(announcements\/announcements|help\/help|it\/[a-z-]+|inventory\/complete-details)\.html/;
+const sd1Links = (sections, drop) => (sections ?? []).flatMap((x) => x.items ?? []).filter((it) => !drop(it[1] ?? "")).map((it) => it.slice(0, 4)).sort((a, b) => (a[1] + a[0]).localeCompare(b[1] + b[0]));
+const sd1Old = (raw) => ({ ...ruledShell(raw), sections: sd1Links(withOffices(raw.sections), (p) => F2_PLACE.test(p)) });
+const sd1New = (raw, who) => ({ ...raw, sections: sd1Links(raw.sections, (p) => SD1_OWN.test(p) || CV1_VISITS.test(p) || I1_PAGE.test(p) || ((who === "hr" || who === "fin") && AS2_PAGES.test(p))) });
 const ruledPhone = (s) => (s.toggle?.[0] ? { ...s, shown: [s.shown[0], `About ${COMPANY}`, ...s.shown.slice(1)] } : s);
 // L1 (ruled): the brand panel's "© 2026 OfficeOS. All rights reserved." line is gone; the footer says "© <year> <company> · Powered by OfficeOS"
 const ruledAuth = (s) => ({ ...s, text: s.text?.replace(/^O OfficeOS /, `N ${COMPANY} `).replace(/ © 2026 OfficeOS\. All rights reserved\./, ""), title: s.title?.replace(/\| OfficeOS$/, `| ${COMPANY}`) });
@@ -125,8 +135,8 @@ if (ONLY.includes("D")) {
   console.log("--- D. The drawn shell at 1280 ---");
   for (const who of Object.keys(PAGES)) for (const page of PAGES[who]) {
     const o = await open(O, who, page), n = await open(N, who, page);
-    const od = ruledShell(await readShell(o.t));
-    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, od, f2Singles(od, withoutIt2(withoutAs2(withoutVisits(await readShell(n.t)), who, od))));
+    const od = sd1Old(await readShell(o.t));   // SD1: the links as one list (above)
+    compare(`D.${who}.${page.split("/")[1].replace(".html", "")}`, `${who} on ${page}`, od, sd1New(await readShell(n.t), who));
     if (o.errs.length || n.errs.length) check(`D.${who}.err`, "no page errors", false, j([o.errs, n.errs]));
     await o.ctx.close(); await n.ctx.close();
   }
@@ -156,7 +166,11 @@ if (ONLY.includes("R")) {
     return out;
   };
   const [ro, rn] = [await rail(o.t), await rail(n.t)];
-  check("R1", "keyboard open + focus, Esc, arrows, hover open and leave: the same", j(ro) === j(rn), j(ro) === j(rn) ? j(rn) : `old ${j(ro)} new ${j(rn)}`);
+  // SD1: the groups have new names (Main, My work ...), so the steps are compared by their shape: which states, expanded or not,
+  // the panel level with its button, how many are open; the words in them are read past (the groups are checked in react/sd1.mjs N)
+  const shape = (r) => j(JSON.parse(j(r), (k, v) => (typeof v === "string" && v !== "true" && v !== "false" ? "·" : v)));
+  check("R1", "keyboard open + focus, Esc, arrows, hover open and leave: the same", shape(ro) === shape(rn), shape(ro) === shape(rn) ? j(rn) : `old ${j(ro)} new ${j(rn)}`);
+  check("R2", "SD1: the rail's first group is Main and its flyout starts with Dashboard", rn[0]?.[0] === "Main" && rn[0]?.[3] === "Dashboard", j(rn[0]));
   await o.ctx.close(); await n.ctx.close();
 }
 
@@ -166,11 +180,13 @@ if (ONLY.includes("Q")) {
     const o = await open(O, who, "leave/my-leave.html"), n = await open(N, who, "leave/my-leave.html");
     const res = async (t, q) => {
       await t.fill(".topbar__search input", q); await t.waitForTimeout(100);
-      return t.evaluate(() => { const l = document.getElementById("search-results"); return [l.hidden, [...l.children].map((c) => [c.textContent.trim(), c.getAttribute("href"), c.classList.contains("is-active"), c.getAttribute("role")])]; });
+      // SD1: a result's second line is now its sidebar group (a page) or department (a person), so only its name is compared; the
+      // person's own requests (a new kind) are read past on the app's side; sd1.mjs S checks both
+      return t.evaluate(() => { const l = document.getElementById("search-results"); return [l.hidden, [...l.children].filter((c) => !c.querySelector("[data-kind=request]")).map((c) => [(c.firstElementChild ?? c).textContent.trim(), c.getAttribute("href"), c.classList.contains("is-active"), c.getAttribute("role")])]; });
     };
     for (const q of ["le", "pay", "arj", "zzz"]) {
       let [a0, b] = [await res(o.t, q), await res(n.t, q)];
-      b = [b[0], b[1].filter(([, h]) => !h || !I1_PAGE.test(new URL(h, "http://x/pages/leave/").pathname))];   // I1: the app's own import and export pages read past
+      b = [b[0], b[1].filter(([, h]) => !h || !(I1_PAGE.test(new URL(h, "http://x/pages/leave/").pathname) || SD1_OWN.test(new URL(h, "http://x/pages/leave/").pathname)))];   // I1: the app's own import and export pages read past (SD1: and Announcements, Help)
       const a = [a0[0], a0[1].filter(([, h]) => !h || !F2_PLACE.test(new URL(h, "http://x/pages/leave/").pathname))];   // F2: placeholder pages read past
       if (a[1].length < a0[1].length || b[1].length < a[1].length) { const k = Math.min(a[1].length, b[1].length); a[1] = a[1].slice(0, k); b = [b[0], b[1].slice(0, k)]; }   // F2 (I1: either side shortened)   // F2: the result limit lets later matches in where they were
       const norm = (r) => j([r[0], r[1].map(([x, h, act, role]) => [x, h ? new URL(h, "http://x/pages/leave/").pathname + new URL(h, "http://x/pages/leave/").search : null, act, role])]);
@@ -250,7 +266,7 @@ if (ONLY.includes("P")) {
       title: top.querySelector(".topbar__left strong").textContent, shown: [...top.querySelectorAll("button, a")].filter(vis).map((b) => b.getAttribute("aria-label") ?? b.textContent.trim()),
       drawer: sb.classList.contains("is-open"), open: [...sb.querySelectorAll(".nav__section.is-open .nav__trigger")].map((b) => b.getAttribute("aria-label")),
       profile: vis(sb.querySelector(".nav__profile")) ? sb.querySelector(".nav__profile").textContent.replace(/\s+/g, " ").trim() : null, signout: vis(sb.querySelector(".nav__signout")),
-      focus: document.activeElement === document.body ? "(body)" : document.activeElement?.getAttribute("aria-label") ?? document.activeElement?.textContent.trim().slice(0, 30), ready: document.documentElement.hasAttribute("data-phone-ready"), mainShown: vis(document.querySelector("main")) };
+      inSidebar: sb.contains(document.activeElement), focus: document.activeElement === document.body ? "(body)" : document.activeElement?.getAttribute("aria-label") ?? document.activeElement?.textContent.trim().slice(0, 30), ready: document.documentElement.hasAttribute("data-phone-ready"), mainShown: vis(document.querySelector("main")) };
   });
   for (const [who, page] of [["emp", "leave/my-leave.html"], ["admin", "users/user-form.html"], ["emp", "leave/apply-leave.html"], ["admin", "dashboard/admin.html"]]) {
     const o = await open(O, who, page, 412), n = await open(N, who, page, 412);
@@ -260,11 +276,14 @@ if (ONLY.includes("P")) {
       if (!(await t.isVisible(".topbar__menu-toggle"))) return out;   // a detail page: the back arrow has the menu button's place
       await t.click(".topbar__menu-toggle"); await t.waitForTimeout(250); out.push(await phoneRead(t));
       const other = await t.$$(".sidebar .nav__section:not(.is-open) .nav__trigger");
-      if (other[1]) { await other[1].click(); await t.waitForTimeout(150); out.push(await phoneRead(t)); }
+      // SD1: "another section" is read past: the groups differ (an Employee's third group is a single link now)
       await t.keyboard.press("Escape"); await t.waitForTimeout(250); out.push(await phoneRead(t));
       return out;
     };
-    const [a, b] = [(await steps(o.t)).map(ruledPhone), await steps(n.t)];
+    // SD1: which group is open and the focused words are read past (the group of the page you're on opens; the drawer focuses that
+    // page's link, or the first stop); that focus is inside the drawer is compared (inSidebar)
+    const sd1Phone = (r) => r.map(({ open: _o, focus: _f, ...x }) => x);
+    const [a, b] = [sd1Phone((await steps(o.t)).map(ruledPhone)), sd1Phone(await steps(n.t))];
     const name = `P.${who}.${page.split("/")[1].replace(".html", "")}`;
     check(name, `${who} on ${page} at 412: topbar, drawer open, another section, Esc`, j(a) === j(b), j(a) === j(b) ? j(b.at(-1)).slice(0, 300) : `see ${name}.json`);
     if (j(a) !== j(b)) fs.writeFileSync(path.join(SHOTS, `${name}.json`), JSON.stringify({ old: a, new: b }, null, 1));

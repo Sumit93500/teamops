@@ -56,7 +56,10 @@ export default function Shell({ page, title, back, children }) {
 
   useEffect(() => {
     if (!drawerOpen) return undefined;
-    document.querySelector("#sidebar .sidebar__nav a")?.focus();   // the first page link (D2a: the brand link before it is hidden in the drawer)
+    // the first page link (D2a: the brand link before it is hidden in the drawer); SD1: the current page when its group is open,
+    // else the first stop that can be seen (Dashboard is inside the folded Main group now)
+    const stops = [...document.querySelectorAll("#sidebar .sidebar__nav a, #sidebar .sidebar__nav button")].filter((e) => e.getClientRects().length > 0);
+    (stops.find((e) => e.matches(".nav__item.is-active")) ?? stops[0])?.focus();
     const onClick = (e) => {
       if (document.getElementById("sidebar").contains(e.target) || toggleRef.current.contains(e.target)) return;
       setDrawerOpen(false);

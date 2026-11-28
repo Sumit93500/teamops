@@ -54,6 +54,8 @@ import MyVisits from "./pages/MyVisits.jsx";   // CV1
 import TeamVisits from "./pages/TeamVisits.jsx";
 import VisitDetail from "./pages/VisitDetail.jsx";
 import Rebuilding from "./pages/Rebuilding.jsx";   // F2
+import Announcements from "./pages/Announcements.jsx";   // SD1
+import Help from "./pages/Help.jsx";   // SD1
 import MyAssets from "./pages/MyAssets.jsx";   // AS2: the five inventory pages, restored
 import Inventory from "./pages/Inventory.jsx";
 import AssetAssignment from "./pages/AssetAssignment.jsx";
@@ -80,7 +82,7 @@ import { Login, ForgotPassword, ResetPassword, SetPassword, SET_PASSWORD } from 
 import MailOutbox, { MAIL_OUTBOX } from "./pages/MailOutbox.jsx";
 import { sessionAllowed, mustChangePassword } from "../../assets/js/data/credentials.js";
 import { IT_DASHBOARD, IT_REQUESTS, IT_REQUEST, IT_NEW, IT_MINE, IT_LICENCES, IT_OFFBOARDING, IT_REVIEW, COMPLETE_DETAILS, IMPORT_EMPLOYEES, IMPORT_HISTORY, EXPORT_PAY, MY_TODO, TEAM_TASKS } from "./routes.js";
-import { IMPORT_ASSETS, IMPORT_STOCK, IMPORT_LICENCES, IMPORT_LEAVE, IMPORT_ATTENDANCE, EXPORT_DATA } from "./routes.js";   // I2
+import { IMPORT_ASSETS, IMPORT_STOCK, IMPORT_LICENCES, IMPORT_LEAVE, IMPORT_ATTENDANCE, EXPORT_DATA, HELP } from "./routes.js";   // I2, SD1
 import { ALL_PAGES, PUBLIC_PAGES, pageUrl, ABOUT, OFFICES, MY_LOCATIONS, APPEARANCE, RATES_RULES, LEAVE_POLICY_PAGE, MY_VISITS, TEAM_VISITS, VISIT_PAGE } from "./routes.js";
 import { useSession, signOutNow } from "./data/hooks.js";
 
@@ -125,6 +127,7 @@ const PORTED = {
   "inventory/asset-assignment.html": AssetAssignment,
   "inventory/stock-movements.html": StockMovements,
   "inventory/vendors.html": Vendors,
+  "announcements/announcements.html": Announcements,   // SD1: restored
 };
 
 function Home() {
@@ -188,6 +191,7 @@ export const router = createBrowserRouter([{ element: <AccountGate />, children:
   { path: pageUrl(IMPORT_LEAVE), element: <ImportLeave /> },
   { path: pageUrl(IMPORT_ATTENDANCE), element: <ImportAttendance /> },
   { path: pageUrl(EXPORT_DATA), element: <ExportData /> },
+  { path: pageUrl(HELP), element: <Help /> },   // SD1
   { path: pageUrl(MY_TODO), element: <MyTodo /> },   // TD1: the to-do
   { path: pageUrl(TEAM_TASKS), element: <TeamTasks /> },
   ...ALL_PAGES.map((page) => ({ path: pageUrl(page), element: <RequireRoute page={page}>{pageElement(page)}</RequireRoute> })),

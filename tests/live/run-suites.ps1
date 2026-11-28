@@ -214,6 +214,8 @@ foreach ($tz in "Asia/Kolkata", "UTC", "America/Los_Angeles") {
   if (Test-Path "tasks.mjs") { Run "tasks-$t" @("tasks.mjs") }
   # I2: the next imports and the record exports (data/import-assets.js, import-licences.js, import-leave.js, import-attendance.js, export-records.js)
   if (Test-Path "i2.mjs") { Run "i2-$t" @("i2.mjs") }
+  # SD1: announcements, the audit kinds, the IT desk's live numbers (data/announcements.js)
+  if (Test-Path "sd1.mjs") { Run "sd1-$t" @("sd1.mjs") }
   # P3: leave by tenure (data/leave-policy.js)
   if (Test-Path "leavebands.mjs") { Run "leavebands-$t" @("leavebands.mjs") }
   Run "leave-$t" @("leave.mjs")

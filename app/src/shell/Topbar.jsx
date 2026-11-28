@@ -13,6 +13,7 @@ import { canOpenPage } from "../../../assets/js/core/guard.js";
 import { waitingCount } from "../data/waiting.js";
 import { itNoticesFor } from "../../../assets/js/data/it-desk.js";   // IT2
 import { syncTaskNotices, taskNoticesFor } from "../../../assets/js/data/tasks-store.js";   // TD1
+import { syncAnnouncementNotices, announcementNoticesFor } from "../../../assets/js/data/announcements.js";   // SD1
 import { bump } from "../data/bus.js";
 import { useData, useSession, signOutNow } from "../data/hooks.js";
 import { pageUrl, ABOUT, APPEARANCE } from "../routes.js";
@@ -68,14 +69,17 @@ function Bell() {
   const u = useData(() => itNoticesFor(userId, { unreadOnly: true }).length, [userId]);   // IT2: updates on their own IT requests, counted apart from what waits for a decision
   const t = useData(() => taskNoticesFor(userId, { unreadOnly: true }).length, [userId]);   // TD1: updates on their tasks
   useEffect(() => { if (userId && syncTaskNotices(Date.now())) bump(); }, [userId]);   // TD1: made lazily, once per task, kind and date
+  const a = useData(() => announcementNoticesFor(userId, { unreadOnly: true }).length, [userId]);   // SD1: new announcements
+  useEffect(() => { if (userId && syncAnnouncementNotices(userId, Date.now())) bump(); }, [userId]);   // SD1: made lazily, once per person and post
   const open = useBellOpen();
-  if (!inbox) return null;   // F2: no bell for someone with no approvals inbox (it only said it wasn't available)
+  // F2: no bell for someone with no approvals inbox (it only said it wasn't available); SD1: unless they have something new to read
+  if (!inbox && !(u || t || a)) return null;
   // The list of what waits, and each item's card (ui/ApprovalCard.jsx, round 13b: drawn on <body> by the shell's CardHost).
   // F1: open or not is one store (useBellOpen), so aria-expanded / -controls always say what's on screen.
   const onClick = (e) => toggleBellPanel(e.currentTarget);
   return (
     <button className="topbar__icon-btn topbar__icon-btn--dot" type="button" aria-haspopup="dialog" aria-expanded={String(open)} aria-controls={open ? "bell-panel" : undefined}
-      aria-label={`Waiting for you: ${n}${u ? `, ${u} new ${u === 1 ? "update" : "updates"} on your IT requests` : ""}${t ? `, ${t} new ${t === 1 ? "update" : "updates"} on your tasks` : ""}`} title={`Waiting for you: ${n}${u ? `, ${u} new ${u === 1 ? "update" : "updates"} on your IT requests` : ""}`} data-waiting={n > 0 || u > 0 ? "" : undefined}
+      aria-label={`Waiting for you: ${n}${u ? `, ${u} new ${u === 1 ? "update" : "updates"} on your IT requests` : ""}${t ? `, ${t} new ${t === 1 ? "update" : "updates"} on your tasks` : ""}${a ? `, ${a} new ${a === 1 ? "announcement" : "announcements"}` : ""}`} title={`Waiting for you: ${n}${u ? `, ${u} new ${u === 1 ? "update" : "updates"} on your IT requests` : ""}`} data-waiting={n > 0 || u > 0 || a > 0 ? "" : undefined}
       onClick={onClick}><Icon d={BELL} /></button>
   );
 }

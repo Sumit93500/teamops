@@ -84,6 +84,30 @@ One store, `app/src/data/prefs.js`, read and written by the header's Appearance 
 - **Storage blocked:** every choice still applies for the visit (kept in memory) and the panel says so.
 - **The panel:** every choice applies and saves at once and says "Saved". There is no Save button. Reset to default puts every choice back.
 
+## Sidebar, search and dashboards (SD1)
+
+- **Sidebar groups** (`shell/appNav.js` `SD1_GROUPS`): the items are grouped by area: Main, My work, Time & Attendance, Money, People, IT & Assets, System.
+  - Each item still shows only with its own permission, as before, and a group with nothing left is not drawn. SD1 added no permission.
+  - In the expanded sidebar, a group's heading folds it. The folded groups are kept per person under `officeos:nav-groups:<employee id>` (`shell/navFolds.js`). The group of the page you're on is always open, and its heading can't fold it.
+  - The rail (collapsed to icons) and the phone drawer work as before, with the new groups. The drawer focuses the page you're on when its group is open, else its first stop.
+- **Find a page** (the menu's search box, `#menu-search`): lists the pages the person may open whose name or group matches, eight at most. Arrows move, Enter opens and Esc clears. `/` (outside a field) or Ctrl+/ jumps to it. In the rail, the shortcut goes to the top bar's search instead.
+- **The top bar's search** (`shell/searchResults.js`) finds three kinds, five of each at most:
+  - pages (as Find a page);
+  - people, by name and department only, and only those whose profile the viewer may open (read through `exportReader`, so masked fields stay masked);
+  - the viewer's own requests (leave, attendance corrections, claims, IT requests), in words with readable dates.
+  Each result names its kind; arrows, Enter and Esc work as before.
+- **One dashboard frame** (`ui/DashFrame.jsx`, `ui/dashConfig.js`, `design/dash.css`): every dashboard (Admin, HR, Finance, Employee with its manager part, IT) opens with:
+  - the greeting: the day in words, "Good morning, <name>", the role, today's attendance status and Mark attendance;
+  - the page's key numbers;
+  - **Do next**: up to eight tiles to the role's main pages. Each tile is shown by permission and carries a count badge when something waits.
+  - **Needs you**: approvals, overdue tasks, IT requests waiting for the Admin and the like, each a link;
+  - the Announcements card.
+  The page's own charts and tables follow, unchanged. Each role's main pages are one click from its dashboard.
+- **The IT desk** (`it/dashboard.html`) is on the same frame and live: it reads `data/it-desk.js` and `data/licences.js` on every draw, and the app re-reads on a change in this tab, another tab (the storage event), or when the window regains focus (`data/bus.js`).
+- **My to-do** (`pages/MyTodo.jsx`, `design/todo2.css`): sections Overdue, Today, Upcoming, No date and Done (folded); compact rows (tick, title, due chip in words, Work / Personal tag, who assigned it); a one-line quick add; tabs Mine, Assigned by me, Team. See [todo.md](todo.md).
+- **Help** (`help/help.html`): short questions and answers for the person's roles, each linking to the pages they may open.
+- **Sign in:** the demo shortcuts are a grid, one per seeded role. They show only when `DEMO_MODE` is on (`OFFICEOS_DEMO_OFF=1` at build time turns it off).
+
 ## Checks
 
 | check | file | what it covers |
@@ -92,4 +116,5 @@ One store, `app/src/data/prefs.js`, read and written by the header's Appearance 
 | gallery | `tests/live/react/gallery.mjs` | sections N and K: the components and the keyboard |
 | prefs | `tests/live/react/prefs.mjs` | A1's appearance store: header and Settings in sync, two tabs, per person, Match the device, density and text sizes measured, accent, reset, sidebar default, no flash, blocked storage, keyboard and names, 412 and combinations, contrast for every accent x theme |
 | side | `tests/live/react/side.mjs` | S1's sidebar: defaults by width, the toggle and its memory, no flash, labels on focus, every role's items, keyboard, layout at 1440 / 1280 / 1024, contrast, the drawer at 412 |
+| sd1 | `tests/live/react/sd1.mjs` | SD1: the sidebar's groups, folding and Find a page, the top bar's search, every dashboard's frame and tiles, the live IT desk, the to-do, announcements, Help, the demo shortcuts on and off, 17 screens at 412 / 768 / 1280, light and dark, contrast |
 | pixel baseline | `Target/tools/react/xbase.mjs` (outside the repo) | each round compares the app's own look with D2a's recording |

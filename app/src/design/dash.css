@@ -1,0 +1,77 @@
+/* SD1: the shared dashboard frame (ui/DashFrame.jsx): the greeting, Do next tiles, the attention list and the announcements card. Tokens
+   only, so light and dark follow; classes are prefixed dh-. */
+.dh-hello {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--ds-space-4);
+  padding: var(--ds-space-5) var(--ds-space-6); border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-1); border: 1px solid var(--ds-border); box-shadow: var(--ds-shadow-1);
+}
+.dh-hello__text { min-width: 0; }
+.dh-hello h1 { margin: 2px 0 0; font-size: var(--ds-text-2xl); font-weight: var(--ds-weight-semibold, 600); color: var(--ds-text); line-height: 1.2; }
+.dh-hello__date { margin: 0; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.dh-hello__role { margin: 4px 0 0; font-size: var(--ds-text-sm); color: var(--ds-text-2); }
+.dh-hello__today { display: flex; flex-direction: column; align-items: flex-end; gap: var(--ds-space-2); }
+.dh-hello__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--ds-space-2); }
+.dh-today {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--ds-radius-pill);
+  font-size: var(--ds-text-sm); font-weight: 500; background: var(--ds-surface-2); color: var(--ds-text);
+}
+.dh-today::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ds-text-2); }
+.dh-today--success::before { background: var(--ds-success); }
+.dh-today--warning::before { background: var(--ds-warning); }
+.dh-today--info::before { background: var(--ds-info); }
+
+.dh-h2 { margin: 0 0 var(--ds-space-3); font-size: var(--ds-text-md, 15px); font-weight: 600; color: var(--ds-text); }
+.dh-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: var(--ds-space-3); margin: 0; padding: 0; list-style: none; }
+.dh-tile {
+  position: relative; display: flex; align-items: center; gap: var(--ds-space-3); min-height: 56px; height: 100%;
+  padding: var(--ds-space-3) var(--ds-space-4); border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-1); border: 1px solid var(--ds-border); color: var(--ds-text); text-decoration: none;
+  font-size: var(--ds-text-sm); font-weight: 500; transition: border-color var(--ds-fast), background var(--ds-fast);
+}
+.dh-tile:hover { border-color: var(--ds-primary); background: var(--ds-surface-2); }
+.dh-tile:focus-visible { outline: 2px solid var(--ds-focus-color, var(--ds-primary)); outline-offset: 2px; }
+.dh-tile__icon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: var(--ds-radius-sm); background: var(--ds-primary-soft); color: var(--ds-primary); }
+.dh-tile__icon .icon { width: 18px; height: 18px; }
+.dh-tile__label { flex: 1; min-width: 0; }
+.dh-tile__count {
+  flex: none; min-width: 24px; padding: 0 7px; border-radius: var(--ds-radius-pill); text-align: center;
+  font-size: var(--ds-text-xs); line-height: 22px; font-weight: 600; background: var(--ds-primary); color: var(--ds-on-primary, #ffffff);
+}
+
+.dh-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-4); align-items: start; }
+.dh-card .ds-card__header { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-3); }
+.dh-empty { margin: 0; color: var(--ds-text-2); font-size: var(--ds-text-sm); }
+.dh-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.dh-list__item a {
+  display: flex; align-items: center; gap: var(--ds-space-3); padding: 8px var(--ds-space-2); border-radius: var(--ds-radius-sm);
+  color: var(--ds-text); text-decoration: none; font-size: var(--ds-text-sm);
+}
+.dh-list__item a::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ds-info); }
+.dh-list__item--danger a::before { background: var(--ds-danger); }
+.dh-list__item--warning a::before { background: var(--ds-warning); }
+.dh-list__item a:hover { background: var(--ds-surface-2); }
+.dh-list__item a:focus-visible { outline: 2px solid var(--ds-focus-color, var(--ds-primary)); outline-offset: 1px; }
+
+.dh-posts { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--ds-space-3); }
+.dh-post { display: grid; gap: 2px; padding-bottom: var(--ds-space-3); border-bottom: 1px solid var(--ds-border); }
+.dh-post:last-child { border-bottom: 0; padding-bottom: 0; }
+.dh-post__title { font-weight: 600; font-size: var(--ds-text-sm); color: var(--ds-text); }
+.dh-post__body { font-size: var(--ds-text-sm); color: var(--ds-text-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dh-post__date { font-size: var(--ds-text-xs); color: var(--ds-text-2); }
+.dh-pin { display: inline-block; margin-right: 6px; padding: 0 6px; border-radius: var(--ds-radius-pill); background: var(--ds-primary-soft); color: var(--ds-text); font-size: var(--ds-text-xs); font-weight: 500; line-height: 18px; }
+
+@media (max-width: 900px) { .dh-two { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) {
+  .dh-hello { padding: var(--ds-space-4); align-items: stretch; flex-direction: column; }
+  .dh-hello h1 { font-size: var(--ds-text-xl); }
+  .dh-hello__today { align-items: stretch; }
+  .dh-hello__actions { justify-content: stretch; }
+  .dh-hello__actions > .ds-btn { flex: 1 1 auto; justify-content: center; }
+  .dh-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-2); }
+  .dh-tile { padding: var(--ds-space-3); gap: var(--ds-space-2); }
+  .dh-tile__icon { width: 28px; height: 28px; }
+}
+
+/* the IT desk's five numbers on one row from a tablet up (it.css's 150px minimum leaves the fifth alone at 768) */
+#it-numbers { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); }
+@media (max-width: 560px) { #it-numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

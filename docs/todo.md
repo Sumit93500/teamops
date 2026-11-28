@@ -66,16 +66,16 @@ Built in TD1 (2026-11-24): a to-do with two kinds of task, its permissions, the 
 
 ## Screens
 
-- **My to-do:**
-  - tabs Personal, Work, Assigned by me;
-  - quick add; status, priority and due chips (a word, an icon and a pattern each); filters (status, priority, the shared date range);
-  - the status changes in the row;
-  - edit and delete on a personal task;
-  - a work task's detail (facts, timeline, comments, and the buttons the person's part allows);
-  - the updates at the top (three shown, "Mark all read").
+- **My to-do** (redesigned in SD1):
+  - tabs Mine, Assigned by me, and Team (for someone who may see a team's tasks; never anyone's personal tasks);
+  - sections Overdue, Today, Upcoming, No date, and Done (folded);
+  - compact rows: a tick, the title, the due day in words ("Due today", "Due 3 Dec 2026", "Overdue since 20 Nov 2026"), a Work or Personal tag, and who assigned it;
+  - a one-line quick add (title, an optional day, Personal or Work). Work for yourself needs a day, never one in the past, as the store rules;
+  - delete on a personal task; a work task's detail as before;
+  - the updates card kept.
 - **Team tasks** (a manager, HR, the Admin): progress by person (a stacked horizontal bar chart of the shared chart components and a table), one person's work tasks, and Assign a task (the picker holds only who the viewer may assign to).
-- **Dashboards:** the small "My tasks" card (due today, overdue, open; and the team's overdue and due today for someone with a team).
-- **Sidebar** (under Requests & expenses): My to-do for everyone; Team tasks for those who may open it.
+- **Dashboards:** SD1 replaced the "My tasks" card with the shared frame. My to-do is a Do next tile with its count, and overdue work is in Needs you.
+- **Sidebar:** My to-do under My work for everyone; Team tasks under Time & Attendance for those who may open it (SD1 groups).
 
 ## Choices made where the brief was silent
 

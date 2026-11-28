@@ -25,6 +25,8 @@ export const AUDIT_KINDS = [
   "import-checked", "import-done", "import-failed", "import-refused", "export-done", "export-refused",
   // TD1: data/tasks-store.js (task ids and statuses only; a personal task is only ever "a personal task was added")
   "task-personal", "task-assigned", "task-reassigned", "task-status", "task-cancelled", "task-reopened",
+  // SD1: data/announcements.js (post ids and the audience only, never the words)
+  "announcement-posted", "announcement-changed", "announcement-ended",
 ];
 export const AUDIT_LABEL = {
   "account-created": "Account created", "link-used": "Set-password link used", "password-set": "Password set",
@@ -50,6 +52,7 @@ export const AUDIT_LABEL = {
   "import-checked": "Import file checked", "import-done": "Import done", "import-failed": "Import failed (rolled back)", "import-refused": "Import refused",
   "export-done": "Export downloaded", "export-refused": "Export refused",
   "task-personal": "Personal task added", "task-assigned": "Task assigned", "task-reassigned": "Task reassigned", "task-status": "Task status changed", "task-cancelled": "Task cancelled", "task-reopened": "Task reopened",
+  "announcement-posted": "Announcement posted", "announcement-changed": "Announcement changed", "announcement-ended": "Announcement taken down",
 };
 
 const empty = () => ({ version: 1, nextNum: 1, events: [] });

@@ -153,7 +153,7 @@ if (ONLY.includes("A")) {
   const focusChip = await n.t.evaluate(() => getComputedStyle(document.activeElement, "::before").content);
   const toggleChip = await (async () => { await n.t.hover("#sidebar-toggle"); await settle(n.t, 80); return chip("#sidebar-toggle"); })();
   check("A2", "collapsed: the label shows as a chip on hover (\"Attendance\"), on keyboard focus (the first item), and on the toggle", hoverChip !== "none" && hoverChip.length > 2 && focused && focusChip === `"${focused}"` && toggleChip === "\"Expand sidebar\"", j([hoverChip, focused, focusChip, toggleChip]));
-  const marks = await n.t.evaluate(() => { const a = document.querySelector("#sidebar__nav .nav__item.is-active"), o = [...document.querySelectorAll("#sidebar__nav .nav__section--single .nav__item:not(.is-active)")][0];
+  const marks = await n.t.evaluate(() => { const a = document.querySelector("#sidebar__nav .nav__item.is-active"), o = [...document.querySelectorAll("#sidebar__nav .nav__section--single .nav__item:not(.is-active), #sidebar__nav .nav__item:not(.is-active)")][0];   // SD1: any other item
     return { current: a?.getAttribute("aria-current"), activeBg: getComputedStyle(a).backgroundColor, otherBg: getComputedStyle(o).backgroundColor }; });
   check("A3", "collapsed: the active item is marked (aria-current, its own background)", marks.current === "page" && marks.activeBg !== marks.otherBg && marks.activeBg !== "rgba(0, 0, 0, 0)", j(marks));
   const headings = await vis(n.t, "#sidebar__nav .nav__group-title");
@@ -202,7 +202,7 @@ if (ONLY.includes("K")) {
     await n.t.evaluate(() => document.querySelector(".sidebar__brand").focus());
     const order = [await n.t.evaluate(() => document.activeElement.className)];
     for (let i = 0; i < 2; i++) { await n.t.keyboard.press("Tab"); order.push(await n.t.evaluate(() => document.activeElement.id || document.activeElement.getAttribute("aria-label") || document.activeElement.innerText.trim())); }
-    check(`K1.${side}`, `${side}: Tab goes brand, the toggle, then the first item (Dashboard)`, order[0].includes("sidebar__brand") && order[1] === "sidebar-toggle" && order[2] === "Dashboard", j(order));
+    check(`K1.${side}`, `${side}: Tab goes brand, the toggle, then Find a page (expanded) or the Main group (collapsed) (SD1)`, order[0].includes("sidebar__brand") && order[1] === "sidebar-toggle" && order[2] === (side === "expanded" ? "menu-search" : "Main"), j(order));
     await n.t.focus("#sidebar-toggle"); await n.t.keyboard.press("Enter"); await settle(n.t);
     const a = await state(n.t);
     await n.t.keyboard.press("Space"); await settle(n.t);

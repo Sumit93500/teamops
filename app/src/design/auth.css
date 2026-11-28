@@ -20,7 +20,17 @@
   background: transparent; }
 .auth-demo .ds-hint { margin: 0; }
 .auth-demo__title { margin: 0; font-size: var(--ds-text-xs); font-weight: var(--ds-weight-semibold); color: var(--ds-text-2); text-transform: uppercase; letter-spacing: 0.04em; }
-.auth-demo__roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-2); }
+.auth-demo__roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ds-space-2); }
+/* SD1: one tile per role: the role, then the person it signs in */
+.auth-demo__role {
+  display: grid; gap: 1px; padding: var(--ds-space-2) var(--ds-space-3); text-align: left; cursor: pointer; font: inherit;
+  border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-1); color: var(--ds-text);
+}
+.auth-demo__role strong { font-size: var(--ds-text-sm); font-weight: 600; }
+.auth-demo__role span { font-size: var(--ds-text-xs); color: var(--ds-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.auth-demo__role:hover:not(:disabled) { border-color: var(--ds-primary); background: var(--ds-surface-2); }
+.auth-demo__role:focus-visible { outline: 2px solid var(--ds-focus-color, var(--ds-primary)); outline-offset: 2px; }
+.auth-demo__role:disabled { cursor: not-allowed; background: var(--ds-surface-2); }
 
 /* F2: two parts on a wide screen: the brand panel, then the card with the footer under it */
 .auth-split { display: grid; grid-template-columns: minmax(0, 1fr); }

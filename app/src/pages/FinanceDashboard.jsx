@@ -21,6 +21,7 @@ import { el, plural, departmentName, personCell, nameOf, initials, avatarClass, 
 import { payrollByDepartmentChart, payrollByMonthChart } from "../../../assets/js/data/chart-data.js";
 import { rupees } from "../../../assets/js/ui/money.js";
 import Frame from "../ui/Frame.jsx";
+import DashFrame from "../ui/DashFrame.jsx";   // SD1: the shared dashboard
 import Nodes from "../ui/Nodes.jsx";
 import { StatStrip, StatCard } from "../components/Basics.jsx";
 import { VisitsToday } from "../ui/visits.jsx";   // CV1
@@ -132,35 +133,20 @@ export default function FinanceDashboard() {
 
   return (
     <Frame page={PAGE}>
-      <div className="page-header">
-        <div>
-          <h1>Dashboard</h1>
-          <p className="page-header__subtitle">Payroll and expenses</p>
-        </div>
-        <div className="page-header__actions">
-          <button className="btn" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export data-export-stats="finance-dashboard-stats">Export</button>
-          <Link className="btn" to={pageUrl("attendance/mark-attendance.html")} data-permission="attendance:mark" hidden={!canMark || undefined} id="dash-mark">
-            <Icon d={ICONS.mark} />
-            Mark attendance
-          </Link>
-          <Link className="btn btn--primary" to={pageUrl("payroll/payroll-run.html")} data-permission="payroll:view" hidden={!canPay || undefined}>
-            <Icon d="M5 3l14 9-14 9z" />
-            Open payroll run
-          </Link>
-        </div>
-      </div>
-      <div className="stack">
-        <StatStrip label="Key numbers">
-          <StatCard id="payroll" permission="payroll:view" hidden={!canPay} icon={ICONS.payroll} tone={1} label={d.run ? `Payroll, ${short(d.run)}` : "Payroll"}
-            value={d.run ? rupees(d.totals.gross) : "—"} note={d.run ? `Gross for ${people(d.run.rows.length)}, draft` : ""} />
-          <StatCard id="reimbursements" permission="expenses:view" hidden={!canExp} icon={ICONS.reimbursements} tone={2} label="Reimbursements due"
-            value={d.approved ? rupees(d.approved.amount) : "—"} note={d.approved ? (d.approved.count ? `${plural(d.approved.count, "claim", "claims")} waiting to be paid` : "Nothing waiting to be paid") : ""}
-            noteTone={d.approved?.count ? "up" : ""} />
-          <StatCard id="tds" permission="payroll:view" hidden={!canPay} icon={ICONS.tds} tone={3} label="Tax deducted (TDS)" value={d.run ? rupees(d.tds) : "—"}
-            note={d.run ? `Sample tax rates; deposit by ${formatDay(filingDates(d.year, d.month).tds)}` : ""} />
-          <StatCard id="net" permission="payroll:view" hidden={!canPay} icon={ICONS.net} tone={4} label={d.run ? `Net pay, ${short(d.run)}` : "Net pay"}
-            value={d.run ? rupees(d.totals.net) : "—"} note={d.run ? "Draft, not paid yet" : ""} />
-        </StatStrip>
+      <DashFrame kind="fin" actions={<button className="btn" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export data-export-stats="finance-dashboard-stats">Export</button>}
+        numbers={
+          <StatStrip label="Key numbers">
+            <StatCard id="payroll" permission="payroll:view" hidden={!canPay} icon={ICONS.payroll} tone={1} label={d.run ? `Payroll, ${short(d.run)}` : "Payroll"}
+              value={d.run ? rupees(d.totals.gross) : "—"} note={d.run ? `Gross for ${people(d.run.rows.length)}, draft` : ""} />
+            <StatCard id="reimbursements" permission="expenses:view" hidden={!canExp} icon={ICONS.reimbursements} tone={2} label="Reimbursements due"
+              value={d.approved ? rupees(d.approved.amount) : "—"} note={d.approved ? (d.approved.count ? `${plural(d.approved.count, "claim", "claims")} waiting to be paid` : "Nothing waiting to be paid") : ""}
+              noteTone={d.approved?.count ? "up" : ""} />
+            <StatCard id="tds" permission="payroll:view" hidden={!canPay} icon={ICONS.tds} tone={3} label="Tax deducted (TDS)" value={d.run ? rupees(d.tds) : "—"}
+              note={d.run ? `Sample tax rates; deposit by ${formatDay(filingDates(d.year, d.month).tds)}` : ""} />
+            <StatCard id="net" permission="payroll:view" hidden={!canPay} icon={ICONS.net} tone={4} label={d.run ? `Net pay, ${short(d.run)}` : "Net pay"}
+              value={d.run ? rupees(d.totals.net) : "—"} note={d.run ? "Draft, not paid yet" : ""} />
+          </StatStrip>
+        }>
         <VisitsToday />
 
         <div className="grid grid-main-aside">
@@ -221,7 +207,7 @@ export default function FinanceDashboard() {
             <Link className="btn btn--sm" to={pageUrl("payroll/payroll-run.html")}>Open payroll run</Link>
           </div>
         </section>
-      </div>
+      </DashFrame>
     </Frame>
   );
 }

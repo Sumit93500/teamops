@@ -3,7 +3,7 @@
 // permission. The planned rounds that bring them back are listed in the workspace's notes/react-parking-lot.md. (AS2 restored the five
 // inventory pages: they are real pages now, behind shell/assetAccess.js.)
 export const PLACEHOLDER_PAGES = [
-  "announcements/announcements.html", "recruitment/job-openings.html", "recruitment/candidates.html",
+  "recruitment/job-openings.html", "recruitment/candidates.html",
   "system/reports.html", "system/audit-log.html", "system/backup.html",
   "access/delegation.html", "access/approval-workflows.html",
   "account/notifications.html", "account/sessions.html",

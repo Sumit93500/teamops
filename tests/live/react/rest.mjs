@@ -263,7 +263,7 @@ if (ONLY.includes("R")) {
     same(`Rj2.${who}`, `${who}: the Closed tab marked; search design, zzz, cleared; a placeholder`, await flow(x.o.t), await flow(x.n.t));
   });
   await sample("Rc", "recruitment/candidates.html");
-  await sample("Ra", "announcements/announcements.html");
+  // SD1: Announcements is restored as the app's own page (react/sd1.mjs A checks it), so it is no longer "being rebuilt"
 }
 
 async function phoneCards(letter, list) {

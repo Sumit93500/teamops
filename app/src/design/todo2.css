@@ -1,0 +1,50 @@
+/* SD1: My to-do's one-line quick add, sections and compact rows. Tokens only (light and dark); phone layout below 560 px. */
+.tq { display: grid; grid-template-columns: minmax(0, 1fr) 160px 150px auto; gap: var(--ds-space-2); align-items: center; }
+.tq .ds-input { height: var(--ds-control-h, 38px); padding: 0 var(--ds-space-3); border: 1px solid var(--ds-border-control); border-radius: var(--ds-radius-md); background: var(--ds-surface-1); color: var(--ds-text); font: inherit; font-size: var(--ds-text-sm); min-width: 0; }
+.tq .ds-input:focus-visible { outline: 2px solid var(--ds-focus-color, var(--ds-primary)); outline-offset: 1px; }
+.tq__error { grid-column: 1 / -1; margin: 0; color: var(--ds-danger); font-size: var(--ds-text-sm); }
+
+.ts { display: flex; flex-direction: column; gap: var(--ds-space-4); }
+.ts__group { display: flex; flex-direction: column; gap: var(--ds-space-2); }
+.ts__head, .ts__group--done > summary {
+  display: flex; align-items: center; gap: var(--ds-space-2); margin: 0;
+  font-size: var(--ds-text-sm); font-weight: 600; color: var(--ds-text);
+}
+.ts__group--done > summary { cursor: pointer; padding: 4px 0; }
+.ts__group--done > summary:focus-visible { outline: 2px solid var(--ds-focus-color, var(--ds-primary)); outline-offset: 2px; border-radius: 4px; }
+.ts__count { min-width: 22px; padding: 0 7px; border-radius: var(--ds-radius-pill); background: var(--ds-surface-2); color: var(--ds-text-2); font-size: var(--ds-text-xs); line-height: 20px; text-align: center; font-weight: 500; }
+.ts__group--overdue .ts__label { color: var(--ds-danger); }
+
+.tl { margin: 0; padding: 0; list-style: none; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); overflow: hidden; }
+.tr { display: flex; align-items: center; gap: var(--ds-space-3); padding: 8px var(--ds-space-3); background: var(--ds-surface-1); border-bottom: 1px solid var(--ds-border); }
+.tr:last-child { border-bottom: 0; }
+.tr__tick, .tr__state {
+  flex: none; display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border-radius: 6px;
+  border: 2px solid var(--ds-border-control); background: var(--ds-surface-1); color: transparent; cursor: pointer;
+}
+.tr__state { border-style: dashed; cursor: default; }
+.tr__tick .icon { width: 14px; height: 14px; stroke-width: 3; }
+.tr__tick[aria-pressed="true"] { background: var(--ds-success); border-color: var(--ds-success); color: #ffffff; }
+.tr__tick:hover:not(:disabled) { border-color: var(--ds-primary); }
+.tr__tick:disabled { cursor: not-allowed; opacity: 0.55; }
+.tr__tick:focus-visible { outline: 2px solid var(--ds-focus-color, var(--ds-primary)); outline-offset: 2px; }
+.tr__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.tr__title { align-self: flex-start; max-width: 100%; padding: 0; border: 0; background: none; color: var(--ds-text); font: inherit; font-size: var(--ds-text-sm); font-weight: 500; text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+.tr__title:hover { color: var(--ds-primary); text-decoration: underline; }
+.tr__title:focus-visible { outline: 2px solid var(--ds-focus-color, var(--ds-primary)); outline-offset: 2px; border-radius: 3px; }
+.tr--done .tr__title { color: var(--ds-text-2); text-decoration: line-through; }
+.tr__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--ds-space-3); font-size: var(--ds-text-xs); color: var(--ds-text-2); }
+.tr__tag { padding: 0 6px; border-radius: var(--ds-radius-pill); font-weight: 500; line-height: 18px; }
+.tr__tag--work { background: var(--ds-info-soft); color: var(--ds-text); }
+.tr__tag--personal { background: var(--ds-surface-2); color: var(--ds-text); }
+.tr__due.is-late { color: var(--ds-danger); font-weight: 500; }
+.tr__remove { flex: none; }
+
+@media (max-width: 760px) { .tq { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .tq__title { grid-column: 1 / -1; } }
+@media (max-width: 560px) {
+  /* the title on its own line; the day, the kind and Add share the next */
+  .tq { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+  .tq__title, .tq__error { grid-column: 1 / -1; }
+  .tr { align-items: flex-start; padding: 10px var(--ds-space-3); }
+  .tr__remove { align-self: center; }
+}

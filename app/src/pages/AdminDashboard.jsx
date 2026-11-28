@@ -44,7 +44,7 @@ import { BarChart } from "../components/charts/Charts.jsx";
 import { useData, useSession, useCan } from "../data/hooks.js";
 import { countText } from "../data/counts.js";   // F2: one counter wording
 import { pageUrl } from "../routes.js";
-import { TasksCard } from "../ui/todo.jsx";   // TD1: the small "My tasks" card
+import DashFrame from "../ui/DashFrame.jsx";   // SD1: the shared dashboard (TD1's My tasks card is now its tiles and attention list)
 
 csvColumns("admin-dashboard-attendance", { Employee: { split: "Work email" } });   // Round Data export part 2
 
@@ -206,35 +206,19 @@ export default function AdminDashboard() {
   return (
     <Frame page={PAGE}>
       <>
-        <div className="page-header">
-          <div>
-            <h1>Dashboard</h1>
-            <p className="page-header__subtitle" id="dash-subtitle">{`Company overview for ${monthName(Number(today.slice(5, 7)))} ${today.slice(0, 4)}`}</p>
-          </div>
-          <div className="page-header__actions">
-            <button className="btn" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export data-export-stats="admin-dashboard-stats">Export</button>
-            <Link className="btn" to={pageUrl("attendance/mark-attendance.html")} data-permission="attendance:mark" hidden={!canMark || undefined} id="dash-mark">
-              <Icon d={MARK_ICON} />
-              Mark attendance
-            </Link>
-            <Link className="btn btn--primary" to={pageUrl("users/user-form.html")} data-permission="users:create" hidden={!canCreate || undefined}>
-              <Icon d="M12 5v14M5 12h14" />
-              Add employee
-            </Link>
-          </div>
-        </div>
-        <div className="stack">
-          <StatStrip label="Key numbers">
-            <StatCard id="total" icon={ICONS.total} tone={1} label="Total employees" value={String(d.active)}
-              note={inactive ? `Not counting ${plural(inactive, "inactive employee", "inactive employees")}` : "No inactive employees"} />
-            <StatCard id="present" icon={ICONS.present} tone={2} label="Present today" value={String(todaySummary.present)} note={presentNote(todaySummary, d.all.map((r) => r.day))} />
-            <StatCard id="payroll" permission="payroll:view" hidden={!canPayroll} icon={ICONS.payroll} tone={3}
-              label={d.run ? `Payroll, ${monthName(d.run.month).slice(0, 3)}` : "Payroll"} value={d.run ? rupees(d.run.gross) : "—"}
-              note={d.run ? `Gross for ${plural(d.run.rows, "employee", "employees")}, draft` : ""} />
-            <StatCard id="stock" permission="inventory:view" hidden={!canStock} icon={ICONS.stock} tone={4} label="Items to reorder"
-              value={d.alerts ? String(d.alerts.length) : "—"} note={d.alerts ? stockNote : ""} noteTone={d.alerts?.length ? "down" : ""} />
-          </StatStrip>
-          <TasksCard />
+        <DashFrame kind="admin" actions={<><button className="btn" type="button" data-permission="reports:export" hidden={!canExport || undefined} data-export data-export-stats="admin-dashboard-stats">Export</button><Link className="btn" to={pageUrl("users/user-form.html")} data-permission="users:create" hidden={!canCreate || undefined}><Icon d="M12 5v14M5 12h14" />Add employee</Link></>}
+          numbers={
+            <StatStrip label="Key numbers">
+              <StatCard id="total" icon={ICONS.total} tone={1} label="Total employees" value={String(d.active)}
+                note={inactive ? `Not counting ${plural(inactive, "inactive employee", "inactive employees")}` : "No inactive employees"} />
+              <StatCard id="present" icon={ICONS.present} tone={2} label="Present today" value={String(todaySummary.present)} note={presentNote(todaySummary, d.all.map((r) => r.day))} />
+              <StatCard id="payroll" permission="payroll:view" hidden={!canPayroll} icon={ICONS.payroll} tone={3}
+                label={d.run ? `Payroll, ${monthName(d.run.month).slice(0, 3)}` : "Payroll"} value={d.run ? rupees(d.run.gross) : "—"}
+                note={d.run ? `Gross for ${plural(d.run.rows, "employee", "employees")}, draft` : ""} />
+              <StatCard id="stock" permission="inventory:view" hidden={!canStock} icon={ICONS.stock} tone={4} label="Items to reorder"
+                value={d.alerts ? String(d.alerts.length) : "—"} note={d.alerts ? stockNote : ""} noteTone={d.alerts?.length ? "down" : ""} />
+            </StatStrip>
+          }>
           <VisitsToday />
         <VisitsNoCheckIn />
 
@@ -310,7 +294,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           </section>
-        </div>
+        </DashFrame>
       </>
     </Frame>
   );

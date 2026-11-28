@@ -84,7 +84,8 @@ const read = (t) => t.evaluate(() => {
   const chart = m.querySelector(".chart");
   const out = {
     h1: tx(m.querySelector(".page-header h1")), sub: tx(m.querySelector(".page-header__subtitle")),
-    buttons: [...m.querySelectorAll(".page-header__actions .btn")].filter((b) => vis(b) && b.id !== "dash-mark").map(tx),
+    // SD1: the header is the shared greeting (ui/DashFrame.jsx): its buttons are read from there; the title and subtitle are read past
+    buttons: [...m.querySelectorAll(".page-header__actions .btn, #dash-hello .dh-hello__actions .btn")].filter((b) => vis(b) && b.id !== "dash-mark").map(tx),
     stats: [...m.querySelectorAll(".stat")].map((s) => [s.dataset.stat, vis(s), tx(s.querySelector(".stat__label")), tx(s.querySelector(".stat__value")), tx(s.querySelector(".stat__delta")), s.querySelector(".stat__delta")?.className ?? null]),
     chartLabel: chart?.getAttribute("aria-label") ?? null,
     bars: chart ? [...chart.querySelectorAll(".chart__bar")].map((b) => [b.title, b.className.replace("chart__bar", "").trim().replace("chart__bar--", ""), b.style.getPropertyValue("--h")]) : null,
@@ -115,13 +116,17 @@ const canon = (v) => (typeof v === "string" ? countCanon(v) : Array.isArray(v) ?
 const PLACEHOLDER = /\/pages\/(inventory|announcements|recruitment|system\/(reports|audit-log|backup)|access\/(delegation|approval-workflows)|account\/(notifications|sessions))/;
 const EMPTY_NOW = { "my-requests-list": "Nothing waiting for a decision.", updates: "Nothing new yet." };
 const pastOld = (a) => a && ({ ...a,
-  buttons: a.buttons.filter((b) => b !== "Post job opening"),
+  buttons: a.buttons.filter((b) => b !== "Post job opening" && !["Apply for leave", "Mark attendance", "Open payroll run"].includes(b)),   /* SD1: Mark attendance is in the greeting (#dash-mark), Apply for leave and Open payroll run are Do next tiles (sd1.mjs C) */
   stats: a.stats.filter((s) => s[0] !== "positions" && s[4] !== "Sample, not built yet"),
   cards: a.cards.map(([id, t]) => [id, typeof t === "string" ? ((s) => (EMPTY_NOW[id] && !s ? EMPTY_NOW[id] : s))(t.replace(/ ?(Announcement|Interview scheduled): [^]*?Sample, not built yet/g, "").trim()) : t]),   /* F2b: an empty card now says so (EMPTY_NOW) */
   metas: a.metas.filter((m) => m !== "Sample, not built yet"),
   links: a.links.filter(([, p]) => !PLACEHOLDER.test(p)) });
+// SD1 (the brief, C): every dashboard opens with the shared greeting ("Good morning, Aarav", the date, the role), so the old title and
+// subtitle are read past; react/sd1.mjs C checks the greeting
+const SD1_PAST = ["h1", "sub"];
+const sd1Cut = (x) => x && Object.fromEntries(Object.entries(x).filter(([k]) => !SD1_PAST.includes(k)));
 function compare(n, label, a0, b0, skip = []) {
-  const a = canon(pastOld(a0)), b = canon(b0);
+  const a = canon(sd1Cut(pastOld(a0))), b = canon(sd1Cut(b0));
   const diff = Object.keys(a).filter((k) => !skip.includes(k) && j(a[k]) !== j(b[k]));
   check(n, label, diff.length === 0, diff.length ? diff.map((k) => `${k}: old ${j(a[k])} new ${j(b[k])}`).join(" ; ") : `${a.stats.length} stats, ${a.bars?.length ?? 0} bars, ${a.tables.map((x) => x[1].length).join("+")} rows`);
 }
@@ -153,7 +158,7 @@ if (ONLY.includes("A")) {
     check(`A2.${who}`, `${who}: search, department, Next`, j(canon(sa)) === j(canon(sb)), j(canon(sa)) === j(canon(sb)) ? j(sb) : `old ${j(sa)} new ${j(sb)}`);   // F2: counters by their numbers
     if (who === "admin") {
       const files = async (t) => {
-        const exp = await t.$('main .page-header__actions button[data-export]'); if (!exp) return [];
+        const exp = await t.$('main button[data-export]'); if (!exp) return [];   // SD1: in the greeting on the app's side
         const got = [];
         t.on("download", async (dl) => got.push([dl.suggestedFilename(), fs.readFileSync(await dl.path(), "utf8")]));
         await exp.click(); await t.waitForTimeout(1500);
@@ -227,7 +232,7 @@ if (ONLY.includes("H")) {
   for (const x of [o, n]) await ask(x, firstApprove, true);
   const [ta, tb] = [await toasts(o.t), await toasts(n.t)];
   const [pa, pb] = [await read(o.t), await read(n.t)];
-  check("H4", "Approve, then Yes: the same toast and the same page after (stats, list, activity, table)", j(ta) === j(tb) && tb.length === 1 && j(canon(pastOld(pa))) === j(canon(pb)), j([ta, tb]) + (j(canon(pastOld(pa))) === j(canon(pb)) ? "" : ` page differs: ${Object.keys(pa).filter((k) => j(pa[k]) !== j(pb[k])).join(",")}`));
+  check("H4", "Approve, then Yes: the same toast and the same page after (stats, list, activity, table)", j(ta) === j(tb) && tb.length === 1 && j(canon(sd1Cut(pastOld(pa)))) === j(canon(sd1Cut(pb))), j([ta, tb]) + (j(canon(sd1Cut(pastOld(pa)))) === j(canon(sd1Cut(pb))) ? "" : ` page differs: ${Object.keys(sd1Cut(pa)).filter((k) => j(canon(pastOld(pa))[k]) !== j(canon(pb)[k])).join(",")}`));
   const rej = async (t) => {
     await t.click("#approvals-list .list__item:first-child .btn:not(.btn--primary)"); await t.waitForTimeout(250);
     const opened = await t.evaluate(() => { const m = [...document.querySelectorAll(".modal.is-open")].at(-1); return m ? [m.querySelector(".modal__title").textContent, m.querySelector(".modal__desc").textContent, document.activeElement.id] : null; });
@@ -261,7 +266,7 @@ if (ONLY.includes("F")) {
       const files = async (t) => {
         const got = []; t.on("download", async (dl) => got.push([dl.suggestedFilename(), fs.readFileSync(await dl.path(), "utf8")]));
         const inp = await t.$('main .table__filters input'); if (inp) await inp.fill("");
-        await t.click('main .page-header__actions button[data-export]'); await t.waitForTimeout(1500);
+        await t.click('main button[data-export]'); await t.waitForTimeout(1500);   // SD1: in the greeting on the app's side
         return got.sort((p, q) => p[0].localeCompare(q[0]));
       };
       const [fa, fb] = [await files(x.o.t), await files(x.n.t)];

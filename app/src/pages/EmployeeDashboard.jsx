@@ -11,7 +11,7 @@ import { LEAVE_TYPES, balanceFor, requestsFor, currentApproverName } from "../..
 import { monthFor, rangeFor, regularizationsFor } from "../../../assets/js/data/attendance-store.js";
 import { shiftRangeFor, shiftMonthFor } from "../../../assets/js/data/shift-days.js";   // SH1: days by the person's shift
 import { ShiftLine, statusNodes } from "../ui/shifts.jsx";
-import { TasksCard } from "../ui/todo.jsx";   // TD1: the small "My tasks" card
+import DashFrame from "../ui/DashFrame.jsx";   // SD1: the shared dashboard (TD1's My tasks card is now its tiles and attention list)
 import { payslipsFor } from "../../../assets/js/data/payroll-store.js";
 import { assetRequestsFor, waitingOn as assetWaitingOn } from "../../../assets/js/data/asset-requests-store.js";
 import { openRequests } from "../../../assets/js/data/own-requests.js";
@@ -219,28 +219,16 @@ export default function EmployeeDashboard() {
 
   return (
     <Frame page={PAGE}>
-      <div className="page-header">
-        <div>
-          <h1>My dashboard</h1>
-          <p className="page-header__subtitle" id="dash-subtitle">{`Your attendance and requests for ${monthName(month)} ${year}`}</p>
-        </div>
-        <div className="page-header__actions">
-          <Link className="btn" to={pageUrl("leave/apply-leave.html")} data-permission="leave:create" hidden={!canApply || undefined}>Apply for leave</Link>
-          <Link className="btn btn--primary" to={pageUrl("attendance/mark-attendance.html")} data-permission="attendance:mark" hidden={!canMark || undefined}>
-            <Icon d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6" />
-            Mark attendance
-          </Link>
-        </div>
-      </div>
-      <div className="stack">
+      <DashFrame kind="emp" actions={null}
+        numbers={
+          <StatStrip label="Key numbers">
+            <StatCard id="present" icon={ICONS.present} tone={1} label="Days present" value={present.value} note={present.note} noteTone={present.tone} />
+            <StatCard id="balance" icon={ICONS.balance} tone={2} label="Leave balance" value={`${total} ${total === 1 ? "day" : "days"}`} note={most.map((r) => `${SHORT[r.type]} ${r.left}`).join(", ")} />
+            <StatCard id="payslip" icon={ICONS.payslip} tone={3} label="Next payslip" value={slip.value} note={slip.note} />
+            <StatCard id="requests" icon={ICONS.requests} tone={4} label="Open requests" value={String(d.open.length)} note={parts.join(", ") || "None"} />
+          </StatStrip>
+        }>
         <ShiftLine userId={userId} id="dash-shift" />
-        <TasksCard />
-        <StatStrip label="Key numbers">
-          <StatCard id="present" icon={ICONS.present} tone={1} label="Days present" value={present.value} note={present.note} noteTone={present.tone} />
-          <StatCard id="balance" icon={ICONS.balance} tone={2} label="Leave balance" value={`${total} ${total === 1 ? "day" : "days"}`} note={most.map((r) => `${SHORT[r.type]} ${r.left}`).join(", ")} />
-          <StatCard id="payslip" icon={ICONS.payslip} tone={3} label="Next payslip" value={slip.value} note={slip.note} />
-          <StatCard id="requests" icon={ICONS.requests} tone={4} label="Open requests" value={String(d.open.length)} note={parts.join(", ") || "None"} />
-        </StatStrip>
         <VisitsToday />
 
         <div className="grid grid-main-aside">
@@ -295,7 +283,7 @@ export default function EmployeeDashboard() {
             </table>
           </div>
         </section>
-      </div>
+      </DashFrame>
     </Frame>
   );
 }

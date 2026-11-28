@@ -172,15 +172,18 @@ if (ONLY.includes("I")) {
     { title: "Seat of Figma", type: "software-request", requesterId: ID.emp, subjectPersonId: ID.emp, payload: { software: "Figma" }, status: "done", assignedTo: ID.it2, createdAt: ago(60) },
   ]);
   await go(n, P.dash, "it");
+  // SD1 (the brief, D): the numbers are open, awaiting an Admin, my queue, renewals and offboarding due; overdue and unassigned are
+  // lines in Needs you (the shared frame), each opening the same list view
+  const needs = async (id) => n.t.evaluate((i) => document.querySelector(`[data-attention="${i}"]`)?.innerText.trim() ?? null, id);
   check("I1", "the numbers: 4 open (the finished one is not), 1 overdue (the urgent one, 30 h old), 2 assigned to Isha (the reset and the access request), 2 unassigned, 1 awaiting approval",
-    j([await kpi(n.t, "kpi-open"), await kpi(n.t, "kpi-overdue"), await kpi(n.t, "kpi-mine"), await kpi(n.t, "kpi-unassigned"), await kpi(n.t, "kpi-awaiting")]) === j(["4", "1", "2", "2", "1"]), j([await kpi(n.t, "kpi-open"), await kpi(n.t, "kpi-overdue"), await kpi(n.t, "kpi-mine"), await kpi(n.t, "kpi-unassigned"), await kpi(n.t, "kpi-awaiting")]));
+    j([await kpi(n.t, "kpi-open"), await needs("it-overdue"), await kpi(n.t, "kpi-mine"), await needs("it-unassigned"), await kpi(n.t, "kpi-awaiting")]) === j(["4", "1 IT request is overdue", "2", "2 IT requests have nobody on it yet", "1"]), j([await kpi(n.t, "kpi-open"), await needs("it-overdue"), await kpi(n.t, "kpi-mine"), await needs("it-unassigned"), await kpi(n.t, "kpi-awaiting")]));
   const bars = await n.t.evaluate(() => [...document.querySelectorAll("#type-bars .bar-row")].map((r) => r.innerText.replace(/\s+/g, " ").trim()));
   check("I2", "open requests by type are horizontal bars ranked by count: IT issue 2 first", bars[0] === "IT issue 2" && bars.length >= 3, j(bars));
   const sbars = await n.t.evaluate(() => [...document.querySelectorAll("#status-bars .bar-row")].map((r) => r.innerText.replace(/\s+/g, " ").trim()));
   check("I3", "requests by status: every status has its bar, with its count", sbars.length === 7 && sbars.includes("Open 2") && sbars.includes("Done 1") && sbars.includes("Awaiting approval 1"), j(sbars));
   check("I4", "the overdue list names the urgent laptop request with an 'Overdue by' time", (await text(n.t, "#overdue-table")).includes("Laptop won't boot") && /Overdue by 26 h/.test(await text(n.t, "#overdue-table")), await text(n.t, "#overdue-table"));
   check("I5", "assigned to you: the password reset, with its status chip and due time", (await text(n.t, "#mine-table")).includes("Reset Arjun's password") && /In progress/.test(await text(n.t, "#mine-table")), await text(n.t, "#mine-table"));
-  await n.t.locator('a.it-link:has([data-kpi="kpi-overdue"])').click(); await sleep(n.t);
+  await n.t.locator('[data-attention="it-overdue"] a').click(); await sleep(n.t);   // SD1: the overdue line in Needs you
   check("I6", "a number opens the list on that view: Overdue requests, 1 request", /view=overdue/.test(n.t.url()) && (await text(n.t, "#requests-count")) === "Showing 1 of 5 requests" && (await rows(n.t, "#requests-table")).length === 1, await text(n.t, "#requests-count"));
   await go(n, P.dash, "admin");
   check("I7", "the Admin opens the same desk", (await kpi(n.t, "kpi-open")) === "4");

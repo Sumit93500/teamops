@@ -550,7 +550,8 @@ if (ONLY.includes("K")) {
 if (ONLY.includes("E")) {
   console.log("\n--- E. Contrast of the new text ---");
   const pairs = (t, sels) => t.evaluate((sels) => {
-    const rgb = (c) => { const m = c.match(/rgba?\(([^)]+)\)/); return m ? m[1].split(/[ ,/]+/).filter(Boolean).map(Number) : null; };
+    // SD1: color(srgb r g b [/ a]) too (a color-mix), as 0-255 with its alpha
+    const rgb = (c) => { const k = c.match(/^color\(srgb ([\d.e-]+) ([\d.e-]+) ([\d.e-]+)(?: \/ ([\d.]+))?\)/); if (k) return [Number(k[1]) * 255, Number(k[2]) * 255, Number(k[3]) * 255, k[4] === undefined ? 1 : Number(k[4])]; const m = c.match(/rgba?\(([^)]+)\)/); return m ? m[1].split(/[ ,/]+/).filter(Boolean).map(Number) : null; };
     const bgOf = (e) => { for (let n = e; n; n = n.parentElement) { const c = rgb(getComputedStyle(n).backgroundColor); if (c && (c.length < 4 || c[3] > 0.5)) return c.slice(0, 3); } return [255, 255, 255]; };
     return sels.map((s) => { const e = document.querySelector(s); return e ? [s, rgb(getComputedStyle(e).color).slice(0, 3), bgOf(e)] : [s, null, null]; });
   }, sels);
